@@ -490,30 +490,8 @@ namespace luabind { namespace detail
 			// should never be called with a type that can't be cast
 			assert((steps >= 0) && "internal error, please report");
 
-			if (LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->holder_type()))
-			{
-				// if the type we are trying to convert to is the holder_type
-				// it means that his crep has a holder_type (since it would have
-				// been invalid otherwise, and T cannot be invalid). It also means
-				// that we need no conversion, since the holder_type is what the
-				// object points to.
-				return reinterpret_cast<T*>(obj->ptr());
-			}
-
-			void* raw_pointer;
-
-			if (crep->extract_ptr())
-			{
-				// this means that we have a holder type where the
-				// raw-pointer needs to be extracted
-				raw_pointer = crep->extract_ptr()(obj->ptr());
-			}
-			else
-			{
-				raw_pointer = obj->ptr();
-			}
-
-			T* ptr = reinterpret_cast<T*>(static_cast<char*>(raw_pointer) + offset);
+			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, offset));
+			
 //			std::cerr << "pointer_converter<lua_to_cpp>: " << ptr << " " << offset << "\n";
 
 			return ptr;
@@ -593,7 +571,7 @@ namespace luabind { namespace detail
 			// should never be called with a type that can't be cast
 			assert((steps >= 0) && "internal error, please report");
 
-			T* ptr = reinterpret_cast<T*>(obj->ptr(offset));
+			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, offset));
 
 			return *ptr;
 		}

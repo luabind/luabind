@@ -17,10 +17,10 @@ namespace
 
 	LUABIND_ANONYMOUS_FIX int feedback = 0;
 
-	struct held_type_test
+	struct base
 	{
-		held_type_test() : n(4), val(4) { feedback = 3; }
-		~held_type_test() { feedback = 1; }
+		base(): n(4) { feedback = 3; }
+		virtual ~base() { feedback = 1; }
 
 		void f(int)
 		{
@@ -28,24 +28,41 @@ namespace
 		}
 
 		int n;
-		int val;
 	};
 
-	void tester(boost::shared_ptr<held_type_test> t)
+	// this is here to make sure the pointer offsetting works
+	struct first_base
 	{
-		if (t->val == 4) feedback = 2;
+		virtual void a() {}
+		int padding;
+	};
+
+	struct derived: first_base, base
+	{
+		derived(): n2(7) { feedback = 7; }
+		void f() { feedback = 5; }
+		int n2;
+	};
+
+	void tester(base* t)
+	{
+		if (t->n == 4) feedback = 2;
 	}
 
-	struct base
+	void tester_(derived* t)
 	{
-	};
+		if (t->n2 == 7) feedback = 8;
+	}
 
-	struct derived : base
+	void tester2(boost::shared_ptr<base> t)
 	{
-		void f() {}
-	};
+		if (t->n == 4) feedback = 9;
+	}
 
-	void f(boost::shared_ptr<base>) {}
+	void tester3(boost::shared_ptr<const base> t)
+	{
+		if (t->n == 4) feedback = 10;
+	}
 
 } // anonymous namespace
 
@@ -56,8 +73,8 @@ bool test_held_type()
 
 	using namespace luabind;
 
-	boost::shared_ptr<held_type_test> ptr(new held_type_test());
-	
+	boost::shared_ptr<base> ptr(new base());
+
 	{
 		lua_State* L = lua_open();
 		lua_closer c(L);
@@ -66,41 +83,42 @@ bool test_held_type()
 		open(L);
 
 		function(L, "tester", &tester);
+		function(L, "tester", &tester_);
+		function(L, "tester2", &tester2);
+		function(L, "tester3", &tester3);
 
-		class_<held_type_test, boost::shared_ptr<held_type_test> >("held_type_test")
+		class_<base, boost::shared_ptr<base> >("base")
 			.def(constructor<>())
-			.def("f", &held_type_test::f)
+			.def("f", &base::f)
 			.commit(L)
 			;
 
-		namespace_(L, "held_test")
-		[
-			class_<base, boost::shared_ptr<base> >("base"),
-
-			class_<derived, base, boost::shared_ptr<derived> >("derived")
-				.def("f", &derived::f),
-
-			def("f", &f)
-		];
+		class_<derived, base, boost::shared_ptr<base> >("derived")
+			.def(constructor<>())
+			.def("f", &derived::f)
+			.commit(L)
+			;
 
 		object g = get_globals(L);
 		g["test"] = ptr;
 		if (dostring(L, "tester(test)")) return false;
 		if (feedback != 2) return false;
-		if (dostring(L, "a = held_type_test()"))
+		if (dostring(L, "a = base()")) return false;
 		if (feedback != 3) return false;
-		if (dostring(L, "test:f(4)")) return false;
-		if (feedback != 4) return false;
+		if (dostring(L, "b = derived()")) return false;
+		if (feedback != 7) return false;
+		if (dostring(L, "tester(a)")) return false;
+		if (feedback != 2) return false;
+		if (dostring(L, "tester(b)")) return false;
+		if (feedback != 8) return false;
+		if (dostring(L, "tester2(b)")) return false;
+		if (feedback != 9) return false;
+		if (dostring(L, "tester3(b)")) return false;
+		if (feedback != 10) return false;
 
-		g["a"] = boost::shared_ptr<base>(new derived());
-
-		if (dostring(L, "held_test.f(a)")) return false;
-		
 		if (top != lua_gettop(L)) return false;
 
 	}
-
-//	if (feedback != 3) return false;
 
 	ptr.reset();
 	

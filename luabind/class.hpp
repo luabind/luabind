@@ -57,13 +57,12 @@
 	finish scopes (and document)
 
 	finish smart pointer support
-
-	make sure the memory we get from lua_newuserdata() is correctly aligned
+		all converters need to take holder_types int oaccount
+		the signature and type names must take smart pointers into account
+		holder_type<const A> must be supported by the converters
+		the adopt policy should not be able to adopt pointers to held_types. This must be prohibited.
 
 	document the new yield-policy
-
-	the adopt policy should not be able to adopt pointers to held_types. This must be
-	prohibited.
 
 	chache operators and finalizers in the class_rep. For lua classes
 	we currently do a lookup each time we need to know if a lua class
@@ -662,13 +661,16 @@ namespace luabind
 			{
 				// if we have a held type
 				// we have to register it in the class-table
-				r->add_class(m_held_type, crep);
+				// but only for the base class, if it already
+				// exists, we don't have to register it
+				detail::class_rep* c = r->find_class(m_held_type);
+				if (c == 0) r->add_class(m_held_type, crep);
 			}
 
 			// add methods
 			for (std::map<const char*, detail::method_rep, detail::ltstr>::iterator i = m_methods.begin();
-										i != m_methods.end(); 
-										++i)
+				i != m_methods.end(); 
+				++i)
 			{
 				i->second.crep = crep;
 			}
@@ -740,6 +742,7 @@ namespace luabind
 
 			ret->m_type = m_type;
 			ret->m_held_type = m_held_type;
+			ret->m_const_holder_type = m_const_holder_type;
 
 #ifndef LUABIND_DONT_COPY_STRINGS
 			std::swap(ret->m_strings, m_strings);

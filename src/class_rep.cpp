@@ -26,7 +26,7 @@ extern "C"
 }
 
 #include <luabind/luabind.hpp>
-//#include <luabind/detail/class_rep.hpp>
+#include <utility>
 
 using namespace luabind::detail;
 
@@ -84,6 +84,7 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO t
 luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	: m_type(LUABIND_INVALID_TYPE_INFO)
 	, m_held_type(LUABIND_INVALID_TYPE_INFO)
+	, m_const_holder_type(LUABIND_INVALID_TYPE_INFO)
 	, m_extract_underlying_fun(0)
 	, m_class_type(lua_class)
 	, m_destructor(0)
@@ -122,7 +123,7 @@ luabind::detail::class_rep::~class_rep()
 #endif
 }
 
-boost::tuples::tuple<void*,void*> 
+std::pair<void*,void*> 
 luabind::detail::class_rep::allocate(lua_State* L) const
 {
 	const int size = sizeof(object_rep) 
@@ -132,7 +133,7 @@ luabind::detail::class_rep::allocate(lua_State* L) const
 	char* ptr = mem + (sizeof(object_rep) & ~(m_userdata_alignment - 1))
 			+ m_userdata_alignment;;
 
-	return boost::tuple<void*,void*>(mem,ptr);
+	return std::pair<void*,void*>(mem,ptr);
 }
 
 int luabind::detail::class_rep::gettable(lua_State* L)
@@ -1377,3 +1378,44 @@ void luabind::detail::finalize(lua_State* L, class_rep* crep)
 	}
 }
 
+void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj, int offset) const
+{
+	// TODO: since this is a member function, we don't have to use the accesor functions for
+	// the types and the extractor
+	if (LUABIND_TYPE_INFO_EQUAL(target_type, holder_type()))
+	{
+		// if the type we are trying to convert to is the holder_type
+		// it means that his crep has a holder_type (since it would have
+		// been invalid otherwise, and T cannot be invalid). It also means
+		// that we need no conversion, since the holder_type is what the
+		// object points to.
+		return obj->ptr();
+	}
+
+	if (LUABIND_TYPE_INFO_EQUAL(target_type, const_holder_type()))
+	{
+		// if the type we are trying to convert to is the const_holder_type
+		// it means that his crep has a holder_type. It also means
+		// that we need no conversion, since the holder_type and
+		// the const_holder_type is supposed to have the same
+		// size and memory layout (holds for most smart pointers)
+		// so, we just do a reinterpret_cast from
+		// holder_type<A> to holder_type<const A>
+		return obj->ptr();
+	}
+
+	void* raw_pointer;
+
+	if (extract_ptr())
+	{
+		// this means that we have a holder type where the
+		// raw-pointer needs to be extracted
+		raw_pointer = extract_ptr()(obj->ptr());
+	}
+	else
+	{
+		raw_pointer = obj->ptr();
+	}
+
+	return static_cast<char*>(raw_pointer) + offset;
+}

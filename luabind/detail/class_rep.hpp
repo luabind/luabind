@@ -24,11 +24,10 @@
 #ifndef LUABIND_CLASS_REP_HPP_INCLUDED
 #define LUABIND_CLASS_REP_HPP_INCLUDED
 
-//#include <cstdlib>
-
 #include <boost/limits.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
+
+#include <utility>
 
 #include <luabind/config.hpp>
 #include <luabind/detail/object_rep.hpp>
@@ -110,7 +109,7 @@ namespace luabind { namespace detail
 
 		~class_rep();
 
-		boost::tuples::tuple<void*,void*> allocate(lua_State* L) const;
+		std::pair<void*,void*> allocate(lua_State* L) const;
 
 		// called from the metamethod for __index
 		// the object pointer is passed on the lua stack
@@ -149,18 +148,17 @@ namespace luabind { namespace detail
 
 		inline const std::vector<base_info>& bases() const throw() { return m_bases; }
 
-		inline LUABIND_TYPE_INFO type() const throw() { return m_type; }
 		inline void set_type(LUABIND_TYPE_INFO t) { m_type = t; }
+		inline LUABIND_TYPE_INFO type() const throw() { return m_type; }
 		inline LUABIND_TYPE_INFO holder_type() const throw() { return m_held_type; }
+		inline LUABIND_TYPE_INFO const_holder_type() const throw() { return m_const_holder_type; }
 
 		inline const char* name() const throw() { return m_name; }
 
 		// the lua reference to this class_rep
 		inline int self_ref() const throw() { return m_self_ref; }
-
 		// the lua reference to the metatable for this class' instances
 		inline int metatable_ref() const throw() { return m_instance_metatable; }
-
 		inline int table_ref() const { return m_table_ref; }
 
 		inline void(*destructor() const)(void*) { return m_destructor; }
@@ -184,6 +182,8 @@ namespace luabind { namespace detail
 		static int lua_class_settable(lua_State* L);
 
 		static int static_class_gettable(lua_State* L);
+
+		void* convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj, int offset) const;
 
 	private:
 
