@@ -136,12 +136,14 @@ namespace luabind
 		struct unspecified {};
 	}
 
+	using detail::type;
+
 	template<class T, class X1 = detail::unspecified, class X2 = detail::unspecified, class X3 = detail::unspecified>
 	struct class_;
 
-	inline LUABIND_TYPE_INFO get_const_holder(...)
+	inline type<detail::null_type> get_const_holder(...)
 	{
-		return LUABIND_INVALID_TYPE_INFO;
+		return type<detail::null_type>();
 	}
 
 	namespace detail
@@ -517,9 +519,10 @@ namespace luabind
 		void set_type(LUABIND_TYPE_INFO t) { m_type = t; }
 		void set_held_type(LUABIND_TYPE_INFO t) { m_held_type = t; }
 
-		void set_const_holder_type(LUABIND_TYPE_INFO t)
+		template<class T>
+		void set_const_holder_type(type<T>)
 		{
-			m_const_holder_type = t;	
+			m_const_holder_type = LUABIND_TYPEID(T);
 		}
 
 		void set_extractor(void*(*f)(void*)) { m_extractor = f; }

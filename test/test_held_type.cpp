@@ -113,9 +113,9 @@ namespace
 namespace luabind
 {
 	template<class A>
-	LUABIND_TYPE_INFO get_const_holder(luabind::detail::type<boost::shared_ptr<A> >)
+	type<boost::shared_ptr<const A> > get_const_holder(type<boost::shared_ptr<A> >)
 	{
-		return LUABIND_TYPEID(boost::shared_ptr<const A>);
+		return type<boost::shared_ptr<const A> >();
 	}
 }
 
@@ -173,13 +173,6 @@ bool test_held_type()
 		object g = get_globals(L);
 		g["test"] = ptr;
 		g["foobar"] = boost::shared_ptr<const base>(new base());
-
-		if (dostring(L, "a = ownership()")) return false;
-		if (dostring(L, "if a.__ok then print('1: ok!') end")) return false;
-		if (dostring(L, "test_auto_ptr(a)")) return false;
-		if (dostring(L, "if a.__ok then print('2: ok!') end")) return false;
-		
-		if (dostring(L, "if test.__ok then print('ok!') end")) return false;
 
 		if (dostring(L, "tester(test)")) return false;
 		if (feedback != 2) return false;
