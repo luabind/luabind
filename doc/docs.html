@@ -777,15 +777,12 @@ namespace luabind
 	T* get_pointer(boost::shared_ptr&lt;T&gt;&amp; p) { return p.get(); }
 
 	template&lt;class A&gt;
-	type&lt;boost::shared_ptr&lt;const A&gt; &gt; get_const_holder(type&lt;boost::shared_ptr&lt;A&gt; &gt;)
+	boost::shared_ptr&lt;const A&gt;* get_const_holder(boost::shared_ptr&lt;A&gt;*)
 	{
-		return type&lt;boost::shared_ptr&lt;const A&gt; &gt;();
+		return 0;
 	}
 }
 </pre>
-
-<p>The current implementation requires that the const-version and non-const version of the holder type
-has the exact same memory layout and can be <tt>reinterpret_cast</tt>:ed between each other.</p>
 
 <p>The conversion that works are (given that B is a base class of A):</p>
 
