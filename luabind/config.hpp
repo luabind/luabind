@@ -56,7 +56,7 @@ namespace std
 // the maximum number of arguments of functions that's
 // registered
 #ifndef LUABIND_MAX_ARITY
-	#define LUABIND_MAX_ARITY 4
+	#define LUABIND_MAX_ARITY 5
 #endif
 
 // the maximum number of classes one class
