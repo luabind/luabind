@@ -15,7 +15,8 @@ SOURCES = \
 	stack_content_by_name.cpp \
 	object.cpp \
 	class_info.cpp \
-	class_registry.cpp
+	class_registry.cpp \
+	link_compatibility.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
