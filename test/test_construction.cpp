@@ -109,7 +109,7 @@ void test_construction()
 			.def("doMore", &derived2::doMore)
 	];
 
-	DOSTRING_EXPECTED(L, "a = C()", "no constructor of 'C' matched the arguments ()\ncandidates are:\n\n");
+	DOSTRING_EXPECTED(L, "a = C()", "no constructor of 'C' matched the arguments ()\n candidates are:\n");
 
 	DOSTRING(L,
 		"a = A(4)\n"

@@ -68,9 +68,9 @@ lua_state::lua_state()
     : m_state(lua_open())
 {
     luaopen_base(m_state);
+    lua_baselibopen(m_state);
     m_top = lua_gettop(m_state);
     luabind::open(m_state);
-    lua_baselibopen(m_state);
 }
 
 lua_state::~lua_state()
@@ -122,6 +122,7 @@ void test_scope();
 void test_yield();
 void test_construction();
 void test_type_traits();
+void test_implicit_cast();
 
 // --------------------------------------------------------------------------
 
@@ -147,6 +148,7 @@ test_suite* init_unit_test_suite( int argc, char* argv[] )
     test->add(BOOST_TEST_CASE(&test_construction));
     test->add(BOOST_TEST_CASE(&test_yield));
     test->add(BOOST_TEST_CASE(&test_type_traits));
+    test->add(BOOST_TEST_CASE(&test_implicit_cast));
 
     return test;
 }
