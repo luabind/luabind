@@ -157,9 +157,14 @@ bool test_free_functions()
 		std::string str = functor_test(6)[detail::null_type()];
 		if (str != "foobar") return false;
 		if (object_cast<int>(get_globals(L)["glob"]) != 6) return false;
+
+		functor<std::string> functor_test2 = object_cast<functor<std::string> >(get_globals(L)["functor_test"]);
+
+		if (functor_test != functor_test2) return false;		
 	}
 
 	if (feedback != 99) return false;
 
 	return true;
 }
+

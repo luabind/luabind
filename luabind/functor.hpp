@@ -289,10 +289,30 @@ namespace luabind
 			return *this;
 		}
 
+		bool operator==(const functor<Ret>& rhs) const
+		{
+			if (ref_ == LUA_NOREF || rhs.ref_ == LUA_NOREF) return false;
+			pushvalue();
+			rhs.pushvalue();
+			bool result = lua_equal(L_, -1, -2) != 0;
+			lua_pop(L_, 2);
+			return result;
+		}
+
+		bool operator!=(const functor<Ret>& rhs) const
+		{
+			if (ref_ == LUA_NOREF || rhs.ref_ == LUA_NOREF) return true;
+			pushvalue();
+			rhs.pushvalue();
+			bool result = lua_equal(L_, -1, -2) == 0;
+			lua_pop(L_, 2);
+			return result;
+		}
+
 		inline bool is_valid() const { return ref_ != LUA_NOREF; }
 	
-		lua_State* lua_state() { return L_; }
-		void pushvalue() { lua_getref(L_, ref_); }	
+		lua_State* lua_state() const { return L_; }
+		void pushvalue() const { lua_getref(L_, ref_); }
 
 		#define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/functor.hpp>, 1))
 		#include BOOST_PP_ITERATE()

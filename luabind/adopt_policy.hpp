@@ -126,5 +126,5 @@ namespace luabind
 	adopt(boost::arg<N>) { return detail::policy_cons<detail::adopt_policy<N>, detail::null_type>(); }
 }
 
-#endif // LUABIND_ADOPT_POLICY_HPP_INCLUDED
+#endif // LUABIND_ADOPT_POLICY_HPP_INCLUDE
 
