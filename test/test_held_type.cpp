@@ -19,13 +19,14 @@ namespace
 
 	struct held_type_test
 	{
-		held_type_test() { feedback = 3; }
+		held_type_test(): val(4) { feedback = 3; }
 		~held_type_test() { feedback = 1; }
+		int val;
 	};
 
 	void tester(held_type_test* t)
 	{
-		feedback = 2;
+		if (t->val == 4) feedback = 2;
 	}
 
 } // anonymous namespace

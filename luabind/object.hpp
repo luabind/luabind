@@ -381,31 +381,6 @@ namespace luabind
 			inline object at(const T& key);
 #endif
 
-/*
-			template<class T>
-			inline object raw_at(const T& key)
-			{
-				lua_State* L = lua_state();
-				pushvalue();
-				detail::convert_to_lua(L, key);
-				lua_rawget(L, -2);
-				int ref = detail::ref(L);
-				lua_pop(L, 1);
-				return object(L, ref, true);
-			}
-
-			template<class T>
-			inline object at(const T& key)
-			{
-				lua_State* L = lua_state();
-				pushvalue();
-				detail::convert_to_lua(L, key);
-				lua_gettable(L, -2);
-				int ref = detail::ref(L);
-				lua_pop(L, 1);
-				return object(L, ref, true);
-			}
-*/
 			inline bool is_valid() const { return true; }
 			lua_State* lua_state() const;
 			void pushvalue() const;
@@ -511,29 +486,7 @@ namespace luabind
 			template<class T>
 			inline object raw_at(const T& key);
 #endif
-/*
-			template<class T>
-			inline object raw_at(const T& key)
-			{
-				pushvalue();
-				detail::convert_to_lua(m_state, key);
-				lua_rawget(m_state, -2);
-				int ref = detail::ref(m_state);
-				lua_pop(m_state, 1);
-				return object(m_state, ref, true);
-			}
 
-			template<class T>
-			inline object at(const T& key)
-			{
-				pushvalue();
-				detail::convert_to_lua(m_state, key);
-				lua_gettable(m_state, -2);
-				int ref = detail::ref(m_state);
-				lua_pop(m_state, 1);
-				return object(m_state, ref, true);
-			}
-*/
 			template<class T>
 			inline detail::proxy_object operator[](const T& key) const
 			{
