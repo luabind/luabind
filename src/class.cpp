@@ -67,22 +67,12 @@ namespace luabind { namespace detail {
         LUABIND_TYPE_INFO m_holder_type;
         LUABIND_TYPE_INFO m_const_holder_type;
 
-#ifndef LUABIND_DONT_COPY_STRINGS
-        // the maps that contains char pointers points into
-        // this vector of strings. 
-        mutable std::vector<char*> m_strings;
-#endif
         scope m_scope;
     };
 
     class_registration::class_registration(char const* name)
     {
-#ifndef LUABIND_DONT_COPY_STRINGS
-        m_strings.push_back(detail::dup_string(name));
-        m_name = m_strings.back();
-#else
         m_name = name;
-#endif
     }
 
     void class_registration::register_(lua_State* L) const
@@ -136,11 +126,6 @@ namespace luabind { namespace detail {
 
         // constructors
         m_constructor.swap(crep->m_constructor);
-
-#ifndef LUABIND_DONT_COPY_STRINGS
-        assert(crep->m_strings.empty() && "Internal error");
-        crep->m_strings.swap(m_strings);
-#endif
 
         crep->m_getters.swap(m_getters);
         crep->m_setters.swap(m_setters);
@@ -280,12 +265,7 @@ namespace luabind { namespace detail {
         c.func = g;
         c.pointer_offset = 0;
 
-#ifndef LUABIND_DONT_COPY_STRINGS
-        char* key = detail::dup_string(name);
-        m_registration->m_strings.push_back(key);
-#else
         const char* key = name;
-#endif
         m_registration->m_getters[key] = c;
     }
 
@@ -310,12 +290,8 @@ namespace luabind { namespace detail {
         c.sig = get_sig_ptr;
 #endif
 
-#ifndef LUABIND_DONT_COPY_STRINGS
-        char* key = detail::dup_string(name);
-        m_registration->m_strings.push_back(key);
-#else
+
         const char* key = name;
-#endif
         m_registration->m_setters[key] = c;
     }
 
@@ -331,15 +307,8 @@ namespace luabind { namespace detail {
 
     void class_base::add_method(const char* name, const detail::overload_rep& o)
     {
-#ifdef LUABIND_DONT_COPY_STRINGS
         detail::method_rep& method = m_registration->m_methods[name];
         method.name = name;
-#else
-        m_registration->m_strings.push_back(detail::dup_string(name));
-        detail::method_rep& method = m_registration->m_methods[
-            m_registration->m_strings.back()];
-        method.name = m_registration->m_strings.back();
-#endif
         method.add_overload(o);
         method.crep = 0;
     }

@@ -84,12 +84,6 @@ namespace std
 // exceptions will still be catched when there's
 // no error checking.
 
-// LUABIND_DONT_COPY_STRINGS
-// define this if you only pass static constant strings to
-// the def() methods. It will make luabind expect the
-// strings to exist as long as the program is running.
-// Luabind will not copy the strings in this case.
-
 // LUABIND_NOT_THREADSAFE
 // this define will make luabind non-thread safe. That is,
 // it will rely on a static variable. You can still have

@@ -28,12 +28,6 @@
 namespace luabind { namespace detail
 {
 
-#ifdef LUABIND_DONT_COPY_STRINGS
-	LUABIND_API void dont_copy_strings_defined_conflict();
-#else
-	LUABIND_API void dont_copy_strings_not_defined_conflict();
-#endif
-
 #ifdef LUABIND_NOT_THREADSAFE
 	LUABIND_API void not_threadsafe_defined_conflict();
 #else
@@ -48,12 +42,6 @@ namespace luabind { namespace detail
 
 	inline void check_link_compatibility()
 	{
-	#ifdef LUABIND_DONT_COPY_STRINGS
-		dont_copy_strings_defined_conflict();
-	#else
-		dont_copy_strings_not_defined_conflict();
-	#endif
-
 	#ifdef LUABIND_NOT_THREADSAFE
 		not_threadsafe_defined_conflict();
 	#else

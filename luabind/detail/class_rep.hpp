@@ -342,12 +342,6 @@ namespace luabind { namespace detail
 		// for every overload
 		std::map<const char*, method_rep, ltstr> m_methods;
 
-#ifndef LUABIND_DONT_COPY_STRINGS
-		// this is where the strings that the maps contains
-		// pointer to are kept. To make sure they are destructed.
-		std::vector<char*> m_strings;
-#endif
-
 		// datamembers, some members may be readonly, and
 		// only have a getter function
 		std::map<const char*, callback, ltstr> m_getters;

@@ -114,12 +114,7 @@ luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	, m_const_holder_destructor(0)
 	, m_operator_cache(0)
 {
-#ifndef LUABIND_DONT_COPY_STRINGS
-	m_strings.push_back(detail::dup_string(name));
-	m_name = m_strings.back();
-#else
 	m_name = name;
-#endif
 	lua_newtable(L);
 	m_table_ref = detail::ref(L);
 
@@ -136,13 +131,6 @@ luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 
 luabind::detail::class_rep::~class_rep()
 {
-#ifndef LUABIND_DONT_COPY_STRINGS
-	for (std::vector<char*>::iterator i = m_strings.begin(); 
-			i != m_strings.end(); ++i)
-	{
-			delete[] *i;
-	}
-#endif
 }
 
 // leaves object on lua stack
@@ -794,12 +782,8 @@ void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep
 	{
 		// If we would assume that our base class will not be garbage collected until 
 		// this class is collected, we wouldn't had to copy these strings.
-#ifndef LUABIND_DONT_COPY_STRINGS
-		m_strings.push_back(dup_string(i->first));
-		method_rep& m = m_methods[m_strings.back()];
-#else
 		method_rep& m = m_methods[i->first];
-#endif
+
 		m.name = i->first;
 		m.crep = this;
 
@@ -816,12 +800,7 @@ void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep
 	for (std::map<const char*, callback, ltstr>::const_iterator i = bcrep->m_getters.begin(); 
 			i != bcrep->m_getters.end(); ++i)
 	{
-#ifndef LUABIND_DONT_COPY_STRINGS
-		m_strings.push_back(dup_string(i->first));
-		callback& m = m_getters[m_strings.back()];
-#else
 		callback& m = m_getters[i->first];
-#endif
 		m.pointer_offset = i->second.pointer_offset + binfo.pointer_offset;
 		m.func = i->second.func;
 	}
@@ -830,15 +809,7 @@ void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep
 	for (std::map<const char*, callback, ltstr>::const_iterator i = bcrep->m_setters.begin(); 
 			i != bcrep->m_setters.end(); ++i)
 	{
-#ifndef LUABIND_DONT_COPY_STRINGS
-		// TODO: optimize this by not copying the string if it already exists in m_setters.
-		// This goes for m_getters, m_static_constants and m_functions too. Both here
-		// in add_base() and in the add_function(), add_getter() ... functions.
-		m_strings.push_back(dup_string(i->first));
-		callback& m = m_setters[m_strings.back()];
-#else
 		callback& m = m_setters[i->first];
-#endif
 		m.pointer_offset = i->second.pointer_offset + binfo.pointer_offset;
 		m.func = i->second.func;
 	}
@@ -847,12 +818,7 @@ void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep
 	for (std::map<const char*, int, ltstr>::const_iterator i = bcrep->m_static_constants.begin(); 
 			i != bcrep->m_static_constants.end(); ++i)
 	{
-#ifndef LUABIND_DONT_COPY_STRINGS
-		m_strings.push_back(dup_string(i->first));
-		int& v = m_static_constants[m_strings.back()];
-#else
 		int& v = m_static_constants[i->first];
-#endif
 		v = i->second;
 	}
 

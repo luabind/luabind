@@ -91,11 +91,7 @@ namespace luabind
 
 			struct function_rep
 			{
-#ifdef LUABIND_DONT_COPY_STRINGS
 				function_rep(const char* name): m_name(name) {}
-#else
-				function_rep(const std::string& name): m_name(name) {}
-#endif
 				void add_overload(const free_functions::overload_rep& o)
 				{
 					std::vector<free_functions::overload_rep>::iterator i = std::find(m_overloads.begin(), m_overloads.end(), o);
@@ -113,19 +109,10 @@ namespace luabind
 
 				const std::vector<overload_rep>& overloads() const throw() { return m_overloads; }
 
-#ifdef LUABIND_DONT_COPY_STRINGS
 				const char* name() const { return m_name; }
-#else
-				const char* name() const { return m_name.c_str(); }
-#endif
 
 			private:
-
-#ifdef LUABIND_DONT_COPY_STRINGS
 				const char* m_name;
-#else
-				std::string m_name;
-#endif
 
 				// this have to be write protected, since each time an overload is
 				// added it has to be checked for existence. add_overload() should

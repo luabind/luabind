@@ -25,12 +25,6 @@
 namespace luabind { namespace detail
 {
 
-#ifdef LUABIND_DONT_COPY_STRINGS
-	void dont_copy_strings_defined_conflict() {}
-#else
-	void dont_copy_strings_not_defined_conflict() {}
-#endif
-
 #ifdef LUABIND_NOT_THREADSAFE
 	void not_threadsafe_defined_conflict() {}
 #else
