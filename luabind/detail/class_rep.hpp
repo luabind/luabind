@@ -210,6 +210,38 @@ namespace luabind { namespace detail
 		const std::map<const char*, callback, ltstr>& properties() const;
 		typedef std::map<const char*, callback, ltstr> property_map;
 
+		int holder_alignment() const
+		{
+			return m_holder_alignment;
+		}
+
+		int holder_size() const
+		{
+			return m_holder_size;
+		}
+
+
+		void set_holder_alignment(int n)
+		{
+			m_holder_alignment = n;
+		}
+
+		void set_holder_size(int n)
+		{
+			m_holder_size = n;
+		}
+	
+		void derived_from(const class_rep* base)
+		{
+			m_holder_alignment = base->m_holder_alignment;
+			m_holder_size = base->m_holder_size;
+			m_holder_type = base->m_holder_type;
+			m_const_holder_type = base->m_const_holder_type;
+			m_extractor = base->m_extractor;
+			m_const_extractor = base->m_const_extractor;
+			m_const_converter = base->m_const_converter;
+		}
+		
 	private:
 
 		void cache_operators(lua_State*);

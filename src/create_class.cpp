@@ -51,6 +51,10 @@ int luabind::detail::create_class::stage2(lua_State* L)
 	binfo.base = base;
 	crep->add_base_class(binfo);
 
+	// set holder size and alignment so that we can class_rep::allocate
+	// can return the correctly sized buffers
+	crep->derived_from(base);
+	
 	// this has changed, c++ classes now stores their
 	// methods in the table as well
 //	if (base->get_class_type() == class_rep::lua_class)

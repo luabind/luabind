@@ -515,6 +515,8 @@ namespace luabind
 		template<class T>
 		struct primitive_converter;
 
+		struct tuple_object_ref;
+
 	} // detail
 
 	class LUABIND_API object
@@ -1008,6 +1010,8 @@ namespace luabind
 			set();
 		}
 
+		// const overload should return a tuple_object..?
+		inline detail::tuple_object_ref operator,(const object& rhs) const;
 
 		// *****************************
 		// OPERATOR()
@@ -1086,6 +1090,84 @@ private:
 
 	namespace detail
 	{
+		// tuple object ----------------------------------------------
+
+		struct tuple_object;
+
+		struct tuple_object_ref
+		{
+			tuple_object_ref(object* a, object* b)
+				: n(2)
+			{ refs[0] = a; refs[1] = b; }
+
+			tuple_object_ref& operator,(const object& x)
+			{ refs[n++] = const_cast<object*>(&x); return *this; }
+
+			struct assign_into
+			{
+				assign_into() {}
+
+				template<class T>
+				assign_into(tuple_object_ref& to, const T& val)
+					: target(&to)
+					, n(0)
+				{ 
+					if (n >= target->n) return; 
+					*target->refs[n++] = val; 
+				}
+
+				template<class T>
+				assign_into& operator,(const T& val)
+				{ 
+					if (n >= target->n) return *this;
+					*target->refs[n++] = val; 
+					return *this;
+				}
+
+				tuple_object_ref* target;
+				std::size_t n;
+			};
+
+			template<class T>
+			assign_into operator=(const T& val)
+			{ return assign_into(*this, val); }
+
+			tuple_object_ref(const tuple_object_ref&);
+			assign_into operator=(const tuple_object_ref& x)
+			{
+				for (std::size_t i = 0; i < n && i < x.n; ++i)
+					*refs[i] = *x.refs[i];
+				return assign_into();
+			}
+
+			inline assign_into operator=(const tuple_object&);
+
+			std::size_t n;
+			object* refs[10];
+		};
+
+		struct tuple_object
+		{
+			tuple_object(const object& x)
+				: n(0)
+			{ objs[n++] = x; }
+
+			tuple_object(const tuple_object_ref& x)
+			{
+				for (std::size_t i = 0; i < x.n; ++i)
+					objs[i] = *x.refs[i];
+			}
+
+			std::size_t n;
+			object objs[10];
+		};
+
+		inline tuple_object_ref::assign_into tuple_object_ref::operator=(const tuple_object& x)
+		{
+			for (std::size_t i = 0; i < n && i < x.n; ++i)
+				*refs[i] = x.objs[i];
+			return assign_into();
+		}
 
 		// *************************************
 		// PROXY CALLER
@@ -1258,6 +1340,14 @@ private:
 		}
 
 	}
+
+	inline detail::tuple_object_ref object::operator,(const object& rhs) const
+	{
+		return detail::tuple_object_ref(
+			const_cast<object*>(this), const_cast<object*>(&rhs));
+	}
+
+	typedef detail::tuple_object function_;
 
 #define LUABIND_DECLARE_OPERATOR(MACRO)\
 	MACRO(object, object) \

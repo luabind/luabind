@@ -143,6 +143,7 @@ luabind::detail::class_rep::~class_rep()
 #endif
 }
 
+// leaves object on lua stack
 std::pair<void*,void*> 
 luabind::detail::class_rep::allocate(lua_State* L) const
 {
@@ -1054,18 +1055,38 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 		{
 
 #endif
+			void* storage_ptr = obj->ptr();		
 
 			if (!rep->overloads[match_index].has_wrapped_construct())
 			{
 				// if the type doesn't have a wrapped type, use the ordinary constructor
-				obj->set_object(rep->overloads[match_index].construct(L));
+				void* instance = rep->overloads[match_index].construct(L);
+
+				if (crep->has_holder())
+				{
+					crep->m_construct_holder(storage_ptr, instance);
+				}
+				else
+				{
+					obj->set_object(instance);
+				}
 			}
 			else
 			{
 				// get reference to lua object
 				lua_pushvalue(L, lua_upvalueindex(2));
 				int ref = detail::ref(L);
-				obj->set_object(rep->overloads[match_index].construct_wrapped(L, ref));
+
+				void* instance = rep->overloads[match_index].construct_wrapped(L, ref);
+				
+				if (crep->has_holder())
+				{
+					crep->m_construct_holder(storage_ptr, instance);			
+				}
+				else
+				{
+					obj->set_object(instance);
+				}
 			}
 			// TODO: is the wrapped type destructed correctly?
 			// it should, since the destructor is either the wrapped type's
@@ -1141,8 +1162,12 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 	// we will use this flag later to check that it actually was called from __init()
 	int flags = object_rep::lua_class | object_rep::owner | (has_bases ? object_rep::call_super : 0);
 
-	void* obj_ptr = lua_newuserdata(L, sizeof(object_rep));
-	new(obj_ptr) object_rep(crep, flags, ref);
+//	void* obj_ptr = lua_newuserdata(L, sizeof(object_rep));
+	void* obj_ptr;
+	void* held_storage;
+
+	boost::tie(obj_ptr, held_storage) = crep->allocate(L);
+	(new(obj_ptr) object_rep(crep, flags, ref))->set_object(held_storage);
 
 	detail::getref(L, crep->metatable_ref());
 	lua_setmetatable(L, -2);

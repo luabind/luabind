@@ -146,7 +146,7 @@ namespace luabind { namespace detail
 
 	private:
 
-		void* m_object; // the c++ object pointer / if lua class, this is a pointer the the instance of the
+		void* m_object; // pointer to the c++ object or holder / if lua class, this is a pointer the the instance of the
 									// c++ base or 0.
 		class_rep* m_classrep; // the class information about this object's type
 		int m_flags;

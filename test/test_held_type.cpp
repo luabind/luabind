@@ -184,6 +184,9 @@ namespace
 	{
 		return const_base_holder(0);
 	}
+
+	struct derived_in_lua {};
+	void take_shared(boost::shared_ptr<derived_in_lua> sp) {}
 	
 } // anonymous namespace
 
@@ -240,7 +243,12 @@ bool test_held_type()
 				.def("test", &tester10::test),
 
 			class_<base_2, base_holder>("base_")
-				.def(constructor<>())
+				.def(constructor<>()),
+
+			class_<derived_in_lua, boost::shared_ptr<derived_in_lua> >("derived_in_lua")
+				.def(constructor<>()),
+
+			def("take_shared", &take_shared)
 		];
 
 		lua_gettop(L);
@@ -288,12 +296,19 @@ bool test_held_type()
 		if (feedback != 101) return false;
 		if (dostring(L, "tester8(tester16())")) return false;
 		if (feedback != 100) return false;
+
+		if (dostring(L, "class 'derived' (derived_in_lua)\n"
+			"function derived:__init() super() end\n"
+			"b = derived_in_lua()\n"
+			"take_shared( b )\n"
+			"d = derived()\n"
+			"take_shared( d ) -- fails!\n")) return false;
 		
 		if (top != lua_gettop(L)) return false;
 	}
 
 	ptr.reset();
-	
+
 	if (feedback != 1) return false;
 
 	if (base_holder::counter != 0) return false;
