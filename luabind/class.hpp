@@ -125,6 +125,7 @@
 #include <luabind/detail/get_signature.hpp>
 #include <luabind/detail/implicit_cast.hpp>
 #include <luabind/detail/operator_id.hpp>
+#include <luabind/detail/pointee_typeid.hpp>
 
 //#include <boost/langbinding/inheritance.hpp>
 
@@ -625,7 +626,7 @@ namespace luabind
 
 
 
-
+/*
 	struct class_base: detail::scoped_object
 	{
 	protected:
@@ -1032,20 +1033,77 @@ namespace luabind
 			return ret;
 		}
 	};
+*/
+	namespace detail {
 
+		struct class_registration;
+		
+		struct class_base : detail::scope
+		{
+		public:
+			class_base(char const* name);		
 
+			struct base_desc
+			{
+				LUABIND_TYPE_INFO type;
+				int ptr_offset;
+			};
 
+			void init(
+				LUABIND_TYPE_INFO type
+				, LUABIND_TYPE_INFO holder_type
+				, LUABIND_TYPE_INFO const_holder_type
+				, void*(*extractor)(void*)
+				, const void*(*const_extractor)(void*)
+				, void(*const_converter)(void*,void*)
+				, void(*holder_constructor)(void*,void*)
+				, void(*const_holder_constructor)(void*,void*)
+				, void(*destructor)(void*)
+				, void(*const_holder_destructor)(void*)
+				, int holder_size
+				, int holder_alignment);
 
+			void add_getter(
+				const char* name
+				, const boost::function2<int, lua_State*, int>& g);
 
+			void add_setter(
+				const char* name
+				, const boost::function2<int, lua_State*, int>& s);
 
+			void add_base(const base_desc& b);
+			void add_constructor(const detail::construct_rep::overload_t& o);	
+			void add_method(const char* name, const detail::overload_rep& o);
 
+#ifndef LUABIND_NO_ERROR_CHECKING
+			void add_operator(
+				int op_id
+				,  int(*func)(lua_State*)
+				, int(*matcher)(lua_State*)
+				, void(*sig)(lua_State*
+				, std::string&)
+				, int arity);
+#else
+			void add_operator(
+				int op_id
+				,  int(*func)(lua_State*)
+				, int(*matcher)(lua_State*)
+				, int arity);
+#endif
 
+			const char* name() const;
 
+			void add_static_constant(const char* name, int val);
+			
+		private:
+			class_registration* m_registration;
+		};
 
+	} // namespace detail
 
 	// registers a class in the lua environment
 	template<class T, class X1, class X2, class X3>
-	struct class_: class_base 
+	struct class_: detail::class_base 
 	{
 		typedef class_<T, X1, X2, X3> self_t;
 
@@ -1139,7 +1197,7 @@ namespace luabind
 		struct internal_def_s
 		{
 			template<class F>
-			static void apply(const char* name, F f, class_base* c)
+			static void apply(const char* name, F f, detail::class_base* c)
 			{
 //				std::cout << "HeldType2: " << typeid(HeldType).name() << "\n";
 
@@ -1160,7 +1218,7 @@ namespace luabind
 			}
 
 			template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
-			static void apply(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)>, class_base* c)
+			static void apply(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)>, detail::class_base* c)
 			{
 //				std::cout << "HeldType2: " << typeid(HeldType).name() << "\n";
 
@@ -1207,14 +1265,14 @@ namespace luabind
 
 		~class_()
 		{
-			if (m_L != 0)
+	/*		if (m_L != 0)
 			{
 				scope::init(m_L);
 				lua_pushvalue(m_L, LUA_GLOBALSINDEX);
 				scope_stack::push(m_L);
 				commit(m_L);
 				scope_stack::pop(m_L);
-			}
+			}*/
 		}
 
 		template<class F>
@@ -1391,13 +1449,6 @@ namespace luabind
 			return detail::enum_maker<self_t>(*this);
 		}
 
-		class_& operator[](const detail::scoped_object& x)
-		{
-			detail::scoped_object* ptr = &const_cast<detail::scoped_object&>(x);
-			m_children.push_back(ptr->clone());
-			return *this;
-		}
-
 	private:
 
 		void init()
@@ -1417,23 +1468,20 @@ namespace luabind
 					,	bases<bases_t>
 				>::type Base;
 	
-			HeldType* crap = 0;
-
-//			boost::langbinding::register_dynamic_id<T>();
-
 			class_base::init(LUABIND_TYPEID(T)
 				, detail::internal_holder_type<HeldType>::apply()
+				, detail::pointee_typeid(
+					get_const_holder(static_cast<HeldType*>(0)))
 				, detail::internal_holder_extractor<HeldType>::apply(detail::type<T>())
 				, detail::internal_const_holder_extractor<HeldType>::apply(detail::type<T>())
-				, detail::const_converter<HeldType>::apply(luabind::get_const_holder(crap))
+				, detail::const_converter<HeldType>::apply(
+					luabind::get_const_holder((HeldType*)0))
 				, detail::holder_constructor<HeldType>::apply(detail::type<T>())
 				, detail::const_holder_constructor<HeldType>::apply(detail::type<T>())
 				, detail::internal_holder_destructor<HeldType>::apply(detail::type<T>())
 				, detail::internal_const_holder_destructor<HeldType>::apply(detail::type<T>())
 				, detail::internal_holder_size<HeldType>::apply()
 				, detail::get_holder_alignment<HeldType>::apply());
-
-			set_const_holder_type(luabind::get_const_holder(static_cast<HeldType*>(0)));
 
 			generate_baseclass_list(detail::type<Base>());
 		}

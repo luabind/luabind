@@ -47,9 +47,6 @@ namespace luabind
 	template<BOOST_PP_ENUM_PARAMS_WITH_A_DEFAULT(LUABIND_MAX_BASES, class A, detail::null_type)>
 	struct bases {};
 	typedef bases<detail::null_type> no_bases;
-
-	struct class_base;
-
 }
 
 namespace luabind { namespace detail
@@ -59,6 +56,8 @@ namespace luabind { namespace detail
 	LUABIND_API std::string stack_content_by_name(lua_State* L, int start_index);
 	int construct_lua_class_callback(lua_State* L);
 
+	struct class_registration;
+	
 	// this is class-specific information, poor man's vtable
 	// this is allocated statically (removed by the compiler)
 	// a pointer to this structure is stored in the lua tables'
@@ -70,7 +69,7 @@ namespace luabind { namespace detail
 
 	class LUABIND_API class_rep
 	{
-	friend struct luabind::class_base;
+	friend struct class_registration;
 	friend int super_callback(lua_State*);
 //TODO: avoid the lua-prefix
 	friend int lua_class_gettable(lua_State*);
@@ -243,6 +242,16 @@ namespace luabind { namespace detail
 			m_construct_holder = base->m_construct_holder;
 			m_construct_const_holder = base->m_construct_const_holder;
 		}
+
+		struct operator_callback: public overload_rep_base
+		{
+			inline void set_fun(int (*f)(lua_State*)) { func = f; }
+			inline int call(lua_State* L) { return func(L); }
+			inline void set_arity(int arity) { m_arity = arity; }
+
+		private:
+			int(*func)(lua_State*);
+		};
 		
 	private:
 
@@ -334,17 +343,6 @@ namespace luabind { namespace detail
 		// only have a getter function
 		std::map<const char*, callback, ltstr> m_getters;
 		std::map<const char*, callback, ltstr> m_setters;
-
-		struct operator_callback: public overload_rep_base
-		{
-			inline void set_fun(int (*f)(lua_State*)) { func = f; }
-			inline int call(lua_State* L) { return func(L); }
-			inline void set_arity(int arity) { m_arity = arity; }
-
-		private:
-
-			int(*func)(lua_State*);
-		};
 
 		std::vector<operator_callback> m_operators[number_of_operators]; // the operators in lua
 

@@ -221,7 +221,7 @@ namespace luabind
 			LUABIND_API int function_dispatcher(lua_State* L);
 		}
 	}
-	
+
 	template<class F, class Policies>
 	void function(lua_State* L, const char* name, F f, const Policies& p)
 	{
@@ -237,7 +237,7 @@ namespace luabind
 	namespace detail
 	{
 		template<class F, class Policies>
-		struct function_commiter : detail::scoped_object
+		struct function_commiter : detail::registration
 		{
 			function_commiter(const char* n, F f, const Policies& p)
 				: m_name(n)
@@ -245,12 +245,7 @@ namespace luabind
 				, policies(p)
 			{}
 
-			virtual detail::scoped_object* clone()
-			{
-				return new function_commiter(*this);
-			}
-
-			virtual void commit(lua_State* L)
+			virtual void register_(lua_State* L) const
 			{
 				detail::free_functions::overload_rep o(fun, static_cast<Policies*>(0));
 
@@ -261,7 +256,6 @@ namespace luabind
 				o.set_sig_fun(&detail::get_free_function_signature<F>::apply);
 #endif
 
-				detail::getref(L, scope_stack::top(L));
 				lua_pushstring(L, m_name.c_str());
 				lua_gettable(L, -2);
 
@@ -305,8 +299,6 @@ namespace luabind
 				}
 
 				rep->add_overload(o);
-
-				lua_pop(L, 1); // pop scope
 			}
 
 			std::string m_name;
@@ -316,17 +308,18 @@ namespace luabind
 	}
 
 	template<class F, class Policies>
-	detail::function_commiter<F,Policies>
-	def(const char* name, F f, const Policies& policies)
+	detail::scope def(const char* name, F f, const Policies& policies)
 	{
-		return detail::function_commiter<F,Policies>(name, f, policies);
+		return detail::scope(std::auto_ptr<detail::registration>(
+			new detail::function_commiter<F,Policies>(name, f, policies)));
 	}
 
 	template<class F>
-	detail::function_commiter<F, detail::null_type>
-	def(const char* name, F f)
+	detail::scope def(const char* name, F f)
 	{
-		return detail::function_commiter<F,detail::null_type>(name, f, detail::null_type());
+		return detail::scope(std::auto_ptr<detail::registration>(
+			new detail::function_commiter<F,detail::null_type>(
+				name, f, detail::null_type())));
 	}
 
 } // namespace luabind

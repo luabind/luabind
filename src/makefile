@@ -1,6 +1,8 @@
 include ../config
 
 SOURCES = \
+	scope.cpp \
+	class.cpp \
 	class_rep.cpp \
 	function.cpp \
 	find_best_match.cpp \

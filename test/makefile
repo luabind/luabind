@@ -1,10 +1,10 @@
 include ../config
 
 SOURCES = \
+	test_typetraits.cpp \
 	main.cpp \
 	test_iterator.cpp \
 	test_lua_classes.cpp \
-	test_typetraits.cpp \
 	test_construction.cpp \
 	test_operators.cpp \
 	test_attributes.cpp \

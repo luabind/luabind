@@ -74,9 +74,9 @@ module(L)
 		[
 			class_<test_class>("test_class")
 				.def(constructor<>())
-				[
+/*				[
 					def("inner_fun", &f)
-				]
+				]*/
 				.enum_("vals")
 				[
 					value("val1", 1),
