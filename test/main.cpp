@@ -79,6 +79,11 @@ lua_state::~lua_state()
     lua_close(m_state);
 }
 
+void lua_state::check() const
+{
+    BOOST_CHECK(lua_gettop(m_state) == m_top);
+}
+
 lua_state::operator lua_State*() const
 {
     return m_state;
@@ -127,6 +132,7 @@ void test_const();
 void test_object();
 void test_policies();
 void test_free_functions();
+void test_iterator();
 
 // --------------------------------------------------------------------------
 
@@ -157,6 +163,7 @@ test_suite* init_unit_test_suite( int argc, char* argv[] )
     test->add(BOOST_TEST_CASE(&test_object));
     test->add(BOOST_TEST_CASE(&test_policies));
     test->add(BOOST_TEST_CASE(&test_free_functions));
+    test->add(BOOST_TEST_CASE(&test_iterator));
 
     return test;
 }

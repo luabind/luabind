@@ -9,6 +9,7 @@ SOURCES = \
 	test_free_functions.cpp \
 	test_held_type.cpp \
 	test_implicit_cast.cpp \
+	test_iterator.cpp \
 	test_lua_classes.cpp \
 	test_null_pointer.cpp \
 	test_object.cpp \

@@ -47,6 +47,21 @@ namespace luabind
 	namespace detail
 	{
 
+		struct reset_stack
+		{
+			reset_stack(lua_State* L_)
+				: L(L_)
+				, stack_size(lua_gettop(L_))
+			{}
+
+			~reset_stack()
+			{
+				assert(lua_gettop(L) >= stack_size);
+				lua_pop(L, lua_gettop(L) - stack_size);
+			}
+			lua_State* L;
+			int stack_size;
+		};
 
 
 		// if the proxy_function_caller returns non-void
@@ -86,7 +101,10 @@ namespace luabind
 					if (m_called) return;
 
 					m_called = true;
-					lua_State* L = m_state;;
+					lua_State* L = m_state;
+
+					// makes sure that the stack is reset
+					reset_stack rs(L);
 
 					// get the function
 					if (m_fun_name)
@@ -118,7 +136,9 @@ namespace luabind
 
 					m_called = true;
 					lua_State* L = m_state;
-					detail::stack_pop p(L, 1); // pop the return value
+
+					// makes sure that the stack is reset
+					reset_stack rs(L);
 
 					// get the function
 					if (m_fun_name)
@@ -169,8 +189,10 @@ namespace luabind
 					typename converter_policy::template generate_converter<Ret, lua_to_cpp>::type converter;
 
 					m_called = true;
-					lua_State* L = m_state;;
-					detail::stack_pop popper(L, 1); // pop the return value
+					lua_State* L = m_state;
+
+					// makes sure that the stack is reset
+					reset_stack rs(L);
 
 					// get the function
 					if (m_fun_name)
@@ -263,6 +285,9 @@ namespace luabind
 					m_called = true;
 					lua_State* L = m_state;;
 
+					// makes sure that the stack is reset
+					reset_stack rs(L);
+
 					// get the function
 					if (m_fun_name)
 					{
@@ -291,6 +316,9 @@ namespace luabind
 				{
 					m_called = true;
 					lua_State* L = m_state;;
+
+					// makes sure that the stack is reset
+					reset_stack rs(L);
 
 					// get the function
 					if (m_fun_name)

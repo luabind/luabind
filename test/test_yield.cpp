@@ -70,12 +70,13 @@ void test_yield()
 
 	DOSTRING(L,
 		"function h()\n"
-		"	yield(4)"
+		"	coroutine.yield(4)"
 		"end");
 
 	{
 		lua_State* thread = lua_newthread(L);
 		BOOST_CHECK(resume_function<int>(thread, "h") == 4);
+		lua_pop(L, 1); // pop thread
 	}
 
 	DOSTRING(L,
@@ -91,13 +92,11 @@ void test_yield()
 		lua_State* thread = lua_newthread(L);
 		resume_function<void>(thread, "g", "foobar");
 
-		BOOST_CHECK(lua_gettop(L) == 0);
-
 		for (int i = 0; i < 10; ++i)
 		{
 			resume<void>(thread);
-			BOOST_CHECK(lua_gettop(L) == 0);
 		}
+		lua_pop(L, 1); // pop thread
 	}
 
 }

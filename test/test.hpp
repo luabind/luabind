@@ -33,6 +33,7 @@ struct lua_state
     ~lua_state();
 
     operator lua_State*() const;
+	void check() const;
 
 private:
     lua_State* m_state;

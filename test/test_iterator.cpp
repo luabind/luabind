@@ -1,19 +1,35 @@
-#include "test.h"
+// Copyright (c) 2003 Daniel Wallin and Arvid Norberg
 
-extern "C"
-{
-	#include "lauxlib.h"
-	#include "lualib.h"
-}
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+// OR OTHER DEALINGS IN THE SOFTWARE.
+
+#include "test.hpp"
+
+#include <luabind/luabind.hpp>
 
 #include <vector>
 #include <luabind/iterator_policy.hpp>
 
 namespace
 {
-	LUABIND_ANONYMOUS_FIX int feedback = 0;
-
-	struct IteratorTest
+	struct IteratorTest: counted_type<IteratorTest>
 	{
 		IteratorTest()
 		{
@@ -27,15 +43,13 @@ namespace
 	
 } // anonymous namespace
 
-bool test_iterator()
+void test_iterator()
 {
+    COUNTER_GUARD(test_class);
+
+	lua_state L;
+
 	using namespace luabind;
-
-	lua_State* L = lua_open();
-	lua_baselibopen(L);
-	lua_closer c(L);
-
-	open(L);
 
 	module(L)
 	[
@@ -44,12 +58,11 @@ bool test_iterator()
 			.def_readonly("names", &IteratorTest::names, return_stl_iterator)
 	];
 
-	dostring(L, "a = A()");
-	dostring(L, "b = ''");
-	dostring(L, "for name in a.names do b = b .. name end");
-
-	if (object_cast<std::string>(get_globals(L)["b"]) != "first onefoobarlast one") return false;
-
-	return true;
+	DOSTRING(L,
+		"a = A()\n"
+		"b = ''\n"
+		"for name in a.names do\n"
+		"	b = b .. ' ' .. name\n"
+		"end\n"
+		"assert(b == ' first one foobar last one')");
 }
-
