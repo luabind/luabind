@@ -5,7 +5,9 @@ SOURCES = \
 	function.cpp \
 	find_best_match.cpp \
 	implicit_cast.cpp \
-	open.cpp
+	open.cpp \
+	create_class.cpp \
+	stack_content_by_name.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 

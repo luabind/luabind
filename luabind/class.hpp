@@ -288,6 +288,8 @@ namespace luabind
 
 		// prints the types of the values on the stack, in the
 		// range [start_index, lua_gettop()]
+
+#ifndef LUABIND_NO_HEADERS_ONLY
 		inline std::string stack_content_by_name(lua_State* L, int start_index)
 		{
 			std::string ret;
@@ -316,9 +318,13 @@ namespace luabind
 			}
 			return ret;
 		}
-
+#else
+		std::string stack_content_by_name(lua_State* L, int start_index);
+#endif
+	
 		struct create_class
 		{
+#ifndef LUABIND_NO_HEADERS_ONLY
 			static int stage2(lua_State* L)
 			{
 
@@ -407,6 +413,10 @@ namespace luabind
 
 				return 1;
 			}
+#else
+			static int stage1(lua_State* L);
+			static int stage2(lua_State* L);
+#endif
 		};
 
 		template<class Type>
@@ -650,6 +660,11 @@ namespace luabind
 		// pushes the class_rep on the lua stack
 		virtual void commit(lua_State* L)
 		{
+			scope::init(L);
+
+			detail::getref(L, scope_stack::top(L));
+			lua_pushstring(L, m_name);
+
 			detail::class_rep* crep;
 
 			detail::class_registry* r = detail::class_registry::get_registry(L);
@@ -707,6 +722,9 @@ namespace luabind
 
 				crep->add_base_class(base);
 			}
+
+			lua_settable(L, -3);
+			lua_pop(L, 1);
 		}
 
 		// destructive copy
@@ -907,9 +925,9 @@ namespace luabind
 		{
 			if (m_L)
 			{
-				lua_pushstring(m_L, name());
+		//		lua_pushstring(m_L, name());
 				commit(m_L);
-				lua_settable(m_L, LUA_GLOBALSINDEX);
+		//		lua_settable(m_L, LUA_GLOBALSINDEX);
 			}
 		}
 
