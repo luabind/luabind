@@ -121,9 +121,10 @@ us know about your project.</p>
 compilers:</p>
 
 <ul>
+	<li>Visual Studio 7.1
 	<li>Visual Studio 7.0 
 	<li>Visual Studio 6.0 (sp 5) 
-	<li>Intel C++ 6.0 
+	<li>Intel C++ 6.0 (Windows)
 	<li>GCC 2.95.3 (cygwin) 
 	<li>GCC 3.0.4 (Debian/Linux) 
 	<li>GCC 3.1 (SunOS 5.8) 
@@ -134,8 +135,10 @@ compilers:</p>
 
 <ul>
 	<li>GCC 2.95.2 (SunOS 5.8)
-	<li>Metrowerks 8.3
 </ul>
+
+<p>Metrowerks 8.3 (Windows) compiles but fails the const-test. This means that const member
+functions are treated as non-const member functions.</p>
 
 <p>If you have tried luabind with a compiler not listed here, let us know
 your result with it.</p>
