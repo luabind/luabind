@@ -33,6 +33,7 @@ Please report any grammatical corrections/spelling corrections.</p>
 		<li><a href="#class_enum">enums</a>
 		<li><a href="#class_operator">operators</a>
 		<li><a href="#class_derived">derived classes</a> 
+		<li><a href="#class_smart_pointers">smart_pointers</a> 
 	</ul>
 	<li><a href="#scopes">Scopes</a> 
 	<li><a href="#object">Object</a>
@@ -58,6 +59,7 @@ Please report any grammatical corrections/spelling corrections.</p>
 		<li><a href="#policies_pure_out">pure_out_value</a>
 		<li><a href="#policies_discard_result">discard_result</a>
 		<li><a href="#policies_return_stl_iterator">return_stl_iterator</a>
+		<li><a href="#policies_yield">yield</a>
 		<li><a href="#policies_custom">custom</a>
 		<li><a href="#policies_user_converter">user defined converter</a>
 	</ul>
@@ -639,6 +641,10 @@ f(b) -- error, no function 'f' matches the arguments (B)
 </pre>
 
 <p>Because luabind doesn't know that a <tt>B*</tt> can be cast to an <tt>A*</tt>.</p>
+
+<h2><a name="class_smart_pointers"></a>smart_pointers</h2> 
+
+<p>TODO: document.</p>
 
 <h1><a name="scopes"></a>Scopes</h1>
 
@@ -1591,6 +1597,10 @@ end
 
 <p>To use this policy you need to include <tt>&lt;luabind/iterator_policy.hpp&gt;</tt></p>
 
+<h2><a name="policies_yield"></a>yield</h2>
+
+<p>TODO: document.</p>
+
 <h2><a name="policies_custom"></a>custom</h2>
 
 <p>The policies don't have a stable API yet. See the examples directory.</p>
@@ -1892,12 +1902,13 @@ This namespace contains non-public classes and are not supposed to be used direc
 	<li>If one class registers two functions with the same name and the same signature,
 	there's currently no error. The last registered function will be the one that's used.
 	<li>In vc7, classes can not be called <tt>test</tt>. (due to boost.mpl)
+	<li>Visual studio have problems selecting the correct overload of <tt>std::swap()</tt> for <tt>luabind::object</tt>.
 </ul>
 
 <h1><a name="acknowledgments"></a>Acknowledgments</h1>
 
 <p>This library was written by <a href="mailto:dalwan01@student.umu.se">Daniel Wallin</a>
-and <a href="mailto: c99ang@cs.umu.se">Arvid Norberg</a>. © Copyright 2003. All rights reserved.</p>
+and <a href="mailto: c99ang@cs.umu.se">Arvid Norberg</a>. &copy; Copyright 2003. All rights reserved.</p>
 
 <p>This library was inspired by Dave Abrahams'
 <a href="http://www.boost.org/libs/python/doc/index.html">Boost.Python</a> library which can be found in the
