@@ -52,6 +52,11 @@ namespace {
 		BOOST_CHECK(false);
 	}
 
+	int f(int& a)
+	{
+		return a;
+	}
+
 } // anonymous namespace
 
 void test_implicit_cast()
@@ -85,7 +90,8 @@ void test_implicit_cast()
             .def(constructor<>()),
 
         def("func", &func),
-		def("no_convert", &not_convertable)
+		def("no_convert", &not_convertable),
+		def("f", &f)
     ];
 
     DOSTRING(L, "a = A()");
@@ -105,5 +111,14 @@ void test_implicit_cast()
 		"no match for function call 'no_convert' with the parameters (A)\n"
 		"candidates are:\n"
 		"no_convert(custom)\n");
+
+	DOSTRING_EXPECTED(L,
+		"a = nil\n"
+		"f(a)",
+		"no match for function call 'f' with the parameters (nil)\n"
+		"candidates are:\n"
+		"f(number&)\n");
+
+
 }
 

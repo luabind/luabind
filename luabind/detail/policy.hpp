@@ -988,7 +988,19 @@ namespace luabind { namespace detail
 		template<class T>
 		static int match(lua_State* L, by_reference<T>, int index)
 		{
-			return pointer_converter<lua_to_cpp>::match(L, by_pointer<T>(), index);
+			object_rep* obj = is_class_object(L, index);
+			if (obj == 0) return -1;
+			// cannot cast a constant object to nonconst
+			if (obj->flags() & object_rep::constant) return -1;
+
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
+				return (obj->flags() & object_rep::constant)?-1:0;
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
+				return (obj->flags() & object_rep::constant)?0:-1;
+
+
+			int d;
+			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
 		}
 
 		template<class T>
