@@ -59,7 +59,7 @@ void test_implicit_cast()
     COUNTER_GUARD(A);
     COUNTER_GUARD(B);
     COUNTER_GUARD(test_implicit);
-    COUNTER_GUARD(char_pointer_convertible);
+    COUNTER_GUARD(char_pointer_convertable);
 
     lua_state L;
 

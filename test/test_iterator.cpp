@@ -45,7 +45,7 @@ namespace
 
 void test_iterator()
 {
-    COUNTER_GUARD(test_class);
+    COUNTER_GUARD(IteratorTest);
 
 	lua_state L;
 
