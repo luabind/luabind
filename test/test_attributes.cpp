@@ -111,7 +111,7 @@ bool test_attributes()
 	if (dostring(L, "a = test[nil]")) return false;
 	if (glob["a"].type() != LUA_TNIL) return false;
 
-	/* new stuff, doesn work yet
+	// new stuff, doesn work yet
 
 	lua_pushstring(L, "test");
 	glob["test_string"].set();
@@ -126,12 +126,16 @@ bool test_attributes()
 	glob["test_string"] = std::string("barfoo");
 	std::swap(glob["test_string"], glob["a"]);
 	if (object_cast<std::string>(glob["a"]) != "barfoo") return false;
+	int type = glob["test_string"].type();
+	if (type != LUA_TNIL) return false;
+
 	if (glob["test_string"].type() != LUA_TNIL) return false;
+
 	
 //	object t = get_globals(L)["test"]["nil"];
 //	if (t.type() != LUA_TNIL) return false;
 
-*/
+
 	if (dostring2(L, "test.o = 5") != 1) return false;
 	if (std::string("cannot set attribute 'property.o'") != lua_tostring(L, -1)) return false;
 	lua_pop(L, 1);

@@ -44,3 +44,4 @@ namespace luabind { namespace detail
 }}
 
 #endif // LUABIND_GET_OVERLOAD_SIGNATURE_HPP_INCLUDED
+

@@ -1271,7 +1271,8 @@ private:
 			detail::getref(L, m_key_ref);
 			lua_pushvalue(L, -3);
 			lua_settable(L, -3);
-			lua_pop(L, 1);
+			// pop table and value
+			lua_pop(L, 2);
 		}
 
 		inline proxy_object::operator luabind::object()
@@ -1374,7 +1375,8 @@ private:
 			m_obj->pushvalue();
 			lua_pushvalue(L, -2);
 			lua_rawseti(L, -2, m_key);
-			lua_pop(L, 1);
+			// pop table and value
+			lua_pop(L, 2);
 		}
 
 		inline proxy_array_object::operator luabind::object()
@@ -1488,7 +1490,8 @@ private:
 			detail::getref(L, m_key_ref);
 			lua_pushvalue(L, -3);
 			lua_rawset(L, -3);
-			lua_pop(L, 1);
+			// pop table and value
+			lua_pop(L, 2);
 		}
 
 		inline lua_State* proxy_raw_object::lua_state() const

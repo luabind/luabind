@@ -75,6 +75,7 @@ namespace luabind { namespace detail
 
 	inline std::string name_of_type(by_value<luabind::object>, lua_State*) { return "object"; };
 	inline std::string name_of_type(by_const_reference<luabind::object>, lua_State*) { return "object"; };
+	inline std::string name_of_type(by_value<bool>, lua_State*) { return "boolean"; }
 	inline std::string name_of_type(by_value<char>, lua_State*) { return "number"; }
 	inline std::string name_of_type(by_value<short>, lua_State*) { return "number"; }
 	inline std::string name_of_type(by_value<int>, lua_State*) { return "number"; }
@@ -84,6 +85,7 @@ namespace luabind { namespace detail
 	inline std::string name_of_type(by_value<unsigned int>, lua_State*) { return "number"; }
 	inline std::string name_of_type(by_value<unsigned long>, lua_State*) { return "number"; }
 
+	inline std::string name_of_type(by_value<const bool>, lua_State*) { return "boolean"; }
 	inline std::string name_of_type(by_value<const char>, lua_State*) { return "number"; }
 	inline std::string name_of_type(by_value<const short>, lua_State*) { return "number"; }
 	inline std::string name_of_type(by_value<const int>, lua_State*) { return "number"; }
@@ -167,11 +169,10 @@ namespace luabind { namespace detail
 	inline void get_member_signature_impl(T(C::*)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, std::string& s)
 	{
 		s += "(";
-		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(BOOST_PP_CAT(A, BOOST_PP_DEC(BOOST_PP_ITERATION()))), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
-//		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ADD_LUA_TYPE_NAME, _)
 		s += ")";
 	}
 
@@ -179,11 +180,10 @@ namespace luabind { namespace detail
 	inline void get_member_signature_impl(T(C::*)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)) const, lua_State* L, std::string& s)
 	{
 		s += "(";
-		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(BOOST_PP_CAT(A, BOOST_PP_DEC(BOOST_PP_ITERATION()))), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
-//		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ADD_LUA_TYPE_NAME, _)
 		s += ") const";
 	}
 
@@ -191,11 +191,10 @@ namespace luabind { namespace detail
 	inline void get_member_signature_impl(T(*)(C* obj BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, std::string& s)
 	{
 		s += "(";
-		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(BOOST_PP_CAT(A, BOOST_PP_DEC(BOOST_PP_ITERATION()))), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
-//		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ADD_LUA_TYPE_NAME, _)
 		s += ")";
 	}
 
@@ -203,11 +202,12 @@ namespace luabind { namespace detail
 	inline void get_member_signature_impl(T(*f)(const C* obj BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, std::string& s)
 	{
 		s += "(";
-		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
+
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(BOOST_PP_CAT(A, BOOST_PP_DEC(BOOST_PP_ITERATION()))), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
-//		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ADD_LUA_TYPE_NAME, _)
+
 		s += ") const";
 	}
 
@@ -215,11 +215,10 @@ namespace luabind { namespace detail
 	inline void get_member_signature_impl(T(*f)(C& obj BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, std::string& s)
 	{
 		s += "(";
-		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(BOOST_PP_CAT(A, BOOST_PP_DEC(BOOST_PP_ITERATION()))), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
-//		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ADD_LUA_TYPE_NAME, _)
 		s += ")";
 	}
 
@@ -227,11 +226,10 @@ namespace luabind { namespace detail
 	inline void get_member_signature_impl(T(*f)(const C& obj BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, std::string& s)
 	{
 		s += "(";
-		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(BOOST_PP_CAT(A, BOOST_PP_DEC(BOOST_PP_ITERATION()))), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
-//		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ADD_LUA_TYPE_NAME, _)
 		s += ") const";
 	}
 
@@ -240,11 +238,10 @@ namespace luabind { namespace detail
 	inline void get_free_function_signature_impl(T(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, std::string& s)
 	{
 		s += "(";
-		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(BOOST_PP_CAT(A, BOOST_PP_DEC(BOOST_PP_ITERATION()))), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
-//		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ADD_LUA_TYPE_NAME, _)
 		s += ") const";
 	}
 

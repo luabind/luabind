@@ -126,6 +126,7 @@ bool test_object()
 		dostring(L, "function test_param_policies(x, y) end");
 		object test_param_policies = g["test_param_policies"];
 		int a = test_param_policies.type();
+		if (a != LUA_TFUNCTION) return false;
 		// call the function and tell lua to adopt the pointer passed as first argument
 		test_param_policies(5, new test_param())[adopt(_2)];
 
