@@ -98,6 +98,7 @@ int main(int argc, const char* argv[])
 	luaopen_table(L);
 	luaopen_math(L);
 	luaopen_io(L);
+	luaopen_debug(L);
 
 	if (argc < 2)
 	{

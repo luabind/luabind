@@ -889,7 +889,7 @@ namespace luabind
 				crep->add_method(L, i->first, i->second);
 				i->second.crep = crep;
 			}
-			std::swap(crep->m_methods, m_methods);
+			crep->m_methods.swap(m_methods);
 
 			// constructors
 			m_constructor.swap(crep->m_constructor);

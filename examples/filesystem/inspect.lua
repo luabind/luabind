@@ -1,3 +1,6 @@
+dofile "profile.lua"
+profiler = newProfiler()
+profiler:start()
 
 -- base class for all inspectors
 -- every derived class must implement inspect()
@@ -178,4 +181,10 @@ print(" ** " .. number_of_files .. " files was inspected")
 table.foreach(inspectors, function(_,i)
         i:report()
       end)
+
+profiler:stop()
+
+local outfile = io.open( "profile.txt", "w+" )
+profiler:report( outfile )
+outfile:close()
 
