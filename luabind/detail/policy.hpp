@@ -33,7 +33,7 @@
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/integral_c.hpp>
 #include <boost/mpl/equal_to.hpp>
-#include <boost/mpl/apply_if.hpp>
+#include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/or.hpp>
 #include <boost/type_traits/add_reference.hpp>
 #include <boost/type_traits/is_pointer.hpp>
@@ -149,7 +149,7 @@ namespace luabind { namespace detail
 		typedef typename
 			boost::mpl::if_<is_primitive<T>
 				, const type<T>&
-				, typename boost::mpl::apply_if<boost::mpl::or_<boost::is_reference<T>, boost::is_pointer<T> >
+				, typename boost::mpl::eval_if<boost::mpl::or_<boost::is_reference<T>, boost::is_pointer<T> >
 					, identity<T>
 					, boost::add_reference<T>
 				>::type
@@ -1099,7 +1099,7 @@ namespace luabind { namespace detail
 
 // *********** default_policy *****************
 
-	using boost::mpl::apply_if;
+	using boost::mpl::eval_if;
 
 	struct default_policy : converter_policy_tag
 	{
@@ -1111,28 +1111,28 @@ namespace luabind { namespace detail
 		template<class T, class Direction>
 		struct generate_converter
 		{
-			typedef typename apply_if<
+			typedef typename eval_if<
 				is_user_defined<T>
 			  , user_defined_converter<Direction>
-			  , apply_if<
+			  , eval_if<
 					is_primitive<T>
 				  , primitive_converter<Direction>
-				  , apply_if<
+				  , eval_if<
 						is_lua_functor<T>
 				  	  , functor_converter<Direction>
-					  , apply_if<
+					  , eval_if<
 							boost::is_enum<T>
 						  , enum_converter<Direction>
-						  , apply_if<
+						  , eval_if<
 								is_nonconst_pointer<T>
 							  , pointer_converter<Direction>
-							  , apply_if<
+							  , eval_if<
 									is_const_pointer<T>
 								  , const_pointer_converter<Direction>
-								  , apply_if<
+								  , eval_if<
 										is_nonconst_reference<T>
 									  , ref_converter<Direction>
-									  , apply_if<
+									  , eval_if<
 											is_const_reference<T>
 									  	  , const_ref_converter<Direction>
 										  , value_converter<Direction>
