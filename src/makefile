@@ -1,31 +1,29 @@
-# the library's configuration is
-# controlled through the CONFIG variable
+include ../config
 
-#$(CONFIG) = \
-#	-DLUABIND_DONT_COPY_STRINGS \
-#	-DLUABIND_NO_EXCEPTIONS \
-#	-DLUABIND_NO_ERROR_CHECKING
-
-SRCS =	\
+SOURCES = \
 	class_rep.cpp \
 	function.cpp \
 	find_best_match.cpp \
 	implicit_cast.cpp \
 	open.cpp
 
-OBJS = $(SRCS:.cpp=.o)
+OBJECTS = $(SOURCES:.cpp=.o)
 
 TARGET = ../lib/libluabind.a
 
+
+
+
+
 all:	$(TARGET)
 
-$(TARGET):	$(OBJS)
-	$(AR) rcu $@ $(OBJS)
+$(TARGET):	$(OBJECTS)
+	$(AR) rcu $@ $(OBJECTS)
 	ranlib $@
 
 %.o:%.cpp
-	g++ -c $? -o $@ -I- -I.. $(CONFIG)
+	$(CXX) -O3 -Wall -c $? -o $@ $(LUA_PATH) -I- -I.. $(BOOST_PATH) $(CONFIG)
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJECTS) $(TARGET)
 

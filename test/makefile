@@ -1,65 +1,41 @@
-CXX	 = g++
-CXXFLAGS = -Wall -ftemplate-depth-50 -Os
+include ../config
 
-sources =\
-	main.cpp\
-	test_iterator.cpp\
-	test_lua_classes.cpp\
-	test_typetraits.cpp\
-	test_construction.cpp\
-	test_operators.cpp\
-	test_attributes.cpp\
-	test_exceptions.cpp\
-	test_const.cpp\
-	test_null_pointer.cpp\
-	test_implicit_cast.cpp\
-	test_policies.cpp\
-	test_free_functions.cpp\
-	test_object.cpp\
+SOURCES = \
+	main.cpp \
+	test_iterator.cpp \
+	test_lua_classes.cpp \
+	test_typetraits.cpp \
+	test_construction.cpp \
+	test_operators.cpp \
+	test_attributes.cpp \
+	test_exceptions.cpp \
+	test_const.cpp \
+	test_null_pointer.cpp \
+	test_implicit_cast.cpp \
+	test_policies.cpp \
+	test_free_functions.cpp \
+	test_object.cpp \
 	test_held_type.cpp
 
-target = test_luabind
-
-#libs = -lluabind -llua -llualib -L/scratch/lua-5.0/lib -L../lib
-libs = -lluabind -llua -llualib -L/usr/local/lib -L../lib
-
-#inc = -I./ -I/scratch/lua-5.0/include -I- -I.. -I/scratch/boost_1_30_0
-inc = -I./ -I/usr/local/include -I- -I..
+TARGET = test_luabind
 
 
-RM = rm
-AR = ar
-MAKEDEPEND = $(CXX) -MM
-DEPENDFILE = Makedepend
 
-O_FILES = $(sources:.cpp=.o)
 
-all: $(target)
+OBJECTS = $(SOURCES:.cpp=.o)
 
-$(target): $(O_FILES)
-	$(CXX) $(CXXFLAGS) $^ $(inc) $(libs) -o $@
+all: $(TARGET)
 
-.cpp:
-	$(CXX) $(CXXFLAGS) $(inc) -c -o $*.o $*.cpp
+$(TARGET): $(OBJECTS)
+	$(CXX) -O3 $? $(LUA_LIB_PATH) -L../lib -lluabind -llua -llualib -o $@
 
-.cpp.o:
-	$(CXX) $(CXXFLAGS) $(inc) -c -o $*.o $*.cpp
-
-depend:
-	touch $(DEPENDFILE)
-	$(RM) $(DEPENDFILE)
-	$(MAKEDEPEND) $(CXXFLAGS) $(inc) $(sources) > $(DEPENDFILE)
+%.o:%.cpp
+	$(CXX) -Wall -ftemplate-depth-50 -O3 $(CONFIG) $(LUA_PATH) -I. -I- -I../ $(BOOST_PATH) -c $? -o $@
 
 relink:
-	touch $(target)
-	$(RM) $(target)
+	rm -f $(TARGET)
 	make
 
 clean:
-	touch core
-	touch $(O_FILES)
-	touch $(target)
-	$(RM) $(O_FILES) $(target) core
+	rm -f $(OBJECTS) $(TARGET) core
 
-include $(DEPENDFILE)
-# DO NOT DELETE
