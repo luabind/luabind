@@ -327,6 +327,68 @@ namespace luabind { namespace detail
 	template<>
 	struct primitive_converter<lua_to_cpp>
 	{
+		#define PRIMITIVE_CONVERTER(prim) \
+			prim apply(lua_State* L, luabind::detail::by_const_reference<prim>, int index) { return apply(L, detail::by_value<prim>(), index); } \
+			prim apply(lua_State* L, luabind::detail::by_value<const prim>, int index) { return apply(L, detail::by_value<prim>(), index); } \
+			prim apply(lua_State* L, luabind::detail::by_value<prim>, int index)
+
+		#define PRIMITIVE_MATCHER(prim) \
+			static int match(lua_State* L, luabind::detail::by_const_reference<prim>, int index) { return match(L, detail::by_value<prim>(), index); } \
+			static int match(lua_State* L, luabind::detail::by_value<const prim>, int index) { return match(L, detail::by_value<prim>(), index); } \
+			static int match(lua_State* L, luabind::detail::by_value<prim>, int index)
+
+		PRIMITIVE_CONVERTER(bool) { return lua_toboolean(L, index) == 1; }
+		PRIMITIVE_MATCHER(bool) { if (lua_type(L, index) == LUA_TBOOLEAN) return 0; else return -1; }
+
+		PRIMITIVE_CONVERTER(int) { return static_cast<int>(lua_tonumber(L, index)); }
+		PRIMITIVE_MATCHER(int) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
+
+		PRIMITIVE_CONVERTER(unsigned int) { return static_cast<unsigned int>(lua_tonumber(L, index)); }
+		PRIMITIVE_MATCHER(unsigned int) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
+
+		PRIMITIVE_CONVERTER(char) { return static_cast<char>(lua_tonumber(L, index)); }
+		PRIMITIVE_MATCHER(char) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
+
+		PRIMITIVE_CONVERTER(unsigned char) { return static_cast<unsigned char>(lua_tonumber(L, index)); }
+		PRIMITIVE_MATCHER(unsigned char) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
+
+		PRIMITIVE_CONVERTER(short) { return static_cast<short>(lua_tonumber(L, index)); }
+		PRIMITIVE_MATCHER(short) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
+
+		PRIMITIVE_CONVERTER(unsigned short) { return static_cast<unsigned short>(lua_tonumber(L, index)); }
+		PRIMITIVE_MATCHER(unsigned short) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
+
+		PRIMITIVE_CONVERTER(long) { return static_cast<long>(lua_tonumber(L, index)); }
+		PRIMITIVE_MATCHER(long) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
+
+		PRIMITIVE_CONVERTER(unsigned long) { return static_cast<unsigned long>(lua_tonumber(L, index)); }
+		PRIMITIVE_MATCHER(unsigned long) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
+
+		PRIMITIVE_CONVERTER(float) { return static_cast<float>(lua_tonumber(L, index)); }
+		PRIMITIVE_MATCHER(float) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
+
+		PRIMITIVE_CONVERTER(double) { return static_cast<double>(lua_tonumber(L, index)); }
+		PRIMITIVE_MATCHER(double) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
+
+		PRIMITIVE_CONVERTER(std::string) { return static_cast<const char*>(lua_tostring(L, index)); }
+		PRIMITIVE_MATCHER(std::string) { if (lua_type(L, index) == LUA_TSTRING) return 0; else return -1; }
+
+		PRIMITIVE_CONVERTER(luabind::object)
+		{
+			lua_pushvalue(L, index);
+			return luabind::object(L, detail::ref(L), true);
+		}
+
+		PRIMITIVE_MATCHER(luabind::object) { return std::numeric_limits<int>::max() - 1; }
+
+		const char* apply(lua_State* L, detail::by_const_pointer<char>, int index) { return static_cast<const char*>(lua_tostring(L, index)); }
+		const char* apply(lua_State* L, detail::by_const_pointer<const char>, int index) { return static_cast<const char*>(lua_tostring(L, index)); }
+		static int match(lua_State* L, by_const_pointer<char>, int index) { if (lua_type(L, index) == LUA_TSTRING) return 0; else return -1;}
+		static int match(lua_State* L, by_const_pointer<const char>, int index) { if (lua_type(L, index) == LUA_TSTRING) return 0; else return -1;}
+
+/*		template<class T>
+		T apply(lua_State* L, luabind::detail::by_const_reference<T>, int index) { return apply(L, detail::by_value<T>(), index); }
+
 		// TODO: add more
 		bool apply(lua_State* L, detail::by_value<bool>, int index) { return lua_toboolean(L, index) == 1; }
 		float apply(lua_State* L, detail::by_value<float>, int index) { return static_cast<float>(lua_tonumber(L, index)); }
@@ -354,25 +416,24 @@ namespace luabind { namespace detail
 		unsigned char apply(lua_State* L, detail::by_value<const unsigned char>, int index) { return static_cast<char>(lua_tonumber(L, index)); }
 		unsigned long apply(lua_State* L, detail::by_value<const unsigned long>, int index) { return static_cast<long>(lua_tonumber(L, index)); }
 		
-		std::string apply(lua_State* L, detail::by_value<std::string>, int index) { return static_cast<const char*>(lua_tostring(L, index)); }
-		const std::string apply(lua_State* L, detail::by_value<const std::string>, int index) { return static_cast<const char*>(lua_tostring(L, index)); }
+//		std::string apply(lua_State* L, detail::by_value<std::string>, int index) { return static_cast<const char*>(lua_tostring(L, index)); }
+//		const std::string apply(lua_State* L, detail::by_value<const std::string>, int index) { return static_cast<const char*>(lua_tostring(L, index)); }
+//		const std::string apply(lua_State* L, detail::by_const_reference<std::string>, int index) { return static_cast<const char*>(lua_tostring(L, index)); }
+		PRIMITIVE_CONVERTER(std::string) { return static_cast<const char*>(lua_tostring(L, index)); }
 
 		luabind::object apply(lua_State* L, detail::by_value<luabind::object>, int index)
 		{
 			lua_pushvalue(L, index);
-			return luabind::object(L, detail::ref(L), true/*luabind::object::reference()*/);
+			return luabind::object(L, detail::ref(L), true);
 		}
 
 		const luabind::object apply(lua_State* L, detail::by_value<const luabind::object>, int index)
 		{
 			lua_pushvalue(L, index);
-			return luabind::object(L, detail::ref(L), true/*luabind::object::reference()*/);
+			return luabind::object(L, detail::ref(L), true);
 		}
 
 		// TODO: add more
-
-		template<class T>
-		T apply(lua_State* L, detail::by_const_reference<T>, int index) { return apply(L, detail::by_value<T>(), index); }
 
 		const char* apply(lua_State* L, detail::by_const_pointer<char>, int index) { return static_cast<const char*>(lua_tostring(L, index)); }
 
@@ -399,9 +460,13 @@ namespace luabind { namespace detail
 
 		template<class T>
 		static int match(lua_State* L, detail::by_const_reference<T>, int index) { return match(L, detail::by_value<T>(), index); }
+*/
 
 		template<class T>
 		void converter_postcall(lua_State*, T, int) {}
+		
+		#undef PRIMITIVE_MATCHER
+		#undef PRIMITIVE_CONVERTER
 	};
 
 

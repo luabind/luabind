@@ -31,7 +31,6 @@ namespace luabind { namespace detail
 {
 
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-//#if 1
 
 	template<class T>
 	struct decorated_type
