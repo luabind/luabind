@@ -961,8 +961,8 @@ namespace luabind
 
 			ret->m_const_holder_type = m_const_holder_type;
 
-			std::swap(ret->m_bases, m_bases);
-			std::swap(ret->m_methods, m_methods);
+			ret->m_bases.swap(m_bases);
+			ret->m_methods.swap(m_methods);
 			m_constructor.swap(ret->m_constructor);
 
 			ret->m_name = m_name;
