@@ -72,13 +72,15 @@ int luabind::detail::create_class::stage2(lua_State* L)
 				lua_pop(L, 2);
 				continue;
 			}
+         else lua_pop(L, 1); // string
 
 			lua_pushstring(L, "__finalize");
 			if (lua_equal(L, -1, -3))
 			{
 				lua_pop(L, 2);
 				continue;
-			}
+         }
+         else lua_pop(L, 1); // string
 
 			lua_pushvalue(L, -2); // copy key
 			lua_insert(L, -2);
