@@ -204,6 +204,16 @@ namespace luabind { namespace detail
 #endif
 	};
 
+	template<>
+	struct decorated_type_value_impl<void>
+	{
+		static by_value<void> get(int)
+		{
+			return by_value<void>();
+		}
+		static int data() { return 0; }
+	};
+
 	template<class T>
 	struct decorated_type_array_impl
 	{
