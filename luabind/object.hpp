@@ -926,7 +926,7 @@ namespace luabind
 		inline void pushvalue() const
 		{
 			// you are trying to dereference an invalid object
-			assert((!m_ref.is_valid()) && "you are trying to access an invalid (uninitialized) object");
+			assert((m_ref.is_valid()) && "you are trying to access an invalid (uninitialized) object");
 			assert((m_state != 0) && "internal error, please report");
 
 			m_ref.get(m_state);
