@@ -299,8 +299,15 @@ namespace luabind
 
 		functor(const functor<Ret>& obj): L_(obj.L_)
 		{
-			lua_getref(L_, obj.ref_);
-			ref_ = detail::ref(L_);
+			if (L_ == 0)
+			{
+				ref_ = LUA_NOREF;
+			}
+			else
+			{
+				lua_getref(L_, obj.ref_);
+				ref_ = detail::ref(L_);
+			}
 		}
 
 		~functor()

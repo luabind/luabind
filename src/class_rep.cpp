@@ -1516,7 +1516,7 @@ bool luabind::detail::class_rep::has_operator_in_lua(lua_State* L, int id)
 
 	const int mask = 1 << (id + 1);
 
-	return m_operator_cache & mask;
+	return (m_operator_cache & mask) != 0;
 }
 
 void luabind::detail::class_rep::add_method(lua_State* L, const char* name, detail::method_rep& m)
