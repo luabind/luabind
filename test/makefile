@@ -1,23 +1,29 @@
 include ../config
 
 SOURCES = \
-	test_typetraits.cpp \
 	main.cpp \
-	test_iterator.cpp \
-	test_lua_classes.cpp \
-	test_construction.cpp \
-	test_operators.cpp \
 	test_attributes.cpp \
-	test_exceptions.cpp \
 	test_const.cpp \
-	test_null_pointer.cpp \
+	test_construction.cpp \
+	test_exceptions.cpp \
+	test_held_type.cpp \
 	test_implicit_cast.cpp \
+	test_lua_classes.cpp \
+	test_object.cpp \
+	test_operators.cpp \
+	test_scope.cpp \
+	test_separate_registration.cpp \
+	test_separation.cpp \
+	test_typetraits.cpp \
+	test_yield.cpp
+
+# not converted yet
+
+#	test_null_pointer.cpp \
 	test_policies.cpp \
 	test_free_functions.cpp \
-	test_object.cpp \
-	test_held_type.cpp \
-	test_scope.cpp \
-	test_yield.cpp
+	test_iterator.cpp \
+
 
 TARGET = test_luabind
 
@@ -29,10 +35,10 @@ OBJECTS = $(SOURCES:.cpp=.o)
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CXX) -g $(OBJECTS) $(LUA_LIB_PATH) -L../lib -lluabind -llua -llualib -o $@
+	$(CXX) -g $(OBJECTS) -L$(LUA_PATH)/lib -L../lib -lluabind -llua -llualib -o $@
 
 %.o:%.cpp
-	$(CXX) -Wall -ftemplate-depth-50 -g $(CONFIG) $(LUA_PATH) -I. -I- -I../ $(BOOST_PATH) -c $? -o $@
+	$(CXX) -Wall -ftemplate-depth-50 -g $(CONFIG) -I$(LUA_PATH) -I. -I- -I../ -I$(BOOST_ROOT) -c $? -o $@
 
 relink:
 	rm -f $(TARGET)

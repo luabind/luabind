@@ -169,18 +169,22 @@ void test_object()
 	BOOST_CHECK(object_cast<std::string>(g.at("glob")) == "teststring");
 	BOOST_CHECK(object_cast<std::string>(g.raw_at("glob")) == "teststring");
 
+// TODO: this fails!
+//	object nil = get_globals(L)["non_existing_variable_is_nil"];
+//	BOOST_CHECK(object_cast<boost::shared_ptr<void> >(nil).get() == 0);
+
 #ifndef LUABIND_NO_EXCEPTIONS
 
 	try
 	{
-		luabind::object null;
-		int i = luabind::object_cast<int>(null);
+		object not_initialized;
+		int i = object_cast<int>(not_initialized);
 		BOOST_ERROR("invalid cast succeeded");
 	}
 	catch(luabind::cast_failed&) {}
 
 #endif
 
-	luabind::object null;
-	BOOST_CHECK(!luabind::object_cast_nothrow<int>(null));
+	object not_initialized;
+	BOOST_CHECK(!object_cast_nothrow<int>(not_initialized));
 }

@@ -813,6 +813,8 @@ namespace luabind { namespace detail
 			// getmetatable().__lua_class is true
 			// object_rep->flags() & object_rep::constant == 0
 
+			// TODO: if T is a holder type and obj is nil, we should be able to
+			// create a null-holder.
 			assert((lua_isnil(L, index) == false) && "internal error, please report");
 
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));

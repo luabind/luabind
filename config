@@ -8,19 +8,11 @@
 #	-DNDEBUG \
 #	-DLUA_API=__declspec(dllimport)
 
-# if boost and lua are installed in system
-# include paths, you don't have to set these
-# variables
-
-#BOOST_PATH = -I/scratch/boost_1_30_0
-#LUA_PATH = -I/scratch/lua-5.0/include
-
-#lua lib path is used for the test program
-
-#LUA_LIB_PATH = -L/scratch/lua-5.0/lib
-BOOST_PATH = -I/cygdrive/c/boost
-
-LUA_LIB_PATH = -L/usr/local/lib
+# you have to set the environment variables
+# BOOST_ROOT to the path to your boost
+# installation.
+# and LUA_PATH to the path to your lua
+# installation (prebuilt)
 
 CXX = g++
 

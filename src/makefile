@@ -1,6 +1,8 @@
 include ../config
 
 SOURCES = \
+	pcall.cpp \
+	error.cpp \
 	ref.cpp \
 	scope.cpp \
 	class.cpp \
@@ -13,7 +15,7 @@ SOURCES = \
 	stack_content_by_name.cpp \
 	object.cpp \
 	class_info.cpp \
-    class_registry
+	class_registry.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
@@ -30,7 +32,7 @@ $(TARGET):	$(OBJECTS)
 	ranlib $@
 
 %.o:%.cpp
-	$(CXX) -g -Wall -c $? -o $@ $(LUA_PATH) -I- -I.. $(BOOST_PATH) $(CONFIG)
+	$(CXX) -g -Wall -DLUABIND_BUILDING -c $? -o $@ -I$(LUA_PATH) -I- -I.. -I$(BOOST_ROOT) $(CONFIG)
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)
