@@ -682,16 +682,14 @@ int luabind::detail::class_rep::function_dispatcher(lua_State* L)
 
 		const overload_rep& o = rep->overloads()[match_index];
 
-        if (force_static_call)
-        {
-            if (!o.has_static())
-            {
-                lua_pushstring(L, "pure virtual function called");
-                throw error(L);
-            }
+        if (force_static_call && !o.has_static())
+		{
+			lua_pushstring(L, "pure virtual function called");
         }
-
-        return o.call(L, force_static_call != 0);
+		else
+		{
+	        return o.call(L, force_static_call != 0);
+		}
 
 #ifndef LUABIND_NO_EXCEPTIONS
 
@@ -715,12 +713,12 @@ int luabind::detail::class_rep::function_dispatcher(lua_State* L)
 		msg += "() threw an exception";
 		lua_pushstring(L, msg.c_str());
 	}
-	// we can only reach this line if an exception was thrown
-	lua_error(L);
-	return 0; // will never be reached
 
 #endif
-			
+
+	// we can only reach this line if an error occured
+	lua_error(L);
+	return 0; // will never be reached
 }
 
 #ifndef NDEBUG
