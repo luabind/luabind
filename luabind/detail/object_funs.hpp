@@ -97,11 +97,11 @@ namespace luabind
 	
 	template<class T>
 	boost::optional<T> object_cast_nothrow(const object& obj)
-	{ return detail::object_cast_nothrow_impl(obj, detail::null_type()); }
+	{ return detail::object_cast_nothrow_impl<T>(obj, detail::null_type()); }
 
 	template<class T, class Policies>
 	boost::optional<T> object_cast_nothrow(const object& obj, const Policies& p)
-	{ return detail::object_cast_nothrow_impl(obj, p); }
+	{ return detail::object_cast_nothrow_impl<T>(obj, p); }
 	
 
 	template<class T>
@@ -114,11 +114,11 @@ namespace luabind
 	
 	template<class T>
 	boost::optional<T> object_cast_nothrow(const detail::proxy_object& obj)
-	{ return detail::object_cast_nothrow_impl(obj, detail::null_type()); }
+	{ return detail::object_cast_nothrow_impl<T>(obj, detail::null_type()); }
 	
 	template<class T, class Policies>
 	boost::optional<T> object_cast_nothrow(const detail::proxy_object& obj, const Policies& p)
-	{ return detail::object_cast_nothrow_impl(obj, p); }
+	{ return detail::object_cast_nothrow_impl<T>(obj, p); }
 
 	
 	template<class T>
@@ -131,11 +131,11 @@ namespace luabind
 
 	template<class T>
 	boost::optional<T> object_cast_nothrow(const detail::proxy_raw_object& obj)
-	{ return detail::object_cast_nothrow_impl(obj, detail::null_type()); }
+	{ return detail::object_cast_nothrow_impl<T>(obj, detail::null_type()); }
 
 	template<class T, class Policies>
 	boost::optional<T> object_cast_nothrow(const detail::proxy_raw_object& obj, const Policies& p)
-	{ return detail::object_cast_nothrow_impl(obj, p); }
+	{ return detail::object_cast_nothrow_impl<T>(obj, p); }
 
 	
 	template<class T>
@@ -148,11 +148,11 @@ namespace luabind
 	
 	template<class T>
 	boost::optional<T> object_cast_nothrow(const detail::proxy_array_object& obj)
-	{ return detail::object_cast_nothrow_impl(obj, detail::null_type()); }
+	{ return detail::object_cast_nothrow_impl<T>(obj, detail::null_type()); }
 	
 	template<class T, class Policies>
 	boost::optional<T> object_cast_nothrow(const detail::proxy_array_object& obj, const Policies& p)
-	{ return detail::object_cast_nothrow_impl(obj, p); }
+	{ return detail::object_cast_nothrow_impl<T>(obj, p); }
 
 
 

@@ -685,68 +685,35 @@ namespace luabind
 			return *this;
 		}
 
-#ifndef BOOST_MSVC
-
-		template<class Getter, class Head, class Tail>
-		class_& property(const char* name, Getter g, const detail::policy_cons<Head,Tail>& policies)
-		{
-			typedef detail::policy_cons<Head,Tail> policies_t;
-
-			m_crep->add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, policies_t>(policies), _1, _2, g));
-			return *this;
-		}
-
-#endif
-
-		template<class Getter, class Setter>
-		class_& property(const char* name, Getter g, Setter s)
-		{
-			m_crep->add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, detail::null_type>(), _1, _2, g));
-			m_crep->add_setter(name, boost::bind<int>(detail::set_caller<T, Setter, detail::null_type>(), _1, _2, s));
-			return *this;
-		}
-
-		template<class Getter, class Setter, class H1, class T1>
-		class_& property(const char* name, Getter g, Setter s, const detail::policy_cons<H1,T1>& get_policies)
-		{
-			typedef detail::policy_cons<H1,T1> get_policies_t;
-
-			m_crep->add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, get_policies_t>(get_policies), _1, _2, g));
-			m_crep->add_setter(name, boost::bind<int>(detail::set_caller<T, Setter, detail::null_type>(), _1, _2, s));
-			return *this;
-		}
-
-		template<class Getter, class Setter, class H2, class T2>
-		class_& property(const char* name
-									, Getter g, Setter s
-									, const detail::null_type&
-									, const detail::policy_cons<H2,T2>& set_policies)
-		{
-			typedef detail::policy_cons<H2,T2> set_policies_t;
-
-			m_crep->add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, detail::null_type>(), _1, _2, g));
-			m_crep->add_setter(name, boost::bind<int>(detail::set_caller<T, Setter, set_policies_t>(set_policies), _1, _2, s));
-			return *this;
-		}
-
-		template<class Getter, class Setter, class H1, class T1, class H2, class T2>
-		class_& property(const char* name
-									, Getter g, Setter s
-									, const detail::policy_cons<H1,T1>& get_policies
-									, const detail::policy_cons<H2,T2>& set_policies)
-		{
-			typedef detail::policy_cons<H1,T1> get_policies_t;
-			typedef detail::policy_cons<H2,T2> set_policies_t;
-
-			m_crep->add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, get_policies_t>(get_policies), _1, _2, g));
-			m_crep->add_setter(name, boost::bind<int>(detail::set_caller<T, Setter, set_policies_t>(set_policies), _1, _2, s));
-			return *this;
-		}
-
 		template<class Getter>
 		class_& property(const char* name, Getter g)
 		{
 			m_crep->add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, detail::null_type>(), _1, _2, g));
+			return *this;
+		}
+
+		template<class Getter, class MaybeSetter>
+		class_& property(const char* name, Getter g, MaybeSetter s)
+		{
+			return property_impl(name, g, s, boost::mpl::bool_<detail::is_policy_cons<MaybeSetter>::value>());
+		}
+
+		template<class Getter, class Setter, class GetPolicies>
+		class_& property(const char* name, Getter g, Setter s, const GetPolicies& get_policies)
+		{
+			m_crep->add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, GetPolicies>(get_policies), _1, _2, g));
+			m_crep->add_setter(name, boost::bind<int>(detail::set_caller<T, Setter, detail::null_type>(), _1, _2, s));
+			return *this;
+		}
+
+		template<class Getter, class Setter, class GetPolicies, class SetPolicies>
+		class_& property(const char* name
+									, Getter g, Setter s
+									, const GetPolicies& get_policies
+									, const SetPolicies& set_policies)
+		{
+			m_crep->add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, GetPolicies>(get_policies), _1, _2, g));
+			m_crep->add_setter(name, boost::bind<int>(detail::set_caller<T, Setter, GetPolicies>(set_policies), _1, _2, s));
 			return *this;
 		}
 
@@ -867,6 +834,29 @@ namespace luabind
 		detail::enum_maker<self_t> enum_(const char*)
 		{
 			return detail::enum_maker<self_t>(*this);
+		}
+
+	private:
+
+		template<class Getter, class GetPolicies>
+		class_& property_impl(const char* name,
+									 Getter g,
+									 GetPolicies policies,
+									 boost::mpl::bool_<true>)
+		{
+			m_crep->add_getter(name, boost::bind<int>(detail::get_caller<T,Getter,GetPolicies>(policies), _1, _2, g));
+			return *this;
+		}
+
+		template<class Getter, class Setter>
+		class_& property_impl(const char* name,
+									 Getter g,
+									 Setter s,
+									 boost::mpl::bool_<false>)
+		{
+			m_crep->add_getter(name, boost::bind<int>(detail::get_caller<T,Getter,detail::null_type>(), _1, _2, g));
+			m_crep->add_setter(name, boost::bind<int>(detail::set_caller<T,Setter,detail::null_type>(), _1, _2, s));
+			return *this;
 		}
 
 	};

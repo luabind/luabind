@@ -189,10 +189,10 @@ namespace luabind { namespace detail
 	template<class T>
 	struct is_policy_cons
 	{
-		static const T& getT();
+		static const T& t;
 
 		BOOST_STATIC_CONSTANT(bool, value = 
-			sizeof(is_policy_cons_test(getT())) == sizeof(yes_t));
+			sizeof(is_policy_cons_test(t)) == sizeof(yes_t));
 	};	
 
 	no_t is_string_literal(indirection_layer);
