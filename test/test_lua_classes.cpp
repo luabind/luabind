@@ -57,6 +57,14 @@ namespace
 	void set_feedback(int n)
 	{ feedback = n; }
 
+	class abstract_base
+	{
+	public:
+		virtual void f() = 0;
+	};
+
+	void take_abstract(abstract_base*) {}
+
 } // anonymous namespace
 
 
@@ -67,6 +75,7 @@ bool test_lua_classes()
 	{
 	lua_State* L = lua_open();
 	lua_baselibopen(L);
+	luaopen_table(L);
 	lua_closer c(L);
 	int top = lua_gettop(L);
 
@@ -75,6 +84,9 @@ bool test_lua_classes()
 	module(L)
 	[
 		class_<no_copy>("no copy"),
+		class_<abstract_base>("abstract_base")
+			.def("f", &abstract_base::f),
+		def("take_abstract", &take_abstract),
 	
 		class_<base, baseWrap>("base")
 			.def(constructor<>())
@@ -121,6 +133,10 @@ bool test_lua_classes()
 
 	dostring(L, "a = derived()");
 
+	dostring(L, "info = class_info(a)");
+	dostring(L, "print(info.name)");
+	dostring(L, "table.foreach(info.methods, print)");
+	dostring(L, "table.foreach(info.attributes, print)");
 
 	}
 

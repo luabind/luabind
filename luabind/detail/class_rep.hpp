@@ -199,6 +199,15 @@ namespace luabind { namespace detail
 
 		bool has_operator_in_lua(lua_State*, int id);
 
+		struct callback
+		{
+			boost::function2<int, lua_State*, int> func;
+			int pointer_offset;
+		};
+
+		const std::map<const char*, callback, ltstr>& properties() const;
+		typedef std::map<const char*, callback, ltstr> property_map;
+
 	private:
 
 		void cache_operators(lua_State*);
@@ -284,12 +293,6 @@ namespace luabind { namespace detail
 		// pointer to are kept. To make sure they are destructed.
 		std::vector<char*> m_strings;
 #endif
-
-		struct callback
-		{
-			boost::function2<int, lua_State*, int> func;
-			int pointer_offset;
-		};
 
 		// datamembers, some members may be readonly, and
 		// only have a getter function

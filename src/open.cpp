@@ -25,6 +25,7 @@
 #define LUABIND_BUILDING
 
 #include <luabind/luabind.hpp>
+#include <luabind/class_info.hpp>
 
 using namespace luabind::detail;
 
@@ -180,5 +181,7 @@ void luabind::open(lua_State* L)
 	lua_pushstring(L, "class");
 	lua_pushcclosure(L, detail::create_class::stage1, 0);
 	lua_settable(L, LUA_GLOBALSINDEX);
+
+	bind_class_info(L);
 }
 

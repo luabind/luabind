@@ -8,7 +8,8 @@ SOURCES = \
 	open.cpp \
 	create_class.cpp \
 	stack_content_by_name.cpp \
-	object.cpp
+	object.cpp \
+	class_info.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 

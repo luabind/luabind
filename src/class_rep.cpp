@@ -1529,3 +1529,8 @@ void luabind::detail::class_rep::add_method(lua_State* L, const char* name, cons
 	lua_pop(L, 1);
 }
 
+const class_rep::property_map& luabind::detail::class_rep::properties() const
+{
+	return m_getters;
+}
+
