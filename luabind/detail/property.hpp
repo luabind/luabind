@@ -129,7 +129,16 @@ namespace luabind { namespace detail
 			// 2. key (property name)
 			// 3. value
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
-			T* ptr =  reinterpret_cast<T*>(static_cast<char*>(obj->ptr()) + pointer_offset);
+			class_rep* crep = obj->crep();
+
+			void* raw_ptr;
+
+			if (crep->has_holder())
+				raw_ptr = crep->extractor()(obj->ptr());
+			else
+				raw_ptr = obj->ptr();
+
+			T* ptr =  reinterpret_cast<T*>(static_cast<char*>(raw_ptr) + pointer_offset);
 
 			typedef typename find_conversion_policy<1,Policies>::type converter_policy;
 			typename converter_policy::template generate_converter<D,lua_to_cpp>::type converter;
@@ -160,7 +169,16 @@ namespace luabind { namespace detail
 			// 1. object_rep
 			// 2. key (property name)
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
-			T* ptr =  reinterpret_cast<T*>(static_cast<char*>(obj->ptr()) + pointer_offset);
+			class_rep* crep = obj->crep();
+
+			void* raw_ptr;
+
+			if (crep->has_holder())
+				raw_ptr = crep->extractor()(obj->ptr());
+			else
+				raw_ptr = obj->ptr();
+
+			T* ptr =  reinterpret_cast<T*>(static_cast<char*>(raw_ptr) + pointer_offset);
 
 			typedef typename find_conversion_policy<0,Policies>::type converter_policy;
 			typename converter_policy::template generate_converter<D,cpp_to_lua>::type converter;
