@@ -52,10 +52,10 @@ namespace luabind
 			if (converter.match(L, LUABIND_DECORATE_TYPE(T), -1) < 0)
 			{
 #ifndef LUABIND_NO_EXCEPTIONS
-				throw cast_failed();
+				throw cast_failed(L, LUABIND_TYPEID(T));
 #else
 				cast_failed_callback_fun e = detail::error_callback::get().cast;
-				if (e) e(L);
+				if (e) e(L, LUABIND_TYPEID(T));
 
 				assert(0 && "object_cast failed. If you want to handle this error use luabind::set_error_callback()");
 				std::terminate();

@@ -169,7 +169,7 @@ namespace luabind
 				if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
 				{ 
 #ifndef LUABIND_NO_EXCEPTIONS
-					throw error();
+					throw error(L);
 #else
 					error_callback_fun e = detail::error_callback::get().err;
 					if (e) e(L);
@@ -1164,7 +1164,7 @@ private:
 			if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
 			{ 
 #ifndef LUABIND_NO_EXCEPTIONS
-				throw error();
+				throw error(L);
 #else
 				error_callback_fun e = detail::error_callback::get().err;
 				if (e) e(L);
@@ -1536,7 +1536,7 @@ private:
 			if (lua_pcall(L, boost::tuples::length<Tuple>::value, 0, 0))
 			{ 
 #ifndef LUABIND_NO_EXCEPTIONS
-				throw luabind::error();
+				throw luabind::error(L);
 #else
 				error_callback_fun e = detail::error_callback::get().err;
 				if (e) e(L);
@@ -1559,7 +1559,7 @@ private:
 			if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
 			{ 
 #ifndef LUABIND_NO_EXCEPTIONS
-				throw luabind::error();
+				throw luabind::error(L);
 #else
 				error_callback_fun e = detail::error_callback::get().err;
 				if (e) e(L);

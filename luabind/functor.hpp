@@ -84,7 +84,7 @@ namespace luabind
 					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 0, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
-						throw luabind::error();
+						throw luabind::error(L);
 #else
 						error_callback_fun e = detail::error_callback::get().err;
 						if (e) e(L);
@@ -111,7 +111,7 @@ namespace luabind
 					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
-						throw luabind::error();
+						throw luabind::error(L);
 #else
 						error_callback_fun e = detail::error_callback::get().err;
 						if (e) e(L);
@@ -127,10 +127,10 @@ namespace luabind
 					if (converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) < 0)
 					{
 #ifndef LUABIND_NO_EXCEPTIONS
-						throw cant_convert_return_value();
+						throw cast_failed(L, LUABIND_TYPEID(Ret));
 #else
 						cast_failed_callback_fun e = detail::error_callback::get().cast;
-						if (e) e(L);
+						if (e) e(L, LUABIND_TYPEID(Ret));
 
 						assert(0 && "the lua function's return value could not be converted."
 								"if you want to handle this error use luabind::set_error_callback()");
@@ -158,7 +158,7 @@ namespace luabind
 					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
-						throw error();
+						throw error(L);
 #else
 						error_callback_fun e = detail::error_callback::get().err;
 						if (e) e(L);
@@ -174,10 +174,10 @@ namespace luabind
 					if (converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) < 0)
 					{
 #ifndef LUABIND_NO_EXCEPTIONS
-						throw cant_convert_return_value();
+						throw cast_failed(L, LUABIND_TYPEID(Ret));
 #else
 						cast_failed_callback_fun e = detail::error_callback::get().cast;
-						if (e) e(L);
+						if (e) e(L, LUABIND_TYPEID(Ret));
 
 						assert(0 && "the lua function's return value could not be converted."
 							"if you want to handle this error use luabind::set_error_callback()");
@@ -232,7 +232,7 @@ namespace luabind
 					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 0, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
-						throw luabind::error();
+						throw luabind::error(L);
 #else
 						error_callback_fun e = detail::error_callback::get().err;
 						if (e) e(L);
@@ -257,7 +257,7 @@ namespace luabind
 					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 0, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
-						throw error(); 
+						throw error(L); 
 #else
 						error_callback_fun e = detail::error_callback::get().err;
 						if (e) e(L);

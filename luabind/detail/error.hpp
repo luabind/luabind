@@ -39,40 +39,38 @@ namespace luabind
 	// may throw, if the copy constructor of an exception that is
 	// being thrown throws another exception, terminate will be called
 	// and the entire application is killed.
-	struct error : public std::exception
+	class error : public std::exception
 	{
+	public:
+		error(lua_State* L): m_L(L) {}
+		lua_State* state() const throw() { return m_L; }
 		virtual const char* what() const throw()
 		{
 			return "lua runtime error";
 		}
+	private:
+		lua_State* m_L;
 	};
 
-	// this exception is thrown when you call a lua function
-	// from C++, and the return value on the lua stack cannot
-	// be converted to the type you specified in the C++ call
-	// (as a template parameter)
-	class cant_convert_return_value: public std::exception
-	{
-	public:
-
-		virtual const char* what() const throw()
-		{
-			return "The return value from the called function cannot be converted by the given return value policy";
-		}
-
-	};
-
-	// if a object_cast<>() fails, this is thrown
+	// if an object_cast<>() fails, this is thrown
+	// it is also thrown if the return value of
+	// a lua function cannot be converted
 	class cast_failed : public std::exception
 	{
 	public:
+		cast_failed(lua_State* L, LUABIND_TYPE_INFO i): m_L(L), m_info(i) {}
+		lua_State* state() const throw() { return m_L; }
+		LUABIND_TYPE_INFO info() const throw() { return m_info; }
 		virtual const char* what() const throw() { return "unable to make cast"; }
+	private:
+		lua_State* m_L;
+		LUABIND_TYPE_INFO m_info;
 	};
 
 #else
 
 	typedef void(*error_callback_fun)(lua_State*);
-	typedef void(*cast_failed_callback_fun)(lua_State*);
+	typedef void(*cast_failed_callback_fun)(lua_State*, LUABIND_TYPE_INFO);
 
 	namespace detail
 	{
@@ -109,3 +107,4 @@ namespace luabind
 }
 
 #endif // LUABIND_ERROR_HPP_INCLUDED
+
