@@ -68,28 +68,37 @@ void test_yield()
 			.def("f", &test_class::f, luabind::yield)
 	];
 
-/*
-	DOSTRING(L, "function g() a = test() for i = 1, 10 do print(a:f()) end end");
+	DOSTRING(L,
+		"function h()\n"
+		"	yield(4)"
+		"end");
 
-	lua_pushstring(L, "j");
-	lua_pushcclosure(L, j, 0);
-	lua_settable(L, LUA_GLOBALSINDEX);
-
-	lua_State* thread = lua_newthread(L);
-	lua_pushstring(thread, "g");
-	lua_gettable(thread, LUA_GLOBALSINDEX);
-
-	if (lua_resume(thread, 0))
 	{
-		std::cout << "error: " << lua_tostring(thread, -1) << '\n';
+		lua_State* thread = lua_newthread(L);
+		BOOST_CHECK(resume_function<int>(thread, "h") == 4);
 	}
 
-	for (int i = 0; i < 10; ++i)
-	{
-		std::cout << "iteration: " << i << ", top: " << lua_gettop(thread) << '\n';
+	DOSTRING(L,
+		"function g(str)\n"
+		"	assert(str == 'foobar')\n"
+		"	a = test()"
+		"	for i = 1, 10 do\n"
+		"		print(a:f())\n"
+		"	end\n"
+		"end");
 
-		lua_resume(thread, lua_gettop(thread));
+	{
+		lua_State* thread = lua_newthread(L);
+		resume_function<void>(thread, "g", "foobar");
+
+		BOOST_CHECK(lua_gettop(L) == 0);
+
+		for (int i = 0; i < 10; ++i)
+		{
+			resume<void>(thread);
+			BOOST_CHECK(lua_gettop(L) == 0);
+		}
 	}
-*/
+
 }
 

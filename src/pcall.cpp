@@ -43,4 +43,9 @@ namespace luabind { namespace detail
 		return result;
 	}
 
+	int resume_impl(lua_State *L, int nargs, int nresults)
+	{
+		return lua_resume(L, nargs);
+	}
+
 }}

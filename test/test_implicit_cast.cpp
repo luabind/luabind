@@ -37,15 +37,20 @@ namespace {
         char const* f(B*) { return "f(B*)"; }
     };
 
-    struct char_pointer_convertible
-        : counted_type<char_pointer_convertible>
+    struct char_pointer_convertable
+        : counted_type<char_pointer_convertable>
     {
         operator const char*() const { return "foo!"; }
     };
 
-    void func(const char_pointer_convertible& f)
+    void func(const char_pointer_convertable& f)
     {
     }
+
+	void not_convertable(boost::shared_ptr<A>)
+	{
+		BOOST_CHECK(false);
+	}
 
 } // anonymous namespace
 
@@ -76,10 +81,11 @@ void test_implicit_cast()
             .def("f", (f1)&test_implicit::f)
             .def("f", (f2)&test_implicit::f),
 
-        class_<char_pointer_convertible>("char_ptr")
+        class_<char_pointer_convertable>("char_ptr")
             .def(constructor<>()),
 
-        def("func", &func)
+        def("func", &func),
+		def("no_convert", &not_convertable)
     ];
 
     DOSTRING(L, "a = A()");
@@ -92,5 +98,12 @@ void test_implicit_cast()
     DOSTRING(L, 
         "a = char_ptr()\n"
         "func(a)");
+
+	DOSTRING_EXPECTED(L,
+		"a = A()\n"
+		"no_convert(a)",
+		"no match for function call 'no_convert' with the parameters (A)\n"
+		"candidates are:\n"
+		"no_convert(custom)\n");
 }
 

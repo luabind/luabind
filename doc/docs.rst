@@ -404,6 +404,35 @@ You can give policies to a member function call the same way as you do with
 ``call_function``.
 
 
+Using lua threads
+-----------------
+
+To start a lua thread, you have to call ``lua_resume()``, this means that you
+cannot use the previous function ``call_function()`` to start a thread. You have
+to use
+
+::
+
+    template<class Ret>
+    Ret resume_function(lua_State* L, const char* name, ...)
+
+and
+
+::
+
+    template<class Ret>
+    Ret resume(lua_State* L, ...)
+
+The first time you start the thread, you have to give it a function to execute. i.e. you
+have to use ``resume_function``, when the lua function yeilds, it will return the first
+value passed in to ``lua_yield()``. When you want to continue the execution, you just call
+``resume()`` on your ``lua_State``, since it's already executing a function, you don't pass
+it one. The parameters to ``resume()`` will be returned by ``yield()`` on the lua side.
+
+For yielding C++-functions (without the support of passing data back and forth between the
+lua side and the c++ side), you can use the Yield_ policy.
+
+
 Binding classes to lua
 ======================
 
