@@ -19,7 +19,7 @@ namespace
 
 	struct held_type_test
 	{
-		held_type_test() {}
+		held_type_test() { feedback = 3; }
 		~held_type_test() { feedback = 1; }
 	};
 
@@ -55,6 +55,8 @@ bool test_held_type()
 		g["test"] = boost::shared_ptr<held_type_test>(new held_type_test());
 		if (dostring(L, "tester(test)")) return false;
 		if (feedback != 2) return false;
+		if (dostring(L, "a = held_type_test()"))
+		if (feedback != 3) return false;
 		if (top != lua_gettop(L)) return false;
 
 	}

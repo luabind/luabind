@@ -475,6 +475,11 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 
 		void* object_ptr = rep->overloads[match_index].construct(L);
 
+		// TODO: if we're holding a smart pointer, allocate more space in the lua-userdata
+		// to hold the smart pointer after the object_rep and construct it there and give it
+		// the object pointer as parameter. To do this we need another function pointer, right?
+		// another constructor that constructs the smart_pointer. The destructor function
+		// we have could be used to destruct the smart pointer
 		void* obj_rep = lua_newuserdata(L, sizeof(object_rep));
 		new(obj_rep) object_rep(object_ptr, crep, object_rep::owner, crep->destructor());
 
