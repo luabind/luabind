@@ -92,11 +92,15 @@ bool test_attributes()
 	module(L)
 	[
 		class_<my_enum_>("my_enum")
+			.def(constructor<>())
 			.enum_("constants")
 			[
 				value("my_value", my_value)
-			],
+			]
+	];
 
+	module(L)
+	[
 		class_<my_enum_user>("my_enum_user")
 			.def_readwrite("e", &my_enum_user::e),
 
@@ -148,6 +152,8 @@ bool test_attributes()
 	if (dostring(L, "a = test[3.6]")) return false;
 	if (glob["a"].type() != LUA_TNIL) return false;
 
+	if (dostring(L, "temp = my_enum")) return false;
+	if (glob["temp"].type() != LUA_TUSERDATA) return false;
 	if (dostring(L, "temp = my_enum.my_value")) return false;
 	if (object_cast<int>(glob["temp"]) != my_value) return false;
 	
@@ -173,9 +179,11 @@ bool test_attributes()
 	if (glob["test_string"].type() != LUA_TNIL) return false;
 #endif
 
+#ifndef LUABIND_NO_ERROR_CHECKING
 	if (dostring2(L, "test.o = 5") != 1) return false;
 	if (std::string("cannot set attribute 'property.o'") != lua_tostring(L, -1)) return false;
 	lua_pop(L, 1);
+#endif
 
 	if (dostring(L, "tester(test.name)")) return false;
 	if (feedback != 0) return false;

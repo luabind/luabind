@@ -240,6 +240,8 @@ namespace luabind { namespace detail
 			m_extractor = base->m_extractor;
 			m_const_extractor = base->m_const_extractor;
 			m_const_converter = base->m_const_converter;
+			m_construct_holder = base->m_construct_holder;
+			m_construct_const_holder = base->m_construct_const_holder;
 		}
 		
 	private:

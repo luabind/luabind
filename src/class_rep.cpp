@@ -32,7 +32,11 @@ using namespace luabind::detail;
 
 #ifndef LUABIND_NO_ERROR_CHECKING
 
-	std::string luabind::detail::get_overload_signatures_candidates(lua_State* L, std::vector<const overload_rep_base*>::iterator start, std::vector<const overload_rep_base*>::iterator end, std::string name)
+	std::string luabind::detail::get_overload_signatures_candidates(
+			lua_State* L
+			, std::vector<const overload_rep_base*>::iterator start
+			, std::vector<const overload_rep_base*>::iterator end
+			, std::string name)
 	{
 		std::string s;
 		for (; start != end; ++start)
@@ -490,7 +494,7 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 }
 
 // this is called as metamethod __call on the class_rep.
- int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
+int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 {
 	class_rep* crep = static_cast<class_rep*>(lua_touserdata(L, 1));
 	construct_rep* rep = &crep->m_constructor;
@@ -1382,7 +1386,7 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 	return 0;
 }
 
- int luabind::detail::class_rep::static_class_gettable(lua_State* L)
+int luabind::detail::class_rep::static_class_gettable(lua_State* L)
 {
 	class_rep* crep = static_cast<class_rep*>(lua_touserdata(L, 1));
 
@@ -1407,8 +1411,6 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 		return 1;
 	}
 
-#ifndef LUABIND_NO_ERROR_CHECKING
-
 	std::map<const char*, int, ltstr>::const_iterator j = crep->m_static_constants.find(key);
 
 	if (j != crep->m_static_constants.end())
@@ -1416,6 +1418,8 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 		lua_pushnumber(L, j->second);
 		return 1;
 	}
+
+#ifndef LUABIND_NO_ERROR_CHECKING
 
 	{
 		std::string msg = "no static '";
@@ -1429,7 +1433,9 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 
 #endif
 
-	return 0;
+	lua_pushnil(L);
+
+	return 1;
 }
 
 bool luabind::detail::is_class_rep(lua_State* L, int index)
