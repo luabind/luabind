@@ -1290,29 +1290,67 @@ private:
 
 	}
 
+#define LUABIND_DECLARE_OPERATOR(MACRO)\
+	MACRO(object, object) \
+	MACRO(object, detail::proxy_object) \
+	MACRO(object, detail::proxy_array_object) \
+	MACRO(object, detail::proxy_raw_object) \
+	MACRO(detail::proxy_object, object) \
+	MACRO(detail::proxy_object, detail::proxy_object) \
+	MACRO(detail::proxy_object, detail::proxy_array_object) \
+	MACRO(detail::proxy_object, detail::proxy_raw_object) \
+	MACRO(detail::proxy_array_object, object) \
+	MACRO(detail::proxy_array_object, detail::proxy_object) \
+	MACRO(detail::proxy_array_object, detail::proxy_array_object) \
+	MACRO(detail::proxy_array_object, detail::proxy_raw_object) \
+	MACRO(detail::proxy_raw_object, object) \
+	MACRO(detail::proxy_raw_object, detail::proxy_object) \
+	MACRO(detail::proxy_raw_object, detail::proxy_array_object) \
+	MACRO(detail::proxy_raw_object, detail::proxy_raw_object)
+
+
 #define LUABIND_EQUALITY_OPERATOR(lhs, rhs) bool operator==(const lhs&, const rhs&);
-
-	LUABIND_EQUALITY_OPERATOR(object, object)
-	LUABIND_EQUALITY_OPERATOR(object, detail::proxy_object)
-	LUABIND_EQUALITY_OPERATOR(object, detail::proxy_array_object)
-	LUABIND_EQUALITY_OPERATOR(object, detail::proxy_raw_object)
-
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_object, object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_object, detail::proxy_object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_object, detail::proxy_array_object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_object, detail::proxy_raw_object)
-
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_array_object, object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_array_object, detail::proxy_object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_array_object, detail::proxy_array_object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_array_object, detail::proxy_raw_object)
-
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_raw_object, object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_raw_object, detail::proxy_object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_raw_object, detail::proxy_array_object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_raw_object, detail::proxy_raw_object)
-
+	LUABIND_DECLARE_OPERATOR(LUABIND_EQUALITY_OPERATOR)
 #undef LUABIND_EQUALITY_OPERATOR
+
+#define LUABIND_LESSTHAN_OPERATOR(lhs, rhs) bool operator<(const lhs&, const rhs&);
+	LUABIND_DECLARE_OPERATOR(LUABIND_LESSTHAN_OPERATOR)
+#undef LUABIND_LESSTHAN_OPERATOR
+
+#define LUABIND_LESSOREQUAL_OPERATOR(lhs_t, rhs_t) bool operator<=(const lhs_t&, const rhs_t&);
+	LUABIND_DECLARE_OPERATOR(LUABIND_LESSOREQUAL_OPERATOR)
+#undef LUABIND_LESSOREQUAL_OPERATOR
+
+#define LUABIND_INEQUALITY_OPERATOR(lhs_t, rhs_t)\
+	inline bool operator!=(const rhs_t& rhs, const lhs_t& lhs) \
+	{ \
+		return !(rhs == lhs); \
+	}
+
+	LUABIND_DECLARE_OPERATOR(LUABIND_INEQUALITY_OPERATOR)
+
+#undef LUABIND_INEQUALITY_OPERATOR
+
+#define LUABIND_GREATEROREQUAL_OPERATOR(lhs_t, rhs_t)\
+	inline bool operator>=(const rhs_t& rhs, const lhs_t& lhs) \
+	{ \
+		return !(rhs < lhs); \
+	}
+
+	LUABIND_DECLARE_OPERATOR(LUABIND_GREATEROREQUAL_OPERATOR)
+
+#undef LUABIND_GREATEROREQUAL_OPERATOR
+
+#define LUABIND_GREATERTHAN_OPERATOR(lhs_t, rhs_t)\
+	inline bool operator>(const lhs_t& lhs, const rhs_t& rhs) \
+	{ \
+		return !(lhs <= rhs); \
+	}
+
+	LUABIND_DECLARE_OPERATOR(LUABIND_GREATERTHAN_OPERATOR)
+#undef LUABIND_GREATERTHAN_OPERATOR
+
+#undef LUABIND_DECLARE_OPERATOR
 
 }
 

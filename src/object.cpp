@@ -179,6 +179,25 @@ LUABIND_RAW_PROXY_ASSIGNMENT_OPERATOR(proxy_array_object)
 
 	} // detail
 
+#define LUABIND_DECLARE_OPERATOR(MACRO)\
+	MACRO(object, object) \
+	MACRO(object, detail::proxy_object) \
+	MACRO(object, detail::proxy_array_object) \
+	MACRO(object, detail::proxy_raw_object) \
+	MACRO(detail::proxy_object, object) \
+	MACRO(detail::proxy_object, detail::proxy_object) \
+	MACRO(detail::proxy_object, detail::proxy_array_object) \
+	MACRO(detail::proxy_object, detail::proxy_raw_object) \
+	MACRO(detail::proxy_array_object, object) \
+	MACRO(detail::proxy_array_object, detail::proxy_object) \
+	MACRO(detail::proxy_array_object, detail::proxy_array_object) \
+	MACRO(detail::proxy_array_object, detail::proxy_raw_object) \
+	MACRO(detail::proxy_raw_object, object) \
+	MACRO(detail::proxy_raw_object, detail::proxy_object) \
+	MACRO(detail::proxy_raw_object, detail::proxy_array_object) \
+	MACRO(detail::proxy_raw_object, detail::proxy_raw_object)
+
+
 		// *****************************
 		// OPERATOR ==
 
@@ -198,25 +217,7 @@ LUABIND_RAW_PROXY_ASSIGNMENT_OPERATOR(proxy_array_object)
 		return result; \
 	}
 
-	LUABIND_EQUALITY_OPERATOR(object, object)
-	LUABIND_EQUALITY_OPERATOR(object, detail::proxy_object)
-	LUABIND_EQUALITY_OPERATOR(object, detail::proxy_array_object)
-	LUABIND_EQUALITY_OPERATOR(object, detail::proxy_raw_object)
-
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_object, object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_object, detail::proxy_object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_object, detail::proxy_array_object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_object, detail::proxy_raw_object)
-
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_array_object, object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_array_object, detail::proxy_object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_array_object, detail::proxy_array_object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_array_object, detail::proxy_raw_object)
-
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_raw_object, object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_raw_object, detail::proxy_object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_raw_object, detail::proxy_array_object)
-	LUABIND_EQUALITY_OPERATOR(detail::proxy_raw_object, detail::proxy_raw_object)
+	LUABIND_DECLARE_OPERATOR(LUABIND_EQUALITY_OPERATOR)
 
 #undef LUABIND_EQUALITY_OPERATOR
 
@@ -237,6 +238,55 @@ LUABIND_RAW_PROXY_ASSIGNMENT_OPERATOR(proxy_array_object)
 	LUABIND_ASSIGNMENT_OPERATOR(proxy_object)
 	LUABIND_ASSIGNMENT_OPERATOR(proxy_array_object)
 	LUABIND_ASSIGNMENT_OPERATOR(proxy_raw_object)
+
+
+	
+		// *****************************
+		// OPERATOR ==
+
+
+
+#define LUABIND_LESSTHAN_OPERATOR(lhs_t, rhs_t)\
+	bool operator<(const lhs_t& lhs, const rhs_t& rhs) \
+	{ \
+		if (!lhs.is_valid()) return false; \
+		if (!rhs.is_valid()) return false; \
+		assert((lhs.lua_state() == rhs.lua_state()) && "you cannot compare objects from different lua states"); \
+		lua_State* L = lhs.lua_state(); \
+		lhs.pushvalue(); \
+		rhs.pushvalue(); \
+		bool result = lua_lessthan(L, -1, -2) != 0; \
+		lua_pop(L, 2); \
+		return result; \
+	}
+
+	LUABIND_DECLARE_OPERATOR(LUABIND_LESSTHAN_OPERATOR)
+
+#undef LUABIND_LESSTHAN_OPERATOR
+
+#define LUABIND_LESSOREQUAL_OPERATOR(lhs_t, rhs_t)\
+	bool operator<=(const lhs_t& lhs, const rhs_t& rhs) \
+	{ \
+		if (!lhs.is_valid()) return false; \
+		if (!rhs.is_valid()) return false; \
+		assert((lhs.lua_state() == rhs.lua_state()) && "you cannot compare objects from different lua states"); \
+		lua_State* L = lhs.lua_state(); \
+		lhs.pushvalue(); \
+		rhs.pushvalue(); \
+		bool result1 = lua_lessthan(L, -1, -2) != 0; \
+		bool result2 = lua_equal(L, -1, -2) != 0; \
+		lua_pop(L, 2); \
+		return result1 || result2; \
+	}
+
+	LUABIND_DECLARE_OPERATOR(LUABIND_LESSOREQUAL_OPERATOR)
+
+#undef LUABIND_LESSOREQUAL_OPERATOR
+
+#undef LUABIND_GREATERTHAN_OPERATOR
+
+
+#undef LUABIND_DECLARE_OPERATOR
 
 }
 
