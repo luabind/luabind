@@ -36,6 +36,7 @@
 #include <luabind/config.hpp>
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/convert_to_lua.hpp>
+#include <luabind/detail/pcall.hpp>
 #include <luabind/error.hpp>
 
 namespace luabind
@@ -82,7 +83,7 @@ namespace luabind
 					m_func->pushvalue();
 
 					push_args_from_tuple<1>::apply(L, m_args);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 0, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error(L);
@@ -126,7 +127,7 @@ namespace luabind
 					m_func->pushvalue();
 
 					push_args_from_tuple<1>::apply(L, m_args);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value, 1))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error(L);
@@ -189,7 +190,7 @@ namespace luabind
 					m_func->pushvalue();
 
 					detail::push_args_from_tuple<1>::apply(L, m_args, p);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value, 1))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw error(L);
@@ -279,7 +280,7 @@ namespace luabind
 					m_func->pushvalue();
 
 					push_args_from_tuple<1>::apply(L, m_args);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 0, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error(L);
@@ -320,7 +321,7 @@ namespace luabind
 					m_func->pushvalue();
 
 					detail::push_args_from_tuple<1>::apply(L, m_args, p);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 0, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw error(L); 

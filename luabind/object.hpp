@@ -30,6 +30,7 @@
 #include <luabind/prefix.hpp>
 #include <luabind/config.hpp>
 #include <luabind/error.hpp>
+#include <luabind/detail/pcall.hpp>
 
 #include <boost/preprocessor/repeat.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
@@ -116,7 +117,7 @@ namespace luabind
 				lua_State* L = m_obj->lua_state();
 				m_obj->pushvalue();
 				detail::push_args_from_tuple<1>::apply(L, m_args, p);
-				if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
+				if (pcall(L, boost::tuples::length<Tuple>::value, 1))
 				{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 					throw error(L);
@@ -1181,7 +1182,7 @@ private:
 			lua_State* L = m_obj->lua_state();
 			m_obj->pushvalue();
 			detail::push_args_from_tuple<1>::apply(L, m_args, p);
-			if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
+			if (pcall(L, boost::tuples::length<Tuple>::value, 1))
 			{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 				throw error(L);
@@ -1303,7 +1304,7 @@ private:
 			m_obj->pushvalue();
 
 			push_args_from_tuple<1>::apply(L, m_args);
-			if (lua_pcall(L, boost::tuples::length<Tuple>::value, 0, 0))
+			if (pcall(L, boost::tuples::length<Tuple>::value, 0))
 			{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 				throw luabind::error(L);
@@ -1326,7 +1327,7 @@ private:
 			m_obj->pushvalue();
 
 			push_args_from_tuple<1>::apply(L, m_args);
-			if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
+			if (pcall(L, boost::tuples::length<Tuple>::value, 1))
 			{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 				throw luabind::error(L);

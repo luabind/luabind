@@ -38,8 +38,9 @@
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 
-#include <luabind/detail/convert_to_lua.hpp>
 #include <luabind/error.hpp>
+#include <luabind/detail/convert_to_lua.hpp>
+#include <luabind/detail/pcall.hpp>
 
 namespace luabind
 {
@@ -84,7 +85,7 @@ namespace luabind
 					lua_gettable(L, LUA_GLOBALSINDEX);
 
 					push_args_from_tuple<1>::apply(L, m_args);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 0, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error(L);
@@ -113,7 +114,7 @@ namespace luabind
 					lua_gettable(L, LUA_GLOBALSINDEX);
 
 					push_args_from_tuple<1>::apply(L, m_args);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value, 1))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error(L); 
@@ -162,7 +163,7 @@ namespace luabind
 					lua_gettable(L, LUA_GLOBALSINDEX);
 
 					detail::push_args_from_tuple<1>::apply(L, m_args, p);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value, 1))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw error(L);
@@ -241,7 +242,7 @@ namespace luabind
 					lua_gettable(L, LUA_GLOBALSINDEX);
 
 					push_args_from_tuple<1>::apply(L, m_args);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 0, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error(L);
@@ -267,7 +268,7 @@ namespace luabind
 					lua_gettable(L, LUA_GLOBALSINDEX);
 
 					detail::push_args_from_tuple<1>::apply(L, m_args, p);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value, 0, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw error(L);

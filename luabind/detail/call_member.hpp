@@ -28,6 +28,7 @@
 
 #include <luabind/config.hpp>
 #include <luabind/detail/convert_to_lua.hpp>
+#include <luabind/detail/pcall.hpp>
 #include <luabind/error.hpp>
 
 namespace luabind
@@ -45,7 +46,7 @@ namespace luabind
 //			friend class luabind::object;
 			public:
 
-				proxy_member_caller(luabind::object* o, const char* name, const Tuple args)
+				proxy_member_caller(luabind::object const* o, const char* name, const Tuple args)
 					: m_obj(o)
 					, m_member_name(name)
 					, m_args(args)
@@ -79,7 +80,7 @@ namespace luabind
 					m_obj->pushvalue();
 
 					push_args_from_tuple<1>::apply(L, m_args);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value + 1, 0, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value + 1, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error(L);
@@ -111,7 +112,7 @@ namespace luabind
 					m_obj->pushvalue();
 
 					push_args_from_tuple<1>::apply(L, m_args);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value + 1, 1, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value + 1, 1))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error(L); 
@@ -163,7 +164,7 @@ namespace luabind
 					m_obj->pushvalue();
 
 					detail::push_args_from_tuple<1>::apply(L, m_args, p);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value + 1, 1, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value + 1, 1))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw error(L);
@@ -198,7 +199,7 @@ namespace luabind
 
 			private:
 
-				luabind::object* m_obj;
+				luabind::object const* m_obj;
 				const char* m_member_name;
 				Tuple m_args;
 				mutable bool m_called;
@@ -212,7 +213,7 @@ namespace luabind
 			friend class luabind::object;
 			public:
 
-				proxy_member_void_caller(luabind::object* o, const char* name, const Tuple args)
+				proxy_member_void_caller(luabind::object const* o, const char* name, const Tuple args)
 					: m_obj(o)
 					, m_member_name(name)
 					, m_args(args)
@@ -246,7 +247,7 @@ namespace luabind
 					m_obj->pushvalue();
 
 					push_args_from_tuple<1>::apply(L, m_args);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value + 1, 0, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value + 1, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error(L);
@@ -278,7 +279,7 @@ namespace luabind
 
 
 					detail::push_args_from_tuple<1>::apply(L, m_args, p);
-					if (lua_pcall(L, boost::tuples::length<Tuple>::value + 1, 0, 0))
+					if (pcall(L, boost::tuples::length<Tuple>::value + 1, 0))
 					{ 
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw error(L);
@@ -295,7 +296,7 @@ namespace luabind
 
 			private:
 
-				luabind::object* m_obj;
+				luabind::object const* m_obj;
 				const char* m_member_name;
 				Tuple m_args;
 				mutable bool m_called;
@@ -321,7 +322,7 @@ namespace luabind
 	typename boost::mpl::if_<boost::is_void<R>
 			, luabind::detail::proxy_member_void_caller<boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> >
 			, luabind::detail::proxy_member_caller<R, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type
-	call_member(luabind::object& obj, const char* name BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_OPERATOR_PARAMS, _))
+	call_member(luabind::object const& obj, const char* name BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_OPERATOR_PARAMS, _))
 	{
 		typedef boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> tuple_t;
 #if BOOST_PP_ITERATION() == 0
@@ -334,7 +335,7 @@ namespace luabind
 			, luabind::detail::proxy_member_void_caller<boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> >
 			, luabind::detail::proxy_member_caller<R, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type proxy_type;
 		
-		return proxy_type(const_cast<luabind::object*>(&obj), name, args);
+		return proxy_type(&obj, name, args);
 	}
 
 #undef LUABIND_OPERATOR_PARAMS

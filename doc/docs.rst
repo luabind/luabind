@@ -2146,3 +2146,35 @@ I cannot register a function with a non-const parameter
     This is because there is no way to get a reference to a lua value. Have 
     a look at out_value and pure_out_value policies.
 
+
+Known issues
+============
+
+- You cannot use strings with extra nulls in them as member names that refers
+  to C++ members. 
+
+- If one class registers two functions with the same name and the same 
+  signature, there's currently no error. The last registered function will 
+  be the one that's used. 
+
+- In vc7, classes can not be called test. 
+
+.. remove? - Visual studio have problems selecting the correct overload of std::swap() 
+  for luabind::object. 
+
+- If you register a function and later rename it, error messages will use the 
+  original function name.
+
+
+Acknowledgments
+===============
+
+This library was written by Daniel Wallin and Arvid Norberg. © Copyright 2003. 
+All rights reserved.
+
+This library was inspired by Dave Abrahams' Boost.Python library which can be 
+found in the boost_ library.
+
+Evan Wies has contributed with thorough testing and countless bug reports and
+feature ideas.
+
