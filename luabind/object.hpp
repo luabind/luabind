@@ -348,9 +348,6 @@ namespace luabind
 				return *this;
 			}
 
-			template<class T>
-			detail::proxy_object operator[](const T& key) const;
-
 			proxy_raw_object& operator=(const object& p);
 			proxy_raw_object& operator=(const proxy_object& p);
 			proxy_raw_object& operator=(const proxy_raw_object& p);
@@ -451,9 +448,6 @@ namespace luabind
 				return *this;
 			}
 
-			template<class T>
-			detail::proxy_object operator[](const T& key) const;
-
 			proxy_array_object& operator=(const object& p);
 			proxy_array_object& operator=(const proxy_object& p);
 			proxy_array_object& operator=(const proxy_raw_object& p);
@@ -511,16 +505,7 @@ namespace luabind
 			template<class T>
 			inline object raw_at(const T& key);
 #endif
-/*
-			template<class T>
-			inline detail::proxy_object operator[](const T& key) const
-			{
-				detail::convert_to_lua(m_state, key);
-				lua_reference ref;
-				ref.set(m_state);
-				return detail::proxy_object(const_cast<object*>(this), ref);
-			}
-*/
+
 			inline bool is_valid() const { return true; }
 			lua_State* lua_state() const;
 			void pushvalue() const;
