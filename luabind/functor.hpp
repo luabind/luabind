@@ -102,6 +102,23 @@ namespace luabind
 
 					m_called = true;
 					lua_State* L = m_func->lua_state();
+#ifndef LUABIND_NO_ERROR_CHECKING
+					if (L == 0)
+					{
+	#ifndef LUABIND_NO_EXCEPTIONS
+						throw error(L); 
+	#else
+						error_callback_fun e = detail::error_callback::get().err;
+						if (e) e(L);
+	
+						assert(0 && "tried to call uninitialized functor object."
+							"if you want to handle this error use luabind::set_error_callback()");
+						std::terminate();
+	#endif
+					}
+#endif
+
+
 					detail::stack_pop p(L, 1); // pop the return value
 
 					// get the function
@@ -149,6 +166,22 @@ namespace luabind
 
 					m_called = true;
 					lua_State* L = m_func->lua_state();
+#ifndef LUABIND_NO_ERROR_CHECKING
+					if (L == 0)
+					{
+	#ifndef LUABIND_NO_EXCEPTIONS
+						throw error(L); 
+	#else
+						error_callback_fun e = detail::error_callback::get().err;
+						if (e) e(L);
+	
+						assert(0 && "tried to call uninitialized functor object."
+							"if you want to handle this error use luabind::set_error_callback()");
+						std::terminate();
+	#endif
+					}
+#endif
+
 					detail::stack_pop popper(L, 1); // pop the return value
 
 					// get the function
@@ -224,6 +257,22 @@ namespace luabind
 
 					m_called = true;
 					lua_State* L = m_func->lua_state();
+#ifndef LUABIND_NO_ERROR_CHECKING
+					if (L == 0)
+					{
+	#ifndef LUABIND_NO_EXCEPTIONS
+						throw error(L); 
+	#else
+						error_callback_fun e = detail::error_callback::get().err;
+						if (e) e(L);
+	
+						assert(0 && "tried to call uninitialized functor object."
+							"if you want to handle this error use luabind::set_error_callback()");
+						std::terminate();
+	#endif
+					}
+#endif
+
 
 					// get the function
 					m_func->pushvalue();
@@ -249,6 +298,22 @@ namespace luabind
 				{
 					m_called = true;
 					lua_State* L = m_func->lua_state();
+#ifndef LUABIND_NO_ERROR_CHECKING
+					if (L == 0)
+					{
+	#ifndef LUABIND_NO_EXCEPTIONS
+						throw error(L); 
+	#else
+						error_callback_fun e = detail::error_callback::get().err;
+						if (e) e(L);
+	
+						assert(0 && "tried to call uninitialized functor object."
+							"if you want to handle this error use luabind::set_error_callback()");
+						std::terminate();
+	#endif
+					}
+#endif
+
 
 					// get the function
 					m_func->pushvalue();
