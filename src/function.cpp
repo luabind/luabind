@@ -22,8 +22,6 @@
 
 #include <luabind/lua_include.hpp>
 
-#define LUABIND_BUILDING
-
 #include <luabind/config.hpp>
 #include <luabind/luabind.hpp>
 

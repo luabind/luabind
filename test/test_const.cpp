@@ -1,53 +1,37 @@
-#include "test.h"
+#include "test.hpp"
+#include <luabind/luabind.hpp>
 
-namespace
-{
-	LUABIND_ANONYMOUS_FIX int feedback = 0;
+namespace {
 
-	struct A
-	{
-		const A* f() { return this; }
+    struct A
+    {
+        const A* f() { return this; }
 
-		void g() const { feedback = 1; }
-		void g() { feedback = 2; }
-	};
+        int g1() const { return 1; }
+        int g2() { return 2; }
+    };
 
 } // anonymous namespace
 
-bool test_const()
+void test_const()
 {
-	using namespace luabind;
+    lua_state L;
 
-	lua_State* L = lua_open();
-	lua_closer c(L);
-	int top = lua_gettop(L);
+    using namespace luabind;
 
-	open(L);
+    module(L)
+    [
+        class_<A>("A")
+            .def(constructor<>())
+            .def("f", &A::f)
+            .def("g", &A::g1)
+            .def("g", &A::g2)
+    ];
+   
+    DOSTRING(L, "a = A()");
+    DOSTRING(L, "assert(a:g() == 2)");
 
-	typedef void(A::*g1_t)();
-	typedef void(A::*g2_t)() const;
-	
-	g1_t g1 = &A::g;
-	g2_t g2 = &A::g;
-
-	module(L)
-	[
-		class_<A>("A")
-			.def(constructor<>())
-			.def("f", &A::f)
-			.def("g", /*(void(A::*)() const) &A::g*/ g1)
-			.def("g", /*(void(A::*)()) &A::g*/ g2)
-	];
-
-	if (dostring(L, "a = A()")) return false;
-	if (dostring(L, "a:g()")) return false;
-	if (feedback != 2) return false;
-
-	if (dostring(L, "a2 = a:f()")) return false;
-	if (dostring(L, "a2:g()")) return false;
-	if (feedback != 1) return false;
-
-	if (top != lua_gettop(L)) return false;
-
-	return true;
+    DOSTRING(L, "a2 = a:f()");
+    DOSTRING(L, "assert(a2:g() == 1)");
 }
+

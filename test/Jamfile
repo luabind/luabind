@@ -1,6 +1,7 @@
 import testing ;
 
 SOURCES = 
+    test_const.cpp
     test_object.cpp
     test_implicit_cast.cpp
     test_scope.cpp
