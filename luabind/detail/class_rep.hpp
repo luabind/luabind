@@ -176,7 +176,8 @@ namespace luabind { namespace detail
 				return j->second.func(L, j->second.pointer_offset);
 			}
 
-			return 0;
+			lua_pushnil(L);
+			return 1;
 		}
 
 		// called from the metamethod for __newindex
@@ -1183,7 +1184,8 @@ namespace luabind { namespace detail
 			return j->second.func(L, j->second.pointer_offset);
 		}
 
-		return 0;
+		lua_pushnil(L);
+		return 1;
 	}
 
 	// called from the metamethod for __newindex

@@ -35,10 +35,25 @@ namespace luabind { namespace detail
 		char storage[N];
 	};
 
-/*
-	
-	This ICE's gcc3.0, solution below, working on all compilers?
-*/
+#if defined(__GNUC__) && ( __GNUC__ == 3 && __GNUC_MINOR__ == 1 )
+
+	template<class U>
+	char_array<sizeof(U)> indirect_sizeof_test(by_reference<U>);
+
+	template<class U>
+	char_array<sizeof(U)> indirect_sizeof_test(by_const_reference<U>);
+
+	template<class U>
+	char_array<sizeof(U)> indirect_sizeof_test(by_pointer<U>);
+
+	template<class U>
+	char_array<sizeof(U)> indirect_sizeof_test(by_const_pointer<U>);
+
+	template<class U>
+	char_array<sizeof(U)> indirect_sizeof_test(by_value<U>);
+
+#else
+
 	template<class U>
 	char_array<sizeof(typename identity<U>::type)> indirect_sizeof_test(by_reference<U>);
 
@@ -54,23 +69,8 @@ namespace luabind { namespace detail
 	template<class U>
 	char_array<sizeof(typename identity<U>::type)> indirect_sizeof_test(by_value<U>);
 
+#endif
 
-/*
-	template<class U>
-	char_array<sizeof(U)> indirect_sizeof_test(by_reference<U>);
-
-	template<class U>
-	char_array<sizeof(U)> indirect_sizeof_test(by_const_reference<U>);
-
-	template<class U>
-	char_array<sizeof(U)> indirect_sizeof_test(by_pointer<U>);
-
-	template<class U>
-	char_array<sizeof(U)> indirect_sizeof_test(by_const_pointer<U>);
-
-	template<class U>
-	char_array<sizeof(U)> indirect_sizeof_test(by_value<U>);
-*/
 	template<class T>
 	struct indirect_sizeof
 	{
