@@ -932,7 +932,7 @@ namespace luabind
 			}
 		};
 
-		class_(const char* name): class_base(name), static_(*this)
+		class_(const char* name): class_base(name), scope(*this)
 		{
 #ifndef NDEBUG
 			detail::check_link_compatibility();
