@@ -29,10 +29,10 @@ OBJECTS = $(SOURCES:.cpp=.o)
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CXX) -O3 $(OBJECTS) $(LUA_LIB_PATH) -L../lib -lluabind -llua -llualib -o $@
+	$(CXX) -g $(OBJECTS) $(LUA_LIB_PATH) -L../lib -lluabind -llangbinding-static -llangbinding -llua -llualib -o $@
 
 %.o:%.cpp
-	$(CXX) -Wall -ftemplate-depth-50 -O3 $(CONFIG) $(LUA_PATH) -I. -I- -I../ $(BOOST_PATH) -c $? -o $@
+	$(CXX) -Wall -ftemplate-depth-50 -g $(CONFIG) $(LUA_PATH) -I. -I- -I../ $(BOOST_PATH) -c $? -o $@
 
 relink:
 	rm -f $(TARGET)

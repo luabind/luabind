@@ -118,6 +118,8 @@ namespace std
 	#define LUABIND_INVALID_TYPE_INFO &typeid(detail::null_type)
 #endif
 
+#define BOOST_LANGBINDING_TYPE_INFO LUABIND_TYPE_INFO
+
 // LUABIND_NO_EXCEPTIONS
 // this define will disable all usage of try, catch and throw in
 // luabind. This will in many cases disable runtime-errors, such

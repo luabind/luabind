@@ -126,6 +126,8 @@
 #include <luabind/detail/implicit_cast.hpp>
 #include <luabind/detail/operator_id.hpp>
 
+//#include <boost/langbinding/inheritance.hpp>
+
 namespace luabind
 {	
 	namespace detail
@@ -898,6 +900,9 @@ namespace luabind
 	
 			std::swap(crep->m_static_constants, m_static_constants);
 
+			// here!
+//			crep->m_methods = m_methods;
+
 			for (std::vector<base_desc>::iterator i = m_bases.begin();
 							i != m_bases.end(); 
 							++i)
@@ -912,6 +917,28 @@ namespace luabind
 				base.base = bcrep;
 
 				crep->add_base_class(base);
+
+				typedef std::map<const char*, detail::method_rep, detail::ltstr> methods_t;
+
+				for (methods_t::const_iterator i 
+						= bcrep->m_methods.begin()
+						; i != bcrep->m_methods.end()
+						; ++i)
+				{
+					detail::method_rep& m = m_methods[i->first];
+
+					typedef std::vector<detail::overload_rep> overloads_t;
+
+					for (overloads_t::const_iterator j
+							= i->second.overloads().begin()
+							; j != i->second.overloads().end()
+							; ++j)
+					{
+						detail::overload_rep o = *j;
+						o.add_offset(base.pointer_offset);
+						m.add_overload(o);
+					}
+				}
 
 				// copy base class table
 				detail::getref(L, crep->table_ref());
@@ -940,6 +967,12 @@ namespace luabind
 			for (std::map<const char*, detail::method_rep, detail::ltstr>::iterator i 
 				= m_methods.begin(); i != m_methods.end(); ++i)
 			{
+				detail::getref(L, crep->table_ref());
+				lua_pushstring(L, i->first);
+				lua_pushnil(L);
+				lua_settable(L, -3);
+				lua_pop(L, 1);
+
 				crep->add_method(L, i->first, crep->m_methods[i->first]);
 				i->second.crep = crep;
 			}
@@ -1051,13 +1084,26 @@ namespace luabind
 			>
 		  , detail::null_type
 		>::type HeldType;
+/*
+		template<class To>
+		void register_downcast(boost::mpl::true_, detail::type<To>* = 0)
+		{ boost::langbinding::register_conversion<To, T>(true); }
 
+		template<class To>
+		void register_downcast(boost::mpl::false_, detail::type<To>* = 0)
+		{}
+*/
 		// this function generates conversion information
 		// in the given class_rep structure. It will be able
 		// to implicitly cast to the given template type
 		template<class To>
 		void gen_base_info(detail::type<To>)
 		{
+//			boost::langbinding::register_dynamic_id<To>();
+//			boost::langbinding::register_conversion<T, To>(false);
+
+//			register_downcast<To>(boost::mpl::bool_<boost::is_polymorphic<To>::value>());
+
 			// fist, make sure the given base class is registered.
 			// if it's not registered we can't push it's lua table onto
 			// the stack because it doesn't have a table
@@ -1372,6 +1418,8 @@ namespace luabind
 				>::type Base;
 	
 			HeldType* crap = 0;
+
+//			boost::langbinding::register_dynamic_id<T>();
 
 			class_base::init(LUABIND_TYPEID(T)
 				, detail::internal_holder_type<HeldType>::apply()

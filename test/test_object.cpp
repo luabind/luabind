@@ -1,5 +1,11 @@
 #include "test.h"
 #include <iostream>
+#include <string>
+
+extern "C"
+{
+	#include "lauxlib.h"
+}
 
 namespace
 {
@@ -95,13 +101,86 @@ namespace
 		feedback1 = 27;
 	}
 
+/*******************************************/
+// Evan's diabolical test case
+	class Message {};
+
+	class IMessageClient
+	{
+	public:
+		virtual bool	OnMessage( Message* pMessage )		= 0;
+	};
+
+	class IState
+	{
+	public:
+		virtual bool			OnMessage( Message* pMessage )		= 0;
+		virtual const char *	getName()							= 0;
+	};
+	class StateImpl	: public IState
+	{
+	public:
+		virtual bool			OnMessage( Message* pMessage )		{ return false; }
+		virtual const char *	getName()							{ return NULL; }
+	};
+	class FSM
+		: public IMessageClient, public StateImpl
+	{
+	protected:
+		IState*	m_pCurrentState;
+		IState*	m_pNewState;
+		IState*	m_pGlobalState;
+		IState* m_pPreviousState;
+		bool	m_bForceStateTransition;
+	public:
+		FSM() {}
+		virtual ~FSM() {}
+		IState * getCurrentState()							{ return m_pCurrentState; }
+		IState * getNewState()								{ return m_pNewState; }
+		IState * getPreviousState()							{ return m_pPreviousState; }
+		IState * getGlobalState()							{ return m_pGlobalState; }
+
+		virtual const char * getName()						{ return NULL; }
+		virtual void	Update( float fDeltaTime )			{}
+
+		virtual bool	OnMessage( Message* pMessage )		{ return true; }
+
+		virtual void addState( IState * state )				{}
+		virtual void addState( IState * state, const std::string & stateName ) {}
+	};
+
+
+	class ActorBrain  : public IMessageClient
+	{
+	public:
+		ActorBrain()			{}
+		virtual ~ActorBrain()	{}
+		virtual void setActorParent(void* pParent)			{ m_p= pParent; }
+		void*	getParentActor()							{ return m_p; }
+		virtual void Update(float fDeltaTime) = 0;
+	protected:
+		void* m_p;
+	};
+	class AgentBrain
+		: public ActorBrain, public FSM
+	{
+	public:
+		AgentBrain()	{}
+		virtual bool OnMessage(Message * pMessage ) { return true; }
+		virtual void	Update( float fDeltaTime )	{}
+	};
+
 } // anonymous namespace
+
+
 
 bool test_object()
 {
 	using namespace luabind;
 
 	lua_State* L = lua_open();
+	luaopen_base( L );
+
 	int top = lua_gettop(L);
 	{
 		open(L);
@@ -118,8 +197,28 @@ bool test_object()
 				.def("foo",&test_param::foo ),
 			class_<test_param2, test_param>("test_param2")
 				.def(constructor<>())
-				.def("foo",(void(test_param2::*)(bool))&test_param2::foo )
+				.def("foo",(void(test_param2::*)(bool))&test_param2::foo ),
+
+			// Evan's diabolical test
+			class_<IMessageClient>( "IMessageClient" )
+				.def( "onMessage",			&IMessageClient::OnMessage )
+			,
+			class_<IState>( "State" )
+			,
+
+			class_<FSM, IState>( "FSM" )
+				.def( constructor<>() )
+				.def( "addState", (void(FSM::*)(IState*))&FSM::addState )//, adopt(_1) )
+				.def( "addState", (void(FSM::*)(IState*,const std::string &))&FSM::addState )//, adopt(_1) )
+			,
+			class_<ActorBrain>( "ActorBrain" )
+			,
+			class_<AgentBrain, bases<ActorBrain, FSM> >( "AgentBrain" )
+				.def( constructor<>() )
 		];
+
+		// Evan's diabolical test
+		int nResult = lua_dofile( L, "ew_test.lua" );
 
 		dostring(L, "t = test_param();");
 		dostring(L, "t:foo();");

@@ -26,6 +26,7 @@
 
 #include <luabind/config.hpp>
 #include <luabind/detail/ref.hpp>
+#include <luabind/instance_holder.hpp>
 
 namespace luabind { namespace detail
 {
@@ -49,7 +50,8 @@ namespace luabind { namespace detail
 			m_lua_table_ref(LUA_NOREF),
 			m_destructor(dest),
 			m_dependency_cnt(1),
-			m_dependency_ref(LUA_NOREF)
+			m_dependency_ref(LUA_NOREF),
+			m_instance(0)
 		{
 			// if the object is owned by lua, a valid destructor must be given
 			assert((((m_flags & owner) && dest) || !(m_flags & owner)) && "internal error, please report");
@@ -67,11 +69,14 @@ namespace luabind { namespace detail
 			, m_destructor(0)
 			, m_dependency_cnt(1)
 			, m_dependency_ref(LUA_NOREF)
+			, m_instance(0)
 		{
 		}
 
 		~object_rep() 
 		{ 
+			delete m_instance;
+
 			if (m_flags & owner && m_destructor) m_destructor(m_object);
 		}
 
@@ -123,6 +128,12 @@ namespace luabind { namespace detail
 			if (m_lua_table_ref != LUA_NOREF) detail::unref(L, m_lua_table_ref); // correct?
 		}
 
+		instance_holder* instance() const
+		{ return m_instance; }
+
+		void set_instance(instance_holder* x)
+		{ m_instance = x; }
+
 		static int garbage_collector(lua_State* L)
 		{
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, -1));
@@ -144,6 +155,9 @@ namespace luabind { namespace detail
 		void(*m_destructor)(void*); // this could be in class_rep? it can't: see intrusive_ptr
 		int m_dependency_cnt; // counts dependencies
 		int m_dependency_ref; // reference to lua table holding dependency references
+
+		// ======== the new way, separate object_rep from the holder
+		instance_holder* m_instance;
 	};
 
 	template<class T>

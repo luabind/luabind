@@ -9,7 +9,8 @@ SOURCES = \
 	create_class.cpp \
 	stack_content_by_name.cpp \
 	object.cpp \
-	class_info.cpp
+	class_info.cpp \
+	find_instance.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
@@ -26,7 +27,7 @@ $(TARGET):	$(OBJECTS)
 	ranlib $@
 
 %.o:%.cpp
-	$(CXX) -O3 -Wall -c $? -o $@ $(LUA_PATH) -I- -I.. $(BOOST_PATH) $(CONFIG)
+	$(CXX) -g -Wall -c $? -o $@ $(LUA_PATH) -I- -I.. $(BOOST_PATH) $(CONFIG)
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)

@@ -4,7 +4,7 @@ namespace
 {
 	LUABIND_ANONYMOUS_FIX int feedback = 0;
 
-	struct A {};
+	struct A { virtual ~A() {} };
 	struct B: public A {};
 
 	struct test_implicit
@@ -14,7 +14,18 @@ namespace
 	};
 
 } // anonymous namespace
+/*
+#include <luabind/pointer_holder.hpp>
 
+void test_instance_holder(lua_State* L)
+{
+	using namespace luabind;
+
+//	pointer_holder<A, A*> holder(new B);
+
+//	void* p = holder.holds(LUABIND_TYPEID(B));
+}
+*/
 bool test_implicit_cast()
 {
 	using namespace luabind;
@@ -41,6 +52,8 @@ bool test_implicit_cast()
 			.def("f", (f1) &test_implicit::f)
 			.def("f", (f2) &test_implicit::f)
 	];
+
+//	test_instance_holder(L);
 
 	if (dostring(L, "a = A()")) return false;
 	if (dostring(L, "b = B()")) return false;

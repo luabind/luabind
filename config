@@ -18,6 +18,8 @@
 #lua lib path is used for the test program
 
 #LUA_LIB_PATH = -L/scratch/lua-5.0/lib
+BOOST_PATH = -I/home/Dew/boost
+
 LUA_LIB_PATH = -L/usr/local/lib
 
 CXX = g++
