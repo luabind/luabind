@@ -1,4 +1,5 @@
 #include "test.h"
+#include <iostream>
 
 namespace
 {
@@ -65,6 +66,11 @@ bool test_exceptions()
 		lua_pop(L, 1);
 		if (dostring2(L, "a:h()") != 1) throw 0;
 		if (std::string("exception_thrower:h() threw an exception") != lua_tostring(L, -1)) throw 0;
+		lua_pop(L, 1);
+
+		if (!dostring2(L, "obj = exception_thrower('incorrect', 'parameters', 'constructor')")) return false;
+		std::cout << lua_tostring(L, -1) << "\n";
+		// pop the error string
 		lua_pop(L, 1);
 
 		if (top != lua_gettop(L)) return false;

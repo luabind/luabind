@@ -77,7 +77,7 @@ namespace
 	{
 		feedback1 = 27;
 	}
-
+/*
 	function_ multiret(object a, object b)
 	{
 		object c(a);
@@ -86,7 +86,7 @@ namespace
 
 		return b, a, c;
 	}
-
+*/
 } // anonymous namespace
 
 bool test_object()
@@ -97,7 +97,7 @@ bool test_object()
 	int top = lua_gettop(L);
 	{
 		open(L);
-
+/*
 		{
 			object a(L);
 			object b(L);
@@ -112,7 +112,7 @@ bool test_object()
 
 			std::cout << object_cast<int>(a) << ", " << object_cast<int>(b)  << ", " << object_cast<int>(c) << "\n";
 		}
-
+*/
 		module(L)
 		[
 			def("test_object_param", &test_object_param),

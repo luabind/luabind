@@ -1243,7 +1243,7 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 
 // called from the metamethod for __index
 // obj is the object pointer
- int luabind::detail::class_rep::lua_class_gettable(lua_State* L)
+int luabind::detail::class_rep::lua_class_gettable(lua_State* L)
 {
 	object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
 	class_rep* crep = obj->crep();

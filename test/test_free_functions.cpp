@@ -1,5 +1,6 @@
 #include "test.h"
 #include <luabind/functor.hpp>
+#include <iostream>
 
 namespace
 {
@@ -176,6 +177,10 @@ bool test_free_functions()
 		dostring(L, "test_pointer_converter('foobar')");
 		if (feedback != 6) return false;
 #endif
+
+		if (!dostring2(L, "f('incorrect', 'parameters')")) return false;
+		std::cout << lua_tostring(L, -1) << "\n";
+		lua_pop(L, 1);
 
 		dostring(L, "function functor_test(a) glob = a\n return 'foobar'\nend");
 		functor<std::string> functor_test = object_cast<functor<std::string> >(get_globals(L)["functor_test"]);

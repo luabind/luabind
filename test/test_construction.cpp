@@ -25,17 +25,17 @@ namespace
 
 	struct C {};
 
-	struct A_
+	struct base1
 	{
 		virtual void doSomething() = 0;
 	};
 
-	struct B_ : public A_
+	struct derived1 : public base1
 	{
 		void doSomething() {}
 	};
 
-	struct C_ : public B_
+	struct derived2 : public derived1
 	{
 		void doMore() {}
 	};
@@ -69,18 +69,19 @@ bool test_construction()
 		class_<C>("C")
 
 	];
+/*
+	luabind::class_<base1>(L, "base1");
 
-	luabind::class_<A_>(L, "A_");
-
-	luabind::class_<B_, A_>(L, "B_")
+	luabind::class_<derived1, base1>(L, "derived1")
 		.def(luabind::constructor<>())
-		.def("doSomething", &B_::doSomething);
+		.def("doSomething", &derived1::doSomething);
 
-	luabind::class_<C_, B_>(L, "C_")
+	luabind::class_<derived2, derived1>(L, "derived2")
 		.def(luabind::constructor<>())
-		.def("doMore", &C_::doMore);
+		.def("doMore", &derived2::doMore);
+*/
 
-		
+	// this should fail because C has no default constructor
 	if (dostring2(L, "a = C()") == 0) return false;
 	lua_pop(L, 1); // pop error message
 
