@@ -2178,9 +2178,14 @@ This namespace contains non-public classes and are not supposed to be used direc
 <h1><a name="error_messages"></a>Error messages</h1>
 
 <ul>
-	<li>cannot set attribute '<i>&lt;class-name&gt;</i>.<i>&lt;attribute-name&gt;</i>'
+	<li>the attribute '<i>&lt;class-name&gt;</i>.<i>&lt;attribute-name&gt;</i>' is read only
 	<p>There is no data member named <i>&lt;attribute-name&gt;</i> in the class <i>&lt;class-name&gt;</i>, or
 	there's no setter-method registered on that property name. See the <a href="#class_property">properties</a> section.</p>
+	
+	<li>the attribute '<i>&lt;class-name&gt;</i>.<i>&lt;attribute-name&gt;</i>' is of type: (<i>class-name</i>) and does
+	not match (<i>class_name</i>)
+	<p>This error is generated if you try to assign an attribute with a value of a type that cannot be converted to the
+	attribute's type.</p>
 
 	<li><i>&lt;class-name&gt;</i>() threw an exception
 	<li><i>&lt;class-name&gt;</i>:<i>&lt;function-name&gt;</i>() threw an exception
@@ -2311,7 +2316,7 @@ module(L)
 
 <h1><a name="issues"></a>Known issues</h1>
 <ul>
-	<li>There are problems involved in using strings with extra nulls in them as member names.
+	<li>You cannot use strings with extra nulls in them as member names that refers to C++ members.
 	<li>If one class registers two functions with the same name and the same signature,
 	there's currently no error. The last registered function will be the one that's used.
 	<li>In vc7, classes can not be called <tt>test</tt>.
