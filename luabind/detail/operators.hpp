@@ -27,8 +27,17 @@
 #define LUABIND_OPERATORS_HPP_INCLUDED
 
 #include <luabind/config.hpp>
+#include <boost/config.hpp>
 
+#if defined(__GNUC__) && __GNUC__ < 3
+#define BOOST_NO_STRINGSTREAM
+#endif
+
+#ifdef BOOST_NO_STRINGSTREAM
+#include <strstream>
+#else
 #include <sstream>
+#endif
 
 #include <boost/preprocessor/repeat.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>
@@ -394,10 +403,16 @@ namespace luabind
 				static inline int execute(lua_State* L)
 				{
 					// TODO: Should policies apply to this operator? shouldn't the string returntype be enforced?
-					typedef typename find_conversion_policy<1, Policies>::type converter_policy_left;
-					typename converter_policy_left::template generate_converter<left_t, lua_to_cpp>::type converter_left;
+					typedef typename find_conversion_policy<1, Policies> :: type converter_policy_left;
+					typename converter_policy_left :: template generate_converter<left_t, lua_to_cpp> :: type converter_left;
+
+#ifdef BOOST_NO_STRINGSTREAM
+					std::strstream s;
+					s << converter_left.apply(L, LUABIND_DECORATE_TYPE(left_t), 1) << std::ends;
+#else
 					std::stringstream s;
 					s << converter_left.apply(L, LUABIND_DECORATE_TYPE(left_t), 1);
+#endif
 					return convert_result(L, s.str(), static_cast<const Policies*>(0));
 				}
 				static inline int match(lua_State* L)
