@@ -1885,6 +1885,11 @@ This namespace contains non-public classes and are not supposed to be used direc
 	<a href="#policy_adopt">adopt</a> policy) it will no longer be owned by lua, and not collected.</p>
 	<p>If you have a class hierarchy, you should make the destructor <tt>virtual</tt> if you want to
 	be sure that the correct destructor is called (this apply to C++ in general).</p>
+
+	<li><h3>Fatal Error C1063 compiler limit : compiler stack overflow in VC</h3>
+	<p>VC6.5 chokes on warnings, if you are getting alot of warnings from your code try suppressing them
+	with a pragma directive, this should solve the problem.</p>
+
 </ul>
 
 <h1><a name="future"></a>Future additions</h1>
