@@ -104,7 +104,7 @@ class 'line_length_inspector' (inspector)
     end
   end
 
--- checks that the file doesn't contain too long lines
+-- checks for unmatched #define/#undef pairs
 class 'define_inspector' (inspector)
 
   function define_inspector:__init()
