@@ -174,7 +174,7 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 	const char* key = lua_tostring(L, 2);
 
 	// special case to see if this is a null-pointer
-	if (key && !strcmp(key, "__ok"))
+	if (key && !std::strcmp(key, "__ok"))
 	{
 		class_rep* crep = obj->crep();
 
@@ -1233,7 +1233,7 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 	// a method that is not present in this class (but in a subclass)
 	const char* key = lua_tostring(L, 2);
 
-	if (key && !strcmp(key, "__ok"))
+	if (key && !std::strcmp(key, "__ok"))
 	{
 		class_rep* crep = obj->crep();
 

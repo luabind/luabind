@@ -75,7 +75,7 @@ namespace luabind { namespace detail
 	};
 
 	template<class T>
-	std::string name_of_type(by_value<T>, lua_State* L, int) { return get_class_name(L, LUABIND_TYPEID(T)); };
+	std::string name_of_type(by_value<T>, lua_State* L, int) { return luabind::detail::get_class_name(L, LUABIND_TYPEID(T)); };
 	template<class T>
 	std::string name_of_type(by_reference<T>, lua_State* L, int) { return name_of_type(LUABIND_DECORATE_TYPE(T), L, 0L) + "&"; };
 	template<class T>

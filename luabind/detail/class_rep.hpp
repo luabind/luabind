@@ -170,8 +170,10 @@ namespace luabind { namespace detail
 
 		inline void(*destructor() const)(void*) { return m_destructor; }
 		inline void(*const_holder_destructor() const)(void*) { return m_const_holder_destructor; }
-		inline void*(*extractor() const)(void*) { return m_extractor; }
-		inline const void*(*const_extractor() const)(void*) { return m_const_extractor; }
+		typedef const void*(*t_const_extractor)(void*);
+		inline t_const_extractor const_extractor() const { return m_const_extractor; }
+		typedef void*(*t_extractor)(void*);
+		inline t_extractor extractor() const { return m_extractor; }
 
 		inline void(*const_converter() const)(void*,void*) { return m_const_converter; }
 
