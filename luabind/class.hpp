@@ -555,12 +555,21 @@ namespace luabind
 		std::vector<char*> m_strings;
 #endif
 
+	public:
+
+		// public 'cause of enum_maker, FIX
+		void add_static_constant(const char* name, int val)
+		{
+			m_static_constants[name] = val;
+		}
+
 	protected:
 
 		void set_type(LUABIND_TYPE_INFO t) { m_type = t; }
 		void set_held_type(LUABIND_TYPE_INFO t) { m_held_type = t; }
 		void set_extractor(void*(*f)(void*)) { m_extractor = f; }
 		void set_destructor(void(*f)(void*)) { m_destructor = f; }
+
 
 		inline void add_getter(const char* name, const boost::function2<int, lua_State*, int>& g)
 		{

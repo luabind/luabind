@@ -17,6 +17,8 @@ namespace
 			feedback = 321;
 		}
 	};
+
+	void g(test_class) {};
 }
 
 bool test_scope()
@@ -31,15 +33,22 @@ bool test_scope()
 		namespace_(L, "test")
 		[
 			class_<test_class>("test_class")
-				.def(constructor<>()),
+				.def(constructor<>())
+				.enum_("vals")
+				[
+					value("val1", 1),
+					value("val2", 2)
+				],
 
 			def("f", &f)
+//			def("g", &g, adopt(_1))
 		];
 
 		if (dostring(L, "test.f()")) return false;
 		if (feedback != 123) return false;
 		if (dostring(L, "a = test.test_class()")) return false;
 		if (feedback != 321) return false;
+		if (dostring(L, "b = test.test_class.val2")) return false;
 	}
 
 	return true;

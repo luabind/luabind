@@ -100,20 +100,15 @@ namespace luabind
 
 			From& operator[](const value& val)
 			{
-				class_rep* crep = from_.m_crep;
-//				crep->add_static_constant(val.name_.c_str(), val.val_);
-				crep->add_static_constant(val.name_, val.val_);
+				from_.add_static_constant(val.name_, val.val_);
 				return from_;
 			}
 			
 			From& operator[](const value_vector& values)
 			{
-				class_rep* crep = from_.m_crep;
-
 				for (value_vector::const_iterator i = values.begin(); i != values.end(); ++i)
 				{
-//					crep->add_static_constant(i->name_.c_str(), i->val_);
-					crep->add_static_constant(i->name_, i->val_);
+					from_.add_static_constant(i->name_, i->val_);
 				}
 
 				return from_;
