@@ -1027,9 +1027,25 @@ namespace luabind
 */
 	namespace detail {
 
+		template<class T>
+		struct static_scope
+		{
+			static_scope(T& self_) : self(self_)
+			{
+			}
+
+			T& operator[](scope s) const
+			{
+				self->add_inner_scope(s);
+				return self;
+			}
+
+			T& self;
+		};
+
 		struct class_registration;
-		
-		struct class_base : detail::scope
+
+		struct class_base : scope
 		{
 		public:
 			class_base(char const* name);		
@@ -1258,7 +1274,10 @@ namespace luabind
 			}
 		};
 
-		class_(const char* name): class_base(name) { init(); }
+		class_(const char* name): class_base(name), static_(*this)
+		{
+		   	init(); 
+		}
 
 		template<class F>
 		class_& def(const char* name, F f)
@@ -1475,13 +1494,15 @@ namespace luabind
 		{
 			return detail::enum_maker<self_t>(*this);
 		}
-
-		class_& operator[](detail::scope s)
+		
+		class_& operator[](scope s)
 		{
 			this->add_inner_scope(s);			
 			return *this;
 		}
 
+		detail::static_scope<self_t> static_;
+		
 	private:
 
 		void init()

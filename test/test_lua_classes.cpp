@@ -1,202 +1,159 @@
-#include <boost/tokenizer.hpp>
+// Copyright (c) 2004 Daniel Wallin
 
-#include "test.h"
-//#include <luabind/void_ptr_policy.hpp>
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+// OR OTHER DEALINGS IN THE SOFTWARE.
+
+#include "test.hpp"
+#include <luabind/luabind.hpp>
+
+using namespace luabind;
+
+namespace {
+
+struct base : counted_type<base>
+{
+    virtual ~base() {}
+
+    virtual std::string f()
+    {
+        return "base:f()";
+    }
+};
+
+struct base_wrap : base
+{
+    object self;
+    base_wrap(object const& self_): self(self_) {}
+
+    static std::string f_static(base* obj)
+    {
+        return obj->base::f();
+    }
+
+    virtual std::string f()
+    {
+        return call_member<std::string>(self, "f");
+    }
+};
+
+struct simple_class : counted_type<simple_class>
+{
+    static int feedback;
+
+    void f()
+    {
+        feedback = 1;
+    }
+
+    void f(int, int) {}
+    void f(std::string a)
+    {
+        const char str[] = "foo\0bar";
+        if (a == std::string(str, sizeof(str)-1))
+            feedback = 2;
+    }
+
+    std::string g()
+    {
+        const char str[] = "foo\0bar";
+        return std::string(str, sizeof(str)-1);
+    }
+};
+
+int simple_class::feedback = 0;
+
+} // namespace unnamed
+
 #include <iostream>
 
-namespace
+void test_lua_classes()
 {
-	LUABIND_ANONYMOUS_FIX int feedback = 0;
+    COUNTER_GUARD(base);
+	COUNTER_GUARD(simple_class);
 
-	struct base
-	{
-		virtual ~base() 
-		{
-//			std::cout << "~base\n";
-			feedback = -1;
-		}
+	lua_state L;
 
-		virtual const char* f()
-		{
-			return "base";
-		}
-	};
+    module(L)
+    [
+        class_<base, base_wrap>("base")
+            .def(constructor<>())
+            .def("f", &base_wrap::f_static)
+    ];
 
-	struct baseWrap : base
-	{
+    DOSTRING(L, 
+        "class 'derived' (base)\n"
+        "  function derived:__init() super() end\n"
+        "  function derived:f()\n"
+        "    return 'derived:f() : ' .. base.f(self)\n"
+        "  end\n"
 
-		luabind::object self_;
-		baseWrap(const luabind::object& self): self_(self) {}
+        "function make_derived()\n"
+        "  return derived()\n"
+        "end\n");
 
-		static const char* fS(base* obj)
-		{
-			return obj->base::f();
-		}
+    base* ptr;
+    
+    BOOST_CHECK_NO_THROW(
+        ptr = call_function<base*>(L, "make_derived")
+    );
 
-		virtual const char* f()
-		{
-			return luabind::call_member<const char*>(self_, "f");
-		}
-	};
+    BOOST_CHECK_NO_THROW(
+        ptr = call_function<base*>(L, "derived")
+    );    
 
-	struct simple_class
-	{
-		void f()
-		{
-			feedback = 3;
-		}
-
-		void f(int, int) {}
-		void f(std::string a)
-		{
-			const char str[] = "foo\0bar";
-			if (a == std::string(str, sizeof(str)-1))
-				feedback = 15;
-		}
-
-		std::string g()
-		{
-			const char str[] = "foo\0bar";
-			return std::string(str, sizeof(str)-1);
-		}
-	};
-
-	struct no_copy
-	{
-		no_copy() {}
-		virtual void f() = 0;	
-	private:
-		no_copy(const no_copy&) {}
-	};
-
-	void set_feedback(int n)
-	{ feedback = n; }
-
-	class abstract_base
-	{
-	public:
-		virtual void f() = 0;
-	};
-
-	void take_abstract(abstract_base*) {}
-
-	void take_void_ptr(void*) {}
-	
-} // anonymous namespace
-
-bool test_lua_classes()
-{
-	using namespace luabind;
-
-	{
-	lua_State* L = lua_open();
-	lua_baselibopen(L);
-	luaopen_table(L);
-	lua_closer c(L);
-	int top = lua_gettop(L);
-
-	open(L);
+    BOOST_CHECK_NO_THROW(
+        BOOST_CHECK(ptr->f() == "derived:f() : base:f()")
+    );
 
 	typedef void(simple_class::*f_overload1)();
 	typedef void(simple_class::*f_overload2)(int, int);
 	typedef void(simple_class::*f_overload3)(std::string);
 
-	module(L)
-	[
-		class_<no_copy>("no copy"),
-		class_<abstract_base>("abstract_base")
-			.def("f", &abstract_base::f),
-		def("take_abstract", &take_abstract),
-		//def("take_void_ptr", &take_void_ptr, void_ptr(_1)),
-	
-		class_<base, baseWrap>("base")
-			.def(constructor<>())
-			.def("f", &baseWrap::fS),
-
-		class_<simple_class>("simple_class")
-			.def(constructor<>())
+    module(L)
+    [
+        class_<simple_class>("simple")
+            .def(constructor<>())
 			.def("f", (f_overload1)&simple_class::f)
 			.def("f", (f_overload2)&simple_class::f)
 			.def("f", (f_overload3)&simple_class::f)
-			.def("g", &simple_class::g),
+			.def("g", &simple_class::g)
+    ];
 
-		def("set_feedback", &set_feedback)
-	];
+    DOSTRING(L,
+        "class 'simple_derived' (simple)\n"
+        "  function simple_derived:__init() super() end\n"
+        "a = simple_derived()\n"
+        "a:f()\n");
+    BOOST_CHECK(simple_class::feedback == 1);
 
-	dostring(L, "class 'derived' (base)\n"
-			"function derived:__init() super() end\n"
-			"function derived:f() return 'derived -> ' .. base.f(self) end\n");
+    DOSTRING(L, "a:f('foo\\0bar')");
+    BOOST_CHECK(simple_class::feedback == 2);
 
-	dostring(L, "function create_derived() return derived() end");
+    simple_class::feedback = 0;
 
-	base* ptr = call_function<base*>(L, "create_derived");
+    DOSTRING_EXPECTED(L, "a:f('incorrect', 'parameters')",
+        "no overload of  'simple:f' matched the arguments "
+        "(string, string)\ncandidates are:\n"
+        "simple:f()\nsimple:f(number, number)\nsimple:f(string)\n");
 
-	if (std::string("derived -> base") != ptr->f()) return false;
-
-	dostring(L, "class 'simple_derative' (simple_class)");
-	dostring(L, "function simple_derative:__init() super() end\n");
-	dostring(L, "a = simple_derative()");
-	dostring(L, "a:f()");
-	if (feedback != 3) return false;
-	dostring(L, "a:f('foo\\0bar')");
-	if (feedback != 15) return false;
-
-	if (!dostring2(L, "a:f('incorrect', 'parameters')")) return false;
-	std::cout << lua_tostring(L, -1) << "\n";
-	lua_pop(L, 1);
-
-	dostring(L, "if a:g() == \"foo\\0bar\" then a:f() end");
-	if (feedback != 3) return false;
-
-	dostring(L, "class 'simple_lua_class'\n");
-	dostring(L, "function simple_lua_class:__init()\n"
-						"super()\n"
-						"self.test_var = 1\n"
-						"end\n"
-						"function simple_lua_class:f()\n"
-						"g = 5\n"
-						"end\n");
-	dostring(L, 	"a = simple_lua_class()");
-	dostring(L,  "a:f()");
-	if (feedback != 3) return false;
-	object g = get_globals(L)["g"];
-	if (object_cast<int>(g) != 5) return false;
-
-	if (top != lua_gettop(L)) return false;
-
-	dostring(L, "a = derived()");
-//	dostring(L, "take_void_ptr(a)");
-
-	dostring(L, "info = class_info(a)");
-	dostring(L, "print(info.name)");
-	dostring(L, "table.foreach(info.methods, print)");
-	dostring(L, "table.foreach(info.attributes, print)");
-
-	}
-
-	if (feedback != -1) return false;
-
-
-	{
-		lua_State* L = lua_open();
-		lua_baselibopen(L);
-		lua_closer c(L);
-
-		open(L);
-
-		function(L, "set_feedback", &set_feedback);
-
-		dostring(L, "class 'simple'");
-		dostring(L, "function simple:__init() self.test = 42 set_feedback(321) end");
-		dostring(L, "function simple:__finalize() if self.test == 42 then set_feedback(123) end end");
-
-		dostring(L, "a = simple()");
-
-		if (feedback != 321) return false;
-	}
-
-	if (feedback != 123) return false;
-	
-	return true;
+    DOSTRING(L, "if a:g() == \"foo\\0bar\" then a:f() end");
+    BOOST_CHECK(simple_class::feedback == 1);
 }
 

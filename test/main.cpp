@@ -1,188 +1,142 @@
-#include "test.h"
+// Copyright (c) 2004 Daniel Wallin
+
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+// OR OTHER DEALINGS IN THE SOFTWARE.
+
+#include "test.hpp"
+#include <luabind/open.hpp>
+#include <luabind/error.hpp>
+#include <string>
+#include <iostream>
 
 extern "C"
 {
-	#include "lauxlib.h"
-	#include "lualib.h"
-	#include "lua.h"
+    #include "lauxlib.h"
+    #include "lualib.h"
 }
 
-#include <iostream>
-#include <algorithm>
-
-#include <luabind/luabind.hpp>
-#include <luabind/scope.hpp>
-
-bool dostring(lua_State* L, const char* str)
+int pcall_handler(lua_State* L)
 {
-	if (luaL_loadbuffer(L, str, std::strlen(str), str) || lua_pcall(L, 0, 0, 0))
-	{
-		const char* a = lua_tostring(L, -1);
-		std::cout << a << "\n";
-		lua_pop(L, 1);
-		return true;
-	}
-	return false;
+ /*   lua_Debug dbg;
+    std::string str;
+    
+    std::cout << "stacktrace..\n";
+    
+    try 
+    {
+        std::stringstream s;
+
+        for (int i = 0; lua_getstack(L, i, &dbg); ++i)
+        {
+            lua_getinfo(L, "lS", &dbg);
+
+//            std::cout << i <<    ": " << dbg.currentline << "\n";
+
+            s << dbg.source << " *\n";
+        }
+
+        str = s.str();
+    }
+    catch (...)
+    {
+        return 1;
+    }
+
+//    lua_pushstring(L, str.c_str());
+*/
+    return 1;
 }
 
-int dostring2(lua_State* L, const char* str)
+lua_state::lua_state()
+    : m_state(lua_open())
 {
-	if (luaL_loadbuffer(L, str, std::strlen(str), str) || lua_pcall(L, 0, 0, 0))
-	{
-		return 1;
-	}
-	return 0;
+    luaopen_base(m_state);
+    m_top = lua_gettop(m_state);
+    luabind::open(m_state);
 }
 
-bool report_success(bool result, const char* name)
+lua_state::~lua_state()
 {
-	std::cout << name;
-#ifdef BOOST_MSVC
-	if (result) std::cout << ": passed\n";
-	else std::cout << ": failed\n";
-#else
-	if (result) std::cout << ": \033[32mpassed\033[0m\n";
-	else std::cout << ": \033[31mfailed\033[0m\n";
-#endif
-	return result;
+    BOOST_CHECK(lua_gettop(m_state) == m_top);
+    lua_close(m_state);
 }
 
-#if 0
-
-#include <luabind/runtime_converters.hpp>
-
-namespace
+lua_state::operator lua_State*() const
 {
-	using namespace luabind::rt_converter;
-
-	struct my_type
-	{
-		my_type()
-		{ std::cout << "constructed\n"; }
-
-		my_type(const my_type&)
-		{ std::cout << "copied\n"; }
-
-		~my_type()
-		{ std::cout << "destructed\n"; }
-	};
-
-	void int_from_lua(lua_State* L, int index, rvalue_data* data)
-	{
-		data->result = new (data->data) int(lua_tonumber(L, index));
-	}
-
-	void float_from_lua(lua_State* L, int index, rvalue_data* data)
-	{
-		data->result = new (data->data) float(lua_tonumber(L, index));
-	}
-
-	void string_from_lua(lua_State* L, int index, rvalue_data* data)
-	{
-		data->result = new (data->data) std::string(lua_tostring(L, index));
-	}
-
-	void my_type_from_lua(lua_State* L, int index, rvalue_data* data)
-	{
-		data->result = new (data->data) my_type;
-	}
-
-	void f(int a, float b, const std::vector<float>& s)
-	{
-		int c = a + b;
-	}
-
-	template<class Source, class Target>
-	struct implicit_conversion
-	{
-		typedef typename boost::add_reference<
-			typename boost::add_const<Target>::type
-		>::type target_t;
-
-		typedef typename boost::add_reference<Source>::type source_t;
-
-		implicit_conversion()
-		{
-			insert_converter(&convert, typeid(target_t));
-		};
-
-		static void convert(lua_State* L, int index, rvalue_data* data)
-		{
-			typename boost::python::detail::referent_storage<source_t>::type storage;
-
-			rvalue_data tmp;
-			tmp.data = storage.bytes;
-
-			rvalue_convert(L, index, &tmp, registered<Source>::converters);
-
-			new (data->data) Target(void_ptr_to_reference(tmp.result, (source_t(*)())0));
-			data->result = data->data;
-
-			if (tmp.result == tmp.data)
-				boost::python::detail::destroy_referent(tmp.result, (source_t(*)())0);
-		}
-	};
-
-	struct A
-	{ int n; virtual void f() {} };
-
-	struct B : A
-	{ float e; virtual void f() {} };
-
-	void test_runtime()
-	{
-		lua_State* L = lua_open();
-
-		using namespace luabind;
-		open(L);
-
-		insert_converter(&int_from_lua, typeid(const int&));
-		insert_converter(&float_from_lua, typeid(const float&));
-//		insert_converter(&string_from_lua, typeid(const std::string&));
-		insert_converter(&my_type_from_lua, typeid(const my_type&));
-
-		implicit_conversion<int, std::vector<float> >();
-
-		module(L)
-		[
-			def("f", &f, runtime(_1) + runtime(_2) + runtime(_3))
-		];
-
-		lua_close(L);
-	}
+    return m_state;
 }
 
-#endif
-
-
-int main()
+void dostring(lua_State* state, char const* str)
 {
-	bool passed = true;
+    lua_pushcclosure(state, &pcall_handler, 0);
 
-//	test_runtime();
+    if (luaL_loadbuffer(state, str, std::strlen(str), str))
+    {
+        lua_pop(state, 1);
+        throw "error";
+    }
 
- 	passed &= report_success(test_construction(), "construction");
-	passed &= report_success(test_attributes(), "attributes");
-	passed &= report_success(test_operators(), "operators");
-	passed &= report_success(test_implicit_cast(), "implicit cast");
-	passed &= report_success(test_const(), "const");
-#ifndef LUABIND_NO_EXCEPTIONS
-	passed &= report_success(test_exceptions(), "exceptions");
-#else
-	std::cout << "exceptions: skipped \n";
-#endif
-	passed &= report_success(test_null_pointer(), "null pointer");
-	passed &= report_success(test_policies(), "policies");
-	passed &= report_success(test_lua_classes(), "lua classes");
-	passed &= report_success(test_free_functions(), "free functions");
-	passed &= report_success(test_object(), "object");
-	passed &= report_success(test_held_type(), "held type");
-	passed &= report_success(test_iterator(), "iterator");
-	passed &= report_success(test_scope(), "scopes");
-	passed &= report_success(test_yield(), "yield");
+    if (lua_pcall(state, 0, 0, -2))
+    {
+        std::string err(lua_tostring(state, -1));
+        lua_pop(state, 2);
+        throw err;
+    }
 
-	if (passed) std::cout << "\n\nall tests passed\n";
-	else std::cout << "\n\nsome tests failed\n";
-
-	return 0;
+    lua_pop(state, 1);
 }
+
+void translate_luabind_error(luabind::error const& e)
+{
+    BOOST_ERROR("luabind exception caught");
+}
+
+// -- test cases ------------------------------------------------------------
+
+void test_exceptions();
+void test_lua_classes();
+void test_attributes();
+void test_held_type();
+void test_separation();
+
+// --------------------------------------------------------------------------
+
+#include <boost/test/included/unit_test_framework.hpp>
+#include <boost/test/unit_test.hpp>
+
+using boost::unit_test_framework::test_suite;
+using boost::unit_test_framework::register_exception_translator;
+
+test_suite* init_unit_test_suite( int argc, char* argv[] )
+{
+    test_suite* test = BOOST_TEST_SUITE("luabind test suite");
+
+//    register_exception_translator<luabind::error>(
+  //      &translate_luabind_error);
+
+    test->add(BOOST_TEST_CASE(&test_exceptions));
+    test->add(BOOST_TEST_CASE(&test_lua_classes));
+    test->add(BOOST_TEST_CASE(&test_attributes));
+    test->add(BOOST_TEST_CASE(&test_held_type));
+    test->add(BOOST_TEST_CASE(&test_separation));
+    
+    return test;
+}
+

@@ -40,6 +40,7 @@
 #include <luabind/detail/primitives.hpp>
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/typetraits.hpp>
+#include <luabind/detail/class_cache.hpp>
 
 #include <boost/type_traits/add_reference.hpp>
 
@@ -639,8 +640,10 @@ namespace luabind { namespace detail
 				return;
 			}
 
-			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+			class_rep* crep = get_class_rep<T>(L);
+
+//			class_registry* registry = class_registry::get_registry(L);
+//			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
 			// if you get caught in this assert you are
 			// trying to use an unregistered type
@@ -736,8 +739,9 @@ namespace luabind { namespace detail
 		template<class T>
 		void apply(lua_State* L, const T& ref)
 		{
-			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+			//class_registry* registry = class_registry::get_registry(L);
+			//class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
 			// trying to use an unregistered type
@@ -856,8 +860,9 @@ namespace luabind { namespace detail
 				return;
 			}
 
-			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+			//class_registry* registry = class_registry::get_registry(L);
+			//class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
 			// trying to use an unregistered type
@@ -921,8 +926,9 @@ namespace luabind { namespace detail
 		template<class T>
 		void apply(lua_State* L, T& ref)
 		{
-			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+			//class_registry* registry = class_registry::get_registry(L);
+			//class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
 			// trying to use an unregistered type
@@ -972,8 +978,9 @@ namespace luabind { namespace detail
 		template<class T>
 		void apply(lua_State* L, const T& ref)
 		{
-			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+			//class_registry* registry = class_registry::get_registry(L);
+			//class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
 			// trying to use an unregistered type

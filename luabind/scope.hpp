@@ -27,6 +27,12 @@
 #include <luabind/lua_include.hpp>
 #include <memory>
 
+namespace luabind { 
+    
+    struct scope; 
+
+} // namespace luabind
+
 namespace luabind { namespace detail {
 
     struct registration
@@ -42,10 +48,14 @@ namespace luabind { namespace detail {
         registration* m_next;
     };
 
+}} // namespace luabind::detail
+
+namespace luabind {
+
     struct scope
     {
         scope();
-        explicit scope(std::auto_ptr<registration> reg);
+        explicit scope(std::auto_ptr<detail::registration> reg);
         scope(scope const& other_);
         ~scope();
 
@@ -54,18 +64,14 @@ namespace luabind { namespace detail {
         void register_(lua_State* L) const;
 
     private:
-        registration* m_chain;
+        detail::registration* m_chain;
     };
 
-}} // namespace luabind::detail
-
-namespace luabind {
-
-    class namespace_ : public detail::scope
+    class namespace_ : public scope
     {
     public:
         explicit namespace_(char const* name);
-        namespace_& operator[](detail::scope s);
+        namespace_& operator[](scope s);
 
     private:
         struct registration_;
@@ -76,7 +82,7 @@ namespace luabind {
     {
     public:
         module_(lua_State* L_, char const* name);
-        void operator[](detail::scope s);
+        void operator[](scope s);
 
     private:
         lua_State* m_state;

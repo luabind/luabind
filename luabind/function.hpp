@@ -311,16 +311,16 @@ namespace luabind
 	}
 
 	template<class F, class Policies>
-	detail::scope def(const char* name, F f, const Policies& policies)
+	scope def(const char* name, F f, const Policies& policies)
 	{
-		return detail::scope(std::auto_ptr<detail::registration>(
+		return scope(std::auto_ptr<detail::registration>(
 			new detail::function_commiter<F,Policies>(name, f, policies)));
 	}
 
 	template<class F>
-	detail::scope def(const char* name, F f)
+	scope def(const char* name, F f)
 	{
-		return detail::scope(std::auto_ptr<detail::registration>(
+		return scope(std::auto_ptr<detail::registration>(
 			new detail::function_commiter<F,detail::null_type>(
 				name, f, detail::null_type())));
 	}

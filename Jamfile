@@ -1,0 +1,31 @@
+import modules ;
+import path ;
+
+BOOST_ROOT = [ modules.peek : BOOST_ROOT ] ;
+LUA_PATH = [ modules.peek : LUA_PATH ] ;
+
+ECHO "BOOST_ROOT =" $(BOOST_ROOT) ;
+ECHO "LUA_PATH =" $(LUA_PATH) ;
+
+lib lua
+    :
+    : <name>lua <search>$(LUA_PATH)/lib
+    ;
+
+lib lualib
+    :
+    : <name>lualib <search>$(LUA_PATH)/lualib
+    ;
+
+project luabind
+    : requirements
+        <include>./ <include>$(BOOST_ROOT) <include>$(LUA_PATH)/include/
+        <library>/luabind//lua <library>/luabind//lualib
+    ;
+
+alias luabind : /luabind/luabind//lib ;
+
+#use-project /luabind/luabind : src ;
+
+build-project src ;
+build-project test/new ;

@@ -1,0 +1,25 @@
+import testing ;
+
+local rule create_file ( )
+{
+    import print ;
+
+    print.output foo ;
+    print.text "foo" : true ;
+}
+
+create_file ;
+
+SOURCES = [ glob test_*.cpp ] ;
+
+ECHO "Building test suite: " ;
+
+for file in $(SOURCES)
+{
+    ECHO "  " $(file) ;
+}
+
+test-suite luabind-test
+    : [ run main.cpp $(SOURCES) /luabind//luabind ]
+    ;
+
