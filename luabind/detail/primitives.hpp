@@ -68,6 +68,23 @@ namespace luabind { namespace detail
 		return c;
 	}
 
+	template<int N>
+	struct aligned 
+	{
+		char storage[N];
+	};
+
+	// returns the offset added to a Derived* when cast to a Base*
+	template<class Derived, class Base>
+	int ptr_offset(type<Derived>, type<Base>)
+	{
+		aligned<sizeof(Derived)> obj;
+		Derived* ptr = reinterpret_cast<Derived*>(&obj);
+
+		return static_cast<char*>(static_cast<void*>(static_cast<Base*>(ptr)))
+		- static_cast<char*>(static_cast<void*>(ptr));
+	}
+
 }}
 
 #endif // LUABIND_PRIMITIVES_HPP_INCLUDED

@@ -115,7 +115,6 @@
 	__finalize function on lua classes
 
 	make all proxy_callers one policy based class
-
 	make all proxy_objects one policy based class
 
 	static functions

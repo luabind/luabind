@@ -583,7 +583,10 @@ namespace luabind
 #endif
 		}
 
-
+		void add_base(const base_desc& b)
+		{
+			m_bases.push_back(b);
+		}
 
 	public:
 
@@ -603,6 +606,7 @@ namespace luabind
 #endif
 		}
 
+		// pushes the class_rep on the lua stack
 		virtual void commit(lua_State* L)
 		{
 			detail::class_rep* crep;
@@ -642,8 +646,6 @@ namespace luabind
 			// constructors
 			m_constructor.swap(crep->m_constructor);
 			m_wrapped_constructor.swap(crep->m_wrapped_constructor);
-			
-			/* ... */
 		}
 
 		// destructive copy
@@ -750,8 +752,7 @@ namespace luabind
 			// store the information in this class' base class-vector
 			base_desc base;
 			base.type = LUABIND_TYPEID(To);
-			T* null_pointer = reinterpret_cast<T*>(1); // this wont work if the pointer is 0!
-			base.ptr_offset = static_cast<int>((reinterpret_cast<char*>(static_cast<To*>(null_pointer)) - reinterpret_cast<char*>(null_pointer)));
+			base.ptr_offset = ptr_offset(detail::type<T>(), detail::type<To>());
 			add_base(base);
 		}
 
@@ -775,7 +776,7 @@ namespace luabind
 		struct internal_def_s
 		{
 			template<class F>
-			static void apply(const char* name, F f, detail::class_rep* crep)
+			static void apply(const char* name, F f, class_base* c)
 			{
 //				std::cout << "HeldType2: " << typeid(HeldType).name() << "\n";
 
@@ -792,11 +793,11 @@ namespace luabind
 
 #endif
 
-				crep->add_function(name, o);
+				c->add_function(name, o);
 			}
 
 			template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
-			static void apply(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)>, detail::class_rep* crep)
+			static void apply(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)>, class_base* c)
 			{
 //				std::cout << "HeldType2: " << typeid(HeldType).name() << "\n";
 
@@ -834,9 +835,11 @@ namespace luabind
 
 				o.set_arity(detail::calc_arity<con_t::arity>::apply(con_t(), static_cast<Policies*>(0)));
 
-				crep->add_constructor(o);
+				c->add_constructor(o);
 			}
 		};
+
+
 
 		class_(lua_State* L_, const char* name_): L(L_), name(name_)
 		{
@@ -873,35 +876,35 @@ namespace luabind
 		template<class F>
 		class_& def(const char* name, F f)
 		{
-			internal_def_s<detail::null_type>::apply(name, f);
+			internal_def_s<detail::null_type>::apply(name, f, this);
 			return *this;
 		}
 
 		template<class F, class Policies>
 		class_& def(const char* name, F f, const Policies&)
 		{
-			internal_def_s<Policies>::apply(name, f);
+			internal_def_s<Policies>::apply(name, f, this);
 			return *this;
 		}
 
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig)
 		{
-			internal_def_s<detail::null_type>::apply(sig);
+			internal_def_s<detail::null_type>::apply(sig, this);
 			return *this;
 		}
 
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A), class Policies>
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig, const Policies& policies)
 		{
-			internal_def_s<Policies>::apply(sig);
+			internal_def_s<Policies>::apply(sig, this);
 			return *this;
 		}
 
 		template<class Getter>
 		class_& property(const char* name, Getter g)
 		{
-			m_crep->add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, detail::null_type>(), _1, _2, g));
+			add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, detail::null_type>(), _1, _2, g));
 			return *this;
 		}
 
@@ -1035,7 +1038,6 @@ namespace luabind
 			int arity = detail::calc_arity<Signature::arity>::apply(Signature(), static_cast<Policies*>(0));
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-
 			add_operator(L, detail::op_call, &op_t::template apply<T>::execute, &op_t::match, &detail::get_signature<Signature>::apply, arity + 1);
 #else
 			add_operator(L, detail::op_call, &op_t::template apply<T>::execute, &op_t::match, arity + 1);
