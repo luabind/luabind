@@ -79,6 +79,12 @@ namespace luabind {
                 lua_setmetatable(L, -2);
                 lua_pushnumber(L, 0);
                 lua_rawseti(L, -2, freelist_ref);
+                lua_pushnumber(L, 2);
+                lua_rawseti(L, -2, count_ref);
+
+                lua_pushliteral(L, "__luabind_weak_refs");
+                lua_pushvalue(L, -2);
+                lua_settable(L, LUA_REGISTRYINDEX);
             }
         }
 
@@ -114,7 +120,7 @@ namespace luabind {
 
             lua_pushvalue(s, -2); // duplicate value
             lua_rawseti(s, -2, ref);
-            lua_pop(s, 1); // pop weakref table
+            lua_pop(s, 2); // pop weakref table and value
         }
 
         ~impl()
@@ -124,6 +130,7 @@ namespace luabind {
             lua_rawseti(state, -2, ref);
             lua_pushnumber(state, ref);
             lua_rawseti(state, -2, freelist_ref);
+            lua_pop(state, 1);
         }
 
         int count;
