@@ -1978,6 +1978,171 @@ namespace contains non-public classes and are not supposed to be used directly.
 Error messages
 ==============
 
-sada
+- `the attribute '<class-name>.<attribute-name>' is read only`
 
+      There is no data member named <attribute-name> in the class <class-name>,
+      or there's no setter-method registered on that property name. See the 
+      properties section.
+
+-  `the attribute '<class-name>.<attribute-name>' is of type: (<class-name>)
+   and does not match (<class_name>)`
+
+       This error is generated if you try to assign an attribute with a value 
+       of a type that cannot be converted to the attribute's type.
+
+- `<class-name>() threw an exception, <class-name>:<function-name>() threw an 
+  exception`
+
+        The class' constructor or member function threw an unknown exception.
+        Known exceptions are const char*, std::exception. See the 
+        `exceptions`_ section.
+
+- `no overload of '<class-name>:<function-name>' matched the arguments 
+  (<parameter-types>)`
+- `no match for function call '<function-name>' with the parameters 
+  (<parameter-types>)`
+- `no constructor of <class-name> matched the arguments (<parameter-types>)`
+- `no operator <operator-name> matched the arguments (<parameter-types>)`
+
+       No function/operator with the given name takes the parameters you gave 
+       it. You have either misspelled the function name, or given it incorrect
+       parameters. This error is followed by a list of possible candidate 
+       functions to help you figure out what parameter has the wrong type. If
+       the candidate list is empty there's no function at all with that name.
+       See the signature matching section.
+
+- `call of overloaded '<class-name>:<function-name>(<parameter-types>)' is 
+  ambiguous`
+- `ambiguous match for function call '<function-name>' with the parameters 
+  (<parameter-types>)`
+- `call of overloaded constructor '<class-name>(<parameter-types>)' is 
+  ambiguous`
+- `call of overloaded operator <operator-name> (<parameter-types>) is 
+  ambiguous`
+
+    This means that the function/operator you are trying to call has at least
+    one other overload that matches the arguments just as good as the first
+    overload.
+
+- `cannot derive from C++ class '<class-name>'. It does not have a wrapped
+  type.`
+
+    You are trying to derive a lua class from a C++ class that doesn't have a
+    wrapped type. You have to give your C++ class a wrapped type when you 
+    register it with lua. See the deriving in lua section.
+
+- `derived class must call super on base`
+- `cannot set property '<class-name>.<attribute_name>' because it's read only`
+
+    The attribute you are trying to set is registered as read only. If you want
+    it to be writeable you have to change your class registration and use
+    def_readwrite() instead of def_readonly(). Alternatively (if your 
+    attribute is a property with getter and setter functions), you have to 
+    give a setter function when declaring your attribute. See the properties section.
+
+- `no static '<enum-name>' in class '<class-name>'`
+
+    You will get this error message if you are trying to access an enum that
+    doesn't exist. Read about how to declare enums.
+
+- `expected base class`
+
+    You have written a malformed class definition in lua. The format is: class
+    '<class-name>' [<base-class>]. If you don't want to derive from a base 
+    class, you have to break the line directly after the class declaration.
+
+- `invalid construct, expected class name`
+
+    You have written a malformed class definition in lua. The class function
+    expects a string as argument. That string is the name of the lua class to
+    define.
+
+
+FAQ
+===
+
+What's up with __cdecl and __stdcall? 
+    If you're having problem with functions
+    that cannot be converted from 'void (__stdcall *)(int,int)' to 'void 
+    (__cdecl*)(int,int)'. You can change the project settings to make the
+    compiler generate functions with __cdecl calling conventions. This is 
+    a problem in developer studio.
+
+What's wrong with functions taking variable number of arguments?
+    You cannot register a function with ellipses in its signature. Since 
+    ellipses don't preserve type safety, those should be avoided anyway.
+
+Internal structure overflow in VC
+    If you, in visual studio, get fatal error C1204: compiler limit : 
+    internal structure overflow. You should try to split that compilation 
+    unit up in smaller ones.
+
+What's wrong with precompiled headers in VC?
+    Visual Studio doesn't like anonymous namespaces in its precompiled 
+    headers. If you encounter this problem you can disable precompiled 
+    headers for the compilation unit (cpp-file) that uses luabind.
+
+error C1076: compiler limit - internal heap limit reached in VC
+    In visual studio you will probably hit this error. To fix it you have to
+    increase the internal heap with a command-line option. We managed to
+    compile the test suit with /Zm300, but you may need a larger heap then 
+    that.
+
+error C1055: compiler limit : out of keys in VC
+    It seems that this error occurs when too many assert() are used in a
+    program, or more specifically, the __LINE__ macro. It seems to be fixed by
+    changing /ZI (Program database for edit and continue) to /Zi 
+    (Program database).
+
+How come my executable is huge?
+    If you're compiling in debug mode, you will probably have a lot of
+    debug-info and symbols (luabind consists of a lot of functions). Also, 
+    if built in debug mode, no optimizations were applied, luabind relies on 
+    that the compiler is able to inline functions. If you built in release 
+    mode, try running strip on your executable to remove export-symbols, 
+    this will trim down the size.
+
+    Our tests suggests that cygwin's gcc produces much bigger executables 
+    compared to gcc on other platforms and other compilers.
+
+.. HUH?! // check the magic number that identifies luabind's functions 
+
+Can I register class templates with luabind?
+    Yes you can, but you can only register explicit instantiations of the 
+    class. Because there's no lua counterpart to C++ templates. For example, 
+    you can register an explicit instantiation of std::vector<> like this::
+
+        module(L)
+        [
+            class_<std::vector<int> >("vector")
+                .def(constructor<int>)
+                .def("push_back", &std::vector<int>::push_back)
+        ];
+
+.. Again, irrelevant to docs: Note that the space between the two > is required by C++.
+
+Do I have to register destructors for my classes?
+    No, the destructor of a class is always called by luabind when an 
+    object is collected. Note that lua has to own the object to collect it.
+    If you pass it to C++ and gives up ownership (with adopt policy) it will 
+    no longer be owned by lua, and not collected.
+
+    If you have a class hierarchy, you should make the destructor virtual if 
+    you want to be sure that the correct destructor is called (this apply to C++ 
+    in general).
+
+.. And again, the above is irrelevant to docs. This isn't a general C++ FAQ.
+
+Fatal Error C1063 compiler limit : compiler stack overflow in VC
+    VC6.5 chokes on warnings, if you are getting alot of warnings from your 
+    code try suppressing them with a pragma directive, this should solve the 
+    problem.
+
+Crashes when linking against luabind as a dll in windows
+    When you build luabind, lua and you project, make sure you link against 
+    the runtime dynamically (as a dll).
+
+I cannot register a function with a non-const parameter
+    This is because there is no way to get a reference to a lua value. Have 
+    a look at out_value and pure_out_value policies.
 

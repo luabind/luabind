@@ -20,6 +20,8 @@ SOURCES =
  ;
 
 test-suite luabind-test
-    : [ run main.cpp $(SOURCES) /luabind//luabind ]
+    : [ 
+        run main.cpp $(SOURCES) /luabind//luabind /luabind//lua /luabind//lualib
+      ]
     ;
 
