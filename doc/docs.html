@@ -752,9 +752,9 @@ namespace luabind
 	T* get_pointer(boost::shared_ptr&lt;T&gt;&amp; p) { return p.get(); }
 
 	template&lt;class A&gt;
-	LUABIND_TYPE_INFO get_const_holder(luabind::detail::type&lt;boost::shared_ptr&lt;A&gt; &gt;)
+	type&lt;boost::shared_ptr&lt;const A&gt; &gt; get_const_holder(type&lt;boost::shared_ptr&lt;A&gt; &gt;)
 	{
-		return LUABIND_TYPEID(boost::shared_ptr&lt;const A&gt;);
+		return type&lt;boost::shared_ptr&lt;const A&gt; &gt;();
 	}
 }
 </pre>
