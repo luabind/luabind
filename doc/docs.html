@@ -145,12 +145,16 @@ your result with it.</p>
 only, this means you don't have to install it nor build it to use it. You just 
 have to make sure the <tt>luabind</tt> directory is 
 somewhere in your compilers include path. It requires <a href="http://www.boost.org">
-boost</a> to be installed (only boost headers). It also requires that lua is installed, or
-at least that <tt>lua.h</tt> is available in the user include path.</p>
+boost</a> 1.30.0 to be installed (only boost headers). It also requires that lua is installed.</p>
 
-<p>To use luabind, you must include its main header file.</p>
+<p>To use luabind, you must include <tt>lua.h</tt> and luabind's main header file.</p>
 
 <pre>
+extern "C"
+{
+#include "lua.h"
+}
+
 #include &lt;luabind/luabind.hpp&gt;
 </pre>
 
@@ -862,11 +866,11 @@ std::cout &lt;&lt; f(3, 5) &lt;&lt; "\n";
 </pre>
 
 <p>Which will print out the sum of 3 and 5. Note that you can pass any parameters to the
-application operator of <tt>luabind::functor</tt>, this is because lua doesn't have 
+application operator of <a href="#functor"><tt>luabind::functor</tt></a>, this is because lua doesn't have 
 signatures for its functions. All lua functions take any number of parameters 
 of any type.</p>
 
-<p>If we have a C++ function that takes a <tt>luabind::functor</tt> and registers it, it will accept lua 
+<p>If we have a C++ function that takes a <a href="#functor"><tt>luabind::functor</tt></a> and registers it, it will accept lua 
 functions passed to it. This enables us to expose APIs that requires you to 
 register callbacks. For example, if your C++ API looks like this:</p>
 
@@ -909,7 +913,7 @@ It will the call the real <tt>set_callback</tt> with the <tt>callback_wrapper</t
 <tt>callback_wrapper</tt> will be called whenever the callback should be called, and it will simply
 call the lua function that we registered.</p>
 
-<p>You can also use <a href="#wrap_fun"><tt>object_cast</tt></a> to cast an object to a <tt>functor</tt>.</p>
+<p>You can also use <a href="#wrap_fun"><tt>object_cast</tt></a> to cast an object to a <a href="#functor"><tt>functor</tt></a>.</p>
 
 <h1><a name="class_lua"></a>Defining classes in lua</h1>
 
@@ -1074,9 +1078,9 @@ int main()
 </pre>
 
 <p>There's another exception that luabind may throw. <tt>luabind::cast_failed</tt>, this exception
-is thrown from <tt>call_function</tt>, <tt>call_member</tt> or when <tt>functor</tt> is invoked.
+is thrown from <a href="#lua_fun"><tt>call_function</tt></a>, <a href="#lua_fun"><tt>call_member</tt></a> or when <a href="#functor"><tt>functor</tt></a> is invoked.
 It means that the return value from the lua function couldn't be converted to a C++ value. It is
-also thrown from <tt>object_cast</tt> if the cast cannot be made.</p>
+also thrown from <a href="#wrap_fun"><tt>object_cast</tt></a> if the cast cannot be made.</p>
 
 <p>The synopsis for <tt>luabind::cast_failed</tt> is:</p>
 
@@ -1094,12 +1098,12 @@ public:
 <p>Again, the <tt>state</tt> member function returns a pointer to the lua state where the error occured.
 See the example above to see where this pointer may be invalid.</p>
 
-<p>The <tt>info</tt> member function returns the user defined <tt>LUABIND_TYPE_INFO</tt>, which
+<p>The <tt>info</tt> member function returns the user defined <a href="#luabind_type_info"><tt>LUABIND_TYPE_INFO</tt></a>, which
 defaults to a <tt>const&nbsp;std::type_info*</tt>. This type info describes the type that we tried
 to cast a lua value to.</p>
 
-<p>If you have defined <tt>LUABIND_NO_EXCEPTIONS</tt> none of these exceptions will be thrown,
-instead you can set two callback functions that are called instead. These two functions are only defined if <tt>LUABIND_NO_EXCEPTIONS</tt> are defined.</p>
+<p>If you have defined <a href="#luabind_no_exceptions"><tt>LUABIND_NO_EXCEPTIONS</tt></a> none of these exceptions will be thrown,
+instead you can set two callback functions that are called instead. These two functions are only defined if <a href="#luabind_no_exceptions"><tt>LUABIND_NO_EXCEPTIONS</tt></a> are defined.</p>
 
 <h3><tt>luabind::set_error_callback(void(*)(lua_State*))</tt></h3>
 <p>The function you set will be called when a runtime-error occur in lua code. You can find an
@@ -1419,7 +1423,7 @@ The available configuration options follows:</p>
 		</td>
 	</tr>
 	<tr>
-		<td valign="top"><tt>LUABIND_NO_EXCEPTIONS</tt></td>
+		<td valign="top"><a name="luabind_no_exceptions"></a><tt>LUABIND_NO_EXCEPTIONS</tt></td>
 		<td>
 			<p>This define will disable all usage of try, catch and throw in
 			luabind. This will in many cases disable run-time errors, when
@@ -1434,7 +1438,7 @@ The available configuration options follows:</p>
 		</td>
 	</tr>
 	<tr>
-		<td valign="top">
+		<td valign="top"><a name="luabind_type_info"></a>
 			<p><tt>LUABIND_TYPE_INFO</tt><br>
 			<tt>LUABIND_TYPE_INFO_EQUAL(i1,i2)</tt><br>
 			<tt>LUABIND_TYPEID(t)</tt><br>
