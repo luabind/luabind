@@ -77,7 +77,7 @@ namespace luabind { namespace converters
 
 	int convert_lua_to_cpp(lua_State* L, by_value<int>, int index)
 	{
-		return lua_tonumber(L, index);
+		return static_cast<int>(lua_tonumber(L, index));
 	}
 
 	int match_lua_to_cpp(lua_State* L, by_value<int>, int index)

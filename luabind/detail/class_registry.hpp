@@ -92,7 +92,7 @@ namespace luabind { namespace detail
 		{
 			bool operator()(const std::type_info* a, const std::type_info* b) const
 			{
-				return static_cast<bool>(a->before(*b));
+				return a->before(*b) != 0;
 			}
 
 			template<class T>
