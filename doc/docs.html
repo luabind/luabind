@@ -1,17 +1,16 @@
-<?xml version="1.0" encoding="Latin1" ?>
+<?xml version="1.0" encoding="latin1" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=Latin1" />
-<meta name="generator" content="Docutils 0.3.1: http://docutils.sourceforge.net/" />
+<meta http-equiv="Content-Type" content="text/html; charset=latin1" />
+<meta name="generator" content="Docutils 0.3.3: http://docutils.sourceforge.net/" />
 <title>luabind</title>
 <meta name="author" content="Daniel Wallin, Arvid Norberg" />
 <meta name="copyright" content="Copyright Daniel Wallin, Arvid Norberg 2003." />
-<meta name="date" content="2004-08-08" />
+<meta name="date" content="2004-08-09" />
 <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 <body>
-<div class="document" id="luabind">
 <h1 class="title">luabind</h1>
 <table class="docinfo" frame="void" rules="none">
 <col class="docinfo-name" />
@@ -22,9 +21,9 @@
 <tr><th class="docinfo-name">Copyright:</th>
 <td>Copyright Daniel Wallin, Arvid Norberg 2003.</td></tr>
 <tr><th class="docinfo-name">Date:</th>
-<td>2004-08-08</td></tr>
+<td>2004-08-09</td></tr>
 <tr><th class="docinfo-name">Revision:</th>
-<td>1.21</td></tr>
+<td>1.23</td></tr>
 <tr class="field"><th class="docinfo-name">License:</th><td class="field-body"><p class="first">Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the &quot;Software&quot;),
 to deal in the Software without restriction, including without limitation
@@ -46,11 +45,12 @@ OR OTHER DEALINGS IN THE SOFTWARE.</p>
 </tr>
 </tbody>
 </table>
+<div class="document" id="luabind">
 <p>Note: This library is currently in public beta phase. This documentation
 should be considered beta as well. Please report any grammatical 
 corrections/spelling corrections.</p>
 <div class="contents topic" id="contents">
-<p class="topic-title"><a name="contents">Contents</a></p>
+<p class="topic-title first"><a name="contents">Contents</a></p>
 <ul class="auto-toc simple">
 <li><a class="reference" href="#introduction" id="id44" name="id44">1   Introduction</a></li>
 <li><a class="reference" href="#features" id="id45" name="id45">2   Features</a></li>
@@ -117,7 +117,7 @@ corrections/spelling corrections.</p>
 </ul>
 </div>
 <div class="section" id="introduction">
-<h1><a name="introduction">1   Introduction</a></h1>
+<h1><a class="toc-backref" href="#id44" name="introduction">1   Introduction</a></h1>
 <p>Luabind is a library that helps you create bindings between C++ and Lua. It has
 the ability to expose functions and classes, written in C++, to Lua. It will
 also supply the functionality to define classes in Lua and let them derive from
@@ -126,18 +126,18 @@ from their C++ base classes. It is written towards Lua 5.0, and does not work
 with Lua 4.</p>
 <p>It is implemented utilizing template meta programming. That means that you
 don't need an extra preprocess pass to compile your project (it is done by the
-compiler). It also means you don't (usually) have to know the exact signatureof
-each function you register, since the library will generate code depending on
-the compile-time type of the function (which includes the signature). The main
-drawback of this approach is that the compilation time will increase for the
-file that does the registration, it is therefore recommended that you register
-everything in the same cpp-file.</p>
-<p>luabind is released under the terms of the <a class="reference" href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</p>
+compiler). It also means you don't (usually) have to know the exact signature 
+of each function you register, since the library will generate code depending 
+on the compile-time type of the function (which includes the signature). The 
+main drawback of this approach is that the compilation time will increase for 
+the file that does the registration, it is therefore recommended that you 
+register everything in the same cpp-file.</p>
+<p>Luabind is released under the terms of the <a class="reference" href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</p>
 <p>We are very interested in hearing about projects that use luabind, please let
 us know about your project.</p>
 </div>
 <div class="section" id="features">
-<h1><a name="features">2   Features</a></h1>
+<h1><a class="toc-backref" href="#id45" name="features">2   Features</a></h1>
 <p>Luabind supports:</p>
 <blockquote>
 <ul class="simple">
@@ -159,7 +159,7 @@ us know about your project.</p>
 </blockquote>
 </div>
 <div class="section" id="portability">
-<h1><a name="portability">3   Portability</a></h1>
+<h1><a class="toc-backref" href="#id46" name="portability">3   Portability</a></h1>
 <p>Luabind has been tested to work on the following compilers:</p>
 <blockquote>
 <ul class="simple">
@@ -187,9 +187,9 @@ functions.</p>
 your result with it.</p>
 </div>
 <div class="section" id="building-luabind">
-<h1><a name="building-luabind">4   Building luabind</a></h1>
+<h1><a class="toc-backref" href="#id47" name="building-luabind">4   Building luabind</a></h1>
 <p>To keep down the compilation-time luabind is built as a library. This means you
-have to either build it and lika against it, or include its source files in
+have to either build it and link against it, or include its source files in
 your project. You also have to make sure the luabind directory is somewhere in
 your compiler's include path. It requires <a class="reference" href="http://www.boost.org">Boost</a> 1.31.0 to be installed (only
 boost headers). It also requires that Lua is installed.</p>
@@ -213,11 +213,11 @@ to better suit your needs. It is extremely important that your application has
 the same settings as the library was built with. The available options are
 found in the <a class="reference" href="#configuration">Configuration</a> section.</p>
 <p>If you want to change the settings to differ from the default, it's recommended
-that you define the settings on the commandline of all your files (in the
+that you define the settings on the command line of all your files (in the
 project settings in visual studio).</p>
 </div>
 <div class="section" id="basic-usage">
-<h1><a name="basic-usage">5   Basic usage</a></h1>
+<h1><a class="toc-backref" href="#id48" name="basic-usage">5   Basic usage</a></h1>
 <p>To use luabind, you must include <tt class="literal"><span class="pre">lua.h</span></tt> and luabind's main header file:</p>
 <pre class="literal-block">
 extern &quot;C&quot;
@@ -247,7 +247,7 @@ closed though.</p>
 <tt class="literal"><span class="pre">&lt;luabind/lua_include.hpp&gt;</span></tt>. If you for some reason need to include another
 Lua header, you can modify this file.</p>
 <div class="section" id="hello-world">
-<h2><a name="hello-world">5.1   Hello world</a></h2>
+<h2><a class="toc-backref" href="#id49" name="hello-world">5.1   Hello world</a></h2>
 <pre class="literal-block">
 #include &lt;iostream&gt;
 #include &lt;luabind/luabind.hpp&gt;
@@ -281,7 +281,7 @@ Hello world!
 </div>
 </div>
 <div class="section" id="scopes">
-<h1><a name="scopes">6   Scopes</a></h1>
+<h1><a class="toc-backref" href="#id50" name="scopes">6   Scopes</a></h1>
 <p>Everything that gets registered in Lua is registered in a namespace (Lua
 tables) or in the global scope (called module). All registrations must be
 surrounded by its scope. To define a module, the <tt class="literal"><span class="pre">luabind::module</span></tt> class is
@@ -302,7 +302,7 @@ module(L, &quot;my_library&quot;)
 ];
 </pre>
 <p>Here all declarations will be put in the my_library table.</p>
-<p>If you want nested namespaces you can use the <tt class="literal"><span class="pre">luabind::namespace_</span></tt> class. It
+<p>If you want nested namespace's you can use the <tt class="literal"><span class="pre">luabind::namespace_</span></tt> class. It
 works exactly as <tt class="literal"><span class="pre">luabind::module</span></tt> except that it doesn't take a lua_State*
 in it's constructor. An example of its usage could look like this:</p>
 <pre class="literal-block">
@@ -350,7 +350,7 @@ module(L)
 functions in tables will increase the lookup time.</p>
 </div>
 <div class="section" id="binding-functions-to-lua">
-<h1><a name="binding-functions-to-lua">7   Binding functions to Lua</a></h1>
+<h1><a class="toc-backref" href="#id51" name="binding-functions-to-lua">7   Binding functions to Lua</a></h1>
 <p>To bind functions to Lua you use the function <tt class="literal"><span class="pre">luabind::def()</span></tt>. It has the
 following synopsis:</p>
 <pre class="literal-block">
@@ -373,7 +373,7 @@ module(L)
 ];
 </pre>
 <div class="section" id="overloaded-functions">
-<h2><a name="overloaded-functions">7.1   Overloaded functions</a></h2>
+<h2><a class="toc-backref" href="#id52" name="overloaded-functions">7.1   Overloaded functions</a></h2>
 <p>If you have more than one function with the same name, and want to register
 them in Lua, you have to explicitly give the signature. This is to let C++ know
 which function you refer to. For example, if you have two functions, <tt class="literal"><span class="pre">int</span>
@@ -387,7 +387,7 @@ module(L)
 </pre>
 </div>
 <div class="section" id="signature-matching">
-<h2><a name="signature-matching">7.2   Signature matching</a></h2>
+<h2><a class="toc-backref" href="#id53" name="signature-matching">7.2   Signature matching</a></h2>
 <p>luabind will generate code that checks the Lua stack to see if the values there
 can match your functions' signatures. It will handle implicit typecasts between
 derived classes, and it will prefer matches with the least number of implicit
@@ -402,7 +402,7 @@ first match). This also means that it can handle situations where the only
 difference in the signature is that one member function is const and the other
 isn't.</p>
 <div class="sidebar">
-<p class="sidebar-title">Ownership transfer</p>
+<p class="sidebar-title first">Ownership transfer</p>
 <p>To correctly handle ownership transfer, create_a() would need an adopt
 return value policy. More on this in the <a class="reference" href="#policies">Policies</a> section.</p>
 </div>
@@ -440,7 +440,7 @@ g(c) -- calls g(B*)
 </pre>
 </div>
 <div class="section" id="calling-lua-functions">
-<h2><a name="calling-lua-functions">7.3   Calling Lua functions</a></h2>
+<h2><a class="toc-backref" href="#id54" name="calling-lua-functions">7.3   Calling Lua functions</a></h2>
 <p>To call a Lua function, you can either use <tt class="literal"><span class="pre">call_function()</span></tt>,
 an <tt class="literal"><span class="pre">object</span></tt> or <tt class="literal"><span class="pre">functor</span></tt>.</p>
 <pre class="literal-block">
@@ -475,7 +475,7 @@ int ret = call_function(L, &quot;fun&quot;, boost::ref(val));
 </pre>
 </div>
 <div class="section" id="using-lua-threads">
-<h2><a name="using-lua-threads">7.4   Using Lua threads</a></h2>
+<h2><a class="toc-backref" href="#id55" name="using-lua-threads">7.4   Using Lua threads</a></h2>
 <p>To start a Lua thread, you have to call <tt class="literal"><span class="pre">lua_resume()</span></tt>, this means that you
 cannot use the previous function <tt class="literal"><span class="pre">call_function()</span></tt> to start a thread. You have
 to use</p>
@@ -491,7 +491,7 @@ template&lt;class Ret&gt;
 Ret resume(lua_State* L, ...)
 </pre>
 <p>The first time you start the thread, you have to give it a function to execute. i.e. you
-have to use <tt class="literal"><span class="pre">resume_function</span></tt>, when the Lua function yeilds, it will return the first
+have to use <tt class="literal"><span class="pre">resume_function</span></tt>, when the Lua function yields, it will return the first
 value passed in to <tt class="literal"><span class="pre">lua_yield()</span></tt>. When you want to continue the execution, you just call
 <tt class="literal"><span class="pre">resume()</span></tt> on your <tt class="literal"><span class="pre">lua_State</span></tt>, since it's already executing a function, you don't pass
 it one. The parameters to <tt class="literal"><span class="pre">resume()</span></tt> will be returned by <tt class="literal"><span class="pre">yield()</span></tt> on the Lua side.</p>
@@ -507,7 +507,7 @@ resume_function(fun);
 </div>
 </div>
 <div class="section" id="binding-classes-to-lua">
-<h1><a name="binding-classes-to-lua">8   Binding classes to Lua</a></h1>
+<h1><a class="toc-backref" href="#id56" name="binding-classes-to-lua">8   Binding classes to Lua</a></h1>
 <p>To register classes you use a class called <tt class="literal"><span class="pre">class_</span></tt>. Its name is supposed to
 resemble the C++ keyword, to make it look more intuitive. It has an overloaded
 member function <tt class="literal"><span class="pre">def()</span></tt> that is used to register member functions, operators,
@@ -565,7 +565,7 @@ class_&lt;A&gt;(&quot;A&quot;)
 If the object pointer parameter is const, the function will act as if it was a
 const member function (it can be called on const objects).</p>
 <div class="section" id="properties">
-<h2><a name="properties">8.1   Properties</a></h2>
+<h2><a class="toc-backref" href="#id57" name="properties">8.1   Properties</a></h2>
 <p>To register a global data member with a class is easily done. Consider the
 following class:</p>
 <pre class="literal-block">
@@ -614,7 +614,7 @@ just writing  to the data member. If you want to make it read only you can just
 omit the last parameter.</p>
 </div>
 <div class="section" id="enums">
-<h2><a name="enums">8.2   Enums</a></h2>
+<h2><a class="toc-backref" href="#id58" name="enums">8.2   Enums</a></h2>
 <p>If your class contains enumerated constants (enums), you can register them as
 well to make them available in Lua. Note that they will not be type safe, all
 enums are integers in Lua, and all functions that takes an enum, will accept
@@ -642,7 +642,7 @@ Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
 </pre>
 </div>
 <div class="section" id="operators">
-<h2><a name="operators">8.3   Operators</a></h2>
+<h2><a class="toc-backref" href="#id59" name="operators">8.3   Operators</a></h2>
 <p>The mechanism for registering operators on your class is pretty simple. You use
 a global name <tt class="literal"><span class="pre">luabind::self</span></tt> to refer to the class itself and then you just
 write the operator expression inside the <tt class="literal"><span class="pre">def()</span></tt> call. This class:</p>
@@ -711,7 +711,7 @@ really an operator. It is used for converting objects to strings in a standard
 way in Lua. If you register this functionality, you will be able to use the lua
 standard function <tt class="literal"><span class="pre">tostring()</span></tt> for converting you object to a string.</p>
 <p>To implement this operator in C++ you should supply an <tt class="literal"><span class="pre">operator&lt;&lt;</span></tt> for
-ostream. Like this example:</p>
+std::ostream. Like this example:</p>
 <pre class="literal-block">
 class number {};
 std::ostream&amp; operator&lt;&lt;(std::ostream&amp;, number&amp;);
@@ -726,7 +726,7 @@ module(L)
 </pre>
 </div>
 <div class="section" id="nested-scopes-and-static-functions">
-<h2><a name="nested-scopes-and-static-functions">8.4   Nested scopes and static functions</a></h2>
+<h2><a class="toc-backref" href="#id60" name="nested-scopes-and-static-functions">8.4   Nested scopes and static functions</a></h2>
 <p>It is possible to add nested scopes to a class. This is useful when you need 
 to wrap a nested class, or a static function.</p>
 <pre class="literal-block">
@@ -738,10 +738,10 @@ class_&lt;foo&gt;(&quot;foo&quot;)
         def(&quot;f&quot;, &amp;f)
     ]</strong>;
 </pre>
-<p>It's also possible to add namespaces to classes using the same syntax.</p>
+<p>It's also possible to add namespace's to classes using the same syntax.</p>
 </div>
 <div class="section" id="derived-classes">
-<h2><a name="derived-classes">8.5   Derived classes</a></h2>
+<h2><a class="toc-backref" href="#id61" name="derived-classes">8.5   Derived classes</a></h2>
 <p>If you want to register classes that derives from other classes, you can
 specify a template parameter <tt class="literal"><span class="pre">bases&lt;&gt;</span></tt> to the <tt class="literal"><span class="pre">class_</span></tt> instantiation. The
 following hierarchy:</p>
@@ -767,12 +767,12 @@ module(L)
 </pre>
 <p>Note that you can omit <tt class="literal"><span class="pre">bases&lt;&gt;</span></tt> when using single inheritance.</p>
 <div class="note">
-<p class="admonition-title">Note</p>
+<p class="admonition-title first">Note</p>
 If you don't specify that classes derive from each other, luabind will not
 be able to implicitly cast pointers between the types.</div>
 </div>
 <div class="section" id="smart-pointers">
-<h2><a name="smart-pointers">8.6   Smart pointers</a></h2>
+<h2><a class="toc-backref" href="#id62" name="smart-pointers">8.6   Smart pointers</a></h2>
 <p>When you register a class you can tell luabind that all instances of that class
 should be held by some kind of smart pointer (boost::shared_ptr for instance).
 You do this by giving the holder type as an extra template parameter to
@@ -810,7 +810,7 @@ namespace luabind {
 </pre>
 <p>The conversion that works are (given that B is a base class of A):</p>
 <div class="topic">
-<p class="topic-title">From Lua to C++</p>
+<p class="topic-title first">From Lua to C++</p>
 <table border class="table">
 <colgroup>
 <col width="51%" />
@@ -853,7 +853,7 @@ namespace luabind {
 </table>
 </div>
 <div class="topic">
-<p class="topic-title">From C++ to Lua</p>
+<p class="topic-title first">From C++ to Lua</p>
 <table border class="table">
 <colgroup>
 <col width="56%" />
@@ -906,13 +906,13 @@ false
 </div>
 </div>
 <div class="section" id="object">
-<h1><a name="object">9   Object</a></h1>
+<h1><a class="toc-backref" href="#id63" name="object">9   Object</a></h1>
 <p>Since functions have to be able to take Lua values (of variable type) we need a
 wrapper around them. This wrapper is called <tt class="literal"><span class="pre">luabind::object</span></tt>. If the
 function you register takes an object, it will match any Lua value. To use it,
 you need to include <tt class="literal"><span class="pre">luabind/object.hpp</span></tt>.</p>
 <div class="topic">
-<p class="topic-title">Synopsis</p>
+<p class="topic-title first">Synopsis</p>
 <pre class="literal-block">
 class object
 {
@@ -994,7 +994,7 @@ the given table position (like operator[] but only for reading).</p>
 <p>The ordinary <tt class="literal"><span class="pre">object::iterator</span></tt> uses lua_gettable to extract the values from
 the table, the standard way that will invoke metamethods if any. The
 <tt class="literal"><span class="pre">object::raw_iterator</span></tt> uses lua_rawget and <tt class="literal"><span class="pre">object::array_iterator</span></tt> uses
-lua_rawgeti. The latter will only iterate over numberical keys starting at 1
+lua_rawgeti. The latter will only iterate over numerical keys starting at 1
 and continue until the first nil value.</p>
 <p>The <tt class="literal"><span class="pre">lua_state()</span></tt> function returns the Lua state where this object is stored.
 If you want to manipulate the object with Lua functions directly you can push
@@ -1068,7 +1068,7 @@ void my_function(const object&amp; table)
 will match that parameter. That's why we have to make sure it's a table before
 we index into it.</p>
 <div class="section" id="iterators">
-<h2><a name="iterators">9.1   Iterators</a></h2>
+<h2><a class="toc-backref" href="#id64" name="iterators">9.1   Iterators</a></h2>
 <p>The iterators, that are returned by <tt class="literal"><span class="pre">begin()</span></tt> and <tt class="literal"><span class="pre">end()</span></tt> (and their
 variants) are (almost) models of the ForwardIterator concept. The exception
 is that post increment doesn't exist on them.</p>
@@ -1100,7 +1100,7 @@ dereferenced iterator:</p>
 associated Lua table.</p>
 </div>
 <div class="section" id="related-functions">
-<h2><a name="related-functions">9.2   Related functions</a></h2>
+<h2><a class="toc-backref" href="#id65" name="related-functions">9.2   Related functions</a></h2>
 <p>There are a couple of functions related to objects and tables.</p>
 <pre class="literal-block">
 T object_cast&lt;T&gt;(object const&amp;);
@@ -1111,7 +1111,7 @@ boost::optional&lt;T&gt; object_cast_nothrow&lt;T&gt;(object const&amp;, Policie
 </pre>
 </div>
 <div class="section" id="functor">
-<h2><a name="functor">9.3   Functor</a></h2>
+<h2><a class="toc-backref" href="#id66" name="functor">9.3   Functor</a></h2>
 <p>The <tt class="literal"><span class="pre">functor</span></tt> class is similar to object, with the exception that it can only
 be used to store functions. If you take it as a parameter, it will only match
 functions.</p>
@@ -1123,7 +1123,7 @@ functions.</p>
 represents. Currently the functor can have at most one return value (unlike Lua
 functions).</p>
 <div class="topic">
-<p class="topic-title">Synopsis</p>
+<p class="topic-title first">Synopsis</p>
 <pre class="literal-block">
 template&lt;class Ret&gt;
 class functor
@@ -1218,7 +1218,7 @@ to its Lua value). If the functor object has longer lifetime than the lua state
 </div>
 </div>
 <div class="section" id="defining-classes-in-lua">
-<h1><a name="defining-classes-in-lua">10   Defining classes in Lua</a></h1>
+<h1><a class="toc-backref" href="#id67" name="defining-classes-in-lua">10   Defining classes in Lua</a></h1>
 <p>In addition to binding C++ functions and classes with Lua, luabind also provide
 an OO-system in Lua.</p>
 <pre class="literal-block">
@@ -1253,7 +1253,7 @@ class. The user is required to call <tt class="literal"><span class="pre">super<
 You can find all member functions in the base class, but you will have to give
 the this-pointer (<tt class="literal"><span class="pre">self</span></tt>) as first argument.</p>
 <div class="section" id="deriving-in-lua">
-<h2><a name="deriving-in-lua">10.1   Deriving in lua</a></h2>
+<h2><a class="toc-backref" href="#id68" name="deriving-in-lua">10.1   Deriving in lua</a></h2>
 <p>It is also possible to derive Lua classes from C++ classes, and override
 virtual functions with Lua functions. To do this we have to create a wrapper
 class for our C++ base class. This is the class that will hold the Lua object
@@ -1292,12 +1292,12 @@ module(L)
 [
     class_&lt;base, base_wrapper&gt;(&quot;base&quot;)
         .def(constructor&lt;const char*&gt;())
-        .def(&quot;f&quot;, &amp;base_wrapper::f, &amp;base_wrapper::default_f)
+        .def(&quot;f&quot;, &amp;base::f, &amp;base_wrapper::default_f)
 ];
 </pre>
 <div class="important">
-<p class="admonition-title">Important</p>
-Since visual studio 6.5 doesn't support explicit template parameters
+<p class="admonition-title first">Important</p>
+Since MSVC6.5 doesn't support explicit template parameters
 to member functions, instead of using the member function <tt class="literal"><span class="pre">call()</span></tt>
 you call a free function <tt class="literal"><span class="pre">call_member()</span></tt> and pass the this-pointer
 as first parameter.</div>
@@ -1308,7 +1308,7 @@ them is not important. You must also register both the static version and the
 virtual version of the function from the wrapper, this is necessary in order
 to allow luabind to use both dynamic and static dispatch when calling the function.</p>
 <div class="important">
-<p class="admonition-title">Important</p>
+<p class="admonition-title first">Important</p>
 It is extremely important that the signatures of the static (default) function
 is identical to the virtual function. The fact that one of them is a free
 function and the other a member function doesn't matter, but the parameters
@@ -1340,7 +1340,7 @@ Ret call(char const* name, ...)
 <p>Its used in a similar way as <tt class="literal"><span class="pre">call_function</span></tt>, with the exception that it doesn't
 take a <tt class="literal"><span class="pre">lua_State</span></tt> pointer, and the name is a member function in the Lua class.</p>
 <div class="warning">
-<p class="admonition-title">Warning</p>
+<p class="admonition-title first">Warning</p>
 The current implementation of <tt class="literal"><span class="pre">call_member</span></tt> is not able to distinguish const
 member functions from non-const. If you have a situation where you have an overloaded
 virtual function where the only difference in their signatures is their constness, the
@@ -1373,7 +1373,7 @@ not defined).</p>
 </div>
 </div>
 <div class="section" id="overloading-operators">
-<h2><a name="overloading-operators">10.2   Overloading operators</a></h2>
+<h2><a class="toc-backref" href="#id69" name="overloading-operators">10.2   Overloading operators</a></h2>
 <p>You can overload most operators in Lua for your classes. You do this by simply
 declaring a member function with the same name as an operator (the name of the
 metamethods in Lua). The operators you can overload are:</p>
@@ -1443,7 +1443,7 @@ operator. If none of the C++ overloads matches, the Lua class operator will be
 called.</p>
 </div>
 <div class="section" id="finalizers">
-<h2><a name="finalizers">10.3   Finalizers</a></h2>
+<h2><a class="toc-backref" href="#id70" name="finalizers">10.3   Finalizers</a></h2>
 <p>If an object needs to perform actions when it's collected we provide a
 <tt class="literal"><span class="pre">__finalize</span></tt> function that can be overridden in lua-classes. The
 <tt class="literal"><span class="pre">__finalize</span></tt> functions will be called on all classes in the inheritance
@@ -1457,12 +1457,12 @@ end
 </pre>
 </div>
 <div class="section" id="slicing">
-<h2><a name="slicing">10.4   Slicing</a></h2>
+<h2><a class="toc-backref" href="#id71" name="slicing">10.4   Slicing</a></h2>
 <p>If your lua C++ classes don't have wrappers (see <a class="reference" href="#deriving-in-lua">Deriving in lua</a>) and
 you derive from them in lua, they may be sliced. Meaning, if an object
 is passed into C++ as a pointer to its base class, the lua part will be
 separated from the C++ base part. This means that if you call virtual
-functions on that C++ object, thyey will not be dispatched to the lua
+functions on that C++ object, they will not be dispatched to the lua
 class. It also means that if you adopt the object, the lua part will be
 garbage collected.</p>
 <pre class="literal-block">
@@ -1506,7 +1506,7 @@ an object not owned by lua is being adopted to C++.</p>
 </div>
 </div>
 <div class="section" id="exceptions">
-<h1><a name="exceptions">11   Exceptions</a></h1>
+<h1><a class="toc-backref" href="#id72" name="exceptions">11   Exceptions</a></h1>
 <p>If any of the functions you register throws an exception when called, that
 exception will be caught by luabind and converted to an error string and
 <tt class="literal"><span class="pre">lua_error()</span></tt> will be invoked. If the exception is a <tt class="literal"><span class="pre">std::exception</span></tt> or a
@@ -1601,14 +1601,14 @@ luabind::set_cast_failed_callback(void(*)(lua_State*, LUABIND_TYPE_INFO))
 is not expected to return, if it does luabind will call <tt class="literal"><span class="pre">std::terminate()</span></tt>.</p>
 </div>
 <div class="section" id="policies">
-<h1><a name="policies">12   Policies</a></h1>
+<h1><a class="toc-backref" href="#id73" name="policies">12   Policies</a></h1>
 <p>Sometimes it is necessary to control how luabind passes arguments and return
 value, to do this we have policies. All policies use an index to associate
 them with an argument in the function signature. These indices are <tt class="literal"><span class="pre">result</span></tt> 
 and <tt class="literal"><span class="pre">_N</span></tt> (where <tt class="literal"><span class="pre">N</span> <span class="pre">&gt;=</span> <span class="pre">1</span></tt>). When dealing with member functions <tt class="literal"><span class="pre">_1</span></tt> refers
 to the <tt class="literal"><span class="pre">this</span></tt> pointer.</p>
 <div class="contents topic" id="policies-currently-implemented">
-<p class="topic-title"><a name="policies-currently-implemented">Policies currently implemented</a></p>
+<p class="topic-title first"><a name="policies-currently-implemented">Policies currently implemented</a></p>
 <ul class="auto-toc simple">
 <li><a class="reference" href="#adopt" id="id92" name="id92">12.1   adopt</a></li>
 <li><a class="reference" href="#dependency" id="id93" name="id93">12.2   dependency</a></li>
@@ -1623,7 +1623,7 @@ to the <tt class="literal"><span class="pre">this</span></tt> pointer.</p>
 </ul>
 </div>
 <div class="section" id="adopt">
-<h2><a name="adopt">12.1   adopt</a></h2>
+<h2><a class="toc-backref" href="#id92" name="adopt">12.1   adopt</a></h2>
 <div class="section" id="motivation">
 <h3><a name="motivation">12.1.1   Motivation</a></h3>
 <p>Used to transfer ownership across language boundaries.</p>
@@ -1677,7 +1677,7 @@ module(L)
 </div>
 </div>
 <div class="section" id="dependency">
-<h2><a name="dependency">12.2   dependency</a></h2>
+<h2><a class="toc-backref" href="#id93" name="dependency">12.2   dependency</a></h2>
 <div class="section" id="id2">
 <h3><a name="id2">12.2.1   Motivation</a></h3>
 <p>The dependency policy is used to create life-time dependencies between values.
@@ -1735,7 +1735,7 @@ module(L)
 </div>
 </div>
 <div class="section" id="out-value">
-<h2><a name="out-value">12.3   out_value</a></h2>
+<h2><a class="toc-backref" href="#id94" name="out-value">12.3   out_value</a></h2>
 <div class="section" id="id7">
 <h3><a name="id7">12.3.1   Motivation</a></h3>
 <p>This policy makes it possible to wrap functions that take non-const references
@@ -1798,7 +1798,7 @@ Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
 </div>
 </div>
 <div class="section" id="pure-out-value">
-<h2><a name="pure-out-value">12.4   pure_out_value</a></h2>
+<h2><a class="toc-backref" href="#id95" name="pure-out-value">12.4   pure_out_value</a></h2>
 <div class="section" id="id12">
 <h3><a name="id12">12.4.1   Motivation</a></h3>
 <p>This works exactly like <tt class="literal"><span class="pre">out_value</span></tt>, except that it will pass a
@@ -1835,7 +1835,7 @@ pure_out_value(index, policies = none)
 </tr>
 <tr><td><tt class="literal"><span class="pre">policies</span></tt></td>
 <td>The policies used internally to convert the out parameter
-to Lua. <tt class="literal"><span class="pre">_1</span></tt> is used as the interal index.</td>
+to Lua. <tt class="literal"><span class="pre">_1</span></tt> is used as the internal index.</td>
 </tr>
 </tbody>
 </table>
@@ -1860,7 +1860,7 @@ Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
 </div>
 </div>
 <div class="section" id="return-reference-to">
-<h2><a name="return-reference-to">12.5   return_reference_to</a></h2>
+<h2><a class="toc-backref" href="#id96" name="return-reference-to">12.5   return_reference_to</a></h2>
 <div class="section" id="id17">
 <h3><a name="id17">12.5.1   Motivation</a></h3>
 <p>It is very common to return references to arguments or the this-pointer to
@@ -1936,14 +1936,14 @@ module(L)
 ];
 </pre>
 <div class="warning">
-<p class="admonition-title">Warning</p>
+<p class="admonition-title first">Warning</p>
 This policy ignores all type information and should be used only it 
 situations where the parameter type is a perfect match to the 
 return-type (such as in the example).</div>
 </div>
 </div>
 <div class="section" id="copy">
-<h2><a name="copy">12.6   copy</a></h2>
+<h2><a class="toc-backref" href="#id97" name="copy">12.6   copy</a></h2>
 <div class="section" id="id22">
 <h3><a name="id22">12.6.1   Motivation</a></h3>
 <p>This will make a copy of the parameter. This is the default behavior when
@@ -2002,7 +2002,7 @@ module(L)
 </div>
 </div>
 <div class="section" id="discard-result">
-<h2><a name="discard-result">12.7   discard_result</a></h2>
+<h2><a class="toc-backref" href="#id98" name="discard-result">12.7   discard_result</a></h2>
 <div class="section" id="id27">
 <h3><a name="id27">12.7.1   Motivation</a></h3>
 <p>This is a very simple policy which makes it possible to throw away 
@@ -2044,7 +2044,7 @@ module(L)
 </div>
 </div>
 <div class="section" id="return-stl-iterator">
-<h2><a name="return-stl-iterator">12.8   return_stl_iterator</a></h2>
+<h2><a class="toc-backref" href="#id99" name="return-stl-iterator">12.8   return_stl_iterator</a></h2>
 <div class="section" id="id31">
 <h3><a name="id31">12.8.1   Motivation</a></h3>
 <p>This policy converts an STL container to a generator function that can be used
@@ -2089,7 +2089,7 @@ module(L)
 </div>
 </div>
 <div class="section" id="raw">
-<h2><a name="raw">12.9   raw</a></h2>
+<h2><a class="toc-backref" href="#id100" name="raw">12.9   raw</a></h2>
 <div class="section" id="id35">
 <h3><a name="id35">12.9.1   Motivation</a></h3>
 <p>This converter policy will pass through the <tt class="literal"><span class="pre">lua_State*</span></tt> unmodified.
@@ -2149,7 +2149,7 @@ hello
 </div>
 </div>
 <div class="section" id="yield">
-<h2><a name="yield">12.10   yield</a></h2>
+<h2><a class="toc-backref" href="#id101" name="yield">12.10   yield</a></h2>
 <div class="section" id="id40">
 <h3><a name="id40">12.10.1   Motivation</a></h3>
 <p>Makes a C++ function yield when returning.</p>
@@ -2532,7 +2532,7 @@ returning. See the Lua manual for restrictions on yield. -->
 </div>
 </div>
 <div class="section" id="splitting-up-the-registration">
-<h1><a name="splitting-up-the-registration">13   Splitting up the registration</a></h1>
+<h1><a class="toc-backref" href="#id84" name="splitting-up-the-registration">13   Splitting up the registration</a></h1>
 <p>It is possible to split up a module registration into several
 translation units without making each registration dependent
 on the module it's being registered in.</p>
@@ -2572,7 +2572,7 @@ void register_module(lua_State* L)
 </pre>
 </div>
 <div class="section" id="configuration">
-<h1><a name="configuration">14   Configuration</a></h1>
+<h1><a class="toc-backref" href="#id85" name="configuration">14   Configuration</a></h1>
 <p>As mentioned in the <a class="reference" href="http://www.lua.org/manual/5.0/manual.html">Lua documentation</a>, it is possible to pass an
 error handler function to <tt class="literal"><span class="pre">lua_pcall()</span></tt>. Luabind makes use of 
 <tt class="literal"><span class="pre">lua_pcall()</span></tt> internally when calling methods and functions. It is
@@ -2585,9 +2585,9 @@ void set_pcall_callback(pcall_callback_fun fn);
 <p>This is primarily useful for adding more information to the error message
 returned by a failed protected call.</p>
 <div class="section" id="build-options">
-<h2><a name="build-options">14.1   Build options</a></h2>
+<h2><a class="toc-backref" href="#id86" name="build-options">14.1   Build options</a></h2>
 <p>There are a number of configuration options available when building luabind.
-It is very important that your project has the exact same conmfiguration 
+It is very important that your project has the exact same configuration 
 options as the ones given when the library was build! The exceptions are the
 <tt class="literal"><span class="pre">LUABIND_MAX_ARITY</span></tt> and <tt class="literal"><span class="pre">LUABIND_MAX_BASES</span></tt> which are template-based 
 options and only matters when you use the library (which means they can 
@@ -2689,7 +2689,7 @@ build.</dd>
 </div>
 </div>
 <div class="section" id="implementation-notes">
-<h1><a name="implementation-notes">15   Implementation notes</a></h1>
+<h1><a class="toc-backref" href="#id87" name="implementation-notes">15   Implementation notes</a></h1>
 <p>The classes and objects are implemented as user data in Lua. To make sure that
 the user data really is the internal structure it is supposed to be, we tag
 their metatables. A user data who's metatable contains a boolean member named
@@ -2718,7 +2718,7 @@ another overload to it.</p>
 namespace contains non-public classes and are not supposed to be used directly.</p>
 </div>
 <div class="section" id="error-messages">
-<h1><a name="error-messages">16   Error messages</a></h1>
+<h1><a class="toc-backref" href="#id88" name="error-messages">16   Error messages</a></h1>
 <ul>
 <li><pre class="first literal-block">
 the attribute '<em>class-name.attribute-name</em>' is read only
@@ -2770,7 +2770,7 @@ cannot derive from C++ class '<em>class-name</em>'. It does not have a wrapped t
 </ul>
 </div>
 <div class="section" id="faq">
-<h1><a name="faq">17   FAQ</a></h1>
+<h1><a class="toc-backref" href="#id89" name="faq">17   FAQ</a></h1>
 <dl>
 <dt>What's up with __cdecl and __stdcall?</dt>
 <dd>If you're having problem with functions
@@ -2789,7 +2789,7 @@ unit up in smaller ones.</dd>
 <!-- the three entries above were removed, why? -->
 <dl>
 <dt>What's wrong with precompiled headers in VC?</dt>
-<dd>Visual Studio doesn't like anonymous namespaces in its precompiled 
+<dd>Visual Studio doesn't like anonymous namespace's in its precompiled 
 headers. If you encounter this problem you can disable precompiled 
 headers for the compilation unit (cpp-file) that uses luabind.</dd>
 <dt>error C1076: compiler limit - internal heap limit reached in VC</dt>
@@ -2856,7 +2856,7 @@ a look at out_value and pure_out_value policies.</dd>
 </dl>
 </div>
 <div class="section" id="known-issues">
-<h1><a name="known-issues">18   Known issues</a></h1>
+<h1><a class="toc-backref" href="#id90" name="known-issues">18   Known issues</a></h1>
 <ul class="simple">
 <li>You cannot use strings with extra nulls in them as member names that refers
 to C++ members.</li>
@@ -2873,7 +2873,7 @@ done with static pointer offsets.</li>
 for luabind::object. -->
 </div>
 <div class="section" id="acknowledgments">
-<h1><a name="acknowledgments">19   Acknowledgments</a></h1>
+<h1><a class="toc-backref" href="#id91" name="acknowledgments">19   Acknowledgments</a></h1>
 <p>Written by Daniel Wallin and Arvid Norberg. © Copyright 2003.
 All rights reserved.</p>
 <p>Evan Wies has contributed with thorough testing, countless bug reports
@@ -2884,7 +2884,7 @@ and feature ideas.</p>
 <hr class="footer" />
 <div class="footer">
 <a class="reference" href="docs.rst">View document source</a>.
-Generated on: 2004-08-08 14:21 UTC.
+Generated on: 2004-08-10 20:06 UTC.
 Generated by <a class="reference" href="http://docutils.sourceforge.net/">Docutils</a> from <a class="reference" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
 </div>
 </body>

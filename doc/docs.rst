@@ -50,14 +50,14 @@ with Lua 4.
 
 It is implemented utilizing template meta programming. That means that you
 don't need an extra preprocess pass to compile your project (it is done by the
-compiler). It also means you don't (usually) have to know the exact signatureof
-each function you register, since the library will generate code depending on
-the compile-time type of the function (which includes the signature). The main
-drawback of this approach is that the compilation time will increase for the
-file that does the registration, it is therefore recommended that you register
-everything in the same cpp-file.
+compiler). It also means you don't (usually) have to know the exact signature 
+of each function you register, since the library will generate code depending 
+on the compile-time type of the function (which includes the signature). The 
+main drawback of this approach is that the compilation time will increase for 
+the file that does the registration, it is therefore recommended that you 
+register everything in the same cpp-file.
 
-luabind is released under the terms of the `MIT license`_.
+Luabind is released under the terms of the `MIT license`_.
 
 We are very interested in hearing about projects that use luabind, please let
 us know about your project.
@@ -115,7 +115,7 @@ Building luabind
 ================
 
 To keep down the compilation-time luabind is built as a library. This means you
-have to either build it and lika against it, or include its source files in
+have to either build it and link against it, or include its source files in
 your project. You also have to make sure the luabind directory is somewhere in
 your compiler's include path. It requires `Boost`_ 1.31.0 to be installed (only
 boost headers). It also requires that Lua is installed.
@@ -143,7 +143,7 @@ the same settings as the library was built with. The available options are
 found in the `Configuration`_ section.
 
 If you want to change the settings to differ from the default, it's recommended
-that you define the settings on the commandline of all your files (in the
+that you define the settings on the command line of all your files (in the
 project settings in visual studio).
 
 .. _`Boost.Build V2`: http://www.boost.org/tools/build/v2/index_v2.html
@@ -243,7 +243,7 @@ libraries) you can give a name to the constructor, like this::
 
 Here all declarations will be put in the my_library table.
 
-If you want nested namespaces you can use the ``luabind::namespace_`` class. It
+If you want nested namespace's you can use the ``luabind::namespace_`` class. It
 works exactly as ``luabind::module`` except that it doesn't take a lua_State*
 in it's constructor. An example of its usage could look like this::
 
@@ -454,7 +454,7 @@ and
     Ret resume(lua_State* L, ...)
 
 The first time you start the thread, you have to give it a function to execute. i.e. you
-have to use ``resume_function``, when the Lua function yeilds, it will return the first
+have to use ``resume_function``, when the Lua function yields, it will return the first
 value passed in to ``lua_yield()``. When you want to continue the execution, you just call
 ``resume()`` on your ``lua_State``, since it's already executing a function, you don't pass
 it one. The parameters to ``resume()`` will be returned by ``yield()`` on the Lua side.
@@ -705,7 +705,7 @@ way in Lua. If you register this functionality, you will be able to use the lua
 standard function ``tostring()`` for converting you object to a string.
 
 To implement this operator in C++ you should supply an ``operator<<`` for
-ostream. Like this example:
+std::ostream. Like this example:
 
 .. parsed-literal::
 
@@ -737,7 +737,7 @@ to wrap a nested class, or a static function.
             def("f", &f)
         ]**;
 
-It's also possible to add namespaces to classes using the same syntax.
+It's also possible to add namespace's to classes using the same syntax.
 
 
 Derived classes
@@ -957,7 +957,7 @@ the given table position (like operator[] but only for reading).
 The ordinary ``object::iterator`` uses lua_gettable to extract the values from
 the table, the standard way that will invoke metamethods if any. The
 ``object::raw_iterator`` uses lua_rawget and ``object::array_iterator`` uses
-lua_rawgeti. The latter will only iterate over numberical keys starting at 1
+lua_rawgeti. The latter will only iterate over numerical keys starting at 1
 and continue until the first nil value.
 
 The ``lua_state()`` function returns the Lua state where this object is stored.
@@ -1291,7 +1291,7 @@ when we instantiate a Lua class.
     ];
 
 .. Important::
-    Since visual studio 6.5 doesn't support explicit template parameters
+    Since MSVC6.5 doesn't support explicit template parameters
     to member functions, instead of using the member function ``call()``
     you call a free function ``call_member()`` and pass the this-pointer
     as first parameter.
@@ -1469,7 +1469,7 @@ If your lua C++ classes don't have wrappers (see `Deriving in lua`_) and
 you derive from them in lua, they may be sliced. Meaning, if an object
 is passed into C++ as a pointer to its base class, the lua part will be
 separated from the C++ base part. This means that if you call virtual
-functions on that C++ object, thyey will not be dispatched to the lua
+functions on that C++ object, they will not be dispatched to the lua
 class. It also means that if you adopt the object, the lua part will be
 garbage collected.
 
@@ -2063,7 +2063,7 @@ Build options
 -------------
 
 There are a number of configuration options available when building luabind.
-It is very important that your project has the exact same conmfiguration 
+It is very important that your project has the exact same configuration 
 options as the ones given when the library was build! The exceptions are the
 ``LUABIND_MAX_ARITY`` and ``LUABIND_MAX_BASES`` which are template-based 
 options and only matters when you use the library (which means they can 
@@ -2287,7 +2287,7 @@ Internal structure overflow in VC
 .. the three entries above were removed, why?
 
 What's wrong with precompiled headers in VC?
-    Visual Studio doesn't like anonymous namespaces in its precompiled 
+    Visual Studio doesn't like anonymous namespace's in its precompiled 
     headers. If you encounter this problem you can disable precompiled 
     headers for the compilation unit (cpp-file) that uses luabind.
 

@@ -126,31 +126,6 @@ struct base_wrap : base, wrap_base
 	}
 };
 
-struct simple_class : counted_type<simple_class>
-{
-    static int feedback;
-
-    void f()
-    {
-        feedback = 1;
-    }
-
-    void f(int, int) {}
-    void f(std::string a)
-    {
-        const char str[] = "foo\0bar";
-        if (a == std::string(str, sizeof(str)-1))
-            feedback = 2;
-    }
-
-    std::string g()
-    {
-        const char str[] = "foo\0bar";
-        return std::string(str, sizeof(str)-1);
-    }
-
-};
-
 struct T_ // vc6.5, don't name your types T!
 {
 	int f(int) { return 1; }
@@ -162,24 +137,12 @@ struct U : T_
 	int f(int, int) { return 2; }
 };
 
-int simple_class::feedback = 0;
-
-struct dHinge2Joint
-{
-	void setParam( int param, float value )
-	{
-	}
-};
-
 } // namespace unnamed
-
-#include <iostream>
 
 void test_lua_classes()
 {
     COUNTER_GUARD(A);
     COUNTER_GUARD(base);
-	COUNTER_GUARD(simple_class);
 
 	lua_state L;
 
@@ -208,17 +171,9 @@ void test_lua_classes()
 		class_<U, T_>("U")
             .def(constructor<>())
 			.def("f", &U::f)
-			.def("g", &U::g),
-
-		class_<dHinge2Joint>("dHinge2Joint")
-			.def(constructor<>())
-			.def("setParam", &dHinge2Joint::setParam)
+			.def("g", &U::g)
 	];
 
-	DOSTRING(L,
-		"a = dHinge2Joint()\n"
-		"a:setParam(0, 0)\n");
-	
 	DOSTRING(L,
 		"u = U()\n"
 		"assert(u:f(0) == 1)\n"
@@ -406,56 +361,5 @@ void test_lua_classes()
 	DOSTRING(L,
 		"a = derived()\n"
 		"assert(a == filter(a))\n");
-
-	typedef void(simple_class::*f_overload1)();
-	typedef void(simple_class::*f_overload2)(int, int);
-	typedef void(simple_class::*f_overload3)(std::string);
-
-    module(L)
-    [
-        class_<simple_class>("simple")
-            .def(constructor<>())
-			.def("f", (f_overload1)&simple_class::f)
-			.def("f", (f_overload2)&simple_class::f)
-			.def("f", (f_overload3)&simple_class::f)
-			.def("g", &simple_class::g)
-    ];
-
-    DOSTRING(L,
-        "class 'simple_derived' (simple)\n"
-        "  function simple_derived:__init() super() end\n"
-        "a = simple_derived()\n"
-        "a:f()\n");
-    BOOST_CHECK(simple_class::feedback == 1);
-
-    DOSTRING(L, "a:f('foo\\0bar')");
-    BOOST_CHECK(simple_class::feedback == 2);
-
-	DOSTRING(L,
-		"b = simple_derived()\n"
-		"a.foo = 'yo'\n"
-		"assert(b.foo == nil)");
-
-	DOSTRING(L,
-		"x = base()\n"
-		"y = base()\n"
-		"x.foo = 'yo'\n"
-		"assert(x.foo == 'yo')"
-		"assert(y.foo == nil)");
-
-	DOSTRING(L,
-		"simple_derived.foobar = 'yi'\n"
-		"assert(b.foobar == 'yi')\n"
-		"assert(a.foobar == 'yi')\n");
-
-    simple_class::feedback = 0;
-
-    DOSTRING_EXPECTED(L, "a:f('incorrect', 'parameters')",
-        "no overload of  'simple:f' matched the arguments "
-        "(simple_derived, string, string)\ncandidates are:\n"
-        "simple:f()\nsimple:f(number, number)\nsimple:f(string)\n");
-
-    DOSTRING(L, "if a:g() == \"foo\\0bar\" then a:f() end");
-    BOOST_CHECK(simple_class::feedback == 1);
 }
 

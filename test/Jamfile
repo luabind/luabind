@@ -6,6 +6,7 @@ SOURCES =
     test_operators.cpp
     test_abstract_base.cpp
     test_lua_classes.cpp
+    test_simple_class.cpp
     test_free_functions.cpp
     test_const.cpp
     test_object.cpp

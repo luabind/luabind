@@ -31,7 +31,7 @@ Parameter       Purpose
 =============== =============================================================
 ``index``       The index of the parameter to be used as an out parameter.
 ``policies``    The policies used internally to convert the out parameter
-                to Lua. ``_1`` is used as the interal index.
+                to Lua. ``_1`` is used as the internal index.
 =============== =============================================================
 
 Example

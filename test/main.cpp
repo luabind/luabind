@@ -121,6 +121,7 @@ void translate_luabind_error(luabind::error const& e)
 
 void test_exceptions();
 void test_lua_classes();
+void test_simple_class();
 void test_attributes();
 void test_held_type();
 void test_separation();
@@ -154,6 +155,7 @@ test_suite* init_unit_test_suite( int argc, char* argv[] )
 
 //    test->add(BOOST_TEST_CASE(&test_exceptions));
     test->add(BOOST_TEST_CASE(&test_lua_classes));
+    test->add(BOOST_TEST_CASE(&test_simple_class));
     test->add(BOOST_TEST_CASE(&test_attributes));
     test->add(BOOST_TEST_CASE(&test_held_type));
     test->add(BOOST_TEST_CASE(&test_separation));
@@ -170,6 +172,6 @@ test_suite* init_unit_test_suite( int argc, char* argv[] )
     test->add(BOOST_TEST_CASE(&test_abstract_base));
     test->add(BOOST_TEST_CASE(&test_operators));
 
-    return test;
+	return test;
 }
 
