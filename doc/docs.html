@@ -211,8 +211,9 @@ way to remove it. Partly because any remaining instances of that class relies
 on the class being there. Everything will be cleaned up when the state is
 closed though.</p>
 <!-- Isn't this wrong? Don't we include lua.h using lua_include.hpp ? -->
-<p>Note that no luabind header will include <tt class="literal"><span class="pre">lua.h</span></tt>, this is up to you. You have
-to include it before any luabind header is included.</p>
+<p>Luabind's headers will never include <tt class="literal"><span class="pre">lua.h``directly,</span> <span class="pre">but</span> <span class="pre">through</span>
+<span class="pre">``&lt;luabind/lua_include.hpp&gt;</span></tt>. If you for some reason need to include another
+lua header, you can modify this file.</p>
 <div class="section" id="hello-world">
 <h2><a class="toc-backref" href="#id6" name="hello-world">5.1   Hello world</a></h2>
 <pre class="literal-block">

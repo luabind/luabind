@@ -158,8 +158,9 @@ closed though.
 
 .. Isn't this wrong? Don't we include lua.h using lua_include.hpp ?
 
-Note that no luabind header will include ``lua.h``, this is up to you. You have
-to include it before any luabind header is included.
+Luabind's headers will never include ``lua.h``directly, but through
+``<luabind/lua_include.hpp>``. If you for some reason need to include another
+lua header, you can modify this file.
 
 
 Hello world
