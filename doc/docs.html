@@ -240,7 +240,7 @@ module(L, "my_library")
 
 // declarations
 
-	namespace("detail")
+	namespace_("detail")
 	[
 		// library-private declarations
 	]
@@ -253,7 +253,7 @@ module(L, "my_library")
 <pre>
 module(L)
 [
-	namespace("my_library")
+	namespace_("my_library")
 	[
 		// declarations
 	]
@@ -739,7 +739,7 @@ the holder type as an extra template-parameter to the <tt>class_</tt> your const
 
 <p>You also have to supply two functions for your smart pointer. One that returns the type of const
 version of the smart pointer type (<tt>boost::shared_ptr&lt;const A&gt;</tt> in this case). And one
-function that extracts the raw pointer from the smart pointer. The first function is needed becaues
+function that extracts the raw pointer from the smart pointer. The first function is needed because
 luabind has to allow the non-const&nbsp;-&gt;&nbsp;conversion when passing values from lua to C++. The second
 function is needed when lua calls member functions on held types, the this pointer must be a raw
 pointer, it is also needed to allow the smart_pointer&nbsp;-&gt;&nbsp;raw_pointer conversion from
@@ -759,7 +759,7 @@ namespace luabind
 }
 </pre>
 
-<p>The current implementation requires that the const-version and non-const versoion of the holder type
+<p>The current implementation requires that the const-version and non-const version of the holder type
 has the exact same memory layout and can be <tt>reinterpret_cast</tt>:ed between each other.</p>
 
 <p>The conversion that works are (given that B is a base class of A):</p>
@@ -2036,7 +2036,7 @@ This namespace contains non-public classes and are not supposed to be used direc
 <h1><a name="acknowledgments"></a>Acknowledgments</h1>
 
 <p>This library was written by <a href="mailto:dalwan01@student.umu.se">Daniel Wallin</a>
-and <a href="mailto: c99ang@cs.umu.se">Arvid Norberg</a>. &copy; Copyright 2003. All rights reserved.</p>
+and <a href="mailto:c99ang@cs.umu.se">Arvid Norberg</a>. &copy; Copyright 2003. All rights reserved.</p>
 
 <p>This library was inspired by Dave Abrahams'
 <a href="http://www.boost.org/libs/python/doc/index.html">Boost.Python</a> library which can be found in the

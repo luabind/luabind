@@ -54,8 +54,6 @@
 
 	add access to the keys on iterators
 
-	finish scopes (and document)
-
 	finish smart pointer support
 		* the adopt policy should not be able to adopt pointers to held_types. This
 		must be prohibited.
