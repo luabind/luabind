@@ -826,6 +826,29 @@ has the exact same memory layout and can be <tt>reinterpret_cast</tt>:ed between
 
 </table>
 
+<p>When using a holder type, it can be useful to know if the pointer is valid. For example when using
+std::auto_ptr, the holder will be invalidated when passed as a parameter to a function. 
+For this purpose there is a member of all object instances in luabind: <tt>__ok</tt>.<p>
+
+<pre>
+
+struct test {};
+void f(std::auto_ptr&lt;test&gt;);
+
+module(L)
+[
+	class_&lt;test&gt;("test")
+		.def(constructor&lt;&gt;()),
+
+	def("f", &amp;f)
+];
+
+a = test()
+f(a)
+print a.__ok -- prints false
+
+</pre>
+
 <h1><a name="object"></a>Object</h1>
 
 <p>Since functions have to be able to take lua values (of variable type) we need a wrapper
