@@ -23,11 +23,7 @@
 extern "C"
 {
 	#include "lua.h"
-	#include "lauxlib.h"
-	#include "lualib.h"
 }
-
-#define LUABIND_NO_HEADERS_ONLY
 
 #include <luabind/luabind.hpp>
 

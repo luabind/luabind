@@ -10,7 +10,6 @@ extern "C"
 //#define LUABIND_NO_ERROR_CHECKING
 //#define LUABIND_DONT_COPY_STRINGS
 //#define LUABIND_NO_EXCEPTIONS
-#define LUABIND_NO_HEADERS_ONLY
 
 #include <luabind/luabind.hpp>
 #include <luabind/dependency_policy.hpp>

@@ -23,11 +23,7 @@
 extern "C"
 {
 	#include "lua.h"
-	#include "lauxlib.h"
-	#include "lualib.h"
 }
-
-#define LUABIND_NO_HEADERS_ONLY
 
 #include <luabind/luabind.hpp>
 //#include <luabind/detail/class_rep.hpp>
@@ -626,6 +622,8 @@ void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep
 	for (std::map<const char*, method_rep, ltstr>::const_iterator i = bcrep->m_methods.begin();
 			i != bcrep->m_methods.end(); ++i)
 	{
+		// If we would assume that our base class will not be garbage collected until 
+		// this class is collected, we wouldn't had to copy these strings.
 #ifndef LUABIND_DONT_COPY_STRINGS
 		m_strings.push_back(dup_string(i->first));
 		method_rep& m = m_methods[m_strings.back()];
@@ -699,7 +697,7 @@ void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep
 	// also, save the baseclass info to be used for typecasts
 	m_bases.push_back(binfo);
 }
-
+/*
 void luabind::detail::class_rep::add_function(const char* name, const overload_rep& o)
 {
 
@@ -770,7 +768,7 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 	m_static_constants[name] = val;
 #endif
 }
-
+*/
  int luabind::detail::class_rep::super_callback(lua_State* L)
 {
 	int args = lua_gettop(L);

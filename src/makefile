@@ -7,7 +7,8 @@ SOURCES = \
 	implicit_cast.cpp \
 	open.cpp \
 	create_class.cpp \
-	stack_content_by_name.cpp
+	stack_content_by_name.cpp \
+	object.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 

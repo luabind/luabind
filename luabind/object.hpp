@@ -956,7 +956,6 @@ namespace luabind
 
 		inline array_iterator abegin() const
 		{
-			// TODO: This should start counting at 1, right?
 			return array_iterator(const_cast<object*>(this), 1);
 		}
 
@@ -1038,43 +1037,10 @@ namespace luabind
 		// *****************************
 		// OPERATOR =
 
-
-		object& operator=(const object& o) const
-		{
-			m_state = o.lua_state();
-			allocate_slot();
-			o.pushvalue();
-//TODO: move lua_rawseti into a function set_ref() or something
-			lua_rawseti(m_state, LUA_REGISTRYINDEX, m_ref);
-			return const_cast<luabind::object&>(*this);
-		}
-
-		object& operator=(const detail::proxy_object& o) const
-		{
-			m_state = o.lua_state();
-			allocate_slot();
-			o.pushvalue();
-			lua_rawseti(m_state, LUA_REGISTRYINDEX, m_ref);
-			return const_cast<luabind::object&>(*this);
-		}
-
-		object& operator=(const detail::proxy_raw_object& o) const
-		{
-			m_state = o.lua_state();
-			allocate_slot();
-			o.pushvalue();
-			lua_rawseti(m_state, LUA_REGISTRYINDEX, m_ref);
-			return const_cast<luabind::object&>(*this);
-		}
-
-		object& operator=(const detail::proxy_array_object& o) const
-		{
-			m_state = o.lua_state();
-			allocate_slot();
-			o.pushvalue();
-			lua_rawseti(m_state, LUA_REGISTRYINDEX, m_ref);
-			return const_cast<luabind::object&>(*this);
-		}
+		object& operator=(const object& o) const;
+		object& operator=(const detail::proxy_object& o) const;
+		object& operator=(const detail::proxy_raw_object& o) const;
+		object& operator=(const detail::proxy_array_object& o) const;
 
 		template<class T>
 		object& operator=(const T& val) const
@@ -1082,70 +1048,10 @@ namespace luabind
 			assert((m_state != 0) && "you cannot assign a non-lua value to an uninitialized object");
 			// you cannot assign a non-lua value to an uninitialized object
 
-			allocate_slot();
 			detail::convert_to_lua(m_state, val);
-			lua_rawseti(m_state, LUA_REGISTRYINDEX, m_ref);
+			set();
 			return const_cast<luabind::object&>(*this);
 		}
-
-
-		// *****************************
-		// OPERATOR ==
-
-
-		bool operator==(const object& rhs) const
-		{
-			if (m_ref == LUA_NOREF || rhs.m_ref == LUA_NOREF) return false;
-			lua_getref(m_state, m_ref);
-			rhs.pushvalue();
-			bool result = lua_equal(m_state, -1, -2) != 0;
-			lua_pop(m_state, 2);
-			return result;
-		}
-
-		bool operator==(const detail::proxy_object& rhs) const
-		{
-			if (m_ref == LUA_NOREF) return false;
-			lua_getref(m_state, m_ref);
-			rhs.pushvalue();
-			bool result = lua_equal(m_state, -1, -2) != 0;
-			lua_pop(m_state, 2);
-			return result;
-		}
-
-		bool operator==(const detail::proxy_raw_object& rhs) const
-		{
-			if (m_ref == LUA_NOREF) return false;
-			lua_getref(m_state, m_ref);
-			rhs.pushvalue();
-			bool result = lua_equal(m_state, -1, -2) != 0;
-			lua_pop(m_state, 2);
-			return result;
-		}
-
-		bool operator==(const detail::proxy_array_object& rhs) const
-		{
-			if (m_ref == LUA_NOREF) return false;
-			lua_getref(m_state, m_ref);
-			rhs.pushvalue();
-			bool result = lua_equal(m_state, -1, -2) != 0;
-			lua_pop(m_state, 2);
-			return result;
-		}
-
-		template<class T>
-		bool operator==(const T& rhs) const
-		{
-			if (m_ref == LUA_NOREF) return false;
-			lua_getref(m_state, m_ref);
-			detail::convert_to_lua(m_state, rhs);
-
-			bool result = lua_equal(m_state, -1, -2);
-
-			lua_pop(m_state, 2);
-			return result;
-		}
-
 
 
 		// *****************************
@@ -1174,18 +1080,7 @@ namespace luabind
 		// TODO: it's not possible to make object friend with wrapped_constructor_helper::apply (since
 		// it's an inner class), that's why this interface is public
 //	private:
-/*
-		struct stack_index {};
-		struct reference {};
-*/
-		/*
-		object(lua_State* L, int index, stack_index)
-			: m_state(L)
-		{
-			lua_pushvalue(L, index);
-			m_ref = detail::ref(L);
-		}
-*/
+
 		object(lua_State* L, int ref, bool/*, reference*/)
 			: m_state(L)
 			, m_ref(ref)
@@ -1265,109 +1160,9 @@ private:
 		LUABIND_PROXY_AT_BODY
 #endif
 
-		inline proxy_object& proxy_object::operator=(const object& p)
-		{
-			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
-			
-			lua_State* L = lua_state();
-
-			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
-
-			// retrive the rhs value
-			p.pushvalue();
-
-			lua_settable(L, -3);
-			lua_pop(L, 1);
-			return *this;
-		}
-
-		inline proxy_object& proxy_object::operator=(const proxy_object& p)
-		{
-			// if you hit this assert you are trying to transfer values from one lua state to another
-			// without first going through C++
-			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
-
-			lua_State* L = lua_state();
-
-			//std::cout << "proxy-proxy assigment\n";
-			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
-
-			// retrive the rhs value
-			p.pushvalue();
-
-			lua_settable(L, -3);
-			lua_pop(L, 1);
-			return *this;
-		}
-
-		inline proxy_object& proxy_object::operator=(const proxy_raw_object& p)
-		{
-			// if you hit this assert you are trying to transfer values from one lua state to another
-			// without first going through C++
-			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
-
-			lua_State* L = lua_state();
-
-			//std::cout << "proxy-proxy assigment\n";
-			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
-
-			// retrive the rhs value
-			p.pushvalue();
-
-			lua_settable(L, -3);
-			lua_pop(L, 1);
-			return *this;
-		}
-
-		inline proxy_object& proxy_object::operator=(const proxy_array_object& p)
-		{
-			// if you hit this assert you are trying to transfer values from one lua state to another
-			// without first going through C++
-			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
-
-			lua_State* L = lua_state();
-
-			//std::cout << "proxy-proxy assigment\n";
-			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
-
-			// retrive the rhs value
-			p.pushvalue();
-
-			lua_settable(L, -3);
-			lua_pop(L, 1);
-			return *this;
-		}
-
-		inline void proxy_object::pushvalue() const
-		{
-			assert((m_key_ref != LUA_NOREF) && "you cannot call pushvalue() on an uninitialized object");
-
-			lua_State* L = m_obj->lua_state();
-			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
-			lua_gettable(L, -2);
-			// remove the table and leave the value on top of the stack
-			lua_remove(L, -2);
-		}
-
 		inline lua_State* proxy_object::lua_state() const
 		{
 			return m_obj->lua_state();
-		}
-
-		inline void proxy_object::set() const
-		{
-			lua_State* L = lua_state();
-			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
-			lua_pushvalue(L, -3);
-			lua_settable(L, -3);
-			// pop table and value
-			lua_pop(L, 2);
 		}
 
 		inline proxy_object::operator luabind::object()
@@ -1395,96 +1190,9 @@ private:
 #undef LUABIND_PROXY_ARRAY_AT_BODY
 #undef LUABIND_PROXY_ARRAY_RAW_AT_BODY
 
-		inline proxy_array_object& proxy_array_object::operator=(const object& p)
-		{
-			// if you hit this assert you are trying to transfer values
-			// from one lua state to another without first going through C++
-			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
-			lua_State* L = lua_state();
-			m_obj->pushvalue();
-			// retrieve the rhs value
-			p.pushvalue();
-
-			lua_rawseti(L, -2, m_key);
-			lua_pop(L, 1);
-			return *this;
-		}
-
-		inline proxy_array_object& proxy_array_object::operator=(const proxy_object& p)
-		{
-			// if you hit this assert you are trying to transfer values from one lua state to another
-			// without first going through C++
-			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
-
-			lua_State* L = lua_state();
-
-			//std::cout << "proxy-proxy assigment\n";
-			m_obj->pushvalue();
-
-			// retrieve the rhs value
-			p.pushvalue();
-
-			lua_rawseti(L, -2, m_key);
-			lua_pop(L, 1);
-			return *this;
-		}
-
-		inline proxy_array_object& proxy_array_object::operator=(const proxy_raw_object& p)
-		{
-			// if you hit this assert you are trying to transfer values from one lua state to another
-			// without first going through C++
-			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
-
-			lua_State* L = lua_state();
-
-			m_obj->pushvalue();
-			p.pushvalue();
-
-			lua_rawseti(L, -2, m_key);
-			lua_pop(L, 1);
-			return *this;
-		}
-
-		inline proxy_array_object& proxy_array_object::operator=(const proxy_array_object& p)
-		{
-			// if you hit this assert you are trying to transfer values from one lua state to another
-			// without first going through C++
-			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
-
-			lua_State* L = lua_state();
-
-			m_obj->pushvalue();
-			p.pushvalue();
-
-			lua_rawseti(L, -2, m_key);
-			lua_pop(L, 1);
-			return *this;
-		}
-
 		inline lua_State* proxy_array_object::lua_state() const
 		{
 			return m_obj->lua_state();
-		}
-
-		inline void proxy_array_object::pushvalue() const
-		{
-			// you are trying to dereference an invalid object
-			assert((m_key != LUA_NOREF) && "you cannot call pushvalue() on an uninitialized object");
-
-			lua_State* L = m_obj->lua_state();
-			m_obj->pushvalue();
-			lua_rawgeti(L, -1, m_key);
-			lua_remove(L, -2);
-		}
-
-		inline void proxy_array_object::set() const
-		{
-			lua_State* L = lua_state();
-			m_obj->pushvalue();
-			lua_pushvalue(L, -2);
-			lua_rawseti(L, -2, m_key);
-			// pop table and value
-			lua_pop(L, 2);
 		}
 
 		inline proxy_array_object::operator luabind::object()
@@ -1511,109 +1219,6 @@ private:
 
 #undef LUABIND_PROXY_RAW_AT_BODY
 #undef LUABIND_PROXY_AT_BODY
-
-		inline proxy_raw_object& proxy_raw_object::operator=(const object& p)
-		{
-			// if you hit this assert you are trying to transfer values from one lua state to another
-			// without first going through C++
-			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
-			lua_State* L = lua_state();
-
-			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
-
-			// retrive the rhs value
-			p.pushvalue();
-
-			lua_rawset(L, -3);
-			lua_pop(L, 1);
-			return *this;
-		}
-
-		
-		inline proxy_raw_object& proxy_raw_object::operator=(const proxy_object& p)
-		{
-			// if you hit this assert you are trying to transfer values from one lua state to another
-			// without first going through C++
-			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
-
-			lua_State* L = lua_state();
-
-			//std::cout << "proxy-proxy assigment\n";
-			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
-
-			// retrive the rhs value
-			p.pushvalue();
-
-			lua_rawset(L, -3);
-			lua_pop(L, 1);
-			return *this;
-		}
-
-		inline proxy_raw_object& proxy_raw_object::operator=(const proxy_raw_object& p)
-		{
-			// if you hit this assert you are trying to transfer values from one lua state to another
-			// without first going through C++
-			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
-
-			lua_State* L = lua_state();
-
-			//std::cout << "proxy-proxy assigment\n";
-			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
-
-			// retrive the rhs value
-			p.pushvalue();
-
-			lua_rawset(L, -3);
-			lua_pop(L, 1);
-			return *this;
-		}
-
-		inline proxy_raw_object& proxy_raw_object::operator=(const proxy_array_object& p)
-		{
-			// if you hit this assert you are trying to transfer values from one lua state to another
-			// without first going through C++
-			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
-
-			lua_State* L = lua_state();
-
-			//std::cout << "proxy-proxy assigment\n";
-			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
-
-			// retrive the rhs value
-			p.m_obj->pushvalue();
-			lua_rawgeti(L, -1, p.m_key);
-
-			lua_rawset(L, -3);
-			lua_pop(L, 1);
-			return *this;
-		}
-
-		inline void proxy_raw_object::pushvalue() const
-		{
-			assert((m_key_ref != LUA_NOREF) && "you cannot call pushvalue() on an uninitiallized object");
-
-			lua_State* L = lua_state();
-			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
-			lua_rawget(L, -2);
-			// remove the table and leave the value on top of the stack
-			lua_remove(L, -2);
-		}
-
-		inline void proxy_raw_object::set() const
-		{
-			lua_State* L = lua_state();
-			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
-			lua_pushvalue(L, -3);
-			lua_rawset(L, -3);
-			// pop table and value
-			lua_pop(L, 2);
-		}
 
 		inline lua_State* proxy_raw_object::lua_state() const
 		{
@@ -1685,6 +1290,30 @@ private:
 
 	}
 
+#define LUABIND_EQUALITY_OPERATOR(lhs, rhs) bool operator==(const lhs&, const rhs&);
+
+	LUABIND_EQUALITY_OPERATOR(object, object)
+	LUABIND_EQUALITY_OPERATOR(object, detail::proxy_object)
+	LUABIND_EQUALITY_OPERATOR(object, detail::proxy_array_object)
+	LUABIND_EQUALITY_OPERATOR(object, detail::proxy_raw_object)
+
+	LUABIND_EQUALITY_OPERATOR(detail::proxy_object, object)
+	LUABIND_EQUALITY_OPERATOR(detail::proxy_object, detail::proxy_object)
+	LUABIND_EQUALITY_OPERATOR(detail::proxy_object, detail::proxy_array_object)
+	LUABIND_EQUALITY_OPERATOR(detail::proxy_object, detail::proxy_raw_object)
+
+	LUABIND_EQUALITY_OPERATOR(detail::proxy_array_object, object)
+	LUABIND_EQUALITY_OPERATOR(detail::proxy_array_object, detail::proxy_object)
+	LUABIND_EQUALITY_OPERATOR(detail::proxy_array_object, detail::proxy_array_object)
+	LUABIND_EQUALITY_OPERATOR(detail::proxy_array_object, detail::proxy_raw_object)
+
+	LUABIND_EQUALITY_OPERATOR(detail::proxy_raw_object, object)
+	LUABIND_EQUALITY_OPERATOR(detail::proxy_raw_object, detail::proxy_object)
+	LUABIND_EQUALITY_OPERATOR(detail::proxy_raw_object, detail::proxy_array_object)
+	LUABIND_EQUALITY_OPERATOR(detail::proxy_raw_object, detail::proxy_raw_object)
+
+#undef LUABIND_EQUALITY_OPERATOR
+
 }
 
 namespace std
@@ -1730,7 +1359,7 @@ namespace std
 
 #undef LUABIND_DEFINE_SWAP
 
-}
+} // std
 
 #endif // LUABIND_OBJECT_HPP_INCLUDED
 
