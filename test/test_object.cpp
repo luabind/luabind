@@ -139,6 +139,8 @@ bool test_object()
 		object ret_val = test_object_policies("teststring")[detail::null_type()];
 		if (object_cast<int>(ret_val) != 6) return false;
 		if (object_cast<std::string>(g["glob"]) != "teststring") return false;
+		if (object_cast<std::string>(g.at("glob")) != "teststring") return false;
+		if (object_cast<std::string>(g.raw_at("glob")) != "teststring") return false;
 	}
 
 	if (top != lua_gettop(L)) return false;

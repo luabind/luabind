@@ -178,7 +178,7 @@ namespace luabind
 
 #ifndef BOOST_MSVC
 		template<class T>
-		char is_bases_helper(T);
+		char is_bases_helper(const T&);
 #else
 		char is_bases_helper(...);
 #endif
@@ -186,7 +186,7 @@ namespace luabind
 		template<class T>
 		struct is_bases
 		{
-			static T t;
+			static const T& t;
 
 			BOOST_STATIC_CONSTANT(bool, value = sizeof(is_bases_helper(t)) == sizeof(double));
 			typedef boost::mpl::bool_<value> type;

@@ -773,7 +773,7 @@ namespace luabind
 			lua_rawget(m_state, -2);
 			int ref = detail::ref(m_state);
 			lua_pop(m_state, 1);
-			return detail::object(m_state, ref);
+			return object(m_state, ref, true);
 		}
 
 		template<class T>
@@ -784,7 +784,7 @@ namespace luabind
 			lua_gettable(m_state, -2);
 			int ref = detail::ref(m_state);
 			lua_pop(m_state, 1);
-			return detail::object(m_state, ref);
+			return object(m_state, ref, true);
 		}
 
 		template<class T>
