@@ -91,6 +91,15 @@ namespace
 		 bool operator== ( const A &other ) const { return ( &other == this ); }
 	};
 
+	void not_using_namespace(lua_State* L)
+	{
+		luabind::module(L)
+		[
+			luabind::class_<A>("A")
+				.def(luabind::const_self == luabind::const_self)
+		];
+	}
+	
 } // anonymous namespace
 
 void test_operators()
@@ -103,11 +112,10 @@ void test_operators()
 
 	using namespace luabind;
 
+	not_using_namespace(L);
+	
 	module(L)
 	[
-		luabind::class_< A >( "A" )  
-			.def( luabind::const_self == luabind::const_self ),
-
 		class_<operator_tester>("operator_tester")
 			.def(constructor<>())
 			.def(tostring(const_self))
