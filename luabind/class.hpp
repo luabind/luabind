@@ -211,9 +211,10 @@ namespace luabind
 			function_callback_non_null(F f_): f(f_) {}
 			inline int operator()(lua_State* L, void* obj_ptr)
 			{
-				HeldType& held_obj = *static_cast<HeldType*>(obj_ptr);
-
-				T* ptr = static_cast<T*>(luabind::get_pointer(held_obj));
+//				HeldType& held_obj = *static_cast<HeldType*>(obj_ptr);
+//				T* ptr = static_cast<T*>(luabind::get_pointer(held_obj));
+				// is this correct?
+				T* ptr = static_cast<T*>(obj_ptr);
 
 				return call(f, ptr, L, static_cast<Policies*>(this));
 			}
