@@ -550,6 +550,8 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 
 }
 
+// TODO: remove
+/*
  int luabind::detail::class_rep::implicit_cast(const class_rep* from, const class_rep* to, int& pointer_offset)
 {
 	int offset = 0;
@@ -563,6 +565,8 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 	}
 	return -1;
 }
+*/
+
 
 // the functions dispatcher assumes the following:
 // there is one upvalue that points to the method_rep that this dispatcher is to call
@@ -590,7 +594,7 @@ int luabind::detail::class_rep::function_dispatcher(lua_State* L)
 	}
 
 	int p;
-	if (implicit_cast(obj->crep(), rep->crep, p) < 0)
+	if (implicit_cast(obj->crep(), rep->crep->type(), p) < 0)
 	{
 		{
 			std::string msg = "invalid self reference given to '";
@@ -1378,10 +1382,22 @@ void luabind::detail::finalize(lua_State* L, class_rep* crep)
 	}
 }
 
-void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj, int offset) const
+void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj) const
 {
 	// TODO: since this is a member function, we don't have to use the accesor functions for
 	// the types and the extractor
+
+	int steps = 0;
+	int offset = 0;
+	if (!(LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), target_type))
+		&& !(LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), target_type)))
+	{
+		steps = implicit_cast(this, target_type, offset);
+	}
+
+	// should never be called with a type that can't be cast
+	assert((steps >= 0) && "internal error, please report");
+
 	if (LUABIND_TYPE_INFO_EQUAL(target_type, holder_type()))
 	{
 		// if the type we are trying to convert to is the holder_type

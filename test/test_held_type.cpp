@@ -64,6 +64,12 @@ namespace
 		if (t->n == 4) feedback = 10;
 	}
 
+	void tester4(const boost::shared_ptr<const base>& t)
+	{
+		if (t->n == 4) feedback = 11;
+	}
+
+
 } // anonymous namespace
 
 
@@ -95,6 +101,7 @@ bool test_held_type()
 		function(L, "tester", &tester_);
 		function(L, "tester2", &tester2);
 		function(L, "tester3", &tester3);
+		function(L, "tester4", &tester4);
 
 		class_<base, boost::shared_ptr<base> >("base")
 			.def(constructor<>())
@@ -124,6 +131,8 @@ bool test_held_type()
 		if (feedback != 9) return false;
 		if (dostring(L, "tester3(b)")) return false;
 		if (feedback != 10) return false;
+		if (dostring(L, "tester4(b)")) return false;
+		if (feedback != 11) return false;
 
 		if (top != lua_gettop(L)) return false;
 

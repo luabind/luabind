@@ -480,17 +480,11 @@ namespace luabind { namespace detail
 
 			if (lua_isnil(L, index)) return 0;
 			
-			int offset = 0;
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
 			assert((obj != 0) && "internal error, please report"); // internal error
 			const class_rep* crep = obj->crep();
 
-			int steps = implicit_cast(crep, LUABIND_TYPEID(T), offset);
-
-			// should never be called with a type that can't be cast
-			assert((steps >= 0) && "internal error, please report");
-
-			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, offset));
+			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj));
 			
 //			std::cerr << "pointer_converter<lua_to_cpp>: " << ptr << " " << offset << "\n";
 
@@ -505,6 +499,11 @@ namespace luabind { namespace detail
 			if (obj == 0) return -1;
 			// cannot cast a constant object to nonconst
 			if (obj->flags() & object_rep::constant) return -1;
+
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T)))
+				|| LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T)))
+				return 0;
+
 			int d;
 			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
 		}
@@ -561,22 +560,11 @@ namespace luabind { namespace detail
 
 			assert((lua_isnil(L, index) == false) && "internal error, please report");
 
-			int offset = 0;
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
 			assert((obj != 0) && "internal error, please report"); // internal error
 			const class_rep* crep = obj->crep();
 
-			int steps = 0;
-			if (!(LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T)))
-				&& !(LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
-			{
-				steps = implicit_cast(crep, LUABIND_TYPEID(T), offset);
-			}
-
-			// should never be called with a type that can't be cast
-			assert((steps >= 0) && "internal error, please report");
-
-			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, offset));
+			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj));
 
 			return *ptr;
 		}
@@ -589,10 +577,8 @@ namespace luabind { namespace detail
 			if (obj == 0) return -1;
 			int d;
 
-			if (LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T)))
-				return 0;
-
-			if (LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T)))
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T)))
+				|| LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T)))
 				return 0;
 
 			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
@@ -655,6 +641,11 @@ namespace luabind { namespace detail
 			if (lua_isnil(L, index)) return 0;
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
+
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T)))
+				|| LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T)))
+				return 0;
+
 			int d;
 			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
 		}

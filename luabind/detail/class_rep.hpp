@@ -129,7 +129,7 @@ namespace luabind { namespace detail
 		// this is called as metamethod __call on the class_rep.
 		static int constructor_dispatcher(lua_State* L);
 
-		static int implicit_cast(const class_rep* from, const class_rep* to, int& pointer_offset);
+//		static int implicit_cast(const class_rep* from, const class_rep* to, int& pointer_offset);
 
 		// the functions dispatcher assumes the following:
 		// there is one upvalue that points to the method_rep that this dispatcher is to call
@@ -183,7 +183,7 @@ namespace luabind { namespace detail
 
 		static int static_class_gettable(lua_State* L);
 
-		void* convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj, int offset) const;
+		void* convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj) const;
 
 	private:
 
