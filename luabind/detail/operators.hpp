@@ -122,6 +122,12 @@ namespace luabind { namespace detail {
 		#include BOOST_PP_ITERATE()
 
 		operator_<op_tostring_tag, self_t, null_type> tostring;
+
+		template<class R>
+		inline operator_<op_le_tag, self_t, R> operator<=(const R&)
+		{
+			return operator_<op_le_tag, self_t, R>();
+		}
 	};
 
 	struct const_self_t : boost::arg<-1>
@@ -130,6 +136,12 @@ namespace luabind { namespace detail {
 		#include BOOST_PP_ITERATE()
 
 		operator_<op_tostring_tag, const_self_t, null_type> tostring;
+
+		template<class R>
+		inline operator_<op_le_tag, const_self_t, R> operator<=(const R&)
+		{
+			return operator_<op_le_tag, const_self_t, R>();
+		}
 	};
 
 	// TODO: fix this. The type cannot be a value type for all cases
@@ -276,11 +288,60 @@ namespace luabind
 	LUABIND_BINARY_OPERATOR(mul,*)
 	LUABIND_BINARY_OPERATOR(pow,^)
 	LUABIND_BINARY_OPERATOR(lt,<)
-	LUABIND_BINARY_OPERATOR(le,<=)
+//	LUABIND_BINARY_OPERATOR(le,<=)
 	LUABIND_BINARY_OPERATOR(eq,==)
 
 #undef LUABIND_BINARY_OPERATOR
 
+	namespace detail {
+ 		template<>
+		struct binary_operator<op_le_tag>
+ 		{
+ 			template<class Policies, class Left, class Right>
+ 			struct impl
+ 			{
+				typedef typename unwrap_other<Left>::type left_t;
+				typedef typename unwrap_other<Right>::type right_t;
+				static inline operator_id get_id() { return op_le; }
+ 				static inline int execute(lua_State* L)
+ 				{
+					typedef typename find_conversion_policy<1, Policies>::type converter_policy_left;
+					typename converter_policy_left::template generate_converter<left_t, lua_to_cpp>::type converter_left;
+					typedef typename find_conversion_policy<2, Policies>::type converter_policy_right; 
+					typename converter_policy_right::template generate_converter<right_t, lua_to_cpp>::type converter_right; 
+					int ret = convert_result(L, converter_left.apply(L, LUABIND_DECORATE_TYPE(left_t), 1) <= converter_right.apply(L, LUABIND_DECORATE_TYPE(right_t), 2), static_cast<const Policies*>(0));
+					return ret;
+ 				}
+ 				static int match(lua_State* L)
+ 				{
+					return match_params(L, 1, static_cast<constructor<left_t, right_t>*>(0), static_cast<Policies*>(0));
+				}
+			};
+ 		};
+	}
+	
+	namespace detail
+	{
+	inline detail::operator_<detail::op_le_tag, detail::self_t, detail::self_t> operator <=(const detail::self_t&, const detail::self_t&)
+	{
+		return detail::operator_<detail::op_le_tag, detail::self_t, detail::self_t>();
+	}
+	template<class L>
+	inline detail::operator_<detail::op_le_tag, L, detail::self_t> operator <=(const L&, const detail::self_t&)
+	{
+		return detail::operator_<detail::op_le_tag, L, detail::self_t>();
+	}
+
+	inline detail::operator_<detail::op_le_tag, detail::const_self_t, detail::const_self_t> operator <=(const detail::const_self_t&, const detail::const_self_t&)
+	{
+		return detail::operator_<detail::op_le_tag, detail::const_self_t, detail::const_self_t>();
+	}
+	template<class L>
+	inline detail::operator_<detail::op_le_tag, L, detail::const_self_t> operator <=(const L&, const detail::const_self_t&)
+	{
+		return detail::operator_<detail::op_le_tag, L, detail::const_self_t>();
+	}
+	}
 
 #define LUABIND_UNARY_OPERATOR(id, op)\
 	namespace detail\

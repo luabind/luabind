@@ -506,7 +506,7 @@ namespace luabind
 			template<class ConstHolderType>
 			static int get_internal_holder_size(ConstHolderType*)
 			{
-				return max<sizeof(HolderType), sizeof(ConstHolderType)>::value;
+				return max_c<sizeof(HolderType), sizeof(ConstHolderType)>::value;
 			}
 		};
 
@@ -593,7 +593,7 @@ namespace luabind
 			template<class ConstHolderType>
 			static int internal_alignment(ConstHolderType*)
 			{
-				return detail::max<boost::alignment_of<HolderType>::value
+				return detail::max_c<boost::alignment_of<HolderType>::value
 					, boost::alignment_of<ConstHolderType>::value>::value;
 			}
 		};
