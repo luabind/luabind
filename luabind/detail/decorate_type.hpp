@@ -114,6 +114,10 @@ namespace luabind { namespace detail
 		}
 		static T data() { return reinterpret_cast<T>(decorated_type_array); }
 #else
+	
+		static void(*data())(T)
+		{ return (void(*)(T))0; }
+
 		template<class U>
 		static by_const_reference<U> get(void(*f)(const U&))
 		{ return by_const_reference<U>(); }
@@ -131,6 +135,9 @@ namespace luabind { namespace detail
 		}
 		static T data() { return reinterpret_cast<T>(decorated_type_array); }
 #else
+		static void(*data())(T)
+		{ return (void(*)(T))0; }
+
 		template<class U>
 		static by_reference<U> get(void(*)(U&))
 		{ return by_reference<U>(); }
@@ -148,6 +155,9 @@ namespace luabind { namespace detail
 		}
 		static T& data() { return reinterpret_cast<T&>(decorated_type_array); }
 #else
+		static void(*data())(T)
+		{ return (void(*)(T))0; }
+
 		template<class U>
 		static by_const_pointer<U> get(void(*)(const U*))
 		{ return by_const_pointer<U>(); }
@@ -165,6 +175,9 @@ namespace luabind { namespace detail
 		}
 		static T& data() { return reinterpret_cast<T&>(decorated_type_array); }
 #else
+		static void(*data())(T)
+		{ return (void(*)(T))0; }
+
 		template<class U>
 		static by_pointer<U> get(void(*)(U*))
 		{ return by_pointer<U>(); }
@@ -182,8 +195,11 @@ namespace luabind { namespace detail
 		}
 		static T& data() { return reinterpret_cast<T&>(decorated_type_array); }
 #else
+		static void(*data())(T&)
+		{ return (void(*)(T&))0; }
+
 		template<class U>
-		static by_value<U> get(void(*)(U))
+		static by_value<U> get(void(*)(U&))
 		{ return by_value<U>(); }
 #endif
 	};
@@ -228,7 +244,9 @@ namespace luabind { namespace detail
 #if defined(BOOST_MSVC) && BOOST_MSVC == 1200
 	#define LUABIND_DECORATE_TYPE(t) luabind::detail::decorated_type<t>::get(luabind::detail::decorated_type<t>::data())
 #else
-	#define LUABIND_DECORATE_TYPE(t) luabind::detail::decorated_type<t>::get((void(*)(t))0)
+//	#define LUABIND_DECORATE_TYPE(t) luabind::detail::decorated_type<t>::get((void(*)(type<t>))0)
+	#define LUABIND_DECORATE_TYPE(t) luabind::detail::decorated_type<t>::get(luabind::detail::decorated_type<t>::data())
+		//#define LUABIND_DECORATE_TYPE(t) luabind::detail::decorated_type<t>::get(type<t>())
 #endif
 
 #endif
