@@ -61,4 +61,5 @@ struct BOOST_PP_CAT(call_operator, N)
 };
 
 #undef LUABIND_UNWRAP_PARAMETER
+#undef N
 

@@ -23,6 +23,7 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 #include <luabind/operator.hpp>
+#include <iosfwd>
 
 namespace
 {
@@ -109,7 +110,8 @@ void test_operators()
             .def(self + other<operator_tester2&>())
 			.def(self())
 			.def(const_self(int()))
-			.def(self(int())),
+			.def(self(int()))
+			.def(tostring(const_self)),
 //			.def("clone", &clone, adopt(return_value)),
 
 		class_<operator_tester2>("operator_tester2")
@@ -132,6 +134,8 @@ void test_operators()
 	DOSTRING(L, "test2 = operator_tester2()");
 	DOSTRING(L, "test3 = operator_tester3()");
 
+	DOSTRING(L, "assert(tostring(test) == 'operator_tester')");
+	
 	DOSTRING(L, "assert(test() == 3.5)");
 	DOSTRING(L, "assert(test(5) == 2.5 + 5)");
 
