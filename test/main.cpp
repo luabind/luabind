@@ -154,7 +154,7 @@ namespace
 
 #endif
 
-/*
+
 int main()
 {
 	bool passed = true;
@@ -186,4 +186,4 @@ int main()
 
 	return 0;
 }
-*/
+
