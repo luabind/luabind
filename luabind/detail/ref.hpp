@@ -152,11 +152,11 @@ namespace luabind { namespace detail
 			lua_rawseti(L, t, FREELIST_REF);  /* (t[FREELIST_REF] = t[ref]) */
 		}
 		else {  /* no free elements */
-			ref = luaL_getn(L, t);
+			ref = ::luabind::detail::luaL_getn(L, t);
 			if (ref < RESERVED_REFS)
 			ref = RESERVED_REFS;  /* skip reserved references */
 			ref++;  /* create new reference */
-			luaL_setn(L, t, ref);
+			::luabind::detail::luaL_setn(L, t, ref);
 		}
 		lua_rawseti(L, t, ref);
 		return ref;
