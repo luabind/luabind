@@ -81,6 +81,9 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO type
 {
 	assert(m_holder_alignment >= 1 && "internal error");
 
+	lua_newtable(L);
+	m_table_ref = detail::ref(L);
+
 	class_registry* r = class_registry::get_registry(L);
 	assert((r->cpp_class() != LUA_NOREF) && "you must call luabind::open()");
 
@@ -153,6 +156,8 @@ luabind::detail::class_rep::allocate(lua_State* L) const
 	return std::pair<void*,void*>(mem,ptr);
 }
 
+//#include <iostream>
+
 int luabind::detail::class_rep::gettable(lua_State* L)
 {
 	if (lua_isnil(L, 2))
@@ -178,6 +183,19 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 		return 1;
 	}
 
+	detail::getref(L, obj->crep()->table_ref());
+	lua_pushvalue(L, 2);
+	lua_gettable(L, -2);
+
+	if (!lua_isnil(L, -1)) 
+	{
+//		std::cout << "method found in lua table: " << key << "\n";
+		lua_remove(L, -2); // more table
+		return 1;
+	}
+
+	lua_pop(L, 2);
+/*
 	std::map<const char*, method_rep, ltstr>::iterator i = m_methods.find(key);
 
 	if (i != m_methods.end())
@@ -187,7 +205,7 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 		lua_pushcclosure(L, function_dispatcher, 1);
 		return 1;
 	}
-
+*/
 	std::map<const char*, callback, ltstr>::iterator j = m_getters.find(key);
 	if (j != m_getters.end())
 	{
@@ -1328,7 +1346,8 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 {
 	class_rep* crep = static_cast<class_rep*>(lua_touserdata(L, 1));
 
-	if (crep->get_class_type() == class_rep::lua_class)
+// this has changed! c++ classes now also store their methods in the table
+//	if (crep->get_class_type() == class_rep::lua_class)
 	{
 		detail::getref(L, crep->m_table_ref);
 		lua_pushvalue(L, 2);
@@ -1393,9 +1412,11 @@ void luabind::detail::finalize(lua_State* L, class_rep* crep)
 {
 	if (crep->get_class_type() != class_rep::lua_class) return;
 
+//	lua_pushvalue(L, -1); // copy the object ref
 	detail::getref(L, crep->table_ref());
 	lua_pushstring(L, "__finalize");
 	lua_gettable(L, -2);
+	lua_remove(L, -2);
 
 	if (lua_isnil(L, -1))
 	{
@@ -1403,7 +1424,7 @@ void luabind::detail::finalize(lua_State* L, class_rep* crep)
 	}
 	else
 	{
-		lua_pushvalue(L, -3);
+		lua_pushvalue(L, -2);
 		lua_call(L, 1, 0);
 	}
 
@@ -1496,5 +1517,15 @@ bool luabind::detail::class_rep::has_operator_in_lua(lua_State* L, int id)
 	const int mask = 1 << (id + 1);
 
 	return m_operator_cache & mask;
+}
+
+void luabind::detail::class_rep::add_method(lua_State* L, const char* name, const detail::method_rep& m)
+{
+	detail::getref(L, table_ref());
+	lua_pushstring(L, name);
+	lua_pushlightuserdata(L, const_cast<void*>((const void*)&m));
+	lua_pushcclosure(L, function_dispatcher, 1);
+	lua_settable(L, -3);
+	lua_pop(L, 1);
 }
 

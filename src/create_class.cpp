@@ -51,7 +51,9 @@ int luabind::detail::create_class::stage2(lua_State* L)
 	binfo.base = base;
 	crep->add_base_class(binfo);
 
-	if (base->get_class_type() == class_rep::lua_class)
+	// this has changed, c++ classes now stores their
+	// methods in the table as well
+//	if (base->get_class_type() == class_rep::lua_class)
 	{
 		// copy base class members
 

@@ -153,7 +153,6 @@ namespace
 }
 
 #endif
-
 int main()
 {
 	bool passed = true;

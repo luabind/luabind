@@ -126,3 +126,10 @@ int main(int argc, const char* argv[])
 	lua_dofile(L, argv[1]);
 }
 
+extern "C" int luaLM_import(lua_State* L)
+{
+	using namespace luabind;
+	open(L);
+	bind_filesystem(L);
+}
+

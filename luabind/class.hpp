@@ -886,6 +886,7 @@ namespace luabind
 				i != m_methods.end(); 
 				++i)
 			{
+				crep->add_method(L, i->first, i->second);
 				i->second.crep = crep;
 			}
 			std::swap(crep->m_methods, m_methods);
