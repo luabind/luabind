@@ -79,6 +79,10 @@ namespace
 		{
 			feedback1 = 2;
 		}
+		virtual void foo( bool b )
+		{
+			feedback2 = 2;
+		}
 	};
 
 	void test_match(const luabind::object& o)
@@ -114,17 +118,18 @@ bool test_object()
 				.def("foo",&test_param::foo ),
 			class_<test_param2, test_param>("test_param2")
 				.def(constructor<>())
+				.def("foo",(void(test_param2::*)(bool))&test_param2::foo )
 		];
 
-		dostring(L, "print('-- base')");
 		dostring(L, "t = test_param();");
 		dostring(L, "t:foo();");
 		if (feedback1 != 1) return false;
 
-		dostring(L, "print('-- derived')");
 		dostring(L, "t = test_param2();");
 		dostring(L, "t:foo();");
+		dostring(L, "t:foo(true);");
 		if (feedback1 != 2) return false;
+		if (feedback2 != 2) return false;
 
 		dostring(L, "t = 2");
 		dostring(L, "test_object_param(t)");

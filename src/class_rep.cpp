@@ -1519,14 +1519,39 @@ bool luabind::detail::class_rep::has_operator_in_lua(lua_State* L, int id)
 	return m_operator_cache & mask;
 }
 
-void luabind::detail::class_rep::add_method(lua_State* L, const char* name, const detail::method_rep& m)
+void luabind::detail::class_rep::add_method(lua_State* L, const char* name, detail::method_rep& m)
 {
 	detail::getref(L, table_ref());
 	lua_pushstring(L, name);
-	lua_pushlightuserdata(L, const_cast<void*>((const void*)&m));
-	lua_pushcclosure(L, function_dispatcher, 1);
-	lua_settable(L, -3);
-	lua_pop(L, 1);
+	lua_gettable(L, -2);
+
+	if (lua_isnil(L, -1) || !lua_iscfunction(L, -1))
+	{
+		lua_pop(L, 1);
+		lua_pushstring(L, name);
+		lua_pushlightuserdata(L, const_cast<void*>((const void*)&m));
+		lua_pushcclosure(L, function_dispatcher, 1);
+		lua_settable(L, -3);
+		lua_pop(L, 1);
+	}
+	else
+	{
+		lua_getupvalue(L, -1, 1);
+		method_rep* inherited = static_cast<method_rep*>(lua_touserdata(L, -1));
+
+		for (std::vector<overload_rep>::const_iterator i = inherited->overloads().begin();
+				i !=  inherited->overloads().end(); ++i)
+		{
+			m.add_overload(*i);
+		}
+
+		detail::getref(L, table_ref());
+		lua_pushstring(L, name);
+		lua_pushlightuserdata(L, const_cast<void*>((const void*)&m));
+		lua_pushcclosure(L, function_dispatcher, 1);
+		lua_settable(L, -3);
+		lua_pop(L, 4);
+	}
 }
 
 const class_rep::property_map& luabind::detail::class_rep::properties() const

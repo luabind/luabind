@@ -178,7 +178,7 @@ namespace luabind { namespace detail
 		inline class_type get_class_type() const { return m_class_type; }
 
 		void add_static_constant(const char* name, int val);
-		void add_method(lua_State* L, const char* name, const detail::method_rep& m);
+		void add_method(lua_State* L, const char* name, detail::method_rep& m);
 
 		static int super_callback(lua_State* L);
 

@@ -159,7 +159,7 @@ int main()
 
 //	test_runtime();
 
-	passed &= report_success(test_construction(), "construction");
+ 	passed &= report_success(test_construction(), "construction");
 	passed &= report_success(test_attributes(), "attributes");
 	passed &= report_success(test_operators(), "operators");
 	passed &= report_success(test_implicit_cast(), "implicit cast");

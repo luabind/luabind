@@ -928,15 +928,23 @@ namespace luabind
 				lua_pop(L, 2);
 			}
 
-			// add methods
-			for (std::map<const char*, detail::method_rep, detail::ltstr>::iterator i = m_methods.begin();
-				i != m_methods.end(); 
-				++i)
+			crep->m_methods = m_methods;
+
+			for (std::map<const char*, detail::method_rep, detail::ltstr>::iterator i 
+				= crep->m_methods.begin(); i != crep->m_methods.end(); ++i)
 			{
-				crep->add_method(L, i->first, i->second);
 				i->second.crep = crep;
 			}
-			crep->m_methods.swap(m_methods);
+
+			// add methods
+			for (std::map<const char*, detail::method_rep, detail::ltstr>::iterator i 
+				= m_methods.begin(); i != m_methods.end(); ++i)
+			{
+				crep->add_method(L, i->first, crep->m_methods[i->first]);
+				i->second.crep = crep;
+			}
+
+			m_methods.clear();
 
 			lua_settable(L, -3);
 			lua_pop(L, 1);
