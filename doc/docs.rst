@@ -163,35 +163,32 @@ Hello world
 
 ::
 
-    extern "C"
-    {
-        #include "lua.h"
-    }
-
+    #include <iostream>
     #include <luabind/luabind.hpp>
 
     void greet()
     {
-        std::cout << "Hello world!\n";
+        std::cout << "hello world!\n";
     }
 
-    int main()
+    extern "C" int init(lua_State* L)
     {
         using namespace luabind;
-
-        lua_State* L = lua_open();
 
         open(L);
 
         module(L)
         [
-           def("greet", &greet)
+            def("greet", &greet)
         ];
+
+        return 0;
     }
 
 ::
 
     Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
+    > loadlib('hello_world.dll', 'init')()
     > greet()
     Hello world!
     >

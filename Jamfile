@@ -23,6 +23,10 @@ project luabind
         <library>/luabind//lua <library>/luabind//lualib
         <toolset>msvc,<link>shared:<define>LUABIND_IMPORT=__declspec(dllimport)
         <toolset>msvc,<link>shared:<define>LUABIND_EXPORT=__declspec(dllexport)
+    : usage-requirements
+        <include>./ <include>$(BOOST_ROOT) <include>$(LUA_PATH)/include/
+        <toolset>msvc,<link>shared:<define>LUABIND_IMPORT=__declspec(dllimport)
+        <toolset>msvc,<link>shared:<define>LUABIND_EXPORT=__declspec(dllexport)
     ;
 
 alias luabind : /luabind/luabind//luabind ;
