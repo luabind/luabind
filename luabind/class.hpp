@@ -54,9 +54,16 @@
 
 	add access to the keys on iterators
 
-	finish scopes
+	finish scopes (and document)
 
 	finish smart pointer support
+
+	make sure the memory we get from lua_newuserdata() is correctly aligned
+
+	document the new yield-policy
+
+	the adopt policy should not be able to adopt pointers to held_types. This must be
+	prohibited.
 
 	chache operators and finalizers in the class_rep. For lua classes
 	we currently do a lookup each time we need to know if a lua class
@@ -314,6 +321,10 @@ namespace luabind
 			}
 		};
 
+
+		// this is simply a selector that returns the type_info
+		// of the held type, or invalid_type_info if we don't have
+		// a held_type
 		template<class HeldType>
 		struct internal_held_type
 		{
@@ -331,6 +342,85 @@ namespace luabind
 				return LUABIND_INVALID_TYPE_INFO;
 			}
 		};
+
+
+		// this is the actual held_type constructor
+		template<class HeldType, class T>
+		struct internal_construct_held_type
+		{
+			static void apply(void* target, void* raw_pointer)
+			{
+				new(target) HeldType(static_cast<T*>(raw_pointer));
+			}
+		};
+
+		// the followinf two functions are the ones that returns
+		// a pointer to a held_type_constructor, or 0 if there
+		// is no held_type
+		template<class HeldType>
+		struct internal_held_type_constructor
+		{
+			typedef void(*constructor)(void*,void*);
+			template<class T>
+			static constructor apply(detail::type<T>)
+			{
+				return &internal_construct_held_type<HeldType, T>::apply;
+			}
+		};
+
+		template<>
+		struct internal_held_type_constructor<detail::null_type>
+		{
+			typedef void(*constructor)(void*,void*);
+			template<class T>
+			static constructor apply(detail::type<T>)
+			{
+				return 0;
+			}
+		};
+
+
+		// this is a selector that returns the size of the held_type
+		// or 0 if we don't have a held_type
+		template <class HeldType>
+		struct internal_held_type_size
+		{
+			static int apply() { return sizeof(HeldType); }
+		};
+
+		template <>
+		struct internal_held_type_size<detail::null_type>
+		{
+			static int apply() {	return 0; }
+		};
+
+
+		// if we have a held type, return the destructor to it
+		// note the difference. The held_type should only be destructed (not deleted)
+		// since it's constructed in the lua userdata
+		template<class HeldType>
+		struct internal_held_type_destructor
+		{
+			typedef void(*destructor_t)(void*);
+			template<class T>
+			static destructor_t apply(detail::type<T>)
+			{
+				return &detail::destruct_only_s<HeldType>::apply;
+			}
+		};
+
+		// if we don't have a held type, return the destructor of the raw type
+		template<>
+		struct internal_held_type_destructor<detail::null_type>
+		{
+			typedef void(*destructor_t)(void*);
+			template<class T>
+			static destructor_t apply(detail::type<T>)
+			{
+				return &detail::delete_s<T>::apply;
+			}
+		};
+
 
 	} // detail
 
@@ -381,6 +471,8 @@ namespace luabind
 
 		void(*m_destructor)(void*);
 		void*(*m_extractor)(void*);
+		void(*m_construct_held_type)(void*, void*);
+		int m_held_type_size;
 
 		LUABIND_TYPE_INFO m_type;
 		LUABIND_TYPE_INFO m_held_type;
@@ -404,7 +496,9 @@ namespace luabind
 		void set_type(LUABIND_TYPE_INFO t) { m_type = t; }
 		void set_held_type(LUABIND_TYPE_INFO t) { m_held_type = t; }
 		void set_extractor(void*(*f)(void*)) { m_extractor = f; }
+		void set_held_type_constructor(void(*f)(void*,void*)) { m_construct_held_type = f; }
 		void set_destructor(void(*f)(void*)) { m_destructor = f; }
+		void set_held_type_size(int s) { m_held_type_size = s; }
 
 
 		inline void add_getter(const char* name, const boost::function2<int, lua_State*, int>& g)
@@ -532,7 +626,7 @@ namespace luabind
 			lua_newuserdata(L, sizeof(detail::class_rep));
 			crep = reinterpret_cast<detail::class_rep*>(lua_touserdata(L, -1));
 			
-			new(crep) detail::class_rep(m_type, m_name, L, m_destructor, m_held_type, m_extractor);
+			new(crep) detail::class_rep(m_type, m_name, L, m_destructor, m_held_type, m_extractor, m_construct_held_type, m_held_type_size);
 
 			// register this new type in the class registry
 			r->add_class(m_type, crep);
@@ -609,6 +703,8 @@ namespace luabind
 			std::swap(ret->m_static_constants, m_static_constants);
 			ret->m_destructor = m_destructor;
 			ret->m_extractor = m_extractor;
+			ret->m_construct_held_type = m_construct_held_type;
+			ret->m_held_type_size = m_held_type_size;
 
 			std::swap(ret->m_bases, m_bases);
 			std::swap(ret->m_methods, m_methods);
@@ -989,7 +1085,9 @@ namespace luabind
 			set_type(LUABIND_TYPEID(T));
 			set_held_type(detail::internal_held_type<HeldType>::apply());
 			set_extractor(detail::internal_held_type_extractor<HeldType>::apply(detail::type<T>()));
-			set_destructor(detail::destructor_s<T>::apply);
+			set_held_type_constructor(detail::internal_held_type_constructor<HeldType>::apply(detail::type<T>()));
+			set_held_type_size(detail::internal_held_type_size<HeldType>::apply());
+			set_destructor(detail::internal_held_type_destructor<HeldType>::apply(detail::type<T>()));
 
 			generate_baseclass_list(detail::type<Base>());
 		}

@@ -48,18 +48,22 @@ using namespace luabind::detail;
 #endif
 
 
-luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO t, 
-       				const char* name, 
-			        lua_State* L, 
-			        void(*destructor)(void*), 
-			        LUABIND_TYPE_INFO held_t, 
-			        void*(*extractor)(void*))
+luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO t
+					, const char* name
+					, lua_State* L
+					,  void(*destructor)(void*)
+					, LUABIND_TYPE_INFO held_t
+					, void*(*extractor)(void*)
+					, void(*held_type_constructor)(void*,void*)
+					, int held_type_size)
 	: m_type(t)
 	, m_held_type(held_t)
 	, m_extract_underlying_fun(extractor)
 	, m_name(name)
 	, m_class_type(cpp_class)
 	, m_destructor(destructor)
+	, m_held_type_constructor(held_type_constructor)
+	, m_userdata_size(sizeof(object_rep) + held_type_size)
 {
 	class_registry* r = class_registry::get_registry(L);
 	assert((r->cpp_class() != LUA_NOREF) && "you must call luabind::open()");
@@ -75,9 +79,11 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO t,
 
 luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	: m_type(LUABIND_INVALID_TYPE_INFO)
-	, m_held_type(0)
+	, m_held_type(LUABIND_INVALID_TYPE_INFO)
 	, m_extract_underlying_fun(0)
 	, m_class_type(lua_class)
+	, m_destructor(0)
+	, m_held_type_constructor(0)
 {
 	// TODO: don't we need to copy the name?
 	// Since this is a lua-class, I think we have to copy it.
@@ -480,7 +486,17 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 		// the object pointer as parameter. To do this we need another function pointer, right?
 		// another constructor that constructs the smart_pointer. The destructor function
 		// we have could be used to destruct the smart pointer
-		void* obj_rep = lua_newuserdata(L, sizeof(object_rep));
+		void* obj_rep = lua_newuserdata(L, crep->m_userdata_size);
+
+		// TODO: since we know the outcome of this if-statement compile-time
+		// we could potentially generate a bit less code by making it compile-time
+		if (crep->m_held_type_constructor)
+		{
+			// TODO: ALIGN!
+			void* held_type_ptr = static_cast<char*>(obj_rep) + sizeof(object_rep);
+			crep->m_held_type_constructor(held_type_ptr, object_ptr);
+			object_ptr = held_type_ptr;
+		}
 		new(obj_rep) object_rep(object_ptr, crep, object_rep::owner, crep->destructor());
 
 		detail::getref(L, crep->m_instance_metatable);

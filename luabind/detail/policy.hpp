@@ -536,7 +536,7 @@ namespace luabind { namespace detail
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));
 			// we send 0 as destructor since we know it will never be called
-			new(obj) object_rep(copied_obj, crep, object_rep::owner, destructor<T>);
+			new(obj) object_rep(copied_obj, crep, object_rep::owner, delete_s<T>::apply);
 
 			// set the meta table
 			detail::getref(L, crep->metatable_ref());

@@ -146,20 +146,23 @@ namespace luabind { namespace detail
 	};
 
 	template<class T>
-	void destructor(void* ptr)
-	{
-		delete static_cast<T*>(ptr);
-	}
-
-
-	template<class T>
-	struct destructor_s
+	struct delete_s
 	{
 		static void apply(void* ptr)
 		{
 			delete static_cast<T*>(ptr);
 		}
 	};
+
+	template<class T>
+	struct destruct_only_s
+	{
+		static void apply(void* ptr)
+		{
+			static_cast<T*>(ptr)->~T();
+		}
+	};
+
 
 	inline object_rep* is_class_object(lua_State* L, int index)
 	{

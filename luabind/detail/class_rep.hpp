@@ -90,7 +90,14 @@ namespace luabind { namespace detail
 		// EXPECTS THE TOP VALUE ON THE LUA STACK TO
 		// BE THE USER DATA WHERE THIS CLASS IS BEING
 		// INSTANTIATED!
-		class_rep(LUABIND_TYPE_INFO t, const char* name, lua_State* L, void(*destructor)(void*), LUABIND_TYPE_INFO held_t, void*(*extractor)(void*));
+		class_rep(LUABIND_TYPE_INFO t
+			, const char* name
+			, lua_State* L
+			, void(*destructor)(void*)
+			, LUABIND_TYPE_INFO held_t
+			, void*(*extractor)(void*)
+			, void(*construct_held_type)(void*,void*)
+			, int held_type_size);
 
 		// used when creating a lua class
 		// EXPECTS THE TOP VALUE ON THE LUA STACK TO
@@ -180,8 +187,26 @@ namespace luabind { namespace detail
 		LUABIND_TYPE_INFO m_type;
 		LUABIND_TYPE_INFO m_held_type;
 
+		// this function pointer is used if the type is held by
+		// a smart pointer. This function takes the type we are holding
+		// (the held_type, the smart pointer) and extracts the actual
+		// pointer.
 		typedef void*(*extract_ptr_t)(void*);
 		extract_ptr_t m_extract_underlying_fun;
+
+		// this function is used to construct the held_type
+		// (the smart pointer). The arguments are the memory
+		// in which it should be constructed (with placement new)
+		// and the raw pointer that should be wrapped in the
+		// smart pointer
+		typedef void(*construct_held_type_t)(void*,void*);
+		construct_held_type_t m_held_type_constructor;
+
+		// this is the size of the userdata chunk
+		// for each object_rep of this class. We
+		// need this since held_types are constructed
+		// in the same memory (to avoid fragmentation)
+		int m_userdata_size;
 
 		// a list of info for every class this class derives from
 		// the information stored here is sufficient to do
@@ -191,9 +216,9 @@ namespace luabind { namespace detail
 		// the class' name (as given when registered to lua with class_)
 		const char* m_name;
 
-		// contains signatures for all constructors
+		// contains signatures and construction functions
+		// for all constructors
 		construct_rep m_constructor;
-		construct_rep m_wrapped_constructor;
 
 		// a reference to this structure itself. Since this struct
 		// is kept inside lua (to let lua collect it when lua_close()
