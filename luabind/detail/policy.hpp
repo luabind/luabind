@@ -673,8 +673,11 @@ namespace luabind { namespace detail
 	template<>
 	struct pointer_converter<lua_to_cpp>
 	{
-		bool made_conversion;
+		// TODO: does the pointer converter need this?!
 		char target[32];
+		void (*destructor)(void *);
+
+		pointer_converter(): destructor(0) {}
 
 		template<class T>
 		typename make_pointer<T>::type apply(lua_State* L, by_pointer<T>, int index)
@@ -691,20 +694,9 @@ namespace luabind { namespace detail
 			const class_rep* crep = obj->crep();
 
 			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, target));
-/*
-			void* result = boost::langbinding::inheritance_graph::instance().find_dynamic_type(
-					obj->ptr()
-				,	LUABIND_TYPEID(T)
-				,	crep->type());
 
-			made_conversion = false;
-
-			return (T*)result;
-*/
-			made_conversion = (void*)ptr == (char*)target;
-			assert(!made_conversion || sizeof(T) <= 32);
-
-//			std::cerr << "pointer_converter<lua_to_cpp>: " << ptr << " " << offset << "\n";
+			if ((void*)ptr == (char*)target) destructor = detail::destruct_only_s<T>::apply;
+			assert(!destructor || sizeof(T) <= 32);
 
 			return ptr;
 		}
@@ -728,12 +720,14 @@ namespace luabind { namespace detail
 			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
 		}
 
+		~pointer_converter()
+		{
+			if (destructor) destructor(target);
+		}
+
 		template<class T>
 		void converter_postcall(lua_State*, by_pointer<T>, int) 
-		{
-			if (made_conversion)
-				reinterpret_cast<T*>(target)->~T();
-		}
+		{}
 	};
 
 // ******* value converter *******
@@ -813,15 +807,27 @@ namespace luabind { namespace detail
 			// getmetatable().__lua_class is true
 			// object_rep->flags() & object_rep::constant == 0
 
-			// TODO: if T is a holder type and obj is nil, we should be able to
-			// create a null-holder.
-			assert((lua_isnil(L, index) == false) && "internal error, please report");
+			object_rep* obj = 0;
+			const class_rep* crep = 0;
 
-			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
-			assert((obj != 0) && "internal error, please report"); // internal error
-			const class_rep* crep = obj->crep();
+			// special case if we get nil in, try to convert the holder type
+			if (lua_isnil(L, index))
+			{
+				detail::class_registry* reg = detail::class_registry::get_registry(L);
+				assert(reg);
 
-			// TODO: align?
+				crep = reg->find_class(LUABIND_TYPEID(T));
+				assert(crep);
+			}
+			else
+			{
+				obj = static_cast<object_rep*>(lua_touserdata(L, index));
+				assert((obj != 0) && "internal error, please report"); // internal error
+				crep = obj->crep();
+			}
+			assert(crep);
+
+			// TODO: align!
 			char target[sizeof(T)];
 			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, target));
 
@@ -834,15 +840,27 @@ namespace luabind { namespace detail
 		template<class T>
 		static int match(lua_State* L, by_value<T>, int index)
 		{
-			if (lua_isnil(L, index)) return 0;
+			// special case if we get nil in, try to match the holder type
+			if (lua_isnil(L, index))
+			{
+				detail::class_registry* reg = detail::class_registry::get_registry(L);
+				assert(reg);
+
+				class_rep* crep = reg->find_class(LUABIND_TYPEID(T));
+				if (crep == 0) return -1;
+				if ((LUABIND_TYPE_INFO_EQUAL(crep->holder_type(), LUABIND_TYPEID(T))))
+					return 0;
+				if ((LUABIND_TYPE_INFO_EQUAL(crep->const_holder_type(), LUABIND_TYPEID(T))))
+					return 0;
+				return -1;
+			}
+
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1;
 			int d;
 
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
 				return (obj->flags() & object_rep::constant)?-1:0;
-//			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
-//				return 0;
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
 				return (obj->flags() & object_rep::constant)?0:1;
 
@@ -1030,25 +1048,83 @@ namespace luabind { namespace detail
 
 	template<>
 	struct const_ref_converter<lua_to_cpp>
-		: private const_pointer_converter<lua_to_cpp>
 	{
+		// TODO: align!
+		char target[32];
+		void (*destructor)(void*);
+
+		const_ref_converter(): destructor(0) {}
+
 		template<class T>
 		typename make_const_reference<T>::type apply(lua_State* L, by_const_reference<T>, int index)
 		{
-//			std::cerr << "const_ref_converter<lua_to_cpp>\n";
-			return *const_pointer_converter<lua_to_cpp>::apply(L, by_const_pointer<T>(), index);
+			object_rep* obj = 0;
+			class_rep const * crep = 0;
+
+			// special case if we get nil in, try to convert the holder type
+			if (lua_isnil(L, index))
+			{
+				detail::class_registry* reg = detail::class_registry::get_registry(L);
+				assert(reg);
+
+				crep = reg->find_class(LUABIND_TYPEID(T));
+				assert(crep);
+			}
+			else
+			{
+				obj = static_cast<object_rep*>(lua_touserdata(L, index));
+				assert((obj != 0) && "internal error, please report"); // internal error
+				crep = obj->crep();
+			}
+			assert(crep);
+
+			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, target));
+			// if the pointer returned points into the converter storage,
+			// we need to destruct it once the converter destructs
+			if ((void*)ptr == (void*)target) destructor = detail::destruct_only_s<T>::apply;
+			assert(!destructor || sizeof(T) <= 32);
+
+			return *ptr;
 		}
 
 		template<class T>
 		static int match(lua_State* L, by_const_reference<T>, int index)
 		{
-			return const_pointer_converter<lua_to_cpp>::match(L, by_const_pointer<T>(), index);
+			// special case if we get nil in, try to match the holder type
+			if (lua_isnil(L, index))
+			{
+				detail::class_registry* reg = detail::class_registry::get_registry(L);
+				assert(reg);
+
+				class_rep* crep = reg->find_class(LUABIND_TYPEID(T));
+				if (crep == 0) return -1;
+				if ((LUABIND_TYPE_INFO_EQUAL(crep->holder_type(), LUABIND_TYPEID(T))))
+					return 0;
+				if ((LUABIND_TYPE_INFO_EQUAL(crep->const_holder_type(), LUABIND_TYPEID(T))))
+					return 0;
+				return -1;
+			}
+
+			object_rep* obj = is_class_object(L, index);
+			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
+
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
+				return (obj->flags() & object_rep::constant)?-1:0;
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
+				return (obj->flags() & object_rep::constant)?0:1;
+
+			int d;
+			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
+		}
+
+		~const_ref_converter()
+		{
+			if (destructor) destructor(target);
 		}
 
 		template<class T>
 		void converter_postcall(lua_State* L, by_const_reference<T>, int index) 
 		{
-			const_pointer_converter<lua_to_cpp>::converter_postcall(L, by_const_pointer<T>(), index);
 		}
 	};
 

@@ -246,7 +246,7 @@ namespace luabind
 				o.set_sig_fun(&detail::get_free_function_signature<F>::apply);
 #endif
 
-				lua_pushstring(L, m_name.c_str());
+				lua_pushstring(L, m_name);
 				lua_gettable(L, -2);
 
 				detail::free_functions::function_rep* rep = 0;
@@ -270,10 +270,10 @@ namespace luabind
 
 				if (rep == 0)
 				{
-					lua_pushstring(L, m_name.c_str());
+					lua_pushstring(L, m_name);
 					// create a new function_rep
 					rep = static_cast<detail::free_functions::function_rep*>(lua_newuserdata(L, sizeof(detail::free_functions::function_rep)));
-					new(rep) detail::free_functions::function_rep(m_name.c_str());
+					new(rep) detail::free_functions::function_rep(m_name);
 
 					detail::class_registry* r = detail::class_registry::get_registry(L);
 					assert(r && "you must call luabind::open() prior to any function registrations");
@@ -291,7 +291,7 @@ namespace luabind
 				rep->add_overload(o);
 			}
 
-			std::string m_name;
+			char const* m_name;
 			F fun;
 			Policies policies;
 		};

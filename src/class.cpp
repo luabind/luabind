@@ -60,6 +60,9 @@ namespace luabind { namespace detail {
         void(*m_construct_holder)(void*, void*);
         void(*m_construct_const_holder)(void*, void*);
 
+        void(*m_default_construct_holder)(void*);
+        void(*m_default_construct_const_holder)(void*);
+
         int m_holder_size;
         int m_holder_alignment;
 
@@ -105,6 +108,8 @@ namespace luabind { namespace detail {
             , m_const_converter
             , m_construct_holder
             , m_construct_const_holder
+            , m_default_construct_holder
+            , m_default_construct_const_holder
             , m_holder_size
             , m_holder_alignment);
 
@@ -239,6 +244,8 @@ namespace luabind { namespace detail {
         , void(*const_converter_)(void*,void*)
         , void(*holder_constructor_)(void*,void*)
         , void(*const_holder_constructor_)(void*,void*)
+        , void(*holder_default_constructor_)(void*)
+        , void(*const_holder_default_constructor_)(void*)
         , void(*destructor)(void*)
         , void(*const_holder_destructor)(void*)
         , int holder_size
@@ -252,6 +259,8 @@ namespace luabind { namespace detail {
         m_registration->m_const_converter = const_converter_;
         m_registration->m_construct_holder = holder_constructor_;
         m_registration->m_construct_const_holder = const_holder_constructor_;
+        m_registration->m_default_construct_holder = holder_default_constructor_;
+        m_registration->m_default_construct_const_holder = const_holder_default_constructor_;
         m_registration->m_destructor = destructor;
         m_registration->m_const_holder_destructor = const_holder_destructor;
         m_registration->m_holder_size = holder_size;

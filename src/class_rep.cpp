@@ -61,6 +61,8 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO type
 	, void(*const_converter)(void*,void*)
 	, void(*construct_holder)(void*,void*)
 	, void(*construct_const_holder)(void*,void*)
+	, void(*default_construct_holder)(void*)
+	, void(*default_construct_const_holder)(void*)
 	, int holder_size
 	, int holder_alignment)
 
@@ -72,6 +74,8 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO type
 	, m_const_converter(const_converter)
 	, m_construct_holder(construct_holder)
 	, m_construct_const_holder(construct_const_holder)
+	, m_default_construct_holder(default_construct_holder)
+	, m_default_construct_const_holder(default_construct_const_holder)
 	, m_holder_size(holder_size)
 	, m_holder_alignment(holder_alignment)
 	, m_name(name)
@@ -107,6 +111,8 @@ luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	, m_const_converter(0)
 	, m_construct_holder(0)
 	, m_construct_const_holder(0)
+	, m_default_construct_holder(0)
+	, m_default_construct_const_holder(0)
 	, m_holder_size(0)
 	, m_holder_alignment(1)
 	, m_class_type(lua_class)
@@ -1471,15 +1477,20 @@ void luabind::detail::finalize(lua_State* L, class_rep* crep)
 	}
 }
 
-void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj, void* target_memory) const
+void* luabind::detail::class_rep::convert_to(
+	LUABIND_TYPE_INFO target_type
+	, const object_rep* obj
+	, void* target_memory) const
 {
 	// TODO: since this is a member function, we don't have to use the accesor functions for
 	// the types and the extractor
 
+	assert(obj == 0 || obj->crep() == this);
+
 	int steps = 0;
 	int offset = 0;
-	if (!(LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), target_type))
-		&& !(LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), target_type)))
+	if (!(LUABIND_TYPE_INFO_EQUAL(holder_type(), target_type))
+		&& !(LUABIND_TYPE_INFO_EQUAL(const_holder_type(), target_type)))
 	{
 		steps = implicit_cast(this, target_type, offset);
 	}
@@ -1489,6 +1500,12 @@ void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, cons
 
 	if (LUABIND_TYPE_INFO_EQUAL(target_type, holder_type()))
 	{
+		if (obj == 0)
+		{
+			// we are trying to convert nil to a holder type
+			m_default_construct_holder(target_memory);
+			return target_memory;
+		}
 		// if the type we are trying to convert to is the holder_type
 		// it means that his crep has a holder_type (since it would have
 		// been invalid otherwise, and T cannot be invalid). It also means
@@ -1499,6 +1516,13 @@ void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, cons
 
 	if (LUABIND_TYPE_INFO_EQUAL(target_type, const_holder_type()))
 	{
+		if (obj == 0)
+		{
+			// we are trying to convert nil to a const holder type
+			m_default_construct_const_holder(target_memory);
+			return target_memory;
+		}
+
 		if (obj->flags() & object_rep::constant)
 		{
 			// we are holding a constant
@@ -1517,13 +1541,15 @@ void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, cons
 
 	if (has_holder())
 	{
+		assert(obj);
 		// this means that we have a holder type where the
 		// raw-pointer needs to be extracted
 		raw_pointer = extractor()(obj->ptr());
 	}
 	else
 	{
-		raw_pointer = obj->ptr();
+		if (obj == 0) raw_pointer = 0;
+		else raw_pointer = obj->ptr();
 	}
 
 	return static_cast<char*>(raw_pointer) + offset;

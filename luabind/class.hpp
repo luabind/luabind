@@ -432,6 +432,16 @@ namespace luabind
 			}
 		};
 
+		// this is the actual held_type default constructor
+		template<class HeldType, class T>
+		struct internal_default_construct_holder
+		{
+			static void apply(void* target)
+			{
+				new(target) HeldType();
+			}
+		};
+
 		// the following two functions are the ones that returns
 		// a pointer to a held_type_constructor, or 0 if there
 		// is no held_type
@@ -489,6 +499,68 @@ namespace luabind
 				return 0;
 			}
 		};
+
+
+		// the following two functions are the ones that returns
+		// a pointer to a held_type_constructor, or 0 if there
+		// is no held_type. The holder_type is default constructed
+		template<class HeldType>
+		struct holder_default_constructor
+		{
+			typedef void(*constructor)(void*);
+			template<class T>
+			static constructor apply(detail::type<T>)
+			{
+				return &internal_default_construct_holder<HeldType, T>::apply;
+			}
+		};
+
+		template<>
+		struct holder_default_constructor<detail::null_type>
+		{
+			typedef void(*constructor)(void*);
+			template<class T>
+			static constructor apply(detail::type<T>)
+			{
+				return 0;
+			}
+		};
+
+
+		// the following two functions are the ones that returns
+		// a pointer to a const_held_type_constructor, or 0 if there
+		// is no held_type. The constructed held_type is default
+		// constructed
+		template<class HolderType>
+		struct const_holder_default_constructor
+		{
+			typedef void(*constructor)(void*);
+			template<class T>
+			static constructor apply(detail::type<T>)
+			{
+				return get_const_holder_default_constructor(detail::type<T>(), luabind::get_const_holder(static_cast<HolderType*>(0)));
+			}
+
+		private:
+
+			template<class T, class ConstHolderType>
+			static constructor get_const_holder_default_constructor(detail::type<T>, ConstHolderType*)
+			{
+				return &internal_default_construct_holder<ConstHolderType, T>::apply;
+			}
+		};
+
+		template<>
+		struct const_holder_default_constructor<detail::null_type>
+		{
+			typedef void(*constructor)(void*);
+			template<class T>
+			static constructor apply(detail::type<T>)
+			{
+				return 0;
+			}
+		};
+
 
 
 
@@ -1069,6 +1141,8 @@ namespace luabind
 				, void(*const_converter)(void*,void*)
 				, void(*holder_constructor)(void*,void*)
 				, void(*const_holder_constructor)(void*,void*)
+				, void(*holder_default_constructor)(void*)
+				, void(*const_holder_default_constructor)(void*)
 				, void(*destructor)(void*)
 				, void(*const_holder_destructor)(void*)
 				, int holder_size
@@ -1539,6 +1613,8 @@ namespace luabind
 					luabind::get_const_holder((HeldType*)0))
 				, detail::holder_constructor<HeldType>::apply(detail::type<T>())
 				, detail::const_holder_constructor<HeldType>::apply(detail::type<T>())
+				, detail::holder_default_constructor<HeldType>::apply(detail::type<T>())
+				, detail::const_holder_default_constructor<HeldType>::apply(detail::type<T>())
 				, detail::internal_holder_destructor<HeldType>::apply(detail::type<T>())
 				, detail::internal_const_holder_destructor<HeldType>::apply(detail::type<T>())
 				, detail::internal_holder_size<HeldType>::apply()

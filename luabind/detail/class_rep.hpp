@@ -103,6 +103,8 @@ namespace luabind { namespace detail
 			, void(*const_converter)(void*,void*)
 			, void(*construct_holder)(void*,void*)
 			, void(*construct_const_holder)(void*,void*)
+			, void(*default_construct_holder)(void*)
+			, void(*default_construct_const_holder)(void*)
 			, int holder_size
 			, int holder_alignment);
 
@@ -250,6 +252,8 @@ namespace luabind { namespace detail
 			m_const_converter = base->m_const_converter;
 			m_construct_holder = base->m_construct_holder;
 			m_construct_const_holder = base->m_construct_const_holder;
+			m_default_construct_holder = base->m_default_construct_holder;
+			m_default_construct_const_holder = base->m_default_construct_const_holder;
 		}
 
 		struct operator_callback: public overload_rep_base
@@ -292,6 +296,10 @@ namespace luabind { namespace detail
 		typedef void(*construct_held_type_t)(void*,void*);
 		construct_held_type_t m_construct_holder;
 		construct_held_type_t m_construct_const_holder;
+	
+		typedef void(*default_construct_held_type_t)(void*);
+		default_construct_held_type_t m_default_construct_holder;
+		default_construct_held_type_t m_default_construct_const_holder;
 
 		// this is the size of the userdata chunk
 		// for each object_rep of this class. We
