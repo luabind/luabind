@@ -131,7 +131,7 @@ bool test_attributes()
 	glob["test_string"] = std::string("barfoo");
 
 //	swap overloads doesn't work on vc
-#if !defined(BOOST_MSVC)
+#if !defined(BOOST_MSVC) && !defined(BOOST_INTEL_CXX_VERSION)
 	std::swap(glob["test_string"], glob["a"]);
 	if (object_cast<std::string>(glob["a"]) != "barfoo") return false;
 	int type = glob["test_string"].type();
