@@ -35,9 +35,12 @@
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/cat.hpp>
+#include <boost/mpl/bool.hpp>
 
 #include <luabind/config.hpp>
 #include <luabind/detail/policy.hpp>
+#include <luabind/yield_policy.hpp>
+
 /*
 #define LUABIND_DECL(z, n, text) typedef typename detail::get_policy<n+1,Policies>::type BOOST_PP_CAT(a##n,_policy); \
 		typedef typename BOOST_PP_CAT(a##n,_policy)::head BOOST_PP_CAT(a##n,_converter_intermediate); \
@@ -56,7 +59,25 @@
 
 namespace luabind { namespace detail
 {
+	template<class Policies>
+	struct maybe_yield
+	{
+		static inline int apply(lua_State* L, int nret)
+		{
+			return ret(L, nret, boost::mpl::bool_<has_yield<Policies>::value>());
+		}
 
+		static inline int ret(lua_State* L, int nret, boost::mpl::bool_<true>)
+		{
+			return lua_yield(L, nret);
+		}
+
+		static inline int ret(lua_State*, int nret, boost::mpl::bool_<false>)
+		{
+			return nret;
+		}
+	};
+	
 	template<class T>
 	struct returns
 	{
@@ -113,7 +134,8 @@ namespace luabind { namespace detail
 
 		policy_list_postcall<Policies>::apply(L, indices);
 
-		return nret;
+		return maybe_yield<Policies>::apply(L, nret);
+//		return nret;
 	}
 
 	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -140,7 +162,8 @@ namespace luabind { namespace detail
 
 		policy_list_postcall<Policies>::apply(L, indices);
 
-		return nret;
+	//	return nret;
+		return maybe_yield<Policies>::apply(L, nret);
 	}
 
 	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -167,7 +190,8 @@ namespace luabind { namespace detail
 
 		policy_list_postcall<Policies>::apply(L, indices);
 
-		return nret;
+	//	return nret;
+		return maybe_yield<Policies>::apply(L, nret);
 	}
 
 	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -194,7 +218,8 @@ namespace luabind { namespace detail
 
 		policy_list_postcall<Policies>::apply(L, indices);
 
-		return nret;
+	//	return nret;
+		return maybe_yield<Policies>::apply(L, nret);
 	}
 
 
@@ -222,7 +247,8 @@ namespace luabind { namespace detail
 
 		policy_list_postcall<Policies>::apply(L, indices);
 
-		return nret;
+	//	return nret;
+		return maybe_yield<Policies>::apply(L, nret);
 	}
 
 	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -249,7 +275,8 @@ namespace luabind { namespace detail
 
 		policy_list_postcall<Policies>::apply(L, indices);
 
-		return nret;
+	//	return nret;
+		return maybe_yield<Policies>::apply(L, nret);
 	}
 
 #elif BOOST_PP_ITERATION_FLAGS() == 2
@@ -277,7 +304,8 @@ namespace luabind { namespace detail
 
 		policy_list_postcall<Policies>::apply(L, indices);
 
-		return nret;
+	//	return nret;
+		return maybe_yield<Policies>::apply(L, nret);
 	}
 
 	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -303,7 +331,8 @@ namespace luabind { namespace detail
 
 		policy_list_postcall<Policies>::apply(L, indices);
 
-		return nret;
+	//	return nret;
+		return maybe_yield<Policies>::apply(L, nret);
 	}
 
 	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -328,7 +357,8 @@ namespace luabind { namespace detail
 
 		policy_list_postcall<Policies>::apply(L, indices);
 
-		return nret;
+	//	return nret;
+		return maybe_yield<Policies>::apply(L, nret);
 	}
 
 	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -353,7 +383,8 @@ namespace luabind { namespace detail
 
 		policy_list_postcall<Policies>::apply(L, indices);
 
-		return nret;
+	//	return nret;
+		return maybe_yield<Policies>::apply(L, nret);
 	}
 
 	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -378,7 +409,8 @@ namespace luabind { namespace detail
 
 		policy_list_postcall<Policies>::apply(L, indices);
 
-		return nret;
+	//	return nret;
+		return maybe_yield<Policies>::apply(L, nret);
 	}
 
 #elif BOOST_PP_ITERATION_FLAGS() == 3

@@ -240,7 +240,7 @@ namespace luabind
 
 		scope& operator[](const detail::scoped_object& x)
 		{
-			m_children.push_back(const_cast<scoped_object&>(x).clone());
+			m_children.push_back(const_cast<detail::scoped_object&>(x).clone());
 
 			if (m_state)
 			{
@@ -316,4 +316,3 @@ namespace luabind
 }
 
 #endif // LUABIND_SCOPE_HPP_INCLUDED
-

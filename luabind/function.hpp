@@ -139,6 +139,26 @@ namespace luabind
 #define LUABIND_PARAMS(z,n,text) BOOST_PP_CAT(c,n).apply(L, LUABIND_DECORATE_TYPE(A##n), LUABIND_INDEX_MAP(_,n,_))
 #define LUABIND_POSTCALL(z,n,text) BOOST_PP_CAT(c,n).converter_postcall(L, LUABIND_DECORATE_TYPE(A##n), LUABIND_INDEX_MAP(_,n,_));
 
+			template<class Policies>
+			struct maybe_yield
+			{
+				static inline int apply(lua_State* L, int nret)
+				{
+					return ret(L, nret, boost::mpl::bool_<has_yield<Policies>::value>());
+				}
+
+				static inline int ret(lua_State* L, int nret, boost::mpl::bool_<true>)
+				{
+					return lua_yield(L, nret);
+				}
+
+				static inline int ret(lua_State*, int nret, boost::mpl::bool_<false>)
+				{
+					return nret;
+				}
+			};
+
+		
 			template<class T>
 			struct returns
 			{
@@ -399,7 +419,7 @@ static int call(T(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State*
 
 	policy_list_postcall<Policies>::apply(L, indices);
 
-	return nret;
+	return maybe_yield<Policies>::apply(L, nret);
 }
 
 
@@ -429,7 +449,7 @@ static int call(void(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_Sta
 
 	policy_list_postcall<Policies>::apply(L, indices);
 
-	return nret;
+	return maybe_yield<Policies>::apply(L, nret);
 }
 
 

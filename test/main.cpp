@@ -69,6 +69,7 @@ int main()
 	passed &= report_success(test_held_type(), "held type");
 	passed &= report_success(test_iterator(), "iterator");
 	passed &= report_success(test_scope(), "scopes");
+	passed &= report_success(test_yield(), "yield");
 
 	if (passed) std::cout << "\n\nall tests passed\n";
 	else std::cout << "\n\nsome tests failed\n";

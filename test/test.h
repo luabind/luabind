@@ -45,5 +45,6 @@ bool test_object();
 bool test_held_type();
 bool test_iterator();
 bool test_scope();
+bool test_yield();
 
 #endif

@@ -1,3 +1,6 @@
+#pragma warning( disable: 4097 )
+#pragma warning( disable: 4096 )
+
 #include "test.h"
 
 extern "C"
@@ -8,7 +11,6 @@ extern "C"
 
 namespace
 {
-
 	LUABIND_ANONYMOUS_FIX int feedback = 0;
 	LUABIND_ANONYMOUS_FIX std::string str;
 
@@ -65,25 +67,25 @@ bool test_attributes()
 	lua_closer c(L);
 	int top = lua_gettop(L);
 
-	open(L);
+	luabind::open(L);
 
 	lua_pushstring(L, "tester");
 	lua_pushcfunction(L, tester);
 	lua_settable(L, LUA_GLOBALSINDEX);
 
-	class_<internal>(L, "internal")
+	luabind::class_<internal>(L, "internal")
 		.def_readonly("name", &internal::name_)
 		;
 	
-	class_<property_test>(L, "property")
-		.def(constructor<>())
+	luabind::class_<property_test>(L, "property")
+		.def(luabind::constructor<>())
 		.def("get", &property_test::get)
 		.def("get_name", &property_test::get_name)
 		.property("a", &property_test::get, &property_test::set)
 		.property("name", &property_test::get_name, &property_test::set_name)
 		.def_readonly("o", &property_test::o)
 //#ifndef BOOST_MSVC
-		.property("internal", &property_test::get_internal, dependency(result, self))
+		.property("internal", &property_test::get_internal, luabind::dependency(luabind::result, luabind::self))
 //#endif
 		;
 
@@ -106,7 +108,7 @@ bool test_attributes()
 	if (dostring(L, "tester(test.o)")) return false;
 	if (feedback != 6) return false;
 
-	object glob = get_globals(L);
+	luabind::object glob = luabind::get_globals(L);
 
 	if (dostring(L, "a = 4")) return false;
 	if (glob["a"].type() != LUA_TNUMBER) return false;
@@ -118,12 +120,12 @@ bool test_attributes()
 	lua_pushstring(L, "test");
 	glob["test_string"].set();
 
-	if (object_cast<std::string>(glob["test_string"]) != "test") return false;
+	if (luabind::object_cast<std::string>(glob["test_string"]) != "test") return false;
 
-	object t = glob["t"];
+	luabind::object t = glob["t"];
 	lua_pushnumber(L, 4);
 	t.set();
-	if (object_cast<int>(t) != 4) return false;
+	if (luabind::object_cast<int>(t) != 4) return false;
 	
 	glob["test_string"] = std::string("barfoo");
 
@@ -155,4 +157,3 @@ bool test_attributes()
 	dostring(L, "print(b.name)");
 	return true;
 }
-

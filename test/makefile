@@ -16,7 +16,8 @@ SOURCES = \
 	test_free_functions.cpp \
 	test_object.cpp \
 	test_held_type.cpp \
-	test_scope.cpp
+	test_scope.cpp \
+	test_yield.cpp
 
 TARGET = test_luabind
 
