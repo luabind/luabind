@@ -43,7 +43,7 @@ namespace luabind { namespace detail
 	// the this-pointer is const, there's no problem, since the non-const function
 	// will not match at all.
 
-	int implicit_cast(const class_rep*, LUABIND_TYPE_INFO const&, int&);
+	LUABIND_API int implicit_cast(const class_rep*, LUABIND_TYPE_INFO const&, int&);
 
 }}
 

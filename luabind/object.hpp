@@ -39,57 +39,6 @@
 
 namespace luabind
 {
-	// below are some considerations that haven't been implemented
-	//
-	//
-	// object might need to be able to store values temporarily
-	// without knowing about a lua_State.
-	//
-	// globals["f"] = function(&f);
-	//
-	// Creates the need for this, since function() doesn't know
-	// about the state and thus can't return a fully initialized
-	// object.
-	//
-	// Current solution is to allow for objects to store a pointer
-	// to a commiter-object. This object has a virtual method which
-	// converts it's value to the lua_State.
-	//
-	// This has some serious issues. For example, how would
-	// two 'pseude-initialized' objects be able to compare?
-	//
-	// Perhaps attempting to perform operations on non-intialised
-	// objects could throw?
-	// 
-	// Perhaps we could perform some not-so-smart comparisions? like:
-	//
-	//	template<class T>
-	// struct commiter : base_commiter
-	// {
-	//		commiter(const T& v): val(v), base_commiter(typeid(T)) {}
-	//
-	//		virtual bool compare(void* rhs)
-	//		{
-	//			T* other = static_cast<T*>(rhs);
-	//			return val == *other;
-	//		}
-	//
-	//		T val;
-	// };
-	//
-	// This would at least allow for the most intuitive use.. like:
-	//
-	// object a = 5;
-	// object b = 5;
-	//
-	// return a == b;
-	//
-	// However, comparing an initialized object with a non-initialized
-	// would always return false. Is this ok? Better to disallow it?
-
-	// the current implementation does not have commiters, all objects
-	// knows about the lua_State* or is uninitialized.
-
 	class object;
 
 	namespace detail
@@ -219,7 +168,7 @@ namespace luabind
 
 
 
-		class proxy_object
+		class LUABIND_API proxy_object
 		{
 		friend class luabind::object;
 		friend class luabind::detail::proxy_array_object;
@@ -326,7 +275,7 @@ namespace luabind
 
 
 
-		class proxy_raw_object
+		class LUABIND_API proxy_raw_object
 		{
 		friend class luabind::object;
 		friend class luabind::detail::proxy_array_object;
@@ -411,7 +360,7 @@ namespace luabind
 
 
 
-		class proxy_array_object
+		class LUABIND_API proxy_array_object
 		{
 		friend class luabind::object;
 		friend class luabind::detail::proxy_object;
@@ -529,7 +478,7 @@ namespace luabind
 
 
 
-	class object
+	class LUABIND_API object
 	{
 
 #if !(defined (BOOST_MSVC) && (BOOST_MSVC <= 1200))
@@ -994,10 +943,10 @@ namespace luabind
 		// *****************************
 		// OPERATOR =
 
-		object& operator=(const object& o) const;
-		object& operator=(const detail::proxy_object& o) const;
-		object& operator=(const detail::proxy_raw_object& o) const;
-		object& operator=(const detail::proxy_array_object& o) const;
+		LUABIND_API object& operator=(const object& o) const;
+		LUABIND_API object& operator=(const detail::proxy_object& o) const;
+		LUABIND_API object& operator=(const detail::proxy_raw_object& o) const;
+		LUABIND_API object& operator=(const detail::proxy_array_object& o) const;
 
 		template<class T>
 		object& operator=(const T& val) const
@@ -1280,15 +1229,15 @@ private:
 	MACRO(detail::proxy_raw_object, detail::proxy_raw_object)
 
 
-#define LUABIND_EQUALITY_OPERATOR(lhs, rhs) bool operator==(const lhs&, const rhs&);
+#define LUABIND_EQUALITY_OPERATOR(lhs, rhs) LUABIND_API bool operator==(const lhs&, const rhs&);
 	LUABIND_DECLARE_OPERATOR(LUABIND_EQUALITY_OPERATOR)
 #undef LUABIND_EQUALITY_OPERATOR
 
-#define LUABIND_LESSTHAN_OPERATOR(lhs, rhs) bool operator<(const lhs&, const rhs&);
+#define LUABIND_LESSTHAN_OPERATOR(lhs, rhs) LUABIND_API bool operator<(const lhs&, const rhs&);
 	LUABIND_DECLARE_OPERATOR(LUABIND_LESSTHAN_OPERATOR)
 #undef LUABIND_LESSTHAN_OPERATOR
 
-#define LUABIND_LESSOREQUAL_OPERATOR(lhs_t, rhs_t) bool operator<=(const lhs_t&, const rhs_t&);
+#define LUABIND_LESSOREQUAL_OPERATOR(lhs_t, rhs_t) LUABIND_API bool operator<=(const lhs_t&, const rhs_t&);
 	LUABIND_DECLARE_OPERATOR(LUABIND_LESSOREQUAL_OPERATOR)
 #undef LUABIND_LESSOREQUAL_OPERATOR
 

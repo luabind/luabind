@@ -56,7 +56,7 @@ namespace luabind { namespace detail
 {
 
 	struct method_rep;
-	std::string stack_content_by_name(lua_State* L, int start_index);
+	LUABIND_API std::string stack_content_by_name(lua_State* L, int start_index);
 	int construct_lua_class_callback(lua_State* L);
 
 	// this is class-specific information, poor man's vtable
@@ -68,7 +68,7 @@ namespace luabind { namespace detail
 	// it is also used when finding the best match for overloaded
 	// methods
 
-	class class_rep
+	class LUABIND_API class_rep
 	{
 	friend struct luabind::class_base;
 	friend int super_callback(lua_State*);
@@ -141,7 +141,7 @@ namespace luabind { namespace detail
 		// there is one upvalue that points to the method_rep that this dispatcher is to call
 		// the first parameter on the lua stack is an object_rep that points to the object the
 		// call is being made on
-		static int function_dispatcher(lua_State* L);
+		LUABIND_API static int function_dispatcher(lua_State* L);
 
 		struct base_info
 		{

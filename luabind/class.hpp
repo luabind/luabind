@@ -54,6 +54,7 @@
 
 	scopes
 		classes with the same name in different scopes will have the same (fully qualified) name.
+		functions that are renamed will still have the same name in error-messages
 
  	finish smart pointer support
 		* make sure there are no bugs in the conversion from holder to const_holder
@@ -63,7 +64,7 @@
 
 	support calling functions on lua threads (i.e. use lua_resume() instead of lua_pcall()).
 		
-	document the new yield-policy
+	document the new yield-policy more
 
 	cache finalizers in the class_rep. For lua classes
 	we currently do a lookup each time we need to know if a lua class
@@ -197,7 +198,8 @@ namespace luabind
 			>::type type;
 		};
 
-		int function_dispatcher(lua_State* L);
+		// TODO: is this detail::class_rep::function_dispatcher or detail::free_functions::function_dispatcher?
+//		LUABIND_API int function_dispatcher(lua_State* L);
 
 		// this should know about the smart pointer type.
 		// and should really do:
@@ -255,9 +257,9 @@ namespace luabind
 		// prints the types of the values on the stack, in the
 		// range [start_index, lua_gettop()]
 
-		std::string stack_content_by_name(lua_State* L, int start_index);
+		LUABIND_API std::string stack_content_by_name(lua_State* L, int start_index);
 	
-		struct create_class
+		struct LUABIND_API create_class
 		{
 			static int stage1(lua_State* L);
 			static int stage2(lua_State* L);

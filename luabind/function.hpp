@@ -217,7 +217,7 @@ namespace luabind
 				}
 			};
 
-			int function_dispatcher(lua_State* L);
+			LUABIND_API int function_dispatcher(lua_State* L);
 		}
 	}
 	
