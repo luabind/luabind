@@ -1011,6 +1011,8 @@ class object::iterator
 	bool operator!=(const iterator&amp;) const;
 	iterator&amp; operator=(const iterator&amp;);
 
+	object key() const;
+
 	<i>implementation-defined</i> operator*();
 };
 </pre>
@@ -1022,6 +1024,8 @@ value to an entry pointed to by an iterator, just use the assignment operator on
 <pre>
 *iter = 5;
 </pre>
+
+<p>The <tt>key()</tt> member returns the key used by the iterator when indexing the associated lua table.</p>
 
 <h2><a name="object_functions"></a>related functions</h2>
 
