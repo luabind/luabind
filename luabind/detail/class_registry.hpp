@@ -88,16 +88,30 @@ namespace luabind { namespace detail
 			m_classes[info] = crep;
 		}
 
+		struct cmp
+		{
+			bool operator()(const std::type_info* a, const std::type_info* b) const
+			{
+				return a->before(*b);
+			}
+
+			template<class T>
+			bool operator()(const T& a, const T& b) const
+			{
+				return a < b;
+			}
+		};
+		
 		class_rep* find_class(LUABIND_TYPE_INFO info)
 		{
-			std::map<LUABIND_TYPE_INFO, class_rep*>::iterator i = m_classes.find(info);
+			std::map<LUABIND_TYPE_INFO, class_rep*, cmp>::iterator i = m_classes.find(info);
 			if (i == m_classes.end()) return 0; // the type is not registered
 			return i->second;
 		}
 
 	private:
 
-		std::map<LUABIND_TYPE_INFO, class_rep*> m_classes;
+		std::map<LUABIND_TYPE_INFO, class_rep*, cmp> m_classes;
 
 		// this is a lua reference that points to the lua table
 		// that is to be used as meta table for all C++ class 

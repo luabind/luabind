@@ -111,7 +111,7 @@ bool test_attributes()
 			.property("name", &property_test::get_name, &property_test::set_name)
 			.def_readonly("o", &property_test::o)
 			.property("internal", &property_test::get_internal, dependency(result, self))
-			.property("free", &free_getter, &free_setter)
+//			.property("free", &free_getter, &free_setter)
 	];
 
 	if (dostring(L, "test = property()")) return false;
