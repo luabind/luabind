@@ -45,6 +45,7 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 				throw cast_failed(0, LUABIND_TYPEID(T));
 #else
+				lua_State* L = obj.lua_state();
 				cast_failed_callback_fun e = get_cast_failed_callback();
 				if (e) e(L, LUABIND_TYPEID(T));
 
