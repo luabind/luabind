@@ -229,7 +229,7 @@ namespace luabind
 
 #endif
 					int num_params = lua_gettop(L);
-					ret = find_best_match(L, rep->overloads().begin(), rep->overloads().end(), ambiguous, min_match, match_index, num_params);
+					ret = find_best_match(L, &rep->overloads().front(), rep->overloads().size(), sizeof(free_functions::overload_rep), ambiguous, min_match, match_index, num_params);
 
 #ifdef LUABIND_NO_ERROR_CHECKING
 				}
@@ -263,10 +263,10 @@ namespace luabind
 						msg += stack_content_by_name(L, 1);
 						msg += ") is ambiguous\nnone of the overloads have a best conversion:";
 
-						std::vector<free_functions::overload_rep> candidates;
-						find_exact_match(L, rep->overloads().begin(), rep->overloads().end(), min_match, num_params, candidates);
+						std::vector<const overload_rep_base*> candidates;
+						find_exact_match(L, &rep->overloads().front(), rep->overloads().size(), sizeof(free_functions::overload_rep), min_match, num_params, candidates);
 
-						msg += get_overload_signatures(L, candidates.begin(), candidates.end(), rep->name);
+						msg += get_overload_signatures_candidates(L, candidates.begin(), candidates.end(), rep->name);
 
 						lua_pushstring(L, msg.c_str());
 					}

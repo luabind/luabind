@@ -36,26 +36,31 @@ namespace luabind { namespace detail
 	// returns true if it found a match better than the given. If it finds a better match match_index is
 	// updated to contain the new index to the best match (this index now refers to the list given to
 	// this call).
+	// orep_size is supposed to tell the size of the actual structures that start and end points to
 	// ambiguous is set to true if the match was ambiguous
 	// min_match should be initialized to the currently best match value (the number of implicit casts
 	// to get a perfect match). If there are no previous matches, set min_match to std::numeric_limits<int>::max()
-	template<class It>
-	bool find_best_match(lua_State* L, It start, It end, bool& ambiguous, int& min_match, int& match_index, int num_params)
+
+#ifdef LUABIND_NO_HEADERS_ONLY
+	bool find_best_match(lua_State* L, const detail::overload_rep_base* start, int num_overloads, size_t orep_size, bool& ambiguous, int& min_match, int& match_index, int num_params);
+	void find_exact_match(lua_State* L, const detail::overload_rep_base* start, int num_overloads, size_t orep_size, int cmp_match, int num_params, std::vector<const overload_rep_base*>& dest);
+#else
+
+	bool find_best_match(lua_State* L, const detail::overload_rep_base* start, int num_overloads, size_t orep_size, bool& ambiguous, int& min_match, int& match_index, int num_params)
 	{
 		int min_but_one_match = std::numeric_limits<int>::max();
-		int index = 0;
 		bool found = false;
 
-		for (; start != end; ++start)
+		for (int index = 0; index < num_overloads; ++index)
 		{
 			int match_value = start->match(L, num_params);
-			++index;
+			reinterpret_cast<const char*&>(start) += orep_size;
 
 			if (match_value < 0) continue;
 			if (match_value < min_match)
 			{
 				found = true;
-				match_index = index-1;
+				match_index = index;
 				min_but_one_match = min_match;
 				min_match = match_value;
 			}
@@ -69,6 +74,18 @@ namespace luabind { namespace detail
 		return found;
 	}
 
+	void find_exact_match(lua_State* L, const detail::overload_rep_base* start, int num_overloads, size_t orep_size, int cmp_match, int num_params, std::vector<const overload_rep_base*>& dest)
+	{
+		for (int i = 0; i < num_overloads; ++i)
+		{
+			int match_value = start->match(L, num_params);
+			if (match_value == cmp_match) dest.push_back(start);
+			reinterpret_cast<const char*&>(start) += orep_size;
+		}
+	}
+
+#endif
+/*
 	template<class It, class Target>
 	void find_exact_match(lua_State* L, It start, It end, int cmp_match, int num_params, Target& dest)
 	{
@@ -79,6 +96,7 @@ namespace luabind { namespace detail
 		}
 	}
 
+*/
 
 }}
 

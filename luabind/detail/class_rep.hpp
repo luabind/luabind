@@ -313,7 +313,7 @@ namespace luabind { namespace detail
 				int num_params = lua_gettop(L);
 				if (overloads[0])
 				{
-					if (find_best_match(L, overloads[0]->begin(), overloads[0]->end(), ambiguous, min_match, match_index, num_params))
+					if (find_best_match(L, &overloads[0]->front(), overloads[0]->size(), sizeof(operator_callback), ambiguous, min_match, match_index, num_params))
 						operand_id = 0;
 				}
 
@@ -324,7 +324,7 @@ namespace luabind { namespace detail
 
 				if (overloads[1])
 				{
-					if(find_best_match(L, overloads[1]->begin(), overloads[1]->end(), ambiguous, min_match, match_index, num_params))
+					if(find_best_match(L, &overloads[1]->front(), overloads[1]->size(), sizeof(operator_callback), ambiguous, min_match, match_index, num_params))
 						operand_id = 1;
 				}
 
@@ -366,14 +366,14 @@ namespace luabind { namespace detail
 					msg += stack_content_by_name(L, 1);
 					msg += ")' is ambiguous\nnone of the overloads have a best conversion:\n";
 
-					std::vector<operator_callback> candidates;
+					std::vector<const overload_rep_base*> candidates;
 					if (overloads[0])
-						find_exact_match(L, overloads[0]->begin(), overloads[0]->end(), min_match, num_params, candidates);
+						find_exact_match(L, &overloads[0]->front(), overloads[0]->size(), sizeof(operator_callback), min_match, num_params, candidates);
 
 					if (overloads[1])
-						find_exact_match(L, overloads[1]->begin(), overloads[1]->end(), min_match, num_params, candidates);
+						find_exact_match(L, &overloads[1]->front(), overloads[1]->size(), sizeof(operator_callback), min_match, num_params, candidates);
 
-					msg += get_overload_signatures(L, candidates.begin(), candidates.end(), get_operator_symbol(id));
+					msg += get_overload_signatures_candidates(L, candidates.begin(), candidates.end(), get_operator_symbol(id));
 
 
 					lua_pushstring(L, msg.c_str());
@@ -410,7 +410,7 @@ namespace luabind { namespace detail
 #endif
 
 				int num_params = lua_gettop(L) - 1;
-				found = find_best_match(L, rep->overloads.begin(), rep->overloads.end(), ambiguous, min_match, match_index, num_params);
+				found = find_best_match(L, &rep->overloads.front(), rep->overloads.size(), sizeof(construct_rep::overload_t), ambiguous, min_match, match_index, num_params);
 
 #ifdef LUABIND_NO_ERROR_CHECKING
 
@@ -446,9 +446,9 @@ namespace luabind { namespace detail
 					msg += stack_content_by_name(L, 2);
 					msg += ")' is ambiguous\nnone of the overloads have a best conversion:\n";
 
-					std::vector<construct_rep::overload_t> candidates;
-					find_exact_match(L, rep->overloads.begin(), rep->overloads.end(), min_match, num_params, candidates);
-					msg += get_overload_signatures(L, candidates.begin(), candidates.end(), crep->name());
+					std::vector<const overload_rep_base*> candidates;
+					find_exact_match(L, &rep->overloads.front(), rep->overloads.size(), sizeof(construct_rep::overload_t), min_match, num_params, candidates);
+					msg += get_overload_signatures_candidates(L, candidates.begin(), candidates.end(), crep->name());
 
 					lua_pushstring(L, msg.c_str());
 				}
@@ -572,7 +572,7 @@ namespace luabind { namespace detail
 #endif
 
 				int num_params = lua_gettop(L) - 1;
-				found = find_best_match(L, rep->overloads().begin(), rep->overloads().end(), ambiguous, min_match, match_index, num_params);
+				found = find_best_match(L, &rep->overloads().front(), rep->overloads().size(), sizeof(overload_rep), ambiguous, min_match, match_index, num_params);
 
 #ifdef LUABIND_NO_ERROR_CHECKING
 
@@ -613,15 +613,15 @@ namespace luabind { namespace detail
 					msg += stack_content_by_name(L, 2);
 					msg += ")' is ambiguous\nnone of the overloads have a best conversion:\n";
 
-					std::vector<overload_rep> candidates;
-					find_exact_match(L, rep->overloads().begin(), rep->overloads().end(), min_match, num_params, candidates);
+					std::vector<const overload_rep_base*> candidates;
+					find_exact_match(L, &rep->overloads().front(), rep->overloads().size(), sizeof(overload_rep), min_match, num_params, candidates);
 
 					std::string function_name;
 					function_name += rep->crep->name();
 					function_name += ":";
 					function_name += rep->name;
 
-					msg += get_overload_signatures(L, candidates.begin(), candidates.end(), function_name);
+					msg += get_overload_signatures_candidates(L, candidates.begin(), candidates.end(), function_name);
 
 					lua_pushstring(L, msg.c_str());
 				}
@@ -1041,7 +1041,7 @@ namespace luabind { namespace detail
 #endif
 
 				int num_params = lua_gettop(L) - 1;
-				found = find_best_match(L, rep->overloads.begin(), rep->overloads.end(), ambiguous, min_match, match_index, num_params);
+				found = find_best_match(L, &rep->overloads.front(), rep->overloads.size(), sizeof(construct_rep::overload_t), ambiguous, min_match, match_index, num_params);
 
 #ifdef LUABIND_NO_ERROR_CHECKING
 
