@@ -97,8 +97,7 @@ namespace luabind
 				sizeof(luabind::converters::is_user_defined(LUABIND_DECORATE_TYPE(T))) == sizeof(yes_t));
 		};
 
-		template<class T>
-		int implicit_cast(const class_rep* crep, type<T>, int& pointer_offset);
+		int implicit_cast(const class_rep* crep, LUABIND_TYPE_INFO const&, int& pointer_offset);
 	}
 
 	 template<class T> class functor;
@@ -486,7 +485,7 @@ namespace luabind { namespace detail
 			assert((obj != 0) && "internal error, please report"); // internal error
 			const class_rep* crep = obj->crep();
 
-			int steps = implicit_cast(crep, detail::type<T>(), offset);
+			int steps = implicit_cast(crep, LUABIND_TYPEID(T), offset);
 
 			// should never be called with a type that can't be cast
 			assert((steps >= 0) && "internal error, please report");
@@ -506,7 +505,7 @@ namespace luabind { namespace detail
 			// cannot cast a constant object to nonconst
 			if (obj->flags() & object_rep::constant) return -1;
 			int d;
-			return implicit_cast(obj->crep(), detail::type<T>(), d);	
+			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
 		}
 
 		template<class T>
@@ -566,7 +565,7 @@ namespace luabind { namespace detail
 			assert((obj != 0) && "internal error, please report"); // internal error
 			const class_rep* crep = obj->crep();
 
-			int steps = implicit_cast(crep, detail::type<T>(), offset);
+			int steps = implicit_cast(crep, LUABIND_TYPEID(T), offset);
 
 			// should never be called with a type that can't be cast
 			assert((steps >= 0) && "internal error, please report");
@@ -583,7 +582,7 @@ namespace luabind { namespace detail
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1;
 			int d;
-			return implicit_cast(obj->crep(), detail::type<T>(), d);	
+			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
 		}
 
 		template<class T>
@@ -644,7 +643,7 @@ namespace luabind { namespace detail
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
 			int d;
-			return implicit_cast(obj->crep(), detail::type<T>(), d);
+			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
 		}
 
 		template<class T>

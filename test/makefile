@@ -1,5 +1,5 @@
 CXX	 = g++
-CXXFLAGS = -Wall -ftemplate-depth-50 -g
+CXXFLAGS = -Wall -ftemplate-depth-50 -Os
 
 sources =\
 	main.cpp\
@@ -21,7 +21,7 @@ sources =\
 target = test_luabind
 
 #libs = -llua -llualib -L/scratch/lua-5.0/lib -L.
-libs = -llua -llualib -L/usr/local/lib
+libs = -llua -llualib -lluabind -L/usr/local/lib -L../src
 
 #inc = -I./ -I/scratch/lua-5.0/include -I- -I.. -I/scratch/boost_1_30_0
 inc = -I./ -I/usr/local/include -I- -I..

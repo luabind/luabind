@@ -120,3 +120,4 @@ namespace luabind
 }
 
 #endif // LUABIND_COPY_POLICY_HPP_INCLUDED
+

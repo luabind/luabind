@@ -25,7 +25,7 @@ namespace
 	{
 		feedback = x + y;
 	}
-
+	
 	int g() { feedback = 3; return 4; }
 
 	base* create_base()
@@ -131,6 +131,8 @@ bool test_free_functions()
 		if (dostring(L, "test_functor(function(x) return x * 10 end)")) return false;
 		if (feedback != 50) return false;
 
+		if (dostring(L, "h()")) return false;
+	
 		functor<int> test_f(L, "g");
 		int a = test_f();
 		if (a != 4) return false;

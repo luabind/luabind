@@ -19,6 +19,8 @@ bool dostring(lua_State* L, const char* str)
 	return false;
 }
 
+#define LUABIND_NO_HEADERS_ONLY
+
 #include <luabind/luabind.hpp>
 #include <boost/any.hpp>
 

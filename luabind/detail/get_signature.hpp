@@ -67,13 +67,13 @@ namespace luabind { namespace detail
 	template<class T>
 	std::string name_of_type(by_value<T>, lua_State* L) { return get_class_name<T>::name(L); };
 	template<class T>
-	std::string name_of_type(by_reference<T>, lua_State* L) { return get_class_name<T>::name(L); };
+	std::string name_of_type(by_reference<T>, lua_State* L) { return name_of_type(LUABIND_DECORATE_TYPE(T), L) + "&"; };
 	template<class T>
-	std::string name_of_type(by_pointer<T>, lua_State* L) { return get_class_name<T>::name(L); };
+	std::string name_of_type(by_pointer<T>, lua_State* L) { return name_of_type(LUABIND_DECORATE_TYPE(T), L) + "*"; };
 	template<class T>
-	std::string name_of_type(by_const_reference<T>, lua_State* L) { return "const " + get_class_name<T>::name(L); };
+	std::string name_of_type(by_const_reference<T>, lua_State* L) { return "const " + name_of_type(LUABIND_DECORATE_TYPE(T), L) + "&"; };
 	template<class T>
-	std::string name_of_type(by_const_pointer<T>, lua_State* L) { return "const " + get_class_name<T>::name(L); };
+	std::string name_of_type(by_const_pointer<T>, lua_State* L) { return "const " + name_of_type(LUABIND_DECORATE_TYPE(T), L) + "*"; };
 
 	inline std::string name_of_type(by_value<luabind::object>, lua_State*) { return "object"; };
 	inline std::string name_of_type(by_const_reference<luabind::object>, lua_State*) { return "object"; };

@@ -20,15 +20,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-
-#ifndef LUABIND_IMPLICIT_CAST_HPP_INCLUDED
-#define LUABIND_IMPLICIT_CAST_HPP_INCLUDED
-
-#include <luabind/config.hpp>
-#include <luabind/detail/class_rep.hpp>
-
-namespace luabind { namespace detail
+extern "C"
 {
+	#include "lua.h"
+	#include "lauxlib.h"
+	#include "lualib.h"
+}
+
+#define LUABIND_NO_HEADERS_ONLY
+
+#include <luabind/luabind.hpp>
+#include <luabind/detail/implicit_cast.hpp>
+
+using namespace luabind::detail;
+
 	// returns -1 if there exists no implicit cast from the given class_rep
 	// to T. If there exists an implicit cast to T, the number of steps times 2
 	// is returned and pointer_offset is filled with the number of bytes
@@ -42,15 +47,17 @@ namespace luabind { namespace detail
 	// one penalty point to make the match-selector select the non-const version. It
 	// the this-pointer is const, there's no problem, since the non-const function
 	// will not match at all.
-
-#ifndef LUABIND_NO_HEADERS_ONLY
-
-	inline int implicit_cast(const class_rep* crep, LUABIND_TYPE_INFO const& type_id, int& pointer_offset)
+namespace luabind { namespace detail
+{
+	int implicit_cast(const class_rep* crep, 
+		                                LUABIND_TYPE_INFO const& type_id, 
+                                      int& pointer_offset)
 	{
 		int offset = 0;
 		if (LUABIND_TYPE_INFO_EQUAL(crep->type(), type_id)) return 0;
 
-		for (std::vector<class_rep::base_info>::const_iterator i = crep->bases().begin(); i != crep->bases().end(); ++i)
+		for (std::vector<class_rep::base_info>::const_iterator
+				i = crep->bases().begin(); i != crep->bases().end(); ++i)
 		{
 			int steps = implicit_cast(i->base, type_id, offset);
 			pointer_offset = offset + i->pointer_offset;
@@ -58,13 +65,5 @@ namespace luabind { namespace detail
 		}
 		return -1;
 	}
-
-#else
-
-	int implicit_cast(const class_rep*, LUABIND_TYPE_INFO const&, int&);
-
-#endif
 }}
-
-#endif // LUABIND_IMPLICIT_CAST_HPP_INCLUDED
 

@@ -28,6 +28,8 @@
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/class_registry.hpp>
 
+#ifndef LUABIND_NO_HEADERS_ONLY
+
 namespace luabind
 {
 	namespace detail
@@ -205,4 +207,23 @@ namespace luabind
 	}
 }
 
+#else // LUABIND_NO_HEADERS_ONLY
+
+namespace luabind
+{
+	namespace detail
+	{
+		void add_operator_to_metatable(lua_State* L, int op_index);
+		int create_cpp_class_metatable(lua_State* L);
+		int create_cpp_instance_metatable(lua_State* L);
+		int create_lua_class_metatable(lua_State* L);
+		int create_lua_instance_metatable(lua_State* L);
+	}
+
+	void open(lua_State* L);
+}
+
+#endif // LUABIND_NO_HEADERS_ONLY
+
 #endif // LUABIND_OPEN_HPP_INCLUDED
+

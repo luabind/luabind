@@ -46,7 +46,7 @@ namespace luabind { namespace detail
 			assert((obj != 0) && "internal error, please report");
 			const class_rep* crep = obj->crep();
 
-			int steps = implicit_cast(crep, detail::type<T>(), offset);
+			int steps = implicit_cast(crep, LUABIND_TYPEID(T), offset);
 
 			assert((steps >= 0) && "adopt_pointer used with type that cannot be converted");
 			obj->remove_ownership();
@@ -64,7 +64,7 @@ namespace luabind { namespace detail
 			if (obj->flags() & object_rep::constant) return -1;
 			if (!(obj->flags() & object_rep::owner)) return -1;
 			int d;
-			return implicit_cast(obj->crep(), detail::type<T>(), d);	
+			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
 		}
 
 		template<class T>
