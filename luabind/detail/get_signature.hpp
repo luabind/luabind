@@ -42,7 +42,6 @@
 namespace luabind { namespace detail
 {
 
-	// TODO: move to its own transation unit
 	std::string LUABIND_API get_class_name(lua_State* L, LUABIND_TYPE_INFO i);
 
 	template<class T>

@@ -649,9 +649,6 @@ namespace luabind { namespace detail
 
 			class_rep* crep = get_class_rep<T>(L);
 
-//			class_registry* registry = class_registry::get_registry(L);
-//			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
-
 			// if you get caught in this assert you are
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
@@ -740,8 +737,6 @@ namespace luabind { namespace detail
 		template<class T>
 		void apply(lua_State* L, const T& ref)
 		{
-			//class_registry* registry = class_registry::get_registry(L);
-			//class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
@@ -813,10 +808,7 @@ namespace luabind { namespace detail
 			// special case if we get nil in, try to convert the holder type
 			if (lua_isnil(L, index))
 			{
-				detail::class_registry* reg = detail::class_registry::get_registry(L);
-				assert(reg);
-
-				crep = reg->find_class(LUABIND_TYPEID(T));
+				crep = get_class_rep<T>(L);;
 				assert(crep);
 			}
 			else
@@ -843,10 +835,7 @@ namespace luabind { namespace detail
 			// special case if we get nil in, try to match the holder type
 			if (lua_isnil(L, index))
 			{
-				detail::class_registry* reg = detail::class_registry::get_registry(L);
-				assert(reg);
-
-				class_rep* crep = reg->find_class(LUABIND_TYPEID(T));
+				class_rep* crep = get_class_rep<T>(L);
 				if (crep == 0) return -1;
 				if ((LUABIND_TYPE_INFO_EQUAL(crep->holder_type(), LUABIND_TYPEID(T))))
 					return 0;
@@ -887,8 +876,6 @@ namespace luabind { namespace detail
 				return;
 			}
 
-			//class_registry* registry = class_registry::get_registry(L);
-			//class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
@@ -953,8 +940,6 @@ namespace luabind { namespace detail
 		template<class T>
 		void apply(lua_State* L, T& ref)
 		{
-			//class_registry* registry = class_registry::get_registry(L);
-			//class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
@@ -1005,8 +990,6 @@ namespace luabind { namespace detail
 		template<class T>
 		void apply(lua_State* L, const T& ref)
 		{
-			//class_registry* registry = class_registry::get_registry(L);
-			//class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
@@ -1064,10 +1047,7 @@ namespace luabind { namespace detail
 			// special case if we get nil in, try to convert the holder type
 			if (lua_isnil(L, index))
 			{
-				detail::class_registry* reg = detail::class_registry::get_registry(L);
-				assert(reg);
-
-				crep = reg->find_class(LUABIND_TYPEID(T));
+				crep = get_class_rep<T>(L);
 				assert(crep);
 			}
 			else
@@ -1093,10 +1073,7 @@ namespace luabind { namespace detail
 			// special case if we get nil in, try to match the holder type
 			if (lua_isnil(L, index))
 			{
-				detail::class_registry* reg = detail::class_registry::get_registry(L);
-				assert(reg);
-
-				class_rep* crep = reg->find_class(LUABIND_TYPEID(T));
+				class_rep* crep = get_class_rep<T>(L);;
 				if (crep == 0) return -1;
 				if ((LUABIND_TYPE_INFO_EQUAL(crep->holder_type(), LUABIND_TYPEID(T))))
 					return 0;

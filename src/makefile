@@ -14,6 +14,7 @@ SOURCES = \
 	create_class.cpp \
 	stack_content_by_name.cpp \
 	object.cpp \
+	object_rep.cpp \
 	class_info.cpp \
 	class_registry.cpp \
 	link_compatibility.cpp

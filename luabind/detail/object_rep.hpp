@@ -33,8 +33,6 @@ namespace luabind { namespace detail
 
 	void finalize(lua_State* L, class_rep* crep);
 
-	// TODO: move code into separate compilation unit
-
 	// this class is allocated inside lua for each pointer.
 	// it contains the actual c++ object-pointer.
 	// it also tells if it is const or not.
@@ -44,98 +42,33 @@ namespace luabind { namespace detail
 		enum { constant = 1, owner = 2, smart_pointer = 4, lua_class = 8, call_super = 16 };
 
 		// dest is a function that is called to delete the c++ object this struct holds
-		object_rep(void* obj, class_rep* crep, int flags, void(*dest)(void*))
-			: m_object(obj)
-			, m_classrep(crep)
-			, m_flags(flags)
-			, m_destructor(dest)
-			, m_dependency_cnt(1)
-		{
-			// if the object is owned by lua, a valid destructor must be given
-			assert((((m_flags & owner) && dest) || !(m_flags & owner)) && "internal error, please report");
-		}
+		object_rep(void* obj, class_rep* crep, int flags, void(*dest)(void*));
+		object_rep(class_rep* crep, int flags, detail::lua_reference const& table_ref);
+		~object_rep();
 
-		object_rep(class_rep* crep, int flags, detail::lua_reference const& table_ref)
-			: m_object(0)
-			, m_classrep(crep)
-			, m_flags(flags)
-			, m_lua_table_ref(table_ref)
-			, m_destructor(0)
-			, m_dependency_cnt(1)
-		{
-		}
+		void* ptr() const { return m_object; }
 
-		~object_rep() 
-		{
-//			delete m_instance;
-
-			if (m_flags & owner && m_destructor) m_destructor(m_object);
-		}
-
-		void* ptr() const throw() { return m_object; }
-
-		void* ptr(int pointer_offset) const throw()
+		void* ptr(int pointer_offset) const
 		{
 			return reinterpret_cast<char*>(m_object) + pointer_offset;
 		}
 
-		const class_rep* crep() const throw() { return m_classrep; }
-		class_rep* crep() throw() { return m_classrep; }
-		int flags() const throw() { return m_flags; }
+		const class_rep* crep() const { return m_classrep; }
+		class_rep* crep() { return m_classrep; }
+		int flags() const { return m_flags; }
 		void set_flags(int flags) { m_flags = flags; }
 
 		void get_lua_table(lua_State* L) const { m_lua_table_ref.get(L); }
 
-		void remove_ownership()
-		{
-			assert((m_flags & owner) && "cannot remove ownership of object that's not owned");
-			m_flags &= ~owner;
-		}
-
-		void set_destructor(void(*ptr)(void*))
-		{
-			m_destructor = ptr;
-		}
+		void remove_ownership();
+		void set_destructor(void(*ptr)(void*));
 
 		void set_object(void* p) { m_object = p; }
 
-		void add_dependency(lua_State* L, int index)
-		{
-			if (!m_dependency_ref.is_valid())
-			{
-				lua_newtable(L);
-				m_dependency_ref.set(L);
-			}
+		void add_dependency(lua_State* L, int index);
+		void release_refs(lua_State* L);
 
-			m_dependency_ref.get(L);
-			lua_pushvalue(L, index);
-			lua_rawseti(L, -2, m_dependency_cnt);
-			lua_pop(L, 1);
-			++m_dependency_cnt;
-		}
-
-		void release_refs(lua_State* L)
-		{
-			m_dependency_ref.reset();
-			m_lua_table_ref.reset();
-		}
-
-//		instance_holder* instance() const
-//		{ return m_instance; }
-
-//		void set_instance(instance_holder* x)
-//		{ m_instance = x; }
-
-		static int garbage_collector(lua_State* L)
-		{
-			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, -1));
-
-			finalize(L, obj->crep());
-
-			obj->release_refs(L);
-			obj->~object_rep();
-			return 0;
-		}
+		static int garbage_collector(lua_State* L);
 
 	private:
 
