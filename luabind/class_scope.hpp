@@ -623,9 +623,12 @@ namespace luabind
 			// register this new type in the class registry
 			r->add_class(LUABIND_TYPEID(T), crep);
 
-
-			// add bases
-			for_each(m_bases.begin(), m_bases.end(), boost::bind(&crep::add_base, crep, _1));
+			for (std::vector<base_desc>::iterator i = m_bases.begin();
+							i != m_bases.end(); 
+							++i)
+			{
+				crep->add_base_class(L, i->type, i->ptr_offset);
+			}
 
 			// add methods
 			for (std::map<const char*, detail::method_rep, ltstr>::iterator i = m_methods.begin();
@@ -639,7 +642,6 @@ namespace luabind
 			// constructors
 			m_constructor.swap(crep->m_constructor);
 			m_wrapped_constructor.swap(crep->m_wrapped_constructor);
-
 			
 			/* ... */
 		}
