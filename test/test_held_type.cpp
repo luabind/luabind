@@ -15,7 +15,7 @@ namespace luabind
 namespace
 {
 
-	int feedback = 0;
+	LUABIND_ANONYMOUS_FIX int feedback = 0;
 
 	struct held_type_test
 	{

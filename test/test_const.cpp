@@ -2,7 +2,7 @@
 
 namespace
 {
-	int feedback = 0;
+	LUABIND_ANONYMOUS_FIX int feedback = 0;
 
 	struct A
 	{

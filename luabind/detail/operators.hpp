@@ -206,8 +206,8 @@ namespace luabind
 {
 	namespace
 	{
-		detail::self_t self;
-		detail::const_self_t const_self;
+		LUABIND_ANONYMOUS_FIX detail::self_t self;
+		LUABIND_ANONYMOUS_FIX detail::const_self_t const_self;
 	}
 
 #define LUABIND_BINARY_OPERATOR(id, op)\

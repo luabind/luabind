@@ -3,11 +3,11 @@
 namespace
 {
 	using namespace luabind;
-	int feedback1 = 0;
-	int feedback2 = 0;
-	int feedback3 = 0;
-	int feedback4 = 0;
-	int feedback5 = 0;
+	LUABIND_ANONYMOUS_FIX int feedback1 = 0;
+	LUABIND_ANONYMOUS_FIX int feedback2 = 0;
+	LUABIND_ANONYMOUS_FIX int feedback3 = 0;
+	LUABIND_ANONYMOUS_FIX int feedback4 = 0;
+	LUABIND_ANONYMOUS_FIX int feedback5 = 0;
 
 	void test_object_param(const object& table)
 	{

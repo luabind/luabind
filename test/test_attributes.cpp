@@ -9,8 +9,8 @@ extern "C"
 namespace
 {
 
-	int feedback = 0;
-	std::string str;
+	LUABIND_ANONYMOUS_FIX int feedback = 0;
+	LUABIND_ANONYMOUS_FIX std::string str;
 
 	struct internal 
 	{

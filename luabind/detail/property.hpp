@@ -85,37 +85,65 @@ namespace luabind { namespace detail
 	};
 
 	// TODO: add support for policies
-	template<class T, class D>
-	struct auto_set
+	template<class T, class D, class Policies>
+	struct auto_set : Policies
 	{
+		auto_set() {}
+		auto_set(const Policies& p): Policies(p) {}
+
 		int operator()(lua_State* L, int pointer_offset, D T::*member)
 		{
+			int nargs = lua_gettop(L);
+
 			// parameters on the lua stack:
 			// 1. object_rep
 			// 2. key (property name)
 			// 3. value
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
 			T* ptr =  reinterpret_cast<T*>(static_cast<char*>(obj->ptr()) + pointer_offset);
-			typename default_policy::template generate_converter<D, lua_to_cpp>::type converter;
+
+			typedef typename find_conversion_policy<1,Policies>::type converter_policy;
+			typename converter_policy::template generate_converter<D,lua_to_cpp>::type converter;
 			ptr->*member = converter.apply(L, LUABIND_DECORATE_TYPE(D), 3);
-			return 0;
+
+			int nret = lua_gettop(L) - nargs;
+
+			const int indices[] = { 1, nargs + nret, 3 };
+
+			policy_list_postcall<Policies>::apply(L, indices);
+
+			return nret;
 		}
 	};
 
 	// TODO: add support for policies
-	template<class T, class D>
-	struct auto_get
+	template<class T, class D, class Policies>
+	struct auto_get : Policies
 	{
+		auto_get() {}
+		auto_get(const Policies& p): Policies(p) {}
+
 		int operator()(lua_State* L, int pointer_offset, D T::*member)
 		{
+			int nargs = lua_gettop(L);
+
 			// parameters on the lua stack:
 			// 1. object_rep
 			// 2. key (property name)
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
 			T* ptr =  reinterpret_cast<T*>(static_cast<char*>(obj->ptr()) + pointer_offset);
-			typename default_policy::template generate_converter<D, cpp_to_lua>::type converter;
+
+			typedef typename find_conversion_policy<0,Policies>::type converter_policy;
+			typename converter_policy::template generate_converter<D,cpp_to_lua>::type converter;
 			converter.apply(L, ptr->*member);
-			return 1;
+
+			int nret = lua_gettop(L) - nargs;
+
+			const int indices[] = { 1, nargs + nret };
+
+			policy_list_postcall<Policies>::apply(L, indices);
+
+			return nret;
 		}
 	};
 

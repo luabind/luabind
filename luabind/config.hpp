@@ -26,6 +26,12 @@
 
 #include <boost/config.hpp>
 
+#ifdef BOOST_MSVC
+	#define LUABIND_ANONYMOUS_FIX static
+#else
+	#define LUABIND_ANONYMOUS_FIX
+#endif
+
 #if defined (BOOST_MSVC) && (BOOST_MSVC <= 1200)
 
 #define LUABIND_MSVC_TYPENAME

@@ -753,38 +753,38 @@ namespace luabind
 		template<class D>
 		class_& def_readonly(const char* name, D T::*member_ptr)
 		{
-			m_crep->add_getter(name, boost::bind<int>(detail::auto_get<T, D>(), _1, _2, member_ptr));
+			m_crep->add_getter(name, boost::bind<int>(detail::auto_get<T,D,detail::null_type>(), _1, _2, member_ptr));
 			return *this;
 		}
 
 		template<class D, class Policies>
 		class_& def_readonly(const char* name, D T::*member_ptr, const Policies& policies)
 		{
-			m_crep->add_getter(name, boost::bind<int>(detail::auto_get<T, D>(), _1, _2, member_ptr));
+			m_crep->add_getter(name, boost::bind<int>(detail::auto_get<T,D,Policies>(policies), _1, _2, member_ptr));
 			return *this;
 		}
 
 		template<class D>
 		class_& def_readwrite(const char* name, D T::*member_ptr)
 		{
-			m_crep->add_getter(name, boost::bind<int>(detail::auto_get<T, D>(), _1, _2, member_ptr));
-			m_crep->add_setter(name, boost::bind<int>(detail::auto_set<T, D>(), _1, _2, member_ptr));
+			m_crep->add_getter(name, boost::bind<int>(detail::auto_get<T,D,detail::null_type>(), _1, _2, member_ptr));
+			m_crep->add_setter(name, boost::bind<int>(detail::auto_set<T,D,detail::null_type>(), _1, _2, member_ptr));
 			return *this;
 		}
 
 		template<class D, class GetPolicies>
 		class_& def_readwrite(const char* name, D T::*member_ptr, const GetPolicies& get_policies)
 		{
-			m_crep->add_getter(name, boost::bind<int>(detail::auto_get<T, D>(), _1, _2, member_ptr));
-			m_crep->add_setter(name, boost::bind<int>(detail::auto_set<T, D>(), _1, _2, member_ptr));
+			m_crep->add_getter(name, boost::bind<int>(detail::auto_get<T,D,GetPolicies>(get_policies), _1, _2, member_ptr));
+			m_crep->add_setter(name, boost::bind<int>(detail::auto_set<T,D,detail::null_type>(), _1, _2, member_ptr));
 			return *this;
 		}
 
 		template<class D, class GetPolicies, class SetPolicies>
 		class_& def_readwrite(const char* name, D T::*member_ptr, const GetPolicies& get_policies, const SetPolicies& set_policies)
 		{
-			m_crep->add_getter(name, boost::bind<int>(detail::auto_get<T, D>(), _1, _2, member_ptr));
-			m_crep->add_setter(name, boost::bind<int>(detail::auto_set<T, D>(), _1, _2, member_ptr));
+			m_crep->add_getter(name, boost::bind<int>(detail::auto_get<T,D,GetPolicies>(get_policies), _1, _2, member_ptr));
+			m_crep->add_setter(name, boost::bind<int>(detail::auto_set<T,D,SetPolicies>(set_policies), _1, _2, member_ptr));
 			return *this;
 		}
 

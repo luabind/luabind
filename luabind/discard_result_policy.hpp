@@ -58,7 +58,7 @@ namespace luabind
 {
 	namespace 
 	{
-		detail::policy_cons<detail::discard_result_policy, detail::null_type> discard_result;
+		LUABIND_ANONYMOUS_FIX detail::policy_cons<detail::discard_result_policy, detail::null_type> discard_result;
 	}
 }
 

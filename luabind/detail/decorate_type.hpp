@@ -101,7 +101,7 @@ namespace luabind { namespace detail
 
 	namespace
 	{
-		char decorated_type_array[64];
+		LUABIND_ANONYMOUS_FIX char decorated_type_array[64];
 	}
 
 	template<class T>
