@@ -167,8 +167,21 @@ namespace luabind
 			int m_n;
 		};
 
+		struct reset_stack
+		{
+			reset_stack(lua_State* L_, int offset = 0)
+				: L(L_)
+				, stack_size(lua_gettop(L_) - offset)
+			{}
 
-
+			~reset_stack()
+			{
+				assert(lua_gettop(L) >= stack_size);
+				lua_pop(L, lua_gettop(L) - stack_size);
+			}
+			lua_State* L;
+			int stack_size;
+		};
 
 
 		class LUABIND_API proxy_object

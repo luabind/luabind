@@ -99,11 +99,10 @@ void test_lua_classes()
 
 	DOSTRING(L,
 		"function base:fun()\n"
-		"  test = 4\n"
+		"  return 4\n"
 		"end\n"
 		"a = base()\n"
-		"a:fun()\n"
-		"assert(test == 4)\n");
+		"assert(a:fun() == 4)");
 
     DOSTRING(L, 
         "class 'derived' (base)\n"
@@ -117,7 +116,12 @@ void test_lua_classes()
         "end\n");
 
     base* ptr;
-    
+
+    BOOST_CHECK_NO_THROW(
+		object a = get_globals(L)["a"];
+		BOOST_CHECK(call_member<int>(a, "fun") == 4);
+    );
+
     BOOST_CHECK_NO_THROW(
         ptr = call_function<base*>(L, "make_derived")
     );

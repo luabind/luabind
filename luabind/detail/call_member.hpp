@@ -47,17 +47,15 @@ namespace luabind
 //			friend class luabind::object;
 			public:
 
-				proxy_member_caller(weak_ref const* o, const char* name, const Tuple args)
-					: m_obj(o)
-					, m_member_name(name)
+				proxy_member_caller(lua_State* L_, const Tuple args)
+					: L(L_)
 					, m_args(args)
 					, m_called(false)
 				{
 				}
 
 				proxy_member_caller(const proxy_member_caller& rhs)
-					: m_obj(rhs.m_obj)
-					, m_member_name(rhs.m_member_name)
+					: L(rhs.L)
 					, m_args(rhs.m_args)
 					, m_called(rhs.m_called)
 				{
@@ -69,16 +67,9 @@ namespace luabind
 					if (m_called) return;
 
 					m_called = true;
-					lua_State* L = m_obj->state();
-					detail::stack_pop(L, 1); // pop the self reference
 
-					// get the function
-					m_obj->get();
-					lua_pushstring(L, m_member_name);
-					lua_gettable(L, -2);
-
-					// push the self-object
-					m_obj->get();
+					// pcall will pop the function and self reference
+					detail::reset_stack popper(L, 2);
 
 					push_args_from_tuple<1>::apply(L, m_args);
 					if (pcall(L, boost::tuples::length<Tuple>::value + 1, 0))
@@ -101,16 +92,9 @@ namespace luabind
 					typename default_policy::template generate_converter<Ret, lua_to_cpp>::type converter;
 
 					m_called = true;
-					lua_State* L = m_obj->state();
-					detail::stack_pop p(L, 2); // pop the return value and the self reference
 
-					// get the function
-					m_obj->get();
-					lua_pushstring(L, m_member_name);
-					lua_gettable(L, -2);
-
-					// push the self-object
-					m_obj->get();
+					// pcall will pop the function and self reference
+					detail::reset_stack popper(L, 2);
 
 					push_args_from_tuple<1>::apply(L, m_args);
 					if (pcall(L, boost::tuples::length<Tuple>::value + 1, 1))
@@ -153,16 +137,9 @@ namespace luabind
 					typename converter_policy::template generate_converter<Ret, lua_to_cpp>::type converter;
 
 					m_called = true;
-					lua_State* L = m_obj->state();
-					detail::stack_pop popper(L, 2); // pop the return value and the self reference
 
-					// get the function
-					m_obj->get();
-					lua_pushstring(L, m_member_name);
-					lua_gettable(L, -2);
-
-					// push the self-object
-					m_obj->get();
+					// pcall will pop the function and self reference
+					detail::reset_stack popper(L, 2);
 
 					detail::push_args_from_tuple<1>::apply(L, m_args, p);
 					if (pcall(L, boost::tuples::length<Tuple>::value + 1, 1))
@@ -199,8 +176,8 @@ namespace luabind
 				}
 
 			private:
-				weak_ref const* m_obj;
-				const char* m_member_name;
+
+				lua_State* L;
 				Tuple m_args;
 				mutable bool m_called;
 
@@ -213,17 +190,15 @@ namespace luabind
 			friend class luabind::object;
 			public:
 
-				proxy_member_void_caller(weak_ref const* o, const char* name, const Tuple args)
-					: m_obj(o)
-					, m_member_name(name)
+				proxy_member_void_caller(lua_State* L_, const Tuple args)
+					: L(L_)
 					, m_args(args)
 					, m_called(false)
 				{
 				}
 
 				proxy_member_void_caller(const proxy_member_void_caller& rhs)
-					: m_obj(rhs.m_obj)
-					, m_member_name(rhs.m_member_name)
+					: L(rhs.L)
 					, m_args(rhs.m_args)
 					, m_called(rhs.m_called)
 				{
@@ -235,16 +210,9 @@ namespace luabind
 					if (m_called) return;
 
 					m_called = true;
-					lua_State* L = m_obj->state();
-					detail::stack_pop(L, 1); // pop the self reference
 
-					// get the function
-					m_obj->get();
-					lua_pushstring(L, m_member_name);
-					lua_gettable(L, -2);
-
-					// push the self-object
-					m_obj->get();
+					// pcall will pop the function and self reference
+					detail::reset_stack popper(L, 2);
 
 					push_args_from_tuple<1>::apply(L, m_args);
 					if (pcall(L, boost::tuples::length<Tuple>::value + 1, 0))
@@ -266,17 +234,9 @@ namespace luabind
 				void operator[](const Policies& p)
 				{
 					m_called = true;
-					lua_State* L = m_obj->state();
-					detail::stack_pop(L, 1); // pop the self reference
 
-					// get the function
-					m_obj->get();
-					lua_pushstring(L, m_member_name);
-					lua_gettable(L, -2);
-
-					// push the self-object
-					m_obj->get();
-
+					// pcall will pop the function and self reference
+					detail::reset_stack popper(L, 2);
 
 					detail::push_args_from_tuple<1>::apply(L, m_args, p);
 					if (pcall(L, boost::tuples::length<Tuple>::value + 1, 0))
@@ -295,8 +255,7 @@ namespace luabind
 				}
 
 			private:
-				weak_ref const* m_obj;
-				const char* m_member_name;
+				lua_State* L;
 				Tuple m_args;
 				mutable bool m_called;
 
@@ -333,8 +292,58 @@ namespace luabind
 		typedef typename boost::mpl::if_<boost::is_void<R>
 			, luabind::detail::proxy_member_void_caller<boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> >
 			, luabind::detail::proxy_member_caller<R, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type proxy_type;
-		
-		return proxy_type(&obj, name, args);
+
+		// this will be cleaned up by the proxy object
+		// once the call has been made
+
+		// get the function
+		obj.get();
+		lua_pushstring(obj.state(), name);
+		lua_gettable(obj.state(), -2);
+		// duplicate the self-object
+		lua_pushvalue(obj.state(), -2);
+		// remove the bottom self-object
+		lua_remove(obj.state(), -3);
+
+		// now the function and self objects
+		// are on the stack. These will both
+		// be popped by pcall
+		return proxy_type(obj.state(), args);
+	}
+
+	template<class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+	typename boost::mpl::if_<boost::is_void<R>
+			, luabind::detail::proxy_member_void_caller<boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> >
+			, luabind::detail::proxy_member_caller<R, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type
+	call_member(object const& obj, const char* name BOOST_PP_COMMA_IF(BOOST_PP_ITERATION())BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_OPERATOR_PARAMS, _))
+	{
+		typedef boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> tuple_t;
+#if BOOST_PP_ITERATION() == 0
+		tuple_t args;
+#else
+		tuple_t args(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), &a));
+#endif
+
+		typedef typename boost::mpl::if_<boost::is_void<R>
+			, luabind::detail::proxy_member_void_caller<boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> >
+			, luabind::detail::proxy_member_caller<R, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type proxy_type;
+
+		// this will be cleaned up by the proxy object
+		// once the call has been made
+
+		// get the function
+		obj.pushvalue();
+		lua_pushstring(obj.lua_state(), name);
+		lua_gettable(obj.lua_state(), -2);
+		// duplicate the self-object
+		lua_pushvalue(obj.lua_state(), -2);
+		// remove the bottom self-object
+		lua_remove(obj.lua_state(), -3);
+
+		// now the function and self objects
+		// are on the stack. These will both
+		// be popped by pcall
+		return proxy_type(obj.lua_state(), args);
 	}
 
 #undef LUABIND_OPERATOR_PARAMS

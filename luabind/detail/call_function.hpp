@@ -47,23 +47,6 @@ namespace luabind
 	namespace detail
 	{
 
-		struct reset_stack
-		{
-			reset_stack(lua_State* L_)
-				: L(L_)
-				, stack_size(lua_gettop(L_))
-			{}
-
-			~reset_stack()
-			{
-				assert(lua_gettop(L) >= stack_size);
-				lua_pop(L, lua_gettop(L) - stack_size);
-			}
-			lua_State* L;
-			int stack_size;
-		};
-
-
 		// if the proxy_function_caller returns non-void
 			template<class Ret, class Tuple>
 			class proxy_function_caller
@@ -104,7 +87,7 @@ namespace luabind
 					lua_State* L = m_state;
 
 					// makes sure that the stack is reset
-					reset_stack rs(L);
+					detail::reset_stack rs(L);
 
 					// get the function
 					if (m_fun_name)
@@ -138,7 +121,7 @@ namespace luabind
 					lua_State* L = m_state;
 
 					// makes sure that the stack is reset
-					reset_stack rs(L);
+					detail::reset_stack rs(L);
 
 					// get the function
 					if (m_fun_name)
@@ -192,7 +175,7 @@ namespace luabind
 					lua_State* L = m_state;
 
 					// makes sure that the stack is reset
-					reset_stack rs(L);
+					detail::reset_stack rs(L);
 
 					// get the function
 					if (m_fun_name)
@@ -283,10 +266,10 @@ namespace luabind
 					if (m_called) return;
 
 					m_called = true;
-					lua_State* L = m_state;;
+					lua_State* L = m_state;
 
 					// makes sure that the stack is reset
-					reset_stack rs(L);
+					detail::reset_stack rs(L);
 
 					// get the function
 					if (m_fun_name)
@@ -315,10 +298,10 @@ namespace luabind
 				void operator[](const Policies& p)
 				{
 					m_called = true;
-					lua_State* L = m_state;;
+					lua_State* L = m_state;
 
 					// makes sure that the stack is reset
-					reset_stack rs(L);
+					detail::reset_stack rs(L);
 
 					// get the function
 					if (m_fun_name)
@@ -423,7 +406,7 @@ namespace luabind
 		typedef typename boost::mpl::if_<boost::is_void<Ret>
 			, luabind::detail::proxy_function_void_caller<boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> >
 			, luabind::detail::proxy_function_caller<Ret, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type proxy_type;
-		
+
 		return proxy_type(L, 0, &detail::resume_impl, args);
 	}
 
