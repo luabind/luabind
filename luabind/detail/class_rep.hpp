@@ -65,6 +65,7 @@ namespace luabind { namespace detail
 	// methods
 	class class_rep
 	{
+	friend struct class_base;
 	friend int super_callback(lua_State*);
 //TODO: avoid the lua-prefix
 	friend int lua_class_gettable(lua_State*);
@@ -674,6 +675,112 @@ namespace luabind { namespace detail
 			class_rep* base;
 		};
 
+
+		inline void add_base_class(lua_State* L, LUABIND_TYPE_INFO type, int ptr_offset)
+		{
+			int pointer_offset = ptr_offset;
+
+			detail::class_registry* r = detail::class_registry::get_registry(L);
+
+			// the baseclass' class_rep structure
+			class_rep* bcrep = r->find_class(type);
+
+			base_info base;
+			base.pointer_offset = ptr_offset;
+			base.base = bcrep;
+
+			// If you hit this assert you are deriving from a type that is not registered
+			// in lua. That is, in the class_<> you are giving a baseclass that isn't registered.
+			// Please note that if you don't need to have access to the base class or the
+			// conversion from the derived class to the base class, you don't need
+			// to tell luabind that it derives.
+			assert(bcrep && "You cannot derive from an unregistered type");
+
+			// import all functions from the base
+			for (std::map<const char*, method_rep, ltstr>::const_iterator i = bcrep->m_methods.begin(); i != bcrep->m_methods.end(); ++i)
+			{
+#ifndef LUABIND_DONT_COPY_STRINGS
+				m_strings.push_back(dup_string(i->first));
+				method_rep& m = m_methods[m_strings.back()];
+#else
+				method_rep& m = m_methods[i->first];
+#endif
+				m.name = i->first;
+				m.crep = this;
+
+				for (std::vector<overload_rep>::const_iterator j = i->second.overloads().begin(); j != i->second.overloads().end(); ++j)
+				{
+					overload_rep o = *j;
+					o.add_offset(pointer_offset);
+					m.add_overload(o);
+				}
+			}
+
+			// import all getters from the base
+			for (std::map<const char*, callback, ltstr>::const_iterator i = bcrep->m_getters.begin(); i != bcrep->m_getters.end(); ++i)
+			{
+#ifndef LUABIND_DONT_COPY_STRINGS
+				m_strings.push_back(dup_string(i->first));
+				callback& m = m_getters[m_strings.back()];
+#else
+				callback& m = m_getters[i->first];
+#endif
+				m.pointer_offset = i->second.pointer_offset + pointer_offset;
+				m.func = i->second.func;
+			}
+
+			// import all setters from the base
+			for (std::map<const char*, callback, ltstr>::const_iterator i = bcrep->m_setters.begin(); i != bcrep->m_setters.end(); ++i)
+			{
+#ifndef LUABIND_DONT_COPY_STRINGS
+				// TODO: optimize this by not copying the string if it already exists in m_setters.
+				// This goes for m_getters, m_static_constants and m_functions too. Both here
+				// in add_base() and in the add_function(), add_getter() ... functions.
+				m_strings.push_back(dup_string(i->first));
+				callback& m = m_setters[m_strings.back()];
+#else
+				callback& m = m_setters[i->first];
+#endif
+				m.pointer_offset = i->second.pointer_offset + pointer_offset;
+				m.func = i->second.func;
+			}
+
+			// import all static constants
+			for (std::map<const char*, int, ltstr>::const_iterator i = bcrep->m_static_constants.begin(); i != bcrep->m_static_constants.end(); ++i)
+			{
+#ifndef LUABIND_DONT_COPY_STRINGS
+				m_strings.push_back(dup_string(i->first));
+				int& v = m_static_constants[m_strings.back()];
+#else
+				int& v = m_static_constants[i->first];
+#endif
+				v = i->second;
+			}
+
+			// import all operators
+			std::copy(bcrep->m_operators, bcrep->m_operators + number_of_operators, m_operators);
+
+			// also, save the baseclass info to be used for typecasts
+			m_bases.push_back(base);
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// TODO: remove
 		inline void add_base(const base_info& base)
 		{
 			int pointer_offset = base.pointer_offset;

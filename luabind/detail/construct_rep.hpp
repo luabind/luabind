@@ -67,6 +67,12 @@ namespace luabind { namespace detail
 			wrapped_construct_ptr wrapped_construct_fun;
 
 		};
+
+		void swap(construct_rep& x)
+		{
+			std::swap(x.overloads, overloads);
+		}
+
 		std::vector<overload_t> overloads;
 	};
 
