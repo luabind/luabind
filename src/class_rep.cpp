@@ -809,6 +809,11 @@ void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep
 		callback& m = m_getters[i->first];
 		m.pointer_offset = i->second.pointer_offset + binfo.pointer_offset;
 		m.func = i->second.func;
+
+#ifndef LUABIND_NO_ERROR_CHECKING
+		m.match = i->second.match;
+		m.sig = i->second.sig;
+#endif
 	}
 
 	// import all setters from the base
@@ -818,6 +823,11 @@ void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep
 		callback& m = m_setters[i->first];
 		m.pointer_offset = i->second.pointer_offset + binfo.pointer_offset;
 		m.func = i->second.func;
+
+#ifndef LUABIND_NO_ERROR_CHECKING
+		m.match = i->second.match;
+		m.sig = i->second.sig;
+#endif
 	}
 
 	// import all static constants
