@@ -16,6 +16,7 @@ lib luabind
       class_info.cpp
       ref.cpp
       class_registry.cpp
+      link_compatibility.cpp
     : <define>LUABIND_BUILDING
     ;
 

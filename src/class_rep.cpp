@@ -939,7 +939,7 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 #endif
 }
 */
- int luabind::detail::class_rep::super_callback(lua_State* L)
+int luabind::detail::class_rep::super_callback(lua_State* L)
 {
 	int args = lua_gettop(L);
 		
@@ -1137,7 +1137,7 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 
 
 
- int luabind::detail::class_rep::lua_settable_dispatcher(lua_State* L)
+int luabind::detail::class_rep::lua_settable_dispatcher(lua_State* L)
 {
 	class_rep* crep = static_cast<class_rep*>(lua_touserdata(L, 1));
 	detail::getref(L, crep->m_table_ref);
@@ -1149,7 +1149,7 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 	return 0;
 }
 
- int luabind::detail::class_rep::construct_lua_class_callback(lua_State* L)
+int luabind::detail::class_rep::construct_lua_class_callback(lua_State* L)
 {
 	class_rep* crep = static_cast<class_rep*>(lua_touserdata(L, 1));
 

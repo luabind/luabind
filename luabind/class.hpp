@@ -120,6 +120,7 @@
 #include <luabind/detail/implicit_cast.hpp>
 #include <luabind/detail/operator_id.hpp>
 #include <luabind/detail/pointee_typeid.hpp>
+#include <luabind/detail/link_compatibility.hpp>
 
 //#include <boost/langbinding/inheritance.hpp>
 
@@ -1279,6 +1280,9 @@ namespace luabind
 
 		class_(const char* name): class_base(name), static_(*this)
 		{
+#ifndef NDEBUG
+			detail::check_link_compatibility();
+#endif
 		   	init(); 
 		}
 
