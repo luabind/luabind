@@ -240,27 +240,27 @@ namespace luabind { namespace detail {
     }
 
     void class_base::init(
-        LUABIND_TYPE_INFO type
+        LUABIND_TYPE_INFO type_
         , LUABIND_TYPE_INFO holder_type
         , LUABIND_TYPE_INFO const_holder_type
         , void*(*extractor)(void*)
         , const void*(*const_extractor)(void*)
-        , void(*const_converter)(void*,void*)
-        , void(*holder_constructor)(void*,void*)
-        , void(*const_holder_constructor)(void*,void*)
+        , void(*const_converter_)(void*,void*)
+        , void(*holder_constructor_)(void*,void*)
+        , void(*const_holder_constructor_)(void*,void*)
         , void(*destructor)(void*)
         , void(*const_holder_destructor)(void*)
         , int holder_size
         , int holder_alignment)
     {
-        m_registration->m_type = type;
+        m_registration->m_type = type_;
         m_registration->m_holder_type = holder_type;
         m_registration->m_const_holder_type = const_holder_type;
         m_registration->m_extractor = extractor;
         m_registration->m_const_extractor = const_extractor;
-        m_registration->m_const_converter = const_converter;
-        m_registration->m_construct_holder = holder_constructor;
-        m_registration->m_construct_const_holder = const_holder_constructor;
+        m_registration->m_const_converter = const_converter_;
+        m_registration->m_construct_holder = holder_constructor_;
+        m_registration->m_construct_const_holder = const_holder_constructor_;
         m_registration->m_destructor = destructor;
         m_registration->m_const_holder_destructor = const_holder_destructor;
         m_registration->m_holder_size = holder_size;

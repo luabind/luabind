@@ -181,7 +181,7 @@ namespace luabind {
         }
 
         char const* m_name;
-        scope m_scope;
+        detail::scope m_scope;
     };
 
     namespace_::namespace_(char const* name)
@@ -190,7 +190,7 @@ namespace luabind {
     {
     }
 
-    namespace_& namespace_::operator[](scope s)
+    namespace_& namespace_::operator[](detail::scope s)
     {
         m_registration->m_scope.operator,(s);        
         return *this;
