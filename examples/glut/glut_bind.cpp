@@ -148,7 +148,7 @@ void bind_glut(lua_State* L)
 		def("glEnd", &glEnd),
 		def("glClear", &glClear),
 		def("glPushMatrix", &glPushMatrix),
-		def( "glPopMatrix", &glPopMatrix),
+		def("glPopMatrix", &glPopMatrix),
 		def("glRotate", &glRotatef),
 		def("glColor3", &glColor3f),
 		def("glColor4", &glColor4f),

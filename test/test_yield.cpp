@@ -70,9 +70,9 @@ void test_yield()
 
 	{
 		lua_State* thread = lua_newthread(L);
-		BOOST_CHECK(resume_function<int>(thread, "h") == 4);
-		lua_pop(L, 1); // pop thread
-	}
+        BOOST_CHECK(resume_function<int>(thread, "h") == 4);
+        lua_pop(L, 1); // pop thread
+    }
 
 	DOSTRING(L,
 		"function g(str)\n"
@@ -84,9 +84,22 @@ void test_yield()
 		"end");
 
 	{
-		lua_State* thread = lua_newthread(L);
-		BOOST_CHECK(resume_function<int>(thread, "g", "foobar") == 5);
+        lua_State* thread = lua_newthread(L);
 
+        BOOST_CHECK(resume_function<int>(thread, "g", "foobar") == 5);
+		for (int i = 1; i < 10; ++i)
+		{
+			BOOST_CHECK(resume<int>(thread, i + 4) == 5);
+		}
+		lua_pop(L, 1); // pop thread
+	}
+
+
+	{
+        lua_State* thread = lua_newthread(L);
+		object g = get_globals(thread)["g"];
+
+        BOOST_CHECK(resume_function<int>(g, "foobar") == 5);
 		for (int i = 1; i < 10; ++i)
 		{
 			BOOST_CHECK(resume<int>(thread, i + 4) == 5);

@@ -53,8 +53,7 @@
 #include <luabind/detail/decorate_type.hpp>
 #include <luabind/object.hpp>
 #include <luabind/weak_ref.hpp>
-//#include <luabind/detail/make_instance.hpp>
-//#include <luabind/pointer_holder.hpp>
+#include <luabind/back_reference_fwd.hpp>
 
 namespace luabind
 {
@@ -78,7 +77,7 @@ namespace luabind
 
 		int operator[](int index) const
 		{
-			return m_map[index + 1];
+			return m_map[index];
 		}
 
 	private:
@@ -233,6 +232,7 @@ namespace luabind { namespace detail
 		indirection_layer(const T&);
 	};
 
+	yes_t is_policy_cons_test(const null_type&);
 	template<class H, class T>
 	yes_t is_policy_cons_test(const policy_cons<H,T>&);
 	no_t is_policy_cons_test(...);
@@ -244,6 +244,8 @@ namespace luabind { namespace detail
 
 		BOOST_STATIC_CONSTANT(bool, value = 
 			sizeof(is_policy_cons_test(t)) == sizeof(yes_t));
+
+		typedef boost::mpl::bool_<value> type;
 	};	
 
 	template<bool>
@@ -269,6 +271,25 @@ namespace luabind { namespace detail
 				sizeof(is_string_literal<boost::is_array<T>::value>::helper(t)) == sizeof(yes_t));
 	};
 
+#define LUABIND_INTEGER_TYPE(type) \
+	template<> struct is_primitive<type> : boost::mpl::true_ {}; \
+	template<> struct is_primitive<type const> : boost::mpl::true_ {}; \
+	template<> struct is_primitive<type const&> : boost::mpl::true_ {}; \
+	template<> struct is_primitive<unsigned type> : boost::mpl::true_ {}; \
+	template<> struct is_primitive<unsigned type const> : boost::mpl::true_ {}; \
+	template<> struct is_primitive<unsigned type const&> : boost::mpl::true_ {};
+
+	LUABIND_INTEGER_TYPE(char)
+	LUABIND_INTEGER_TYPE(short)
+	LUABIND_INTEGER_TYPE(int)
+	LUABIND_INTEGER_TYPE(long)
+
+	template<> struct is_primitive<signed char> : boost::mpl::true_ {}; \
+	template<> struct is_primitive<signed char const> : boost::mpl::true_ {}; \
+	template<> struct is_primitive<signed char const&> : boost::mpl::true_ {}; \
+	
+#undef LUABIND_INTEGER_TYPE
+	
 	template<> struct is_primitive<luabind::object>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<const luabind::object>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<const luabind::object&>: boost::mpl::bool_<true> {};
@@ -277,28 +298,12 @@ namespace luabind { namespace detail
 	template<> struct is_primitive<const luabind::weak_ref>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<const luabind::weak_ref&>: boost::mpl::bool_<true> {};
 	
-	template<> struct is_primitive<int>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<char>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<short>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<long>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<unsigned char>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<unsigned short>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<unsigned long>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<unsigned int>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<float>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<double>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<long double>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<char*>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<bool>: boost::mpl::bool_<true> {};
 
-	template<> struct is_primitive<const int>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const char>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const short>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const long>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const unsigned int>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const unsigned char>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const unsigned short>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const unsigned long>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<const float>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<const double>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<const long double>: boost::mpl::bool_<true> {};
@@ -307,14 +312,6 @@ namespace luabind { namespace detail
 	template<> struct is_primitive<const bool>: boost::mpl::bool_<true> {};
 
 	// TODO: add more
-	template<> struct is_primitive<const int&>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const char&>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const short&>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const long&>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const unsigned int&>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const unsigned char&>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const unsigned short&>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const unsigned long&>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<const float&>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<const double&>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<const long double&>: boost::mpl::bool_<true> {};
@@ -386,6 +383,9 @@ namespace luabind { namespace detail
 		PRIMITIVE_CONVERTER(char) { return static_cast<char>(lua_tonumber(L, index)); }
 		PRIMITIVE_MATCHER(char) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
 
+		PRIMITIVE_CONVERTER(signed char) { return static_cast<char>(lua_tonumber(L, index)); }
+		PRIMITIVE_MATCHER(signed char) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
+		
 		PRIMITIVE_CONVERTER(unsigned char) { return static_cast<unsigned char>(lua_tonumber(L, index)); }
 		PRIMITIVE_MATCHER(unsigned char) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
 
@@ -421,7 +421,12 @@ namespace luabind { namespace detail
 			return luabind::object(L, ref, true);
 		}
 
-		PRIMITIVE_MATCHER(luabind::object) { (void)index; (void)L; return std::numeric_limits<int>::max() - 1; }
+		PRIMITIVE_MATCHER(luabind::object)
+		{
+			(void)index;
+			(void)L;
+			return std::numeric_limits<int>::max() / LUABIND_MAX_ARITY;
+		}
 
 		PRIMITIVE_CONVERTER(luabind::weak_ref)
 		{
@@ -662,6 +667,9 @@ namespace luabind { namespace detail
 				return;
 			}
 
+			if (back_reference<T>::extract(L, ptr))
+				return;
+
 			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
@@ -727,9 +735,8 @@ namespace luabind { namespace detail
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
 				return (obj->flags() & object_rep::constant)?0:-1;
 
-
 			int d;
-			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
+			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
 		}
 
 		~pointer_converter()
@@ -752,6 +759,9 @@ namespace luabind { namespace detail
 		template<class T>
 		void apply(lua_State* L, const T& ref)
 		{
+			if (back_reference<T>::extract(L, &ref))
+				return;
+
 			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
@@ -891,6 +901,9 @@ namespace luabind { namespace detail
 				return;
 			}
 
+			if (back_reference<T>::extract(L, ptr))
+				return;
+
 			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
@@ -934,8 +947,9 @@ namespace luabind { namespace detail
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
 				return (obj->flags() & object_rep::constant)?0:1;
 
+            bool const_ = obj->flags() & object_rep::constant;
 			int d;
-			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
+			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d) + !const_;
 		}
 
 		template<class T>
@@ -955,6 +969,9 @@ namespace luabind { namespace detail
 		template<class T>
 		void apply(lua_State* L, T& ref)
 		{
+			if (back_reference<T>::extract(L, &ref))
+				return;
+
 			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
@@ -1006,6 +1023,9 @@ namespace luabind { namespace detail
 		template<class T>
 		void apply(lua_State* L, const T& ref)
 		{
+			if (back_reference<T>::extract(L, &ref))
+				return;
+
 			class_rep* crep = get_class_rep<T>(L);
 
 			// if you get caught in this assert you are
@@ -1106,8 +1126,9 @@ namespace luabind { namespace detail
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
 				return (obj->flags() & object_rep::constant)?0:1;
 
+            bool const_ = obj->flags() & object_rep::constant;
 			int d;
-			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
+			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d) + !const_;
 		}
 
 		~const_ref_converter()

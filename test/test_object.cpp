@@ -26,6 +26,8 @@
 #include <luabind/detail/debug.hpp>
 #include <luabind/error.hpp>
 
+#include <utility>
+
 namespace
 {
 	using namespace luabind;
@@ -101,6 +103,16 @@ namespace
 		return 1;
 	}
 
+	void test_match_object(
+		luabind::object p1
+		, luabind::object p2
+		, luabind::object p3)
+	{
+		p1["ret"] = 1;
+		p2["ret"] = 2;
+		p3["ret"] = 3;
+	}
+
 } // anonymous namespace
 
 void test_object()
@@ -117,6 +129,7 @@ void test_object()
 		def("test_fun", &test_fun),
 		def("test_match", (int(*)(const luabind::object&))&test_match),
 		def("test_match", (int(*)(int))&test_match),
+		def("test_match_object", &test_match_object),
 	
 		class_<test_param>("test_param")
 			.def(constructor<>())
@@ -168,6 +181,19 @@ void test_object()
 	BOOST_CHECK(object_cast<std::string>(g["glob"]) == "teststring");
 	BOOST_CHECK(object_cast<std::string>(g.at("glob")) == "teststring");
 	BOOST_CHECK(object_cast<std::string>(g.raw_at("glob")) == "teststring");
+
+	object t = newtable(L);
+	BOOST_CHECK(t.begin() == t.end());
+	BOOST_CHECK(t.raw_begin() == t.raw_end());
+
+	DOSTRING(L,
+		"p1 = {}\n"
+		"p2 = {}\n"
+		"p3 = {}\n"
+		"test_match_object(p1, p2, p3)\n"
+		"assert(p1.ret == 1)\n"
+		"assert(p2.ret == 2)\n"
+		"assert(p3.ret == 3)\n");
 
 #ifndef LUABIND_NO_EXCEPTIONS
 

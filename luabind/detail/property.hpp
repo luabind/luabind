@@ -63,18 +63,7 @@ namespace luabind { namespace detail
 			// parameters on the lua stack:
 			// 1. object_rep
 			// 2. key (property name)
-
-			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
-			class_rep* crep = obj->crep();
-			
-			void* ptr;
-
-			if (crep->has_holder())
-				ptr = crep->extractor()(obj->ptr());
-			else
-				ptr = obj->ptr();
-
-			return get(f, reinterpret_cast<T*>(static_cast<char*>(ptr) + pointer_offset), L, static_cast<Policies*>(this));
+			return get(f, (T*)0, L, static_cast<Policies*>(this));
 		}
 	};
 
@@ -107,18 +96,8 @@ namespace luabind { namespace detail
 			// and since call() expects it's first
 			// parameter on index 2 we need to
 			// remove the key-parameter (parameter 2).
-			object_rep* obj = reinterpret_cast<object_rep*>(lua_touserdata(L, 1));
-			class_rep* crep = obj->crep();
-			
-			void* ptr;
-
-			if (crep->has_holder())
-				ptr = crep->extractor()(obj->ptr());
-			else
-				ptr = obj->ptr();
-			
 			lua_remove(L, 2);
-			return set(f, reinterpret_cast<T*>(static_cast<char*>(ptr) + pointer_offset), L, static_cast<Policies*>(this));
+			return luabind::detail::set(f, (T*)0, L, static_cast<Policies*>(this));
 		}
 	};
 

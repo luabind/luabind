@@ -44,41 +44,45 @@ namespace luabind { namespace detail
 	// this class represents a specific overload of a member-function.
 	struct overload_rep: public overload_rep_base
 	{
-		#define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/detail/overload_rep.hpp>, 1))
+		#define BOOST_PP_ITERATION_PARAMS_1 (4 \
+			, (0, LUABIND_MAX_ARITY, <luabind/detail/overload_rep.hpp>, 1))
 		#include BOOST_PP_ITERATE()
 
 		bool operator==(const overload_rep& o)
 		{
 			if (o.m_const != m_const) return false;
 			if (o.m_arity != m_arity) return false;
-			if (o.m_num_args != m_num_args) return false;
-			for (int i = 0; i < m_num_args; ++i)
-				if (!(LUABIND_TYPE_INFO_EQUAL(m_params[i], o.m_params[i]))) return false;
+			if (o.m_params_.size() != m_params_.size()) return false;
+			for (int i = 0; i < (int)m_params_.size(); ++i)
+			{
+				if (!(LUABIND_TYPE_INFO_EQUAL(m_params_[i], o.m_params_[i]))) 
+					return false;
+			}
 			return true;
 		}
 
-//		inline int match(lua_State* L, int num_params) const { if (num_params != m_arity) return -1; return m_match_fun(L); }
+		void set_fun(boost::function1<int, lua_State*> const& f) 
+		{ call_fun = f; }
 
-		void add_offset(int offset) throw() { m_pointer_offset += offset; }
-		int offset() const throw() { return m_pointer_offset; }
+		void set_fun_static(boost::function1<int, lua_State*> const& f) 
+		{ call_fun_static = f; }
 
-		inline void set_fun(boost::function2<int,lua_State*,void*>& f) { call_fun = f; }
-		inline int call(lua_State* L, const object_rep& o) const;
+		int call(lua_State* L, bool force_static_call) const;
 
-		boost::function2<int,lua_State*,void*> call_fun;
+		bool has_static() const { return !call_fun_static.empty(); }
 
 	private:
 
-		// the offset we need to apply to the object pointer when calling this method.
-		// it depends on which class_rep this method is found in
-		int m_pointer_offset;
+		// this is the normal function pointer that may be a virtual
+		boost::function1<int, lua_State*> call_fun;
 
-		// the number of parameters this overload takes
-		// these are used to detect when a method is overridden by a derived class.
-//		int m_arity;
-		int m_num_args;
+		// this is the optional function pointer that is only set if
+		// the first function pointer is virtual. This must always point
+		// to a static function.
+		boost::function1<int, lua_State*> call_fun_static;
+
 		// the types of the parameter it takes
-		LUABIND_TYPE_INFO m_params[LUABIND_MAX_ARITY];
+		std::vector<LUABIND_TYPE_INFO> m_params_;
 		// is true if the overload is const (this is a part of the signature)
 		bool m_const;
 	};
@@ -89,7 +93,7 @@ namespace luabind { namespace detail
 
 #elif BOOST_PP_ITERATION_FLAGS() == 1
 
-#define LUABIND_PARAM(z, n, _) m_params[n] =LUABIND_TYPEID(A##n);
+#define LUABIND_PARAM(z, n, _) m_params_.push_back(LUABIND_TYPEID(A##n));
 #define LUABIND_POLICY_DECL(z,n,text) typedef typename find_conversion_policy<n + 1, Policies>::type BOOST_PP_CAT(p,n);
 #define LUABIND_ARITY(z,n,text) + BOOST_PP_CAT(p,n)::has_arg
 
@@ -97,84 +101,36 @@ namespace luabind { namespace detail
 		// called m_params and the m_arity member.
 		template<class R, class T BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A), class Policies>
 		overload_rep(R(T::*)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), Policies*)
-			: m_pointer_offset(0)
-			, m_num_args(BOOST_PP_ITERATION())
-			, m_const(false)
+            : m_const(false)
 		{
+			m_params_.reserve(BOOST_PP_ITERATION());
 			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
 			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
-			m_arity = 0 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
+			m_arity = 1 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
 		}
 
 		template<class R, class T BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A), class Policies>
 		overload_rep(R(T::*)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)) const, Policies*)
-			: m_pointer_offset(0)
-			, m_num_args(BOOST_PP_ITERATION())
-			, m_const(true)
+            : m_const(true)
 		{
+			m_params_.reserve(BOOST_PP_ITERATION());
+			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
+			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
+			m_arity = 1 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
+		}
+
+		template<class R BOOST_PP_ENUM_TRAILING_PARAMS(BOOST_PP_ITERATION(), class A), class Policies>
+		overload_rep(R(*)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), Policies*)
+            : m_const(false/*is_indirect_const<T>::value*/)
+		{
+			m_params_.reserve(BOOST_PP_ITERATION());
 			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
 			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
 			m_arity = 0 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
 		}
 
-		// non-member functions
-/*
-		template<class R, class T BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A), class Policies>
-		overload_rep(R(*)(T* BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), Policies*)
-			: m_pointer_offset(0)
-			, m_num_args(BOOST_PP_ITERATION())
-			, m_const(false)
-		{
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
-			m_arity = 0 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
-		}
-
-		template<class R, class T BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A), class Policies>
-		overload_rep(R(*)(const T* BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), Policies*)
-			: m_pointer_offset(0)
-			, m_num_args(BOOST_PP_ITERATION())
-			, m_const(true)
-		{
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
-			m_arity = 0 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
-		}
-
-		template<class R, class T BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A), class Policies>
-		overload_rep(R(*)(T& BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), Policies*)
-			: m_pointer_offset(0)
-			, m_num_args(BOOST_PP_ITERATION())
-			, m_const(false)
-		{
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _);
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
-			m_arity = 0 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
-		}
-
-		template<class R, class T BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A), class Policies>
-		overload_rep(R(*)(const T& BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), Policies*)
-			: m_pointer_offset(0)
-			, m_num_args(BOOST_PP_ITERATION())
-			, m_const(true)
-		{
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
-			m_arity = 0 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
-		}
-*/
-
-		template<class R, class T BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A), class Policies>
-		overload_rep(R(*)(T BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), Policies*)
-			: m_pointer_offset(0)
-			, m_num_args(BOOST_PP_ITERATION())
-			, m_const(is_indirect_const<T>::value)
-		{
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
-			m_arity = 0 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
-		}
-
+#undef LUABIND_ARITY
+#undef LUABIND_POLICY_DECL
 #undef LUABIND_PARAM
 
 #endif

@@ -24,21 +24,43 @@
 #define LUABIND_OVERLOAD_REP_BASE_HPP_INCLUDED
 
 #include <luabind/config.hpp>
+#include <boost/function/function1.hpp>
 
 namespace luabind { namespace detail
 {
 	// this class represents a specific overload of a member-function.
 	struct overload_rep_base
 	{
-		typedef int(*match_ptr)(lua_State*);
+#if !defined(NDEBUG) && !defined(LUABIND_NO_ERROR_CHECKING)
+		overload_rep_base(): m_get_signature_fun(0), m_match_fun(0), m_arity(-1) {}
+#else
+        overload_rep_base(): m_match_fun(0), m_arity(-1) {}
+#endif
+
+        typedef boost::function1<int, lua_State*> match_fun_t;
 		typedef void(*get_sig_ptr)(lua_State*, std::string&);
 
-		inline int match(lua_State* L, int num_params) const { if (num_params != m_arity) return -1; return m_match_fun(L); }
-		inline void set_match_fun(match_ptr f) { m_match_fun = f; }
+		inline int match(lua_State* L, int num_params) const
+		{
+			if (num_params != m_arity) return -1;
+			return m_match_fun(L);
+		}
+
+		inline void set_match_fun(match_fun_t const& fn) 
+		{
+			m_match_fun = fn;
+		}
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-		inline void get_signature(lua_State* L, std::string& s) const { m_get_signature_fun(L, s); }
-		inline void set_sig_fun(get_sig_ptr f) { m_get_signature_fun = f; }
+		inline void get_signature(lua_State* L, std::string& s) const 
+		{ 
+			m_get_signature_fun(L, s); 
+		}
+
+		inline void set_sig_fun(get_sig_ptr f) 
+		{ 
+			m_get_signature_fun = f; 
+		}
 #endif
 
 	protected:
@@ -47,7 +69,8 @@ namespace luabind { namespace detail
 		get_sig_ptr m_get_signature_fun;
 #endif
 
-		match_ptr m_match_fun;
+//		match_ptr m_match_fun;
+		match_fun_t m_match_fun;
 		int m_arity;
 	};
 

@@ -59,14 +59,15 @@ namespace luabind { namespace detail
 		}
 		~lua_reference() { reset(); }
 
-		lua_State* get_state() const { return L; }
+		lua_State* state() const { return L; }
 
 		void operator=(lua_reference const& r)
 		{
+			// TODO: self assignment problems
 			reset();
 			if (!r.is_valid()) return;
-			r.get(r.get_state());
-			set(r.get_state());
+			r.get(r.state());
+			set(r.state());
 		}
 
 		bool is_valid() const
@@ -81,14 +82,18 @@ namespace luabind { namespace detail
 
 		void replace(lua_State* L_)
 		{
-			assert(L == L_);
-			lua_rawseti(L, LUA_REGISTRYINDEX, m_ref);
+			lua_rawseti(L_, LUA_REGISTRYINDEX, m_ref);
 		}
 
+		// L may not be the same pointer as
+		// was used when creating this reference
+		// since it may be a thread that shares
+		// the same globals table.
 		void get(lua_State* L_) const
 		{
-			assert(L_ == L);
-			getref(L, m_ref);
+			assert(m_ref != LUA_NOREF);
+			assert(L_);
+			getref(L_, m_ref);
 		}
 
 		void reset()

@@ -60,9 +60,9 @@ namespace luabind
 				inline bool operator==(const overload_rep& o) const
 				{
 					if (o.m_arity != m_arity) return false;
-					if (o.m_num_args != m_num_args) return false;
-					for (int i = 0; i < m_num_args; ++i)
-						if (!(LUABIND_TYPE_INFO_EQUAL(m_params[i], o.m_params[i]))) return false;
+					if (o.m_params_.size() != m_params_.size()) return false;
+					for (int i = 0; i < (int)m_params_.size(); ++i)
+						if (!(LUABIND_TYPE_INFO_EQUAL(m_params_[i], o.m_params_[i]))) return false;
 					return true;
 				}
 
@@ -74,38 +74,20 @@ namespace luabind
 				// this is the actual function pointer to be called when this overload is invoked
 				void (*fun)();
 
-			private:
+//TODO:		private: 
 
-				int m_num_args;
 				call_ptr call_fun;
 
-				// the number of parameters this overload takes
-				// these are used to detect when a function by a derived class.
-//				int m_arity;
 				// the types of the parameter it takes
-				LUABIND_TYPE_INFO m_params[LUABIND_MAX_ARITY];
+				std::vector<LUABIND_TYPE_INFO> m_params_;
+
+                char end;
 			};
 
-
-
-
-			struct function_rep
+    		struct function_rep
 			{
 				function_rep(const char* name): m_name(name) {}
-				void add_overload(const free_functions::overload_rep& o)
-				{
-					std::vector<free_functions::overload_rep>::iterator i = std::find(m_overloads.begin(), m_overloads.end(), o);
-
-					// if the overload already exists, overwrite the existing function
-					if (i != m_overloads.end())
-					{
-						*i = o;
-					}
-					else
-					{
-						m_overloads.push_back(o);
-					}
-				}
+				void add_overload(const free_functions::overload_rep& o);
 
 				const std::vector<overload_rep>& overloads() const throw() { return m_overloads; }
 
@@ -275,10 +257,15 @@ namespace luabind
 					rep = static_cast<detail::free_functions::function_rep*>(lua_newuserdata(L, sizeof(detail::free_functions::function_rep)));
 					new(rep) detail::free_functions::function_rep(m_name);
 
+                    // STORE IN REGISTRY
+                    lua_pushvalue(L, -1);
+                    detail::ref(L);
+
 					detail::class_registry* r = detail::class_registry::get_registry(L);
 					assert(r && "you must call luabind::open() prior to any function registrations");
 					detail::getref(L, r->lua_function());
 					int ret = lua_setmetatable(L, -2);
+					(void)ret;
 					assert(ret != 0);
 
 					// this is just a magic number to identify functions that luabind created
@@ -322,15 +309,15 @@ namespace luabind
 // overloaded template funtion that initializes the parameter list
 // called m_params and the m_arity member.
 
-#define LUABIND_INIT_PARAM(z, n, _) m_params[n] = LUABIND_TYPEID(A##n);
+#define LUABIND_INIT_PARAM(z, n, _) m_params_.push_back(LUABIND_TYPEID(A##n));
 #define LUABIND_POLICY_DECL(z,n,text) typedef typename find_conversion_policy<n + 1, Policies>::type BOOST_PP_CAT(p,n);
 #define LUABIND_ARITY(z,n,text) + BOOST_PP_CAT(p,n)::has_arg
 
 template<class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A), class Policies>
 overload_rep(R(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), Policies*)
 	: fun(reinterpret_cast<void(*)()>(f))
-	, m_num_args(BOOST_PP_ITERATION())
 {
+	m_params_.reserve(BOOST_PP_ITERATION());
 	BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_INIT_PARAM, _)
 	BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
 

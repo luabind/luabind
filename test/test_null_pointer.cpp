@@ -32,7 +32,7 @@ namespace
 		A* f() { return 0; }
 	};
 
-	A* get_pointer()
+	A* return_pointer()
 	{
 		return 0;
 	}
@@ -54,12 +54,12 @@ void test_null_pointer()
 			.def(constructor<>())
 			.def("f", &A::f),
 
-		def("get_pointer", get_pointer)
+		def("return_pointer", &return_pointer)
 	];
 
 
 	DOSTRING(L,
-		"e = get_pointer()\n"
+		"e = return_pointer()\n"
 		"assert(e == nil)");
 
 	DOSTRING(L,

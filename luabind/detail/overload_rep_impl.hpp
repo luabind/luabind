@@ -27,18 +27,12 @@
 
 namespace luabind { namespace detail
 {
-	inline int overload_rep::call(lua_State* L, const object_rep& o) const 
+	inline int overload_rep::call(lua_State* L, bool force_static_call) const 
 	{ 
-		const class_rep* crep = o.crep();
-
-		void* ptr;
-		
-		if (crep->has_holder())
-			ptr = crep->extractor()(o.ptr());
+		if (force_static_call)
+			return call_fun_static(L);
 		else
-			ptr = o.ptr();
-
-		return call_fun(L, static_cast<char*>(ptr) + m_pointer_offset);
+			return call_fun(L);
 	}
 
 }} // namespace luabind::detail

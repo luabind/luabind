@@ -82,7 +82,8 @@ namespace luabind { namespace detail
 
 	inline std::string name_of_type(by_value<std::string>, lua_State*, int) { return "string"; }
 	inline std::string name_of_type(by_const_pointer<char>, lua_State*, int) { return "string"; }
-
+	inline std::string name_of_type(by_pointer<lua_State>, lua_State*, int) { return "lua_State*"; }
+	
 	template<class T>
 	struct type_name_unless_void
 	{

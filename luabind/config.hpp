@@ -34,8 +34,6 @@
 
 #if defined (BOOST_MSVC) && (BOOST_MSVC <= 1200)
 
-#define LUABIND_MSVC_TYPENAME
-
 #define for if (false) {} else for
 
 #include <cstring>
@@ -47,16 +45,19 @@ namespace std
 	using ::type_info;
 }
 
+#endif
+
+
+#if defined (BOOST_MSVC) && (BOOST_MSVC <= 1300)
+	#define LUABIND_MSVC_TYPENAME
 #else
-
-#define LUABIND_MSVC_TYPENAME typename
-
+	#define LUABIND_MSVC_TYPENAME typename
 #endif
 
 // the maximum number of arguments of functions that's
 // registered. Must at least be 2
 #ifndef LUABIND_MAX_ARITY
-	#define LUABIND_MAX_ARITY 5
+	#define LUABIND_MAX_ARITY 10
 #elif LUABIND_MAX_ARITY <= 1
 	#undef LUABIND_MAX_ARITY
 	#define LUABIND_MAX_ARITY 2
@@ -112,8 +113,6 @@ namespace std
 	#define LUABIND_INVALID_TYPE_INFO &typeid(detail::null_type)
 #include <typeinfo>
 #endif
-
-#define BOOST_LANGBINDING_TYPE_INFO LUABIND_TYPE_INFO
 
 // LUABIND_NO_EXCEPTIONS
 // this define will disable all usage of try, catch and throw in

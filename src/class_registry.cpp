@@ -34,8 +34,9 @@ namespace luabind { namespace detail {
         void add_operator_to_metatable(lua_State* L, int op_index)
         {
             lua_pushstring(L, get_operator_name(op_index));
-            lua_pushnumber(L, op_index);
-            lua_pushcclosure(L, &class_rep::operator_dispatcher, 1);
+            lua_pushstring(L, get_operator_name(op_index));
+            lua_pushboolean(L, op_index == op_unm);
+            lua_pushcclosure(L, &class_rep::operator_dispatcher, 2);
             lua_settable(L, -3);
         }
 

@@ -31,6 +31,7 @@
 #include <luabind/config.hpp>
 #include <luabind/error.hpp>
 #include <luabind/detail/pcall.hpp>
+#include <luabind/detail/stack_utils.hpp>
 
 #include <boost/preprocessor/repeat.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
@@ -144,43 +145,6 @@ namespace luabind
 			Tuple m_args;
 			mutable bool m_called;
 
-		};
-
-
-
-		struct stack_pop
-		{
-			stack_pop(lua_State* L, int n)
-				: m_state(L)
-				, m_n(n)
-				{
-				}
-
-			~stack_pop() 
-			{
-				lua_pop(m_state, m_n);
-			}
-
-		private:
-
-			lua_State* m_state;
-			int m_n;
-		};
-
-		struct reset_stack
-		{
-			reset_stack(lua_State* L_, int offset = 0)
-				: L(L_)
-				, stack_size(lua_gettop(L_) - offset)
-			{}
-
-			~reset_stack()
-			{
-				assert(lua_gettop(L) >= stack_size);
-				lua_pop(L, lua_gettop(L) - stack_size);
-			}
-			lua_State* L;
-			int stack_size;
 		};
 
 
@@ -639,6 +603,11 @@ namespace luabind
 				return m_obj != rhs.m_obj || m_key != rhs.m_key;
 			}
 
+			bool operator==(const array_iterator& rhs) const
+			{
+				return !(*this != rhs);
+			}
+
 		private:
 
 			array_iterator(object* obj, int key)
@@ -708,8 +677,7 @@ namespace luabind
 			iterator& operator++()
 			{
 				lua_State* L = m_obj->lua_state();
-
-				int n = lua_gettop(L);
+				LUABIND_CHECK_STACK(L);
 
 				m_obj->pushvalue();
 				m_key.get(L);
@@ -727,7 +695,6 @@ namespace luabind
 					m_key.reset();
 				}
 
-				assert(n == lua_gettop(L));
 				return *this;
 			}
 
@@ -740,6 +707,11 @@ namespace luabind
 
 				// TODO: fix this. add a real equality test of the keys
 				return true;
+			}
+
+			bool operator==(const iterator& rhs) const
+			{
+				return !(*this != rhs);
 			}
 
 			object key() const;
@@ -845,6 +817,11 @@ namespace luabind
 				return true;
 			}
 
+			bool operator==(const raw_iterator& rhs) const
+			{
+				return !(*this != rhs);
+			}
+
 		private:
 
 			raw_iterator(object* obj, detail::lua_reference const& key)
@@ -907,14 +884,17 @@ namespace luabind
 
 		inline iterator begin() const
 		{
+			LUABIND_CHECK_STACK(m_state);
+
 			m_ref.get(m_state);
 			lua_pushnil(m_state);
-			lua_next(m_state, -2);
+			detail::stack_pop pop(m_state, 1);
+			if (lua_next(m_state, -2) == 0)
+				return end();
 			lua_pop(m_state, 1);
 			detail::lua_reference r;
 			r.set(m_state);
 			iterator i(const_cast<object*>(this), r);
-			lua_pop(m_state, 1);
 			return i;
 		}
 
@@ -937,12 +917,13 @@ namespace luabind
 		{
 			m_ref.get(m_state);
 			lua_pushnil(m_state);
-			lua_next(m_state, -2);
+			detail::stack_pop pop(m_state, 1);
+			if (lua_next(m_state, -2) == 0)
+				return raw_end();
 			lua_pop(m_state, 1);
 			detail::lua_reference r;
 			r.set(m_state);
 			raw_iterator i(const_cast<object*>(this), r);
-			lua_pop(m_state, 1);
 			return i;
 		}
 
@@ -965,7 +946,6 @@ namespace luabind
 			// you are trying to dereference an invalid object
 			assert((m_ref.is_valid()) && "you are trying to access an invalid (uninitialized) object");
 			assert((m_state != 0) && "internal error, please report");
-
 			m_ref.get(m_state);
 		}
 

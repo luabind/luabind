@@ -34,9 +34,11 @@
 #include <boost/preprocessor/comma_if.hpp>
 
 #include <luabind/config.hpp>
+#include <luabind/wrapper_base.hpp>
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/signature_match.hpp>
 #include <luabind/detail/call_member.hpp>
+#include <luabind/wrapper_base.hpp>
 #include <luabind/weak_ref.hpp>
 
 namespace luabind { namespace detail
@@ -53,22 +55,33 @@ namespace luabind { namespace detail
 	template<class T, class Policies, class ConstructorSig>
 	struct construct_class
 	{
-		inline static void* apply(lua_State* L)
+		inline static void* apply(lua_State* L, weak_ref const& ref)
 		{
-			typedef constructor_helper<ConstructorSig::arity> ConstrHelp;
-			typedef typename ConstrHelp::template apply<T> Caller;
-			return Caller::call(L, static_cast<const ConstructorSig*>(0), static_cast<const Policies*>(0));
+			typedef constructor_helper<ConstructorSig::arity> helper;
+			return helper::execute(
+                L
+			  , ref
+              , (T*)0
+              , (ConstructorSig*)0
+              , (Policies*)0
+            );
 		}
 	};
 
-	template<class T, class Policies, class ConstructorSig>
+	template<class T, class W, class Policies, class ConstructorSig>
 	struct construct_wrapped_class
 	{
 		inline static void* apply(lua_State* L, weak_ref const& ref)
 		{
-			typedef wrapped_constructor_helper<ConstructorSig::arity> ConstrHelp;
-			typedef typename ConstrHelp::apply<T> Caller;
-			return Caller::call(L, ref, static_cast<const ConstructorSig*>(0), static_cast<const Policies*>(0));
+			typedef wrapped_constructor_helper<ConstructorSig::arity> helper;
+			return helper::execute(
+                L
+              , ref
+              , (T*)0
+              , (W*)0
+              , (ConstructorSig*)0
+              , (Policies*)0
+            );
 		}
 	};
 
@@ -88,6 +101,18 @@ namespace luabind { namespace detail
 	template<>
 	struct constructor_helper<BOOST_PP_ITERATION()>
 	{
+        template<class T, class Policies, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
+        static T* execute(
+            lua_State* L
+          , weak_ref const& ref
+          , T*
+          , constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY,A)>*
+          , Policies*)
+        {
+            BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
+            return new T(BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
+        }
+/*
 		template<class T>
 		struct apply
 		{
@@ -99,22 +124,39 @@ namespace luabind { namespace detail
 				BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
 				return new T(BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
 			}
-		};
+		};*/
 	};
 
 	template<>
 	struct wrapped_constructor_helper<BOOST_PP_ITERATION()>
 	{
-		template<class T>
+        template<class T, class W, class Policies, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
+        static T* execute(
+            lua_State* L
+          , weak_ref const& ref
+          , T*
+          , W*
+          , constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY,A)>*
+          , Policies*)
+        {
+            BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
+            W* result = new W(BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
+            static_cast<weak_ref&>(detail::wrap_access::ref(*result)) = ref;
+            return result;
+        }
+/*
+        template<class T>
 		struct apply
 		{
 			template<class Policies, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
 			static T* call(lua_State* L, weak_ref const& ref, const constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY,A)>*, const Policies*)
 			{
 				BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
-					return new T(ref BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
+				T* o = new T(BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
+				static_cast<weak_ref&>(detail::wrap_access::ref(*o)) = ref;
+				return o;
 			}
-		};
+		};*/
 	};
 
 

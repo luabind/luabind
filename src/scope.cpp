@@ -23,6 +23,8 @@
 #include <luabind/lua_include.hpp>
 
 #include <luabind/scope.hpp>
+#include <luabind/detail/debug.hpp>
+#include <luabind/detail/stack_utils.hpp>
 #include <cassert>
 
 namespace luabind { namespace detail {
@@ -86,11 +88,8 @@ namespace luabind { namespace detail {
     {
         for (detail::registration* r = m_chain; r != 0; r = r->m_next)
         {
-            int n = lua_gettop(L);
-            
+			LUABIND_CHECK_STACK(L);
             r->register_(L);
-
-            assert(n == lua_gettop(L));
         }
     }
 
@@ -159,12 +158,13 @@ namespace luabind {
 
         void register_(lua_State* L) const
         {
-            int n = lua_gettop(L);
-
-            assert(n >= 1);
+			LUABIND_CHECK_STACK(L);
+            assert(lua_gettop(L) >= 1);
 
             lua_pushstring(L, m_name);
             lua_gettable(L, -2);
+
+			detail::stack_pop p(L, 1); // pops the table on exit
 
             if (!lua_istable(L, -1))
             {
@@ -177,10 +177,6 @@ namespace luabind {
             }
 
             m_scope.register_(L);
-
-            lua_pop(L, 1);
-
-            assert(lua_gettop(L) == n);
         }
 
         char const* m_name;

@@ -22,6 +22,15 @@
 
 #include "test.hpp"
 
+/* ... */
+
+void lua_engineDrawImage(float x, float y, float w, float h, float s1, float t1,
+float s2, float t2, int shader) {}
+
+void lua_engineDrawImage(int x, int y, int w, int h, int shader) {}
+
+/* ... */
+
 #include <luabind/luabind.hpp>
 #include <luabind/functor.hpp>
 #include <luabind/adopt_policy.hpp>
@@ -34,12 +43,12 @@ namespace {
     {
         functor_test = f;
     }
-    
-	struct base: counted_type<base>
+
+    struct base: counted_type<base>
     {
         int f()
         {
-			return 5;
+            return 5;
         }
     };
 
@@ -60,12 +69,12 @@ namespace {
 
     void test_value_converter(const std::string str)
     {
-		BOOST_TEST(str == "converted string");
+        BOOST_TEST(str == "converted string");
     }
 
     void test_pointer_converter(const char* const str)
     {
-		BOOST_TEST(std::strcmp(str, "converted string") == 0);
+        BOOST_TEST(std::strcmp(str, "converted string") == 0);
     }
 
     struct copy_me
@@ -78,7 +87,7 @@ namespace {
 
     int function_should_never_be_called(lua_State* L)
     {
-		lua_pushnumber(L, 10);
+        lua_pushnumber(L, 10);
         return 1;
     }
 
@@ -109,7 +118,7 @@ void test_free_functions()
 {
     COUNTER_GUARD(base);
 
-	lua_state L;
+    lua_state L;
 
     using namespace luabind;
 
@@ -143,22 +152,45 @@ void test_free_functions()
             
     ];
 
-	DOSTRING(L,
-		"e = create()\n"
-		"assert(e:f() == 5)");
+    module(L, "engine")
+    [
+            /* ... */
+        def("drawImage", 
+        (void(*)(float,float,float,float,float,float,float,float,int))
+            &lua_engineDrawImage),
+        def("drawImage", (void(*)(int,int,int,int,int)) &lua_engineDrawImage)
+            /* ... */
+    ];
 
-	DOSTRING(L, "assert(f(7) == 8)");
+    DOSTRING(L,
+        "engine.drawImage(0, 0, 0, 0, 0, 0, 0, 0, 0)\n");
 
-	DOSTRING(L, "assert(f(3, 9) == 12)");
+    DOSTRING(L,
+        "engine.drawImage(0, 0, 0, 0, 0)\n");
 
-	DOSTRING(L, "set_functor(function(x) return x * 10 end)");
+    DOSTRING(L,
+        "function actions(x) return 0 end\n");
 
-	BOOST_CHECK(functor_test(20) == 200);
+    base c;
+    
+    call_function<int>(L, "actions", & c);
+    
+    DOSTRING(L,
+        "e = create()\n"
+        "assert(e:f() == 5)");
+
+    DOSTRING(L, "assert(f(7) == 8)");
+
+    DOSTRING(L, "assert(f(3, 9) == 12)");
+
+    DOSTRING(L, "set_functor(function(x) return x * 10 end)");
+
+    BOOST_CHECK(functor_test(20) == 200);
 
     DOSTRING(L, "set_functor(nil)");
 
     DOSTRING(L, "function lua_create() return create() end");
-	base* ptr = call_function<base*>(L, "lua_create") [ adopt(result) ];
+    base* ptr = call_function<base*>(L, "lua_create") [ adopt(result) ];
     delete ptr;
 
 #if !(BOOST_MSVC < 1300)
@@ -167,26 +199,26 @@ void test_free_functions()
 #endif
 
     DOSTRING_EXPECTED(L, "f('incorrect', 'parameters')",
-		"no match for function call 'f' with the parameters (string, string)\n"
-		"candidates are:\n"
-		"f(number)\n"
-		"f(number, number)\n");
+        "no match for function call 'f' with the parameters (string, string)\n"
+        "candidates are:\n"
+        "f(number)\n"
+        "f(number, number)\n");
 
     DOSTRING(L,
-		"function functor_test(a) glob = a\n"
-		" return 'foobar'\n"
-		"end");
+        "function functor_test(a) glob = a\n"
+        " return 'foobar'\n"
+        "end");
     functor<std::string> functor_test = object_cast<functor<std::string> >(get_globals(L)["functor_test"]);
     
-	BOOST_CHECK(functor_test(6)[detail::null_type()] == "foobar");
+    BOOST_CHECK(functor_test(6)[detail::null_type()] == "foobar");
     BOOST_CHECK(object_cast<int>(get_globals(L)["glob"]) == 6);
 
     functor<std::string> functor_test2 = object_cast<functor<std::string> >(get_globals(L)["functor_test"]);
 
-	BOOST_CHECK(functor_test == functor_test2);
+    BOOST_CHECK(functor_test == functor_test2);
 
-	// this must be reset before the lua state is destructed!
-	functor_test.reset();
+    // this must be reset before the lua state is destructed!
+    functor_test.reset();
 
 }
 

@@ -108,9 +108,10 @@ void test_implicit_cast()
 	DOSTRING_EXPECTED(L,
 		"a = A()\n"
 		"no_convert(a)",
-		"no match for function call 'no_convert' with the parameters (A)\n"
+		("no match for function call 'no_convert' with the parameters (A)\n"
 		"candidates are:\n"
-		"no_convert(custom)\n");
+		"no_convert(custom ["
+		+ std::string(typeid(boost::shared_ptr<A>).name()) + "])\n").c_str());
 
 	DOSTRING_EXPECTED(L,
 		"a = nil\n"

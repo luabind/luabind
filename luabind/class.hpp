@@ -52,19 +52,10 @@
 	TODO:
 	------------------------------------------------------
 
-	scopes
-		classes with the same name in different scopes will have the same (fully qualified) name.
-		functions that are renamed will still have the same name in error-messages
-
  	finish smart pointer support
-		* make sure there are no bugs in the conversion from holder to const_holder
 		* the adopt policy should not be able to adopt pointers to held_types. This
 		must be prohibited.
 		* name_of_type must recognize holder_types and not return "custom"
-
-	support calling functions on lua threads (i.e. use lua_resume() instead of lua_pcall()).
-		
-	document the new yield-policy more
 
 	document custom policies, custom converters
 
@@ -102,6 +93,7 @@
 
 #include <luabind/config.hpp>
 #include <luabind/scope.hpp>
+#include <luabind/back_reference.hpp>
 #include <luabind/detail/constructor.hpp>
 #include <luabind/detail/call.hpp>
 #include <luabind/detail/signature_match.hpp>
@@ -112,7 +104,6 @@
 #include <luabind/detail/method_rep.hpp>
 #include <luabind/detail/construct_rep.hpp>
 #include <luabind/detail/object_rep.hpp>
-#include <luabind/detail/operators.hpp>
 #include <luabind/detail/calc_arity.hpp>
 #include <luabind/detail/call_member.hpp>
 #include <luabind/detail/enum_maker.hpp>
@@ -134,6 +125,8 @@ namespace luabind
 	namespace detail
 	{
 		struct unspecified {};
+
+		template<class Derived> struct operator_;
 	}
 
 	using detail::type;
@@ -201,58 +194,65 @@ namespace luabind
 			>::type type;
 		};
 
-		// this should know about the smart pointer type.
-		// and should really do:
-		// get_pointer(*static_cast<SmartPointer*>(obj_ptr))
-		// to extract the held pointer.
-		template<class HeldType, class T, class F, class Policies>
-		struct function_callback_non_null : Policies
+		template<class Fn, class Class, class Policies>
+		struct mem_fn_callback
 		{
-			function_callback_non_null(F f_): f(f_) {}
-			inline int operator()(lua_State* L, void* obj_ptr)
-			{
-//				HeldType& held_obj = *static_cast<HeldType*>(obj_ptr);
-//				T* ptr = static_cast<T*>(luabind::get_pointer(held_obj));
-				// is this correct?
-				T* ptr = static_cast<T*>(obj_ptr);
+			typedef int result_type;
 
-				return call(f, ptr, L, static_cast<Policies*>(this));
+			int operator()(lua_State* L) const
+			{
+				return call(fn, (Class*)0, L, (Policies*)0);
 			}
-			F f;
+
+			mem_fn_callback(Fn fn_)
+				: fn(fn_)
+			{
+			}
+
+			Fn fn;
 		};
 
-		template<class T, class F, class Policies>
-		struct function_callback_null_type : Policies
+		template<class Fn, class Class, class Policies>
+		struct mem_fn_matcher
 		{
-			function_callback_null_type(F f_): f(f_) {}
-			inline int operator()(lua_State* L, void* obj_ptr)
+			typedef int result_type;
+
+			int operator()(lua_State* L) const
 			{
-//				std::cout << "HeldType: null_type\n";
-				T* ptr = static_cast<T*>(obj_ptr);
-				return call(f, ptr, L, static_cast<Policies*>(this));
+				return match(fn, L, (Class*)0, (Policies*)0);
 			}
-			F f;
+
+			mem_fn_matcher(Fn fn_)
+				: fn(fn_)
+			{
+			}
+
+			Fn fn;
 		};
 
-		template<class HeldType, class T, class F, class Policies>
-		struct function_callback_s
+		struct pure_virtual_tag
 		{
-			typedef typename
-				boost::mpl::if_<boost::is_same<HeldType,detail::null_type>
-					, function_callback_null_type<T,F,Policies>
-					, function_callback_non_null<HeldType,T,F,Policies>
+			static void precall(lua_State*, index_map const&) {}
+			static void postcall(lua_State*, index_map const&) {}
+		};
+
+		template<class Policies>
+		struct has_pure_virtual
+		{
+			typedef typename boost::mpl::apply_if<
+				boost::is_same<pure_virtual_tag, typename Policies::head>
+			  , boost::mpl::true_
+			  , has_pure_virtual<typename Policies::tail>
 			>::type type;
+
+			BOOST_STATIC_CONSTANT(bool, value = type::value);
 		};
 
-		template<class T, class F, class Policies>
-		struct match_function_callback_s
+		template<>
+		struct has_pure_virtual<null_type>
 		{
-			static inline int apply(lua_State* L)
-			{
-				object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
-				F fptr = 0;
-				return match(fptr, L, obj->flags() & object_rep::constant, static_cast<Policies*>(0));
-			}
+			BOOST_STATIC_CONSTANT(bool, value = false);
+			typedef boost::mpl::bool_<value> type;
 		};
 
 		// prints the types of the values on the stack, in the
@@ -265,26 +265,6 @@ namespace luabind
 			static int stage1(lua_State* L);
 			static int stage2(lua_State* L);
 		};
-
-		template<class Type>
-		struct register_wrapped_type
-		{
-			template<class Signature, class Policies>
-			static void apply(detail::construct_rep::overload_t& o, const Signature*, const Policies*)
-			{
-				o.set_wrapped_constructor(
-					&detail::construct_wrapped_class<Type, Policies, Signature>::apply
-				); 
-			}
-		};
-
-		template<>
-		struct register_wrapped_type<detail::null_type>
-		{
-			template<class Signature, class Policies>
-			static void apply(detail::construct_rep::overload_t&, const Signature*, const Policies*) {}
-		};
-
 
 		// if the class is held by a smart pointer, we need to be able to
 		// implicitly dereference the pointer when needed.
@@ -731,6 +711,7 @@ namespace luabind
 				, void(*const_holder_default_constructor)(void*)
 				, void(*destructor)(void*)
 				, void(*const_holder_destructor)(void*)
+				, void(*m_adopt_fun)(void*)
 				, int holder_size
 				, int holder_alignment);
 
@@ -778,6 +759,22 @@ namespace luabind
 		private:
 			class_registration* m_registration;
 		};
+	
+        template<class T, class W>
+        struct adopt_function
+		{
+		    static void execute(void* p)
+            {
+			    wrapped_self_t& self = wrap_access::ref(
+					*static_cast<W*>(static_cast<T*>(p))
+				);
+
+				LUABIND_CHECK_STACK(self.state());
+
+				self.get(self.state());
+				self.m_strong_ref.set(self.state());
+            }
+        };
 
 	} // namespace detail
 
@@ -796,50 +793,31 @@ namespace luabind
 
 		// WrappedType MUST inherit from T
 		typedef typename detail::extract_parameter<
-				boost::mpl::vector3<X1,X2,X3>
-			,  boost::is_base_and_derived<T, boost::mpl::_>
-	/*		,	boost::mpl::not_<
-						boost::mpl::or_<
-								detail::is_bases<boost::mpl::_>
-							,	boost::is_base_and_derived<boost::mpl::_, T>
-						>
-				>*/
-				,	detail::null_type
+		    boost::mpl::vector3<X1,X2,X3>
+		  , boost::is_base_and_derived<T, boost::mpl::_>
+		  , detail::null_type
 		>::type WrappedType;
 
 		typedef typename detail::extract_parameter<
-			  boost::mpl::list3<X1,X2,X3>
-			, boost::mpl::not_<
-				boost::mpl::or_<
-					boost::mpl::or_<
-						  detail::is_bases<boost::mpl::_>
-						, boost::is_base_and_derived<boost::mpl::_, T>
-						>
-					, boost::is_base_and_derived<T, boost::mpl::_>
+		    boost::mpl::list3<X1,X2,X3>
+		  , boost::mpl::not_<
+		        boost::mpl::or_<
+				    boost::mpl::or_<
+					    detail::is_bases<boost::mpl::_>
+					  , boost::is_base_and_derived<boost::mpl::_, T>
+					>
+				  , boost::is_base_and_derived<T, boost::mpl::_>
 				>
 			>
 		  , detail::null_type
 		>::type HeldType;
-/*
-		template<class To>
-		void register_downcast(boost::mpl::true_, detail::type<To>* = 0)
-		{ boost::langbinding::register_conversion<To, T>(true); }
 
-		template<class To>
-		void register_downcast(boost::mpl::false_, detail::type<To>* = 0)
-		{}
-*/
 		// this function generates conversion information
 		// in the given class_rep structure. It will be able
 		// to implicitly cast to the given template type
 		template<class To>
 		void gen_base_info(detail::type<To>)
 		{
-//			boost::langbinding::register_dynamic_id<To>();
-//			boost::langbinding::register_conversion<T, To>(false);
-
-//			register_downcast<To>(boost::mpl::bool_<boost::is_polymorphic<To>::value>());
-
 			// fist, make sure the given base class is registered.
 			// if it's not registered we can't push it's lua table onto
 			// the stack because it doesn't have a table
@@ -867,76 +845,6 @@ namespace luabind
 		}
 
 #undef LUABIND_GEN_BASE_INFO
-	
-		// this is the internal version of def() it is run from both overloads
-		// of def. It has two versions, one where a contstructor is registered
-		// and one where a function is registered
-		template<class Policies>
-		struct internal_def_s
-		{
-			template<class F>
-			static void apply(const char* name, F f, detail::class_base* c)
-			{
-//				std::cout << "HeldType2: " << typeid(HeldType).name() << "\n";
-
-				detail::overload_rep o(f, static_cast<Policies*>(0));
-
-				typedef LUABIND_MSVC_TYPENAME detail::function_callback_s<HeldType,T,F,Policies>::type call_t;
-
-				o.set_match_fun(&detail::match_function_callback_s<T,F,Policies>::apply);
-				o.call_fun = boost::bind<int>(call_t(f), _1, _2);
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-
-				o.set_sig_fun(&detail::get_member_signature<F>::apply);
-
-#endif
-
-				c->add_method(name, o);
-			}
-
-			template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
-			static void apply(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)>, detail::class_base* c)
-			{
-//				std::cout << "HeldType2: " << typeid(HeldType).name() << "\n";
-
-				detail::construct_rep::overload_t o;
-
-				o.set_constructor(
-					&detail::construct_class<
-						 T
-						,Policies
-						,constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)>
-					>::apply
-				);
-
-				// if we have a WrappedType, we have to register it's constructor
-				// but if it's null_type (no WrappedType) we should not register it
-				detail::register_wrapped_type<WrappedType>::apply(o,
-						static_cast<const constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)>*>(0),
-						static_cast<const Policies*>(0));
-
-
-				o.set_match_fun(
-					&detail::constructor_match<
-						 constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)>
-						,2
-						,Policies
-					>::apply);
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-
-				o.set_sig_fun(&detail::get_signature<constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> >::apply);
-
-#endif
-
-				typedef constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> con_t;
-
-				o.set_arity(detail::calc_arity<con_t::arity>::apply(con_t(), static_cast<Policies*>(0)));
-
-				c->add_constructor(o);
-			}
-		};
 
 		class_(const char* name): class_base(name), scope(*this)
 		{
@@ -949,29 +857,47 @@ namespace luabind
 		template<class F>
 		class_& def(const char* name, F f)
 		{
-			internal_def_s<detail::null_type>::apply(name, f, this);
-			return *this;
+			return this->virtual_def(
+				name, f, detail::null_type()
+			  , detail::null_type(), boost::mpl::true_());
 		}
 
-		template<class F, class Policies>
-		class_& def(const char* name, F f, const Policies&)
+		// virtual functions
+		template<class F, class DefaultOrPolicies>
+		class_& def(char const* name, F fn, DefaultOrPolicies default_or_policies)
 		{
-			internal_def_s<Policies>::apply(name, f, this);
-			return *this;
+			return this->virtual_def(
+				name, fn, default_or_policies, detail::null_type()
+			  , LUABIND_MSVC_TYPENAME detail::is_policy_cons<DefaultOrPolicies>::type());
+		}
+
+		template<class F, class Default, class Policies>
+		class_& def(char const* name, F fn
+			, Default default_, Policies const& policies)
+		{
+			return this->virtual_def(
+				name, fn, default_
+			  , policies, boost::mpl::false_());
 		}
 
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig)
 		{
-			internal_def_s<detail::null_type>::apply(sig, this);
-			return *this;
+            return this->def_constructor(
+				boost::is_same<WrappedType, detail::null_type>()
+			  , &sig
+			  , detail::null_type()
+			);
 		}
 
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A), class Policies>
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig, const Policies& policies)
 		{
-			internal_def_s<Policies>::apply(sig, this);
-			return *this;
+            return this->def_constructor(
+				boost::is_same<WrappedType, detail::null_type>()
+			  , &sig
+			  , policies
+			);
 		}
 
 		template<class Getter>
@@ -1086,6 +1012,27 @@ namespace luabind
 			return *this;
 		}
 
+		template<class Derived, class Policies>
+		class_& def(detail::operator_<Derived>, Policies const& policies)
+		{
+			return this->def(
+				Derived::name()
+			  , &Derived::template apply<T, Policies>::execute
+			  , raw(_1) + policies
+			);
+		}
+
+		template<class Derived>
+		class_& def(detail::operator_<Derived>)
+		{
+			return this->def(
+				Derived::name()
+			  , &Derived::template apply<T, detail::null_type>::execute
+			  , raw(_1)
+			);
+		}
+
+/*
 		template<class op_id, class Left, class Right, class Policies>
 		class_& def(detail::operator_<op_id, Left, Right>, const Policies& policies)
 		{
@@ -1130,12 +1077,22 @@ namespace luabind
 		{
 			typedef detail::application_operator<Signature, Constant, detail::null_type> op_t;
 
-			int arity = detail::calc_arity<Signature::arity>::apply(Signature(), static_cast<detail::null_type*>(0));
+			int arity = detail::calc_arity<Signature::arity>::apply(
+				Signature(), static_cast<detail::null_type*>(0));
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-			add_operator(detail::op_call, &op_t::template apply<T>::execute, &op_t::match, &detail::get_signature<Signature>::apply, arity + 1);
+			add_operator(
+				detail::op_call
+				, &op_t::template apply<T>::execute
+				, &op_t::match
+				, &detail::get_signature<Signature>::apply
+				, arity + 1);
 #else
-			add_operator(detail::op_call, &op_t::template apply<T>::execute, &op_t::match, arity + 1);
+			add_operator(
+				detail::op_call
+				, &op_t::template apply<T>::execute
+				, &op_t::match
+				, arity + 1);
 #endif
 
 			return *this;
@@ -1149,14 +1106,23 @@ namespace luabind
 			int arity = detail::calc_arity<Signature::arity>::apply(Signature(), static_cast<Policies*>(0));
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-			add_operator(detail::op_call, &op_t::template apply<T>::execute, &op_t::match, &detail::get_signature<Signature>::apply, arity + 1);
+			add_operator(
+				detail::op_call
+				, &op_t::template apply<T>::execute
+				, &op_t::match
+				, &detail::get_signature<Signature>::apply
+				, arity + 1);
 #else
-			add_operator(detail::op_call, &op_t::template apply<T>::execute, &op_t::match, arity + 1);
+			add_operator(
+				detail::op_call
+				, &op_t::template apply<T>::execute
+				, &op_t::match
+				, arity + 1);
 #endif
 
 			return *this;
 		}
-
+*/
 		detail::enum_maker<self_t> enum_(const char*)
 		{
 			return detail::enum_maker<self_t>(*this);
@@ -1169,6 +1135,8 @@ namespace luabind
 
 		void init()
 		{
+			set_back_reference((back_reference<T>*)0);
+
 			typedef typename detail::extract_parameter<
 					boost::mpl::list3<X1,X2,X3>
 				,	boost::mpl::or_<
@@ -1196,6 +1164,7 @@ namespace luabind
 				, detail::const_holder_constructor<HeldType>::apply(detail::type<T>())
 				, detail::holder_default_constructor<HeldType>::apply(detail::type<T>())
 				, detail::const_holder_default_constructor<HeldType>::apply(detail::type<T>())
+				, get_adopt_fun((WrappedType*)0) // adopt fun
 				, detail::internal_holder_destructor<HeldType>::apply(detail::type<T>())
 				, detail::internal_const_holder_destructor<HeldType>::apply(detail::type<T>())
 				, detail::internal_holder_size<HeldType>::apply()
@@ -1233,7 +1202,141 @@ namespace luabind
 			return *this;
 		}
 
+		// these handle default implementation of virtual functions
+		template<class F, class Policies>
+		class_& virtual_def(char const* name, F const& fn
+			, Policies const& policies, detail::null_type, boost::mpl::true_)
+		{
+			// normal def() call
+			detail::overload_rep o(fn, static_cast<Policies*>(0));
+
+			o.set_match_fun(detail::mem_fn_matcher<F, T, Policies>(fn));
+			o.set_fun(detail::mem_fn_callback<F, T, Policies>(fn));
+
+#ifndef LUABIND_NO_ERROR_CHECKING
+			o.set_sig_fun(&detail::get_member_signature<F>::apply);
+#endif
+			this->add_method(name, o);
+			return *this;
+		}
+
+		template<class F, class Default, class Policies>
+		class_& virtual_def(char const* name, F const& fn
+			, Default const& default_, Policies const& policies, boost::mpl::false_)
+		{
+			// default_ is a default implementation
+			// policies is either null_type or a policy list
+
+			// normal def() call
+			detail::overload_rep o(fn, (Policies*)0);
+
+			o.set_match_fun(detail::mem_fn_matcher<F, T, Policies>(fn));
+			o.set_fun(detail::mem_fn_callback<F, T, Policies>(fn));
+
+			o.set_fun_static(
+				detail::mem_fn_callback<Default, T, Policies>(default_));
+
+#ifndef LUABIND_NO_ERROR_CHECKING
+			o.set_sig_fun(&detail::get_member_signature<F>::apply);
+#endif
+
+			this->add_method(name, o);
+			// register virtual function
+			return *this;
+		}
+
+        template<class Signature, class Policies>
+		class_& def_constructor(
+			boost::mpl::true_ /* HasWrapper */
+          , Signature*
+          , Policies const& policies)
+        {	
+			detail::construct_rep::overload_t o;
+
+			o.set_constructor(
+				&detail::construct_class<
+					T
+				  , Policies
+				  , Signature
+				>::apply);
+
+			o.set_match_fun(
+				&detail::constructor_match<
+				    Signature
+			      , 2
+			      , Policies
+			    >::apply);
+
+#ifndef LUABIND_NO_ERROR_CHECKING
+			o.set_sig_fun(&detail::get_signature<Signature>::apply);
+#endif
+			o.set_arity(detail::calc_arity<Signature::arity>::apply(Signature(), (Policies*)0));
+			this->add_constructor(o);
+            return *this;
+        }
+
+        template<class Signature, class Policies>
+		class_& def_constructor(
+			boost::mpl::false_ /* !HasWrapper */
+          , Signature*
+          , Policies const& policies)
+		{
+			detail::construct_rep::overload_t o;
+
+			o.set_constructor(
+				&detail::construct_wrapped_class<
+					T
+				  , WrappedType
+				  , Policies
+				  , Signature
+				>::apply);
+
+			o.set_match_fun(
+				&detail::constructor_match<
+				    Signature
+			      , 2
+			      , Policies
+			    >::apply);
+
+#ifndef LUABIND_NO_ERROR_CHECKING
+			o.set_sig_fun(&detail::get_signature<Signature>::apply);
+#endif
+			o.set_arity(detail::calc_arity<Signature::arity>::apply(Signature(), (Policies*)0));
+			this->add_constructor(o);
+            return *this;
+        }
+
+		void set_back_reference(detail::default_back_reference*)
+		{
+			back_reference<T>::has_wrapper 
+				= !boost::is_same<WrappedType, detail::null_type>::value;
+		}
+
+		void set_back_reference(void*)
+		{
+		}
+
+		typedef void(*adopt_fun_t)(void*);
+
+		template<class W>
+		adopt_fun_t get_adopt_fun(W*)
+		{
+            return &detail::adopt_function<T, W>::execute;
+		}
+
+		adopt_fun_t get_adopt_fun(detail::null_type*)
+		{
+			return 0;
+		}
 	};
+
+	namespace 
+	{
+		LUABIND_ANONYMOUS_FIX detail::policy_cons<
+			detail::pure_virtual_tag
+		  , detail::null_type
+		> pure_virtual;
+	}
 }
 
 #ifdef _MSC_VER

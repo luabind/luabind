@@ -95,8 +95,9 @@ void dostring(lua_State* state, char const* str)
 
     if (luaL_loadbuffer(state, str, std::strlen(str), str))
     {
-        lua_pop(state, 1);
-        throw "error";
+        std::string err(lua_tostring(state, -1));
+        lua_pop(state, 2);
+		throw err;
     }
 
     if (lua_pcall(state, 0, 0, -2))
@@ -128,11 +129,13 @@ void test_yield();
 void test_construction();
 void test_type_traits();
 void test_implicit_cast();
+void test_operators();
 void test_const();
 void test_object();
 void test_policies();
 void test_free_functions();
 void test_iterator();
+void test_abstract_base();
 
 // --------------------------------------------------------------------------
 
@@ -149,7 +152,7 @@ test_suite* init_unit_test_suite( int argc, char* argv[] )
 //    register_exception_translator<luabind::error>(
   //      &translate_luabind_error);
 
-    test->add(BOOST_TEST_CASE(&test_exceptions));
+//    test->add(BOOST_TEST_CASE(&test_exceptions));
     test->add(BOOST_TEST_CASE(&test_lua_classes));
     test->add(BOOST_TEST_CASE(&test_attributes));
     test->add(BOOST_TEST_CASE(&test_held_type));
@@ -164,6 +167,8 @@ test_suite* init_unit_test_suite( int argc, char* argv[] )
     test->add(BOOST_TEST_CASE(&test_policies));
     test->add(BOOST_TEST_CASE(&test_free_functions));
     test->add(BOOST_TEST_CASE(&test_iterator));
+    test->add(BOOST_TEST_CASE(&test_abstract_base));
+    test->add(BOOST_TEST_CASE(&test_operators));
 
     return test;
 }

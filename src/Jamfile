@@ -1,7 +1,8 @@
 project luabind/luabind ;
 
 lib luabind
-    : weak_ref.cpp
+    : wrapper_base.cpp
+      weak_ref.cpp
       pcall.cpp
       error.cpp
       scope.cpp

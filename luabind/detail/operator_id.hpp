@@ -41,6 +41,7 @@ namespace luabind { namespace detail {
 		op_call,
 		op_unm,
 		op_tostring,
+        op_concat,
 
 		number_of_operators
 	};
@@ -56,18 +57,23 @@ namespace luabind { namespace detail {
 	struct op_call_tag {};
 	struct op_unm_tag {};
 	struct op_tostring_tag {};
+    struct op_concat_tag {};
 
 	inline const char* get_operator_name(int i)
 	{
-		static const char* a[number_of_operators] =
-			{"__add", "__sub", "__mul", "__div", "__pow", "__lt", "__le", "__eq", "__call", "__unm", "__tostring" };
+		static const char* a[number_of_operators] = {
+            "__add", "__sub", "__mul", "__div", "__pow", 
+            "__lt", "__le", "__eq", "__call", "__unm", 
+            "__tostring", "__concat" };
 		return a[i];
 	}
 
 	inline const char* get_operator_symbol(int i)
 	{
-		static const char* a[number_of_operators] =
-			{"+", "-", "*", "/", "^", "<", "<=", "==", "()", "- (unary)", "tostring" };
+		static const char* a[number_of_operators] = {
+            "+", "-", "*", "/", "^", "<", 
+            "<=", "==", "()", "- (unary)", 
+            "tostring", ".." };
 		return a[i];
 	}
 
@@ -83,4 +89,3 @@ namespace luabind { namespace detail {
 }}
 
 #endif // LUABIND_OPERATOR_ID_HPP_INCLUDED
-

@@ -1,6 +1,7 @@
 include ../config
 
 SOURCES = \
+	wrapper_base.cpp \
 	pcall.cpp \
 	error.cpp \
 	ref.cpp \
@@ -18,7 +19,8 @@ SOURCES = \
 	class_info.cpp \
 	class_registry.cpp \
 	link_compatibility.cpp \
-	weak_ref.cpp
+	weak_ref.cpp \
+	link_compatibility.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 

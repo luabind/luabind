@@ -41,8 +41,12 @@ namespace luabind {
 
         void swap(weak_ref&);
 
+		// returns a unique id that no
+		// other weak ref will return
+		int id() const;
+
         lua_State* state() const;
-        void get() const;
+        void get(lua_State* L) const;
 
     private:
         struct impl;

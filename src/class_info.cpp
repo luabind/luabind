@@ -38,7 +38,7 @@ namespace luabind
 		lua_pop(L, 1);
 
 		result.name = obj->crep()->name();
-		detail::getref(L, obj->crep()->table_ref());
+		obj->crep()->get_table(L);
 		result.methods.set();
 
 		result.attributes = newtable(L);

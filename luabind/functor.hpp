@@ -38,6 +38,7 @@
 #include <luabind/detail/convert_to_lua.hpp>
 #include <luabind/detail/pcall.hpp>
 #include <luabind/error.hpp>
+#include <luabind/detail/stack_utils.hpp>
 
 namespace luabind
 {

@@ -21,7 +21,7 @@
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <luabind/detail/object_rep.hpp>
-
+#include <luabind/detail/class_rep.hpp>
 
 namespace luabind { namespace detail
 {
@@ -56,7 +56,26 @@ namespace luabind { namespace detail
 	void object_rep::remove_ownership()
 	{
 		assert((m_flags & owner) && "cannot remove ownership of object that's not owned");
+		assert(m_classrep->get_class_type() == class_rep::cpp_class
+			|| m_classrep->bases().size() == 1 && "can only adopt c++ types or lua classes that derives from a c++ class");
+
+        // daniel040727 Bogus assert above? C++ types can be adopted just fine
+        // without a hierarchy?
+
 		m_flags &= ~owner;
+		// if this is a type with a wrapper we also have to
+		// transform the wrappers weak_ref into a strong
+		// reference, to make sure the lua part
+		// stays alive as long as the c++ part stays
+		// alive.
+/*		if (m_classrep->get_class_type() == class_rep::cpp_class)
+			m_classrep->adopt(m_flags & constant, m_object);
+		else*/
+
+        // daniel040727 I changed the above. It just seems wrong. adopt()
+        // should only be called on the wrapper type.
+        if (m_classrep->get_class_type() == class_rep::lua_class)
+			m_classrep->bases().front().base->adopt(m_flags & constant, m_object);
 	}
 
 	void object_rep::set_destructor(void(*ptr)(void*))

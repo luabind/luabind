@@ -74,6 +74,7 @@ void test_scope()
 			[
 				def("inner_fun", &f)
 			]
+            .def("inner_fun2", &f) // this should become static
 			.enum_("vals")
 			[
 				value("val1", 1),
@@ -108,10 +109,11 @@ void test_scope()
 	DOSTRING(L, "assert(test.f() == 1)");
 	DOSTRING(L, "assert(test.f(3) == 2)");
 	DOSTRING(L, "assert(test.test_class.inner_fun() == 1)");
-	DOSTRING(L,
+    DOSTRING(L,
 		"a = test.test_class()\n"
 		"assert(a.test == 1)");
-	DOSTRING(L,
+	DOSTRING(L, "assert(a.inner_fun2() == 1)"); // free function
+    DOSTRING(L,
 		"b = test.test_class.val2\n"
 		"assert(b == 2)");
 	DOSTRING(L, "assert(test.inner.g() == 4)");

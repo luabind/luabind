@@ -174,12 +174,23 @@ namespace luabind {
         std::swap(m_impl, other.m_impl);
     }
 
-    void weak_ref::get() const
+    int weak_ref::id() const
     {
         assert(m_impl);
-        get_weak_table(m_impl->state);
-        lua_rawgeti(m_impl->state, -1, m_impl->ref);
-        lua_remove(m_impl->state, -2);
+		return m_impl->ref;
+    }
+
+	// L may not be the same pointer as
+	// was used when creating this reference
+	// since it may be a thread that shares
+	// the same globals table.
+    void weak_ref::get(lua_State* L) const
+    {
+        assert(m_impl);
+		assert(L);
+        get_weak_table(L);
+        lua_rawgeti(L, -1, m_impl->ref);
+        lua_remove(L, -2);
     }
 
     lua_State* weak_ref::state() const

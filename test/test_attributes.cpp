@@ -32,6 +32,7 @@ struct property_test : counted_type<property_test>
 	std::string str_;
     int a_;
     float o;
+	signed char b;
 
     void set(int a) { a_ = a; }
     int get() const { return a_; }
@@ -80,7 +81,8 @@ void test_attributes()
 			.property(
                 "str", &property_test::get_str, &property_test::set_str)
 			.def_readonly("o", &property_test::o)
-            .property("free", &free_getter, &free_setter),
+            .property("free", &free_getter, &free_setter)
+			.def_readwrite("b", &property_test::b),
 
 		class_<A>("A")
 			.def(constructor<>())
@@ -106,6 +108,10 @@ void test_attributes()
     DOSTRING(L,
         "test.free = 6\n"
         "assert(test.free == 6)\n");
+
+    DOSTRING(L,
+        "test.b = 3\n"
+        "assert(test.b == 3)\n");
 
 	DOSTRING(L,
 		"a = B()\n");

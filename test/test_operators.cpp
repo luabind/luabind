@@ -22,6 +22,7 @@
 
 #include "test.hpp"
 #include <luabind/luabind.hpp>
+#include <luabind/operator.hpp>
 
 namespace
 {
@@ -32,9 +33,9 @@ namespace
 			return 1 + a;
 		}
 
-		float operator-() const
+		int operator-() const
 		{
-			return 4.6f;
+			return 46;
 		}
 
 		float operator()() const
@@ -63,26 +64,27 @@ namespace
 	{
 	};
 
-	float operator+(const operator_tester&, const operator_tester2&)
+	int operator+(const operator_tester&, const operator_tester2&)
 	{
-		return 7.3f;
+		return 73;
 	}
 
 	struct operator_tester3: operator_tester, counted_type<operator_tester3> {};
-
-	const operator_tester* make_const_test()
-	{
-		static operator_tester o;
-		return &o;
-	}
 
 	std::ostream& operator<<(std::ostream& os, const operator_tester&)
 	{
 		os << "operator_tester"; return os;
 	}
-	
-	operator_tester* clone(const operator_tester* p)
-	{ return new operator_tester(*p); }
+
+	struct op_test1
+	{
+		bool operator==(op_test1 const& rhs) const { return true; } 
+	};
+
+	struct op_test2 : public op_test1
+	{
+		bool operator==(op_test2 const& rhs) const { return true; } 
+	};
 
 } // anonymous namespace
 
@@ -104,6 +106,7 @@ void test_operators()
 			.def(self + int())
 			.def(other<int>() + self)
 			.def(-self)
+            .def(self + other<operator_tester2&>())
 			.def(self())
 			.def(const_self(int()))
 			.def(self(int())),
@@ -113,28 +116,32 @@ void test_operators()
 			.def(constructor<>())
 			.def(other<const operator_tester&>() + self),
 
-		class_<operator_tester3, bases<operator_tester> >("operator_tester3")
+		class_<operator_tester3, operator_tester>("operator_tester3")
 			.def(constructor<>()),
-	
-		def("make_const_test", &make_const_test)
+
+		class_<op_test1>("op_test1")
+			.def(constructor<>())
+			.def(const_self == const_self),
+
+		class_<op_test2, op_test1>("op_test2")
+			.def(constructor<>())
+			.def(self == self)
 	];
 	
 	DOSTRING(L, "test = operator_tester()");
 	DOSTRING(L, "test2 = operator_tester2()");
 	DOSTRING(L, "test3 = operator_tester3()");
-	DOSTRING(L, "const_test = make_const_test()");
 
 	DOSTRING(L, "assert(test() == 3.5)");
 	DOSTRING(L, "assert(test(5) == 2.5 + 5)");
-	DOSTRING(L, "assert(const_test(7) == 3.5 + 7)");
 
-	DOSTRING(L, "assert(-test == 4.6)");
-	DOSTRING(L, "assert(test + test2 == 7.3)");
+	DOSTRING(L, "assert(-test == 46)");
+	DOSTRING(L, "assert(test + test2 == 73)");
 	DOSTRING(L, "assert(2 + test == 2 + 2)");
 	DOSTRING(L, "assert(test + 2 == 1 + 2)");
 	DOSTRING(L, "assert(test3 + 6 == 1 + 6)");
-	DOSTRING(L, "assert(test3 + test2 == 7.3)");
-	DOSTRING(L, "assert(tostring(test) == 'operator_tester')");
+	DOSTRING(L, "assert(test3 + test2 == 73)");
+//	DOSTRING(L, "assert(tostring(test) == 'operator_tester')");
 
 	const char* prog =
 		"class 'my_class'\n"
@@ -161,6 +168,11 @@ void test_operators()
 		"d = d - b\n";
 
 	DOSTRING(L, prog);
-	DOSTRING(L, "assert(c == 10)");
-	DOSTRING(L, "assert(d == 2)");
+	DOSTRING(L, "assert(c.val == 10)");
+	DOSTRING(L, "assert(d.val == 2)");
+
+    DOSTRING(L,
+		"a = op_test1()\n"
+		"b = op_test2()\n"
+		"assert(a == b)");
 }

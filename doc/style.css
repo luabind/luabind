@@ -1,3 +1,17 @@
+/*
+:Author: David Goodger
+:Contact: goodger@users.sourceforge.net
+:date: $Date$
+:version: $Revision$
+:copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+*/
+
+p {
+  text-align: justify;
+}
+
 .first {
   margin-top: 0 }
 
@@ -8,19 +22,22 @@ a.toc-backref {
   text-decoration: none ;
   color: black }
 
+dt { /* used in FAQ */
+  font-weight: bold ;
+  margin-bottom: 0.2em
+}
+
 dl {
-  width: 70%;
-  margin-left: 1.0em;
-  font-family: Georgia, "Times New Roman", Times, serif;
-  font-size: 80%
+  margin-left: 0.5em ;
+  margin-right: 10em 
+}
+
+h3 {
+  font-size: 90%
 }
 
 dd {
-  margin-bottom: 1.0em }
-
-dt {
-  font-weight: bold;
-}
+  margin-bottom: 0.5em }
 
 div.abstract {
   margin: 2em 5em }
@@ -28,18 +45,11 @@ div.abstract {
 div.abstract p.topic-title {
   font-weight: bold ;
   text-align: center }
-/*
-div.attention, div.caution, div.danger, div.error, div.hint,
-div.important, div.note, div.tip, div.warning, div.admonition {
-  margin: 2em ;
-  border: medium outset ;
-  padding: 1em }
-*/
 
 div.attention, div.caution, div.danger, div.error, div.hint,
 div.important, div.note, div.tip, div.warning, div.admonition {
   margin: 2em ;
-  border: 2pt dashed #800000 ;
+  border: medium outset ;
   padding: 1em }
 
 div.attention p.admonition-title, div.caution p.admonition-title,
@@ -71,21 +81,13 @@ div.footer, div.header {
   font-size: smaller }
 
 div.sidebar {
-  border: #800000 2pt dashed;
-  padding: 10pt;
-
-/*  margin-left: 1em ;*/
-/*  border: 1 ; medium outset ;
-  padding: 0em 1em ;*/
-  background-color: #ffffff ;
-  width: 30% ;
+  margin-left: 1em ;
+  border: medium outset ;
+  padding: 0em 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
   float: right ;
-  clear: right ;
-}
-
-div.sidebar p {
-  font-family: sans-serif ;
-  font-size: small }
+  clear: right }
 
 div.sidebar p.rubric {
   font-family: sans-serif ;
@@ -109,7 +111,6 @@ div.topic {
   margin: 2em }
 
 h1.title {
-  font-size: 250%; 
   text-align: center }
 
 h2.subtitle {
@@ -181,7 +182,9 @@ pre.line-block {
 pre.literal-block, pre.doctest-block {
   margin-left: 2em ;
   margin-right: 2em ;
-  background-color: #eeeeee }
+/*  padding-left: 1em ;*/
+  background-color: #eeeeee ;
+/*  border-left: solid 3px #c0c0c0*/ }
 
 span.classifier {
   font-family: sans-serif ;
@@ -215,7 +218,8 @@ table.citation {
   padding-left: 0.5ex }
 
 table.docinfo {
-  margin: 2em 4em }
+  margin: 2em 4em ;
+  border: none }
 
 table.footnote {
   border-left: solid thin black ;
@@ -229,74 +233,44 @@ td, th {
 th.docinfo-name, th.field-name {
   font-weight: bold ;
   text-align: left ;
-  white-space: nowrap }
+  white-space: nowrap ;
+  border: none ;
+  background-color: #f0f0f0
+ }
 
 h1 tt, h2 tt, h3 tt, h4 tt, h5 tt, h6 tt {
-  font-size: 100% }
+  font-size: 100% ;
+  font-family: serif }
 
+/*h1 { font-family: Arial, Helvetica, sans-serif; font-weight: bold; text-align: left; font-size: 140%; }
+h2 { font-family: Arial, Helvetica, sans-serif; font-weight: bold; text-align: left; font-size: 110%; }
+h3 { font-family: "courier new", courier, monospace; font-weight: bold; text-align: left; font-size: 100%; }
+*/
 tt {
-/*  background-color: #eeeeee */
-    color: #102Eb0
+  /*background-color: #eeeeee*/
+  color: #102eb0
 }
 
 ul.auto-toc {
   list-style-type: none }
 
-body
-{
-	background-color: white;
-	color: black;
-	margin: 1em 2em 1em 2em;
+/* --- */
+
+table {
+  border-collapse: collapse;
+  border: none;
+/*  border-bottom: 1px solid black;*/
+  margin-left: 1em;
 }
 
-h1 { font-family: Verdana, Arial, Helvetica, sans-serif; font-weight: bold; text-align: left; font-size: 140%; }
-h2 { font-family: Verdana, Arial, Helvetica, sans-serif; font-weight: bold; text-align: left; font-size: 110%; }
-h3 { font-family: "courier new", courier, monospace; font-weight: bold; text-align: left; font-size: 100%; }
-
-pre
-{
-	border: gray 1pt solid;
-	padding: 2pt;
-
-	display: block;
-	font-family: "courier new", courier, monospace;
-	background-color: #eeeeee;
-	color: black;
-	font-size: small
+td, th {
+  border: none;
 }
 
-code
-{
-	white-space: pre;
-	border: gray 1pt solid;
-	padding: 2pt;
-
-	display: block;
-	font-family: "courier new", courier, monospace;
-	color: black;
-	font-size: small
-}
-
-tt
-{
-	display: inline;
-	font-family: "Courier New", Courier, monospace;
-}
-
-p
-{
-	text-align: justify;
-	font-family: Georgia, "Times New Roman", Times, serif
-}
-
-ul
-{
-	font-family: Georgia, "Times New Roman", Times, serif
-}
-
-ol
-{
-	font-family: Georgia, "Times New Roman", Times, serif
+th {
+/* border-top: 1px solid black;*/
+  border-bottom: 1px solid black;
+  text-align: left;
 }
 
 a:link
@@ -313,40 +287,6 @@ a:visited
 	text-decoration: none;
 }
 
-
-table
-{
-	border: 1px solid black;
-	border-collapse: collapse;
+h3 {
+  text-transform: uppercase 
 }
-
-table td
-{
-	padding: 6px;
-}
-
-table th
-{
-	border: 3px solid black;
-	padding: 6px;
-}
-
-table.menu
-{
-	border-style: none;
-}
-
-table.menu td
-{
-	padding-left: 15px;
-	padding-right: 15px;
-	padding-top: 7px;
-	padding-bottom: 7px;
-}
-
-
-td
-{
-	border: 1px solid black
-}
-

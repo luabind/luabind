@@ -39,7 +39,7 @@ namespace luabind { namespace detail
 	class LUABIND_API object_rep
 	{
 	public:
-		enum { constant = 1, owner = 2, smart_pointer = 4, lua_class = 8, call_super = 16 };
+		enum { constant = 1, owner = 2, lua_class = 4, call_super = 8 };
 
 		// dest is a function that is called to delete the c++ object this struct holds
 		object_rep(void* obj, class_rep* crep, int flags, void(*dest)(void*));

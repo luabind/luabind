@@ -24,8 +24,10 @@
 #define TEST_040212_HPP
 
 #include <luabind/lua_include.hpp>
+#include <luabind/error.hpp>
 #include <boost/test/test_tools.hpp>
 #include <boost/preprocessor/cat.hpp>
+#include <cstring>
 
 struct lua_state
 {
@@ -66,7 +68,7 @@ struct counted_type
 template<class T>
 int counted_type<T>::count = 0;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 #define COUNTER_GUARD(x)
 #else
 #define COUNTER_GUARD(type) \
@@ -81,11 +83,21 @@ int counted_type<T>::count = 0;
 	(void)BOOST_PP_CAT(type, _guard)
 #endif
 
-#define DOSTRING_EXPECTED(state, str, expected) \
+#define DOSTRING_EXPECTED(state_, str, expected) \
 {                                               \
     try                                         \
     {                                           \
-        dostring(state, str);                   \
+        dostring(state_, str);                  \
+    }                                           \
+    catch (luabind::error const& e)             \
+    {                                           \
+		using namespace std;					\
+        if (strcmp(                             \
+            lua_tostring(e.state(), -1)         \
+          , expected))                          \
+        {                                       \
+            BOOST_ERROR(lua_tostring(e.state(), -1)); \
+        }                                       \
     }                                           \
     catch (std::string const& s)                \
     {                                           \
@@ -94,11 +106,15 @@ int counted_type<T>::count = 0;
     }                                           \
 }
 
-#define DOSTRING(state, str)                    \
+#define DOSTRING(state_, str)                   \
 {                                               \
     try                                         \
     {                                           \
-        dostring(state, str);                   \
+        dostring(state_, str);                  \
+    }                                           \
+    catch (luabind::error const& e)             \
+    {                                           \
+        BOOST_ERROR(lua_tostring(e.state(), -1)); \
     }                                           \
     catch (std::string const& s)                \
     {                                           \

@@ -198,7 +198,7 @@ namespace luabind { namespace detail
 		template<class T>
 		void converter_postcall(lua_State* L, by_pointer<T>, int) 
 		{
-			typedef typename find_conversion_policy<2, Policies>::type converter_policy;
+			typedef typename find_conversion_policy<1, Policies>::type converter_policy;
 			typename converter_policy::template generate_converter<T, cpp_to_lua>::type converter;	
 			converter.apply(L, *reinterpret_cast<T*>(m_storage));
 			reinterpret_cast<T*>(m_storage)->~T();
