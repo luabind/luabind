@@ -1074,13 +1074,13 @@ namespace luabind { namespace detail
 		template<class T>
 		static int match(lua_State* L, by_const_reference<functor<T> >, int index)
 		{
-			if (lua_isfunction(L, index)) return 0; else return -1;
+			if (lua_isfunction(L, index) || lua_isnil(L, index)) return 0; else return -1;
 		}
 
 		template<class T>
 		static int match(lua_State* L, by_value<functor<T> >, int index)
 		{
-			if (lua_isfunction(L, index)) return 0; else return -1;
+			if (lua_isfunction(L, index) || lua_isnil(L, index)) return 0; else return -1;
 		}
 
 		template<class T>

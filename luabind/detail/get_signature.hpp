@@ -75,40 +75,43 @@ namespace luabind { namespace detail
 	};
 
 	template<class T>
-	std::string name_of_type(by_value<T>, lua_State* L) { return get_class_name(L, LUABIND_TYPEID(T)); };
+	std::string name_of_type(by_value<T>, lua_State* L, int) { return get_class_name(L, LUABIND_TYPEID(T)); };
 	template<class T>
-	std::string name_of_type(by_reference<T>, lua_State* L) { return name_of_type(LUABIND_DECORATE_TYPE(T), L) + "&"; };
+	std::string name_of_type(by_reference<T>, lua_State* L, int) { return name_of_type(LUABIND_DECORATE_TYPE(T), L, 0L) + "&"; };
 	template<class T>
-	std::string name_of_type(by_pointer<T>, lua_State* L) { return name_of_type(LUABIND_DECORATE_TYPE(T), L) + "*"; };
+	std::string name_of_type(by_pointer<T>, lua_State* L, int) { return name_of_type(LUABIND_DECORATE_TYPE(T), L, 0L) + "*"; };
 	template<class T>
-	std::string name_of_type(by_const_reference<T>, lua_State* L) { return "const " + name_of_type(LUABIND_DECORATE_TYPE(T), L) + "&"; };
+	std::string name_of_type(by_const_reference<T>, lua_State* L, int) { return "const " + name_of_type(LUABIND_DECORATE_TYPE(T), L, 0L) + "&"; };
 	template<class T>
-	std::string name_of_type(by_const_pointer<T>, lua_State* L) { return "const " + name_of_type(LUABIND_DECORATE_TYPE(T), L) + "*"; };
+	std::string name_of_type(by_const_pointer<T>, lua_State* L, int) { return "const " + name_of_type(LUABIND_DECORATE_TYPE(T), L, 0L) + "*"; };
 
-	inline std::string name_of_type(by_value<luabind::object>, lua_State*) { return "object"; };
-	inline std::string name_of_type(by_const_reference<luabind::object>, lua_State*) { return "object"; };
-	inline std::string name_of_type(by_value<bool>, lua_State*) { return "boolean"; }
-	inline std::string name_of_type(by_value<char>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<short>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<int>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<long>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<unsigned char>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<unsigned short>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<unsigned int>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<unsigned long>, lua_State*) { return "number"; }
+	inline std::string name_of_type(by_value<luabind::object>, lua_State*, int) { return "object"; };
+	inline std::string name_of_type(by_const_reference<luabind::object>, lua_State*, int) { return "object"; };
+	inline std::string name_of_type(by_value<bool>, lua_State*, int) { return "boolean"; }
+	inline std::string name_of_type(by_value<char>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<short>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<int>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<long>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<unsigned char>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<unsigned short>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<unsigned int>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<unsigned long>, lua_State*, int) { return "number"; }
 
-	inline std::string name_of_type(by_value<const bool>, lua_State*) { return "boolean"; }
-	inline std::string name_of_type(by_value<const char>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<const short>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<const int>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<const long>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<const unsigned char>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<const unsigned short>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<const unsigned int>, lua_State*) { return "number"; }
-	inline std::string name_of_type(by_value<const unsigned long>, lua_State*) { return "number"; }
+	inline std::string name_of_type(by_value<const bool>, lua_State*, int) { return "boolean"; }
+	inline std::string name_of_type(by_value<const char>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<const short>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<const int>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<const long>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<const unsigned char>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<const unsigned short>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<const unsigned int>, lua_State*, int) { return "number"; }
+	inline std::string name_of_type(by_value<const unsigned long>, lua_State*, int) { return "number"; }
 
-	inline std::string name_of_type(by_value<std::string>, lua_State*) { return "string"; }
-	inline std::string name_of_type(by_const_pointer<char>, lua_State*) { return "string"; }
+	template<class T>
+	inline std::string name_of_type(by_value<luabind::functor<T> >, lua_State* L, long) { return "function<" + name_of_type(LUABIND_DECORATE_TYPE(T), L, 0L) + ">"; }
+
+	inline std::string name_of_type(by_value<std::string>, lua_State*, int) { return "string"; }
+	inline std::string name_of_type(by_const_pointer<char>, lua_State*, int) { return "string"; }
 
 	template<class T>
 	struct type_name_unless_void
@@ -116,7 +119,7 @@ namespace luabind { namespace detail
 		inline static void apply(std::string& s, lua_State* L, bool first)
 		{
 			if (!first) s += ", ";
-			s += name_of_type(LUABIND_DECORATE_TYPE(T), L);
+			s += name_of_type(LUABIND_DECORATE_TYPE(T), L, 0L);
 		}
 	};
 
@@ -182,7 +185,7 @@ namespace luabind { namespace detail
 	{
 		s += "(";
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L, 0L);
 		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
 		s += ")";
@@ -193,7 +196,7 @@ namespace luabind { namespace detail
 	{
 		s += "(";
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L, 0L);
 		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
 		s += ") const";
@@ -204,7 +207,7 @@ namespace luabind { namespace detail
 	{
 		s += "(";
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L, 0L);
 		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
 		s += ")";
@@ -216,7 +219,7 @@ namespace luabind { namespace detail
 		s += "(";
 
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L, 0L);
 		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
 
@@ -228,7 +231,7 @@ namespace luabind { namespace detail
 	{
 		s += "(";
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L, 0L);
 		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
 		s += ")";
@@ -239,7 +242,7 @@ namespace luabind { namespace detail
 	{
 		s += "(";
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L, 0L);
 		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
 		s += ") const";
@@ -251,7 +254,7 @@ namespace luabind { namespace detail
 	{
 		s += "(";
 #if BOOST_PP_ITERATION() > 0
-		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
+		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L, 0L);
 		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
 		s += ")";

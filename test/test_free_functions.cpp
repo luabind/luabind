@@ -6,6 +6,13 @@ namespace
 
 	LUABIND_ANONYMOUS_FIX int feedback = 0;
 
+	luabind::functor<int> functor_test;
+	
+	void set_functor(luabind::functor<int> f)
+	{
+		functor_test = f;
+	}
+	
 	struct base 
 	{
 		~base() { feedback = 99; }
@@ -117,7 +124,9 @@ bool test_free_functions()
 			def("f", (void(*)(int, int)) &f),
 			def("g", &g),
 			def("create", &create_base, adopt(return_value)),
-			def("test_functor", &test_functor)
+			def("test_functor", &test_functor),
+			def("set_functor", &set_functor)
+				
 
 #if !(BOOST_MSVC < 1300)
 			,
@@ -151,6 +160,7 @@ bool test_free_functions()
 		int a = test_f();
 		if (a != 4) return false;
 		if (feedback != 3) return false;
+		if (dostring(L, "set_functor(nil)")) return false;
 
 		if (top != lua_gettop(L)) return false;
 

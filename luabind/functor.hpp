@@ -319,8 +319,15 @@ namespace luabind
 		const functor<Ret>& operator=(const functor<Ret>& rhs)
 		{
 			L_ = rhs.L_;
-			lua_getref(L_, rhs.ref_);
-			ref_ = detail::ref(L_);
+			if (L_)
+			{
+				lua_getref(L_, rhs.ref_);
+				ref_ = detail::ref(L_);
+			}
+			else
+			{
+				ref_ = LUA_NOREF;
+			}
 			return *this;
 		}
 
