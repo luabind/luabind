@@ -1091,8 +1091,8 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 			{
 				// get reference to lua object
 				lua_pushvalue(L, lua_upvalueindex(2));
-				int ref = detail::ref(L);
-
+				detail::lua_reference ref;
+				ref.set(L);
 				void* instance = rep->overloads[match_index].construct_wrapped(L, ref);
 				
 				if (crep->has_holder())
@@ -1160,7 +1160,8 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 	// lua stack: crep <arguments>
 
 	lua_newtable(L);
-	int ref = detail::ref(L);
+	detail::lua_reference ref;
+	ref.set(L);
 
 	bool has_bases = !crep->bases().empty();
 		
@@ -1287,7 +1288,7 @@ int luabind::detail::class_rep::lua_class_gettable(lua_State* L)
 		return 1;
 	}
 	
-	detail::getref(L, obj->lua_table_ref());
+	obj->get_lua_table(L);
 	lua_pushvalue(L, 2);
 	lua_gettable(L, -2);
 
@@ -1396,7 +1397,7 @@ int luabind::detail::class_rep::lua_class_settable(lua_State* L)
 
 #endif
 
-		detail::getref(L, obj->lua_table_ref());
+		obj->get_lua_table(L);
 		lua_replace(L, 1);
 		lua_settable(L, 1);
 	}

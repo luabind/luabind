@@ -128,7 +128,8 @@ namespace luabind
 					std::terminate();
 #endif
 				}
-				int ref = detail::ref(L);
+				detail::lua_reference ref;
+				ref.set(L);
 				return luabind::object(m_obj->lua_state(), ref, true/*luabind::object::reference()*/);
 			}
 #endif
@@ -222,13 +223,14 @@ namespace luabind
 
 #define LUABIND_PROXY_RAW_AT_BODY											\
 			{																										\
-				lua_State* L = lua_state();														\
-				pushvalue();																				\
-				detail::convert_to_lua(L, key);													\
-				lua_rawget(L, -2);																		\
-				int ref = detail::ref(L);																\
-				lua_pop(L, 1);																				\
-				return object(L, ref, true);															\
+				lua_State* L = lua_state();\
+				pushvalue();\
+				detail::convert_to_lua(L, key);\
+				lua_rawget(L, -2);\
+				detail::lua_reference ref;\
+				ref.set(L);\
+				lua_pop(L, 1);\
+				return object(L, ref, true);\
 			}
 
 #if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
@@ -240,15 +242,16 @@ namespace luabind
 			inline object raw_at(const T& key);
 #endif
 
-#define LUABIND_PROXY_AT_BODY														\
-			{																										\
-				lua_State* L = lua_state();														\
-				pushvalue();																				\
-				detail::convert_to_lua(L, key);													\
-				lua_gettable(L, -2);																	\
-				int ref = detail::ref(L);																\
-				lua_pop(L, 1);																				\
-				return object(L, ref, true);															\
+#define LUABIND_PROXY_AT_BODY \
+			{\
+				lua_State* L = lua_state();\
+				pushvalue();\
+				detail::convert_to_lua(L, key);\
+				lua_gettable(L, -2);\
+				detail::lua_reference ref;\
+				ref.set(L);\
+				lua_pop(L, 1);\
+				return object(L, ref, true);\
 			}
 
 #if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
@@ -586,7 +589,7 @@ namespace luabind
 				lua_State* L = m_obj->lua_state();
 				m_obj->pushvalue();
 				lua_rawgeti(L, -1, m_key);
-				if (lua_isnil(L, -1)) m_key = LUA_NOREF;
+				if (lua_isnil(L, -1)) m_key = -1;
 				lua_pop(L, 1);
 
 				return *this;
@@ -601,7 +604,7 @@ namespace luabind
 				lua_State* L = m_obj->lua_state();
 				m_obj->pushvalue();
 				lua_rawgeti(L, -1, m_key);
-				if (lua_isnil(L, -1)) m_key = LUA_NOREF;
+				if (lua_isnil(L, -1)) m_key = -1;
 				lua_pop(L, 1);
 
 				return array_iterator(m_obj, old_key);

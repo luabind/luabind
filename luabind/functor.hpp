@@ -349,35 +349,23 @@ namespace luabind
 	{
 	public:
 
-		functor(lua_State* L, const char* name) : L_(L)
+		functor(lua_State* L, const char* name)
+			: L_(L)
 		{
 			lua_pushstring(L, name);
 			lua_gettable(L, LUA_GLOBALSINDEX);
-			ref_ = detail::ref(L);
+			ref_.set(L_);
 		}
 
 		functor()
 			: L_(0)
-			, ref_(LUA_NOREF)
 		{
 		}
 
-		functor(const functor<Ret>& obj): L_(obj.L_)
+		functor(const functor<Ret>& obj)
+			: L_(obj.L_)
+			, ref_(obj.ref_)
 		{
-			if (L_ == 0)
-			{
-				ref_ = LUA_NOREF;
-			}
-			else
-			{
-				lua_getref(L_, obj.ref_);
-				ref_ = detail::ref(L_);
-			}
-		}
-
-		~functor()
-		{
-			if (ref_ != LUA_NOREF) detail::unref(L_, ref_);
 		}
 
 		// this is a safe substitute for an implicit converter to bool
@@ -391,21 +379,13 @@ namespace luabind
 		const functor<Ret>& operator=(const functor<Ret>& rhs)
 		{
 			L_ = rhs.L_;
-			if (L_)
-			{
-				lua_getref(L_, rhs.ref_);
-				ref_ = detail::ref(L_);
-			}
-			else
-			{
-				ref_ = LUA_NOREF;
-			}
+			ref_ = rhs.ref_;
 			return *this;
 		}
 
 		bool operator==(const functor<Ret>& rhs) const
 		{
-			if (ref_ == LUA_NOREF || rhs.ref_ == LUA_NOREF) return false;
+			if (!ref_.is_valid() || !rhs.ref_.is_valid()) return false;
 			pushvalue();
 			rhs.pushvalue();
 			bool result = lua_equal(L_, -1, -2) != 0;
@@ -415,7 +395,7 @@ namespace luabind
 
 		bool operator!=(const functor<Ret>& rhs) const
 		{
-			if (ref_ == LUA_NOREF || rhs.ref_ == LUA_NOREF) return true;
+			if (!ref_.is_valid() || !rhs.ref_.is_valid()) return true;
 			pushvalue();
 			rhs.pushvalue();
 			bool result = lua_equal(L_, -1, -2) == 0;
@@ -423,17 +403,17 @@ namespace luabind
 			return result;
 		}
 
-		inline bool is_valid() const { return ref_ != LUA_NOREF; }
+		inline bool is_valid() const { return ref_.is_valid(); }
 	
 		lua_State* lua_state() const { return L_; }
-		void pushvalue() const { lua_getref(L_, ref_); }
+		void pushvalue() const { ref_.get(L_); }
 
 		#define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/functor.hpp>, 1))
 		#include BOOST_PP_ITERATE()
 
 // TODO: should be private
 
-		functor(lua_State* L, int ref)
+		functor(lua_State* L, detail::lua_reference const& ref)
 			: L_(L)
 			, ref_(ref)
 		{
@@ -444,8 +424,7 @@ namespace luabind
 		void dummy() const {}
 
 		lua_State* L_;
-		// TODO: should be replaced with a detail::lua_reference
-		int ref_;
+		detail::lua_reference ref_;
 	};
 }
 

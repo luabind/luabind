@@ -1,6 +1,7 @@
 include ../config
 
 SOURCES = \
+	ref.cpp \
 	scope.cpp \
 	class.cpp \
 	class_rep.cpp \

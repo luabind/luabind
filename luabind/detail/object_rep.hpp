@@ -33,6 +33,8 @@ namespace luabind { namespace detail
 
 	void finalize(lua_State* L, class_rep* crep);
 
+	// TODO: move code into separate compilation unit
+
 	// this class is allocated inside lua for each pointer.
 	// it contains the actual c++ object-pointer.
 	// it also tells if it is const or not.
@@ -42,33 +44,24 @@ namespace luabind { namespace detail
 		enum { constant = 1, owner = 2, smart_pointer = 4, lua_class = 8, call_super = 16 };
 
 		// dest is a function that is called to delete the c++ object this struct holds
-		object_rep(void* obj, class_rep* crep, int flags, void(*dest)(void*)):
-			m_object(obj),
-			m_classrep(crep),
-			m_flags(flags),
-			m_lua_table_ref(LUA_NOREF),
-			m_destructor(dest),
-			m_dependency_cnt(1),
-			m_dependency_ref(LUA_NOREF)
-//			m_instance(0)
+		object_rep(void* obj, class_rep* crep, int flags, void(*dest)(void*))
+			: m_object(obj)
+			, m_classrep(crep)
+			, m_flags(flags)
+			, m_destructor(dest)
+			, m_dependency_cnt(1)
 		{
 			// if the object is owned by lua, a valid destructor must be given
 			assert((((m_flags & owner) && dest) || !(m_flags & owner)) && "internal error, please report");
-
-			// an object can't be collected if it's const
-			// if it has a holder type, the holder can be collected
-//			assert((!((m_flags & constant) && (m_flags & owner))) && "internal error, please report");
 		}
 
-		object_rep(class_rep* crep, int flags, int table_ref)
+		object_rep(class_rep* crep, int flags, detail::lua_reference const& table_ref)
 			: m_object(0)
 			, m_classrep(crep)
 			, m_flags(flags)
 			, m_lua_table_ref(table_ref)
 			, m_destructor(0)
 			, m_dependency_cnt(1)
-			, m_dependency_ref(LUA_NOREF)
-//			, m_instance(0)
 		{
 		}
 
@@ -91,7 +84,7 @@ namespace luabind { namespace detail
 		int flags() const throw() { return m_flags; }
 		void set_flags(int flags) { m_flags = flags; }
 
-		int lua_table_ref() const { return m_lua_table_ref; }
+		void get_lua_table(lua_State* L) const { return m_lua_table_ref.get(L); }
 
 		void remove_ownership()
 		{
@@ -108,13 +101,13 @@ namespace luabind { namespace detail
 
 		void add_dependency(lua_State* L, int index)
 		{
-			if (m_dependency_ref == LUA_NOREF)
+			if (!m_dependency_ref.is_valid())
 			{
 				lua_newtable(L);
-				m_dependency_ref = detail::ref(L);
+				m_dependency_ref.set(L);
 			}
 
-			detail::getref(L, m_dependency_ref);
+			m_dependency_ref.get(L);
 			lua_pushvalue(L, index);
 			lua_rawseti(L, -2, m_dependency_cnt);
 			lua_pop(L, 1);
@@ -123,8 +116,8 @@ namespace luabind { namespace detail
 
 		void release_refs(lua_State* L)
 		{
-			if (m_dependency_ref != LUA_NOREF) detail::unref(L, m_dependency_ref);
-			if (m_lua_table_ref != LUA_NOREF) detail::unref(L, m_lua_table_ref); // correct?
+			m_dependency_ref.reset();
+			m_lua_table_ref.reset();
 		}
 
 //		instance_holder* instance() const
@@ -150,10 +143,10 @@ namespace luabind { namespace detail
 									// c++ base or 0.
 		class_rep* m_classrep; // the class information about this object's type
 		int m_flags;
-		int m_lua_table_ref; // reference to lua table if this is a lua class
+		detail::lua_reference m_lua_table_ref; // reference to lua table if this is a lua class
 		void(*m_destructor)(void*); // this could be in class_rep? it can't: see intrusive_ptr
 		int m_dependency_cnt; // counts dependencies
-		int m_dependency_ref; // reference to lua table holding dependency references
+		detail::lua_reference m_dependency_ref; // reference to lua table holding dependency references
 
 		// ======== the new way, separate object_rep from the holder
 //		instance_holder* m_instance;

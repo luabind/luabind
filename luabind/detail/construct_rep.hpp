@@ -49,14 +49,14 @@ namespace luabind { namespace detail
 			}
 
 			typedef void*(*construct_ptr)(lua_State*);
-			typedef void*(*wrapped_construct_ptr)(lua_State*, int);
+			typedef void*(*wrapped_construct_ptr)(lua_State*, lua_reference const&);
 			typedef void(*get_signature_ptr)(lua_State*, std::string&);
 
 			inline void set_constructor(construct_ptr f) { construct_fun = f; }
 			inline void set_wrapped_constructor(wrapped_construct_ptr f) { wrapped_construct_fun = f; }
 
 			inline void* construct(lua_State* L) { return construct_fun(L); } 
-			inline void* construct_wrapped(lua_State* L, int ref) { return wrapped_construct_fun(L, ref); } 
+			inline void* construct_wrapped(lua_State* L, lua_reference const& ref) { return wrapped_construct_fun(L, ref); } 
 			inline bool has_wrapped_construct() { return wrapped_construct_fun != 0; }
 
 			inline void set_arity(int arity) { m_arity = arity; }

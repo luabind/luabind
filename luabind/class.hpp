@@ -66,13 +66,6 @@
 		
 	document the new yield-policy more
 
-	cache finalizers in the class_rep. For lua classes
-	we currently do a lookup each time we need to know if a lua class
-	has a finalizer.
-
-	static functions, this could be implemented by letting classes contain
-	other declarations (classes or functions)
-
 	document custom policies, custom converters
 
 	store the instance object for policies.
@@ -200,9 +193,6 @@ namespace luabind
 				, iterator
 			>::type type;
 		};
-
-		// TODO: is this detail::class_rep::function_dispatcher or detail::free_functions::function_dispatcher?
-//		LUABIND_API int function_dispatcher(lua_State* L);
 
 		// this should know about the smart pointer type.
 		// and should really do:

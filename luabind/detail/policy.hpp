@@ -1081,7 +1081,8 @@ namespace luabind { namespace detail
 				return functor<T>();
 
 			lua_pushvalue(L, index);
-			int ref = detail::ref(L);
+			detail::lua_reference ref;
+			ref.set(L);
 			return functor<T>(L, ref);
 		}
 
@@ -1092,7 +1093,8 @@ namespace luabind { namespace detail
 				return functor<T>();
 
 			lua_pushvalue(L, index);
-			int ref = detail::ref(L);
+			detail::lua_reference ref;
+			ref.set(L);
 			return functor<T>(L, ref);
 		}
 

@@ -110,7 +110,7 @@ LUABIND_ARRAY_PROXY_ASSIGNMENT_OPERATOR(proxy_array_object)
 		void proxy_array_object::pushvalue() const
 		{
 			// you are trying to dereference an invalid object
-			assert((m_key != LUA_NOREF) && "you cannot call pushvalue() on an uninitialized object");
+			assert((m_key != -1) && "you cannot call pushvalue() on an uninitialized object");
 
 			lua_State* L = m_obj->lua_state();
 			m_obj->pushvalue();
