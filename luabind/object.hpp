@@ -257,29 +257,45 @@ namespace luabind
 				return lua_type(lua_state(), -1);
 			}
 
-			template<class T>
-			inline object raw_at(const T& key)
-			{
-				lua_State* L = lua_state();
-				pushvalue();
-				detail::convert_to_lua(L, key);
-				lua_rawget(L, -2);
-				int ref = detail::ref(L);
-				lua_pop(L, 1);
-				return object(L, ref, true);
+#define LUABIND_PROXY_RAW_AT_BODY											\
+			{																										\
+				lua_State* L = lua_state();														\
+				pushvalue();																				\
+				detail::convert_to_lua(L, key);													\
+				lua_rawget(L, -2);																		\
+				int ref = detail::ref(L);																\
+				lua_pop(L, 1);																				\
+				return object(L, ref, true);															\
 			}
 
+#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
+			template<class T>					
+			inline object raw_at(const T& key)
+			LUABIND_PROXY_RAW_AT_BODY
+#else
 			template<class T>
-			inline object at(const T& key)
-			{
-				lua_State* L = lua_state();
-				pushvalue();
-				detail::convert_to_lua(L, key);
-				lua_gettable(L, -2);
-				int ref = detail::ref(L);
-				lua_pop(L, 1);
-				return object(L, ref, true);
+			inline object raw_at(const T& key);
+#endif
+
+#define LUABIND_PROXY_AT_BODY														\
+			{																										\
+				lua_State* L = lua_state();														\
+				pushvalue();																				\
+				detail::convert_to_lua(L, key);													\
+				lua_gettable(L, -2);																	\
+				int ref = detail::ref(L);																\
+				lua_pop(L, 1);																				\
+				return object(L, ref, true);															\
 			}
+
+#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
+			template<class T>					
+			inline object at(const T& key)
+			LUABIND_PROXY_AT_BODY
+#else
+			template<class T>
+			inline object at(const T& key);
+#endif
 
 			inline bool is_valid() const { return true; }
 			lua_State* lua_state() const;
@@ -347,6 +363,25 @@ namespace luabind
 				return lua_type(lua_state(), -1);
 			}
 
+#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
+			template<class T>	
+			inline object raw_at(const T& key)
+			LUABIND_PROXY_RAW_AT_BODY
+#else
+			template<class T>
+			inline object raw_at(const T& key);
+#endif
+
+#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
+			template<class T>	
+			inline object at(const T& key)
+			LUABIND_PROXY_AT_BODY
+#else
+			template<class T>
+			inline object at(const T& key);
+#endif
+
+/*
 			template<class T>
 			inline object raw_at(const T& key)
 			{
@@ -370,7 +405,7 @@ namespace luabind
 				lua_pop(L, 1);
 				return object(L, ref, true);
 			}
-
+*/
 			inline bool is_valid() const { return true; }
 			lua_State* lua_state() const;
 			void pushvalue() const;
@@ -438,6 +473,45 @@ namespace luabind
 				return lua_type(lua_state(), -1);
 			}
 
+#define LUABIND_PROXY_ARRAY_RAW_AT_BODY				\
+			{																							\
+				pushvalue();																	\
+				detail::convert_to_lua(m_state, key);							\
+				lua_rawget(m_state, -2);												\
+				int ref = detail::ref(m_state);										\
+				lua_pop(m_state, 1);														\
+				return object(m_state, ref, true);									\
+			}
+
+#define LUABIND_PROXY_ARRAY_AT_BODY							\
+			{																							\
+				pushvalue();																	\
+				detail::convert_to_lua(m_state, key);							\
+				lua_gettable(m_state, -2);											\
+				int ref = detail::ref(m_state);										\
+				lua_pop(m_state, 1);														\
+				return object(m_state, ref, true);									\
+			}
+
+#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
+			template<class T>	
+			inline object at(const T& key)
+			LUABIND_PROXY_ARRAY_AT_BODY
+#else
+			template<class T>
+			inline object at(const T& key);
+#endif
+
+
+#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
+			template<class T>	
+			inline object raw_at(const T& key)
+			LUABIND_PROXY_ARRAY_RAW_AT_BODY
+#else
+			template<class T>
+			inline object raw_at(const T& key);
+#endif
+/*
 			template<class T>
 			inline object raw_at(const T& key)
 			{
@@ -459,7 +533,7 @@ namespace luabind
 				lua_pop(m_state, 1);
 				return object(m_state, ref, true);
 			}
-
+*/
 			template<class T>
 			inline detail::proxy_object operator[](const T& key) const
 			{
@@ -1181,6 +1255,16 @@ private:
 		// *************************************
 		// PROXY OBJECT
 
+#if !defined(BOOST_MSVC) || (defined(BOOST_MSVC) && (BOOST_MSVC > 1300))
+		template<class T>
+		inline object proxy_object::raw_at(const T& key)
+		LUABIND_PROXY_RAW_AT_BODY
+
+		template<class T>
+		inline object proxy_object::at(const T& key)
+		LUABIND_PROXY_AT_BODY
+#endif
+
 		inline proxy_object& proxy_object::operator=(const object& p)
 		{
 			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
@@ -1298,6 +1382,19 @@ private:
 		// *************************************
 		// PROXY ARRAY OBJECT
 
+#if !defined(BOOST_MSVC) || (defined(BOOST_MSVC) && (BOOST_MSVC > 1300))
+		template<class T>
+		inline object proxy_array_object::raw_at(const T& key)
+		LUABIND_PROXY_ARRAY_RAW_AT_BODY
+
+		template<class T>
+		inline object proxy_array_object::at(const T& key)
+		LUABIND_PROXY_ARRAY_AT_BODY
+#endif
+
+#undef LUABIND_PROXY_ARRAY_AT_BODY
+#undef LUABIND_PROXY_ARRAY_RAW_AT_BODY
+
 		inline proxy_array_object& proxy_array_object::operator=(const object& p)
 		{
 			// if you hit this assert you are trying to transfer values
@@ -1401,6 +1498,19 @@ private:
 
 		// *************************************
 		// PROXY RAW OBJECT
+
+#if !defined(BOOST_MSVC) || (defined(BOOST_MSVC) && (BOOST_MSVC > 1300))
+		template<class T>
+		inline object proxy_raw_object::raw_at(const T& key)
+		LUABIND_PROXY_RAW_AT_BODY
+
+		template<class T>
+		inline object proxy_raw_object::at(const T& key)
+		LUABIND_PROXY_AT_BODY
+#endif
+
+#undef LUABIND_PROXY_RAW_AT_BODY
+#undef LUABIND_PROXY_AT_BODY
 
 		inline proxy_raw_object& proxy_raw_object::operator=(const object& p)
 		{

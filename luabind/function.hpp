@@ -40,6 +40,8 @@
 #include <luabind/detail/get_overload_signature.hpp>
 #include <luabind/detail/overload_rep_base.hpp>
 
+#include <luabind/scope.hpp>
+
 namespace luabind
 {
 	namespace detail
@@ -320,6 +322,81 @@ namespace luabind
 	void function(lua_State* L, const char* name, F f)
 	{
 		luabind::function(L, name, f, detail::null_type());
+	}
+
+	namespace detail
+	{
+		template<class F, class Policies>
+		struct function_commiter : detail::scoped_object
+		{
+			function_commiter(const char* n, F f, const Policies& p)
+				: name(n)
+				, fun(f)
+				, policies(p)
+			{}
+
+			virtual detail::scoped_object* clone() const
+			{
+				return new function_commiter(*this);
+			}
+
+			virtual void commit(lua_State* L) const
+			{
+				detail::free_functions::function_registry* registry = 0;
+				lua_pushstring(L, "__lua_free_functions");
+				lua_gettable(L, LUA_REGISTRYINDEX);
+
+				registry = static_cast<detail::free_functions::function_registry*>(lua_touserdata(L, -1));
+				lua_pop(L, 1);
+
+				// if you hit this assert you have not called luabind::open() for
+				// this lua_State. See the documentation for more information.
+				assert(registry != 0);
+
+#ifdef LUABIND_DONT_COPY_STRINGS
+				detail::free_functions::function_rep& rep = registry->m_functions[name.c_str()];
+#else
+				registry->m_strings.push_back(detail::dup_string(name.c_str()));
+				detail::free_functions::function_rep& rep = registry->m_functions[registry->m_strings.back()];
+#endif
+
+				detail::free_functions::overload_rep o(fun, static_cast<Policies*>(0));
+
+				o.set_match_fun(&detail::free_functions::match_function_callback_s<F, Policies>::apply);
+				o.set_fun(&detail::free_functions::function_callback_s<F, Policies>::apply);
+
+#ifndef LUABIND_NO_ERROR_CHECKING
+				o.set_sig_fun(&detail::get_free_function_signature<F>::apply);
+#endif
+
+				rep.add_overload(o);
+				rep.name = name.c_str();
+
+				detail::getref(L, scope_stack::top(L));
+				lua_pushstring(L, name.c_str());
+				lua_pushlightuserdata(L, &rep);
+				lua_pushcclosure(L, free_functions::function_dispatcher, 1);
+				lua_settable(L, -3);
+			}
+
+			std::string name;
+			F fun;
+			Policies policies;
+		};
+	}
+
+	template<class F, class Policies>
+	detail::function_commiter<F,Policies>
+	def(const char* name, F f, const Policies& policies)
+	{
+		return detail::function_commiter<F,Policies>(name, f, policies);
+	}
+
+	template<class F>
+	detail::function_commiter<F, detail::null_type>
+	def(const char* name, F f)
+	{
+		return detail::function_commiter<F,detail::null_type>(name, f, detail::null_type());
 	}
 
 } // namespace luabind

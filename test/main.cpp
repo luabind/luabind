@@ -11,6 +11,7 @@ extern "C"
 #include <algorithm>
 
 #include <luabind/luabind.hpp>
+#include <luabind/scope.hpp>
 
 bool dostring(lua_State* L, const char* str)
 {
@@ -64,8 +65,39 @@ struct TestConst
 	void g() {}
 };
 
+void f(int) {}
+
 int main()
 {
+	{
+		using namespace luabind;
+
+		lua_State* L = lua_open();
+
+		open(L);
+
+		namespace_(L, "dwarf")
+		[
+			def("f", &f),
+			
+			namespace_("inner")
+			[
+				def("test", &f)
+			]
+		];
+
+		namespace_(L, "dwarf")
+		[
+			def("g", &f)
+		];
+
+		dostring(L, "dwarf.f(4)");
+		dostring(L, "dwarf.g(10)");
+		dostring(L, "dwarf.inner.test(2)");
+
+		lua_close(L);
+	}
+
 	test_constness(&TestConst::f);
 	test_constness(&TestConst::g);
 

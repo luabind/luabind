@@ -45,6 +45,13 @@ namespace
 		}
 	};
 
+	struct no_copy
+	{
+		virtual void f() = 0;	
+	private:
+		no_copy(const no_copy&) {}
+	};
+
 } // anonymous namespace
 
 
@@ -60,6 +67,8 @@ bool test_lua_classes()
 
 	open(L);
 
+	class_<no_copy>(L, "no copy");
+	
 	class_<base, baseWrap>(L, "base")
 		.def(constructor<>())
 		.def("f", &baseWrap::fS)
