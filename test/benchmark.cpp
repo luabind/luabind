@@ -11,13 +11,13 @@ namespace std
 #define LUABIND_DONT_COPY_STRINGS
 //#define LUABIND_NOT_THREADSAFE
 
-#include <luabind/luabind.hpp>
-
 extern "C"
 {
 	#include "lua.h"
 	#include "lauxlib.h"
 }
+
+#include <luabind/luabind.hpp>
 
 struct A {};
 
@@ -36,13 +36,14 @@ int f2(lua_State* L)
 
 int main()
 {
-	const int num_calls = 1000000;
-	const int loops = 100;
+	const int num_calls = 100000;
+	const int loops = 10;
 
 	using namespace luabind;
 
 	lua_State* L = lua_open();
-
+	open(L);
+	
 	class_<A>(L, "A")
 		.def(constructor<>());
 
@@ -60,7 +61,7 @@ int main()
 		// benchmark luabind
 		std::clock_t start1 = std::clock();
 		lua_dostring(L, "a = A()\n"
-									"for i = 1, 1000000 do\n"
+									"for i = 1, 100000 do\n"
 										"test1(5, 4.6, 'foo', a)\n"
 									"end");
 
@@ -70,7 +71,7 @@ int main()
 		// benchmark empty binding
 		std::clock_t start2 = std::clock();
 		lua_dostring(L, "a = A()\n"
-									"for i = 1, 1000000 do\n"
+									"for i = 1, 100000 do\n"
 										"test2(5, 4.6, 'foo', a)\n"
 									"end");
 
@@ -86,9 +87,6 @@ int main()
 #ifdef LUABIND_NO_ERROR_CHECKING
 	std::cout << "without error-checking\n";
 #endif
-#ifdef LUABIND_DONT_COPY_STRINGS
-	std::cout << "with constant strings\n";
-#endif	
 	std::cout << "luabind:\t" << time1 * 1000000 / num_calls / loops << " microseconds per call\n"
 		<< "empty:\t" << time2 * 1000000 / num_calls / loops << " microseconds per call\n"
 		<< "diff:\t" << ((time1 - time2) * 1000000 / num_calls / loops) << " microseconds\n\n";
