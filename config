@@ -15,5 +15,7 @@
 #LUA_PATH = -I/scratch/lua-5.0/include
 #LUA_LIB_PATH = -L/scratch/lua-5.0/lib
 
+LUA_LIB_PATH = -L/usr/local/lib
+
 CXX = g++
 
