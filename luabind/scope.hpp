@@ -368,3 +368,4 @@ namespace luabind
 }
 
 #endif // LUABIND_SCOPE_HPP_INCLUDED
+

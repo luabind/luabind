@@ -796,7 +796,7 @@ namespace luabind
 		>::type WrappedType;
 
 		typedef typename detail::extract_parameter<
-			  boost::mpl::vector3<X1,X2,X3>
+			  boost::mpl::list3<X1,X2,X3>
 			, boost::mpl::not_<
 				boost::mpl::or_<
 					boost::mpl::or_<
@@ -1107,7 +1107,7 @@ namespace luabind
 		void init()
 		{
 			typedef typename detail::extract_parameter<
-					boost::mpl::vector3<X1,X2,X3>
+					boost::mpl::list3<X1,X2,X3>
 				,	boost::mpl::or_<
 							detail::is_bases<boost::mpl::_>
 						,	boost::is_base_and_derived<boost::mpl::_, T>

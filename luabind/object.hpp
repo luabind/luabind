@@ -819,6 +819,8 @@ namespace luabind
 				return *this;
 			}
 
+			object key() const;
+
 			bool operator!=(const raw_iterator& rhs) const
 			{
 				return m_obj != rhs.m_obj || m_key != rhs.m_key;
@@ -1076,7 +1078,14 @@ private:
 		detail::getref(L, m_key);
 		return object(L, detail::ref(L), true);
 	}
-	
+
+	inline object object::raw_iterator::key() const
+	{
+		lua_State* L = m_obj->lua_state();
+		detail::getref(L, m_key);
+		return object(L, detail::ref(L), true);
+	}
+
 	namespace detail
 	{
 

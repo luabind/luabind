@@ -18,7 +18,7 @@ namespace
 	{
 		std::string name_;
 	};
-	
+
 	struct property_test
 	{
 		property_test(): o(6) 

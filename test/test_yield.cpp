@@ -34,17 +34,6 @@ namespace
 
 #include <iostream>
 
-struct ns_test
-{
-	template<class T>
-	ns_test(const T&) {}
-
-	ns_test(const char*) {}
-
-	template<class T>
-	void operator=(const T&) {}
-};
-
 bool test_yield()
 {
 	using namespace luabind;

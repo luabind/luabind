@@ -87,10 +87,38 @@ namespace luabind
 
 		no_t is_user_defined(...);
 
-		template<class T>
-		no_t is_implicit_conversion(T);
+		template<bool B = true> struct yes_no : yes_t { typedef yes_t type; };
+		template<> struct yes_no<false> : no_t { typedef no_t type; };
+/*
+		template<int N, class T>
+		struct TO
+		{
+			BOOST_STATIC_CONSTANT(bool, is_specialized = false);
 
-		struct adl_helper {};
+			std::pair<int,int> match(lua_State*, detail::type<T>, boost::mpl::int_<N>, int)
+			{
+				return std::make_pair(-1,-1);
+			}
+
+			template<int I>
+			void convert(lua_State*, detail::type<T>, boost::mpl::int_<N>, int) {}
+		};
+
+		no_t is_implicit_conversion(...);
+
+		template<class T>
+		yes_no<TO<0,T>::is_specialized> is_implicit_conversion(by_value<T>);
+
+		template<class T>
+		yes_no<TO<0,T>::is_specialized> is_implicit_conversion(by_const_reference<T>);
+
+		template<class T>
+		yes_no<TO<0,T*>::is_specialized> is_implicit_conversion(by_pointer<T>);
+
+		template<class T>
+		yes_no<TO<0,const T*>::is_specialized> is_implicit_conversion(by_const_pointer<T>);
+
+		#define LUABIND_IMPLICIT(index, to, from) template<> struct TO<index,to >:FROM<from > {}*/
 	}
 
 	namespace detail
@@ -102,13 +130,13 @@ namespace luabind
 				sizeof(luabind::converters::is_user_defined(LUABIND_DECORATE_TYPE(T))) == sizeof(yes_t));
 		};
 
-		template<class T>
+/*		template<class T>
 		struct is_implicit_conversion
 		{
 			BOOST_STATIC_CONSTANT(bool, value =
 					sizeof(luabind::converters::is_implicit_conversion(LUABIND_DECORATE_TYPE(T))) == sizeof(yes_t));
 		};
-
+*/
 		int implicit_cast(const class_rep* crep, LUABIND_TYPE_INFO const&, int& pointer_offset);
 	}
 
@@ -380,29 +408,65 @@ namespace luabind { namespace detail
 
 // *********** default converters ***************
 
-	template<class> struct implicit_converter;
+/*	template<class> struct implicit_converter;
 
 	template<>
 	struct implicit_converter<lua_to_cpp>
 	{
+		int converter_index;
+
 		template<class T>
 		T apply(lua_State* L, detail::by_value<T>, int index)
 		{
-			return implicit_conversion_lua_to_cpp(converters::adl_helper(), L, 
-					detail::by_value<T>(), index);
+			return converters::TO<T>::convert(L, detail::type<T>(), index);
 		}
 
 		template<class T>
-		static int match(lua_State* L, T, int index)
+		static int match(lua_State* L, detail::by_value<T>, int index)
 		{
-			return implicit_match_lua_to_cpp(converters::adl_helper(), L,
-					T(), index);
+			return converters::TO<T>::match(L, detail::type<T>(), index);
+		}
+
+		template<class T>
+		T apply(lua_State* L, detail::by_const_reference<T>, int index)
+		{
+			return converters::TO<T>::convert(L, detail::type<T>(), index);
+		}
+
+		template<class T>
+		static int match(lua_State* L, detail::by_const_reference<T>, int index)
+		{
+			return converters::TO<T>::match(L, detail::type<T>(), index);
+		}
+
+		template<class T>
+		T* apply(lua_State* L, detail::by_pointer<T>, int index)
+		{
+			return converters::TO<T*>::convert(L, detail::type<T*>(), index);
+		}
+
+		template<class T>
+		static int match(lua_State* L, detail::by_pointer<T>, int index)
+		{
+			return converters::TO<T*>::match(L, detail::type<T*>(), index);
+		}
+
+		template<class T>
+		const T* apply(lua_State* L, detail::by_const_pointer<T>, int index)
+		{
+			return converters::TO<const T*>::convert(L, detail::type<const T*>(), index);
+		}
+
+		template<class T>
+		static int match(lua_State* L, detail::by_const_pointer<T>, int index)
+		{
+			return converters::TO<const T*>::match(L, detail::type<const T*>(), index);
 		}
 
 		template<class T>
 		void converter_postcall(lua_State*, T, int) {}
 	};
-
+*/
 
 // ********** user defined converter ***********
 
@@ -907,8 +971,8 @@ namespace luabind { namespace detail
 		{
 			typedef typename boost::mpl::if_<is_user_defined<T>
 						, user_defined_converter<Direction>
-						, typename boost::mpl::if_<is_implicit_conversion<T>
-							, implicit_converter<Direction>
+//						, typename boost::mpl::if_<is_implicit_conversion<T>
+//							, implicit_converter<Direction>
 							, typename boost::mpl::if_<is_primitive<T>
 								, primitive_converter<Direction>
 								, typename boost::mpl::if_<is_lua_functor<T>
@@ -924,7 +988,7 @@ namespace luabind { namespace detail
 													, typename boost::mpl::if_<is_const_reference<T>
 														, const_ref_converter<Direction>
 														, value_converter<Direction>
-			>::type>::type>::type>::type>::type>::type>::type>::type>::type type;
+			>::type>::type>::type>::type>::type>::type>::type>::type type;
 		};	
 	};
 
@@ -1181,37 +1245,43 @@ namespace luabind { namespace detail
 		typedef default_policy type;
 	};
 
-/*	template<class List>
-	struct find_converter_policy
-		: find_converter_policy_impl<List>
-	{
-	};
-*/
-
 }
+/*
 	namespace converters
 	{
-		template<class To, class From>
-		struct implicit_conversion
+		template<class T>
+		struct FROM
 		{
-			friend yes_t is_implicit_conversion(by_value<To>);
+			BOOST_STATIC_CONSTANT(bool, is_specialized = true);
 
-			friend int implicit_match_lua_to_cpp(adl_helper, lua_State* L, by_value<To>, int index)
+			template<class U, int N>
+			static U convert(lua_State* L, boost::mpl::int_<N>, detail::type<U>, int index)
 			{
 				typename luabind::detail::default_policy
-					::generate_converter<From, detail::lua_to_cpp>::type c;
-				return c.match(L, by_value<From>(), index);
+					::generate_converter<T, detail::lua_to_cpp>::type c;
+				return static_cast<U>(c.apply(L,
+							LUABIND_DECORATE_TYPE(T), index));
 			}
 
-			friend To implicit_conversion_lua_to_cpp(adl_helper, lua_State* L, by_value<To>, int index)
+			template<class U>
+			static std::pair<int,int> match(lua_State* L, boost::mpl::int_<N>, detail::type<U>, int index)
 			{
-				typename luabind::detail::default_policy
-					::generate_converter<From, detail::lua_to_cpp>::type c;
-				return static_cast<To>(c.apply(L,
-							by_value<From>(), index));
+				typedef typename luabind::detail::default_policy
+					::generate_converter<T, detail::lua_to_cpp>::type c;
+
+				int my_match = c::match(L, LUABIND_DECORATE_TYPE(T), index);
+
+				std::pair<int,int> result = TO<N + 1, U>
+					::match(L, boost::mpl::int_<N + 1>(), detail::type<U>(), index);
+
+				if (my_match < result.first() && my_match != -1)
+					return std::make_pair(my_match, N);
+				else
+					return result;
 			}
 		};
 	}
+*/
 }
 
 

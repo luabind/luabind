@@ -119,90 +119,11 @@ namespace luabind
 	}
 }
 
-#define LUABIND_IMPLICIT_CONVERSION(from, to, to_stripped)				\
-	namespace luabind { namespace converters {								\
-		yes_t is_user_defined(to);													\
-		int match_lua_to_cpp(lua_State* L, to, int index)					\
-		{																					\
-			luabind::detail::default_policy										\
-				::generate_converter<from, detail::lua_to_cpp>::type c;	\
-			return c.match(L, LUABIND_DECORATE_TYPE(from), index);		\
-		}																					\
-																							\
-		to_stripped convert_lua_to_cpp(lua_State* L, to, int index)		\
-		{																					\
-			luabind::detail::default_policy										\
-				::generate_converter<from, detail::lua_to_cpp>::type c;	\
-			return static_cast<to_stripped>(c.apply(L, 						\
-						LUABIND_DECORATE_TYPE(from), index));					\
-		}																					\
-		}}
-
-typedef boost::shared_ptr<base> t1;
-typedef luabind::converters::by_value<boost::weak_ptr<base> > t2;
-typedef boost::weak_ptr<base> t3;
-
-//LUABIND_IMPLICIT_CONVERSION(t1,t2,t3)
-
-namespace luabind { namespace converters
-{
-	template<class T>
-	no_t is_user_defined(T);
-
-	template<class T>
-	int match_lua_to_cpp(lua_State*, T, int);
-
-	template<class T>
-	void convert_lua_to_cpp(lua_State*, T, int);
-/*
-	template<class To, class From>
-	struct implicit_conversion
-	{
-		friend yes_t is_user_defined(by_value<To>);
-
-		friend int match_lua_to_cpp(lua_State* L, by_value<To>, int index)
-		{
-			typename luabind::detail::default_policy
-				::generate_converter<From, detail::lua_to_cpp>::type c;
-			return c.match(L, by_value<From>(), index);
-		}
-
-		friend To convert_lua_to_cpp(lua_State* L, by_value<To>, int index)
-		{
-			typename luabind::detail::default_policy
-				::generate_converter<From, detail::lua_to_cpp>::type c;
-			return static_cast<To>(c.apply(L,
-						by_value<From>(), index));
-		}
-	};
-*/
-//	implicit_conversion<t3,t1> casdsa;
-}}
-
-namespace test_adl
-{
-	struct adl_helper {};
-	
-	template<class T>
-	struct A
-	{
-		friend int f(adl_helper, T) { return sizeof(T); }
-	};
-
-//	A<float> a;
-};
-
 bool test_held_type()
 {
-//	test_adl::A<float>();
-
-//	f(test_adl::adl_helper(), 3.f);
-
 	// This feature is not finished yet
 
 	using namespace luabind;
-
-//	converters::implicit_conversion<boost::weak_ptr<base>, boost::shared_ptr<base> >();
 
 	boost::shared_ptr<base> ptr(new base());
 

@@ -34,31 +34,6 @@ int dostring2(lua_State* L, const char* str)
 	return 0;
 }
 
-#include <boost/shared_ptr.hpp>
-
-template<class T>
-struct type {};
-
-template<class T>
-type<boost::shared_ptr<const T> >
-constify_ptr(type<boost::shared_ptr<T> >)
-{
-	return type<boost::shared_ptr<const T> >();
-}
-
-template<class T>
-LUABIND_TYPE_INFO get_typeid(type<T>)
-{
-	return LUABIND_TYPEID(T);
-}
-
-void test_cptr()
-{
-	typedef boost::shared_ptr<int> ptr_t;
-
-	std::cout << get_typeid(constify_ptr(type<ptr_t>()))->name() << '\n';
-}
-
 bool report_success(bool result, const char* name)
 {
 	std::cout << name;
@@ -72,31 +47,8 @@ bool report_success(bool result, const char* name)
 	return result;
 }
 
-#include <boost/preprocessor/cat.hpp>
-#include <boost/preprocessor/seq/size.hpp>
-
-template<class A, class B> struct implicit_test {};
-
-#define LUABIND_REMOVE_PAREN(x) x
-#define LUABIND_REMOVE_PAREN_HELP(x) x
-
-#define LUABIND_IMPLICIT(index) \
-	implicit_test<LUABIND_PARAMS()> test_##index
-
-#define LUABIND_CONV_FROM() std::vector<float,char>
-#define LUABIND_CONV_TO() char
-
-#define LUABIND_PARAMS() std::vector<float,char>, char 
-LUABIND_IMPLICIT(0);
-#define LUABIND_PARAMS() std::vector<int>, char 
-LUABIND_IMPLICIT(1);
-#define LUABIND_PARAMS() float, char 
-LUABIND_IMPLICIT(2);
-
 int main()
 {
-	test_cptr();
-	
 	bool passed = true;
 
 	passed &= report_success(test_construction(), "construction");

@@ -41,8 +41,11 @@ namespace luabind { namespace detail
 
 	struct null_type {};
 
-	typedef char yes_t;
-	typedef double no_t;
+	struct yes_t { char x; };
+	struct no_t { double x; };
+
+/*	typedef char yes_t;
+	typedef double no_t;*/
 
 	struct lua_to_cpp {};
 	struct cpp_to_lua {};
