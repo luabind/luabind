@@ -85,7 +85,7 @@ from their C++ base classes. It is written towards lua 5.0, and does not work
 with lua 4.</p>
 <p>It is implemented utilizing template meta programming. That means that you
 don't need an extra preprocess pass to compile your project (it is done by the
-compiler). It also means you don't (usually) have to know the exact signatureof
+compiler). It also means you don't (usually) have to know the exact signature of
 each function you register, since the library will generate code depending on
 the compile-time type of the function (which includes the signature). The main
 drawback of this approach is that the compilation time will increase for the
@@ -1084,6 +1084,7 @@ public:
     
     bool is_valid() const;
     operator safe_bool_type() const;
+    void reset();
 
     lua_State* lua_state() const;
     void pushvalue() const;
@@ -1158,6 +1159,9 @@ first set the lua functor to the given function. It will then call the real
 be called whenever the callback should be called, and it will simply call the
 lua function that we registered.</p>
 <p>You can also use <tt class="literal"><span class="pre">object_cast</span></tt> to cast an object to a functor.</p>
+<p><tt class="literal"><span class="pre">reset</span></tt> on <tt class="literal"><span class="pre">functor</span></tt> will invalidate the functor (and remove any references
+to its lua value). If the functor object has longer lifetime than the lua state
+(e.g. if it's a global).</p>
 </div>
 </div>
 <div class="section" id="defining-classes-in-lua">
@@ -1820,13 +1824,6 @@ checking is disabled.</p>
 <p class="last">If a functions throws an exception it will be caught by luabind and 
 propagated with <tt class="literal"><span class="pre">lua_error()</span></tt>.</p>
 </dd>
-<dt>LUABIND_DONT_COPY_STRINGS</dt>
-<dd>If this macro is defined, luabind will expect that all strings given to 
-the <tt class="literal"><span class="pre">def()</span></tt> functions are static constant strings (given as string 
-constants for example). luabind will not copy the strings if you enable 
-this setting, but just keep the char pointers. 
-This may be especially useful for embedded systems or consoles where 
-heap allocations should be minimized.</dd>
 <dt>LUABIND_NO_EXCEPTIONS</dt>
 <dd><p class="first">This define will disable all usage of try, catch and throw in luabind. 
 This will in many cases disable run-time errors, when performing invalid 
