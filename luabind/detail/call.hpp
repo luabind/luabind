@@ -118,8 +118,8 @@ namespace luabind { namespace detail
 
 #elif BOOST_PP_ITERATION_FLAGS() == 1
 
-	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-	static int call(T(C::*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), C* obj, lua_State* L, const Policies*)
+	template<class C, class O, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+	static int call(T(C::*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), O* obj, lua_State* L, const Policies*)
 	{
 		int nargs = lua_gettop(L);
 
@@ -150,8 +150,8 @@ namespace luabind { namespace detail
 //		return nret;
 	}
 
-	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-	static int call(T(C::*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)) const, C* obj, lua_State* L, const Policies*)
+	template<class C, class O, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+	static int call(T(C::*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)) const, O* obj, lua_State* L, const Policies*)
 	{
 		int nargs = lua_gettop(L);
 		typedef typename find_conversion_policy<0, Policies>::type converter_policy_ret;
@@ -294,8 +294,8 @@ namespace luabind { namespace detail
 */
 #elif BOOST_PP_ITERATION_FLAGS() == 2
 
-	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-	static int call(void(C::*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), C* obj, lua_State* L, const Policies*)
+	template<class C, class O, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+	static int call(void(C::*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), O* obj, lua_State* L, const Policies*)
 	{
 		int nargs = lua_gettop(L);
 		L = L; // L is used, but metrowerks compiler seem to warn about it before expanding the macros
@@ -321,8 +321,8 @@ namespace luabind { namespace detail
 		return maybe_yield<Policies>::apply(L, nret);
 	}
 
-	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-	static int call(void(C::*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)) const, C* obj, lua_State* L, const Policies*)
+	template<class C, class O, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+	static int call(void(C::*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)) const, O* obj, lua_State* L, const Policies*)
 	{
 		int nargs = lua_gettop(L);
 		L = L; // L is used, but metrowerks compiler seem to warn about it before expanding the macros
@@ -459,14 +459,14 @@ namespace luabind { namespace detail
 		return returns<R>::call(f, obj, L, policies);
 	}
 
-	template<class T, class Policies, class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-	int call(R(T::*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), T* obj, lua_State* L, const Policies* policies)
+	template<class T, class C, class Policies, class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+	int call(R(T::*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), C* obj, lua_State* L, const Policies* policies)
 	{
 		return returns<R>::call(f, obj, L, policies);
 	}
 
-	template<class T, class Policies, class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-	int call(R(T::*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)) const, T* obj, lua_State* L, const Policies* policies)
+	template<class T, class C, class Policies, class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+	int call(R(T::*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)) const, C* obj, lua_State* L, const Policies* policies)
 	{
 		return returns<R>::call(f, obj, L, policies);
 	}

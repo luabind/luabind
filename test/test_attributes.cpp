@@ -49,6 +49,18 @@ void free_setter(property_test& p, int a)
 int free_getter(const property_test& p)
 { return p.get(); }
 
+struct A
+{
+	int get() const 
+	{ 
+		return 0; 
+	}
+};
+
+struct B : A
+{
+};
+
 } // namespace unnamed
 
 void test_attributes()
@@ -68,8 +80,13 @@ void test_attributes()
 			.property(
                 "str", &property_test::get_str, &property_test::set_str)
 			.def_readonly("o", &property_test::o)
-            .property("free", &free_getter, &free_setter)
-    ];
+            .property("free", &free_getter, &free_setter),
+
+		class_<A>("A"),
+
+		class_<B, A>("B")
+			.property("x", &A::get)
+	];
 
 	DOSTRING(L, "test = property()\n");
 
