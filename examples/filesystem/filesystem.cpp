@@ -25,7 +25,6 @@ bool dostring(lua_State* L, const char* str)
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
-#include "rtti_policy.hpp"
 #include "directory_iterator.hpp"
 
 const boost::filesystem::path& 
@@ -125,12 +124,5 @@ int main(int argc, const char* argv[])
 	globals["args"] = args;
 
 	lua_dofile(L, argv[1]);
-}
-
-extern "C" int luaLM_import(lua_State* L)
-{
-	using namespace luabind;
-	open(L);
-	bind_filesystem(L);
 }
 
