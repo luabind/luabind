@@ -32,7 +32,6 @@
 #include <luabind/config.hpp>
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/construct_rep.hpp>
-#include <luabind/detail/method_rep.hpp>
 #include <luabind/detail/garbage_collector.hpp>
 #include <luabind/detail/operator_id.hpp>
 #include <luabind/detail/signature_match.hpp>
@@ -40,6 +39,7 @@
 #include <luabind/detail/find_best_match.hpp>
 #include <luabind/detail/get_overload_signature.hpp>
 #include <luabind/detail/error.hpp>
+#include <luabind/detail/method_rep.hpp>
 
 namespace luabind
 {
@@ -54,6 +54,8 @@ namespace luabind
 
 namespace luabind { namespace detail
 {
+
+	struct method_rep;
 	std::string stack_content_by_name(lua_State* L, int start_index);
 	int construct_lua_class_callback(lua_State* L);
 
@@ -316,6 +318,8 @@ namespace luabind { namespace detail
 	bool is_class_rep(lua_State* L, int index);
 
 }}
+
+#include <luabind/detail/overload_rep_impl.hpp>
 
 #endif // LUABIND_CLASS_REP_HPP_INCLUDED
 

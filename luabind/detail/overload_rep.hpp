@@ -34,6 +34,8 @@
 
 #include <luabind/detail/overload_rep_base.hpp>
 
+#include <luabind/detail/class_rep.hpp>
+
 namespace luabind { namespace detail
 {
 	struct dummy_ {};
@@ -60,19 +62,7 @@ namespace luabind { namespace detail
 		int offset() const throw() { return m_pointer_offset; }
 
 		inline void set_fun(boost::function2<int,lua_State*,void*>& f) { call_fun = f; }
-		inline int call(lua_State* L, const object_rep& o) const 
-		{ 
-//			const class_rep* crep = o.crep();
-
-			void* ptr;
-/*			
-			if (crep->has_holder())
-				ptr = crep->extractor()(o.ptr());
-			else*/
-				ptr = o.ptr();
-
-			return call_fun(L, static_cast<char*>(ptr) + m_pointer_offset);
-		}
+		inline int call(lua_State* L, const object_rep& o) const;
 
 		boost::function2<int,lua_State*,void*> call_fun;
 
