@@ -36,7 +36,7 @@ namespace luabind { namespace detail
 	// this class is allocated inside lua for each pointer.
 	// it contains the actual c++ object-pointer.
 	// it also tells if it is const or not.
-	class object_rep
+	class LUABIND_API object_rep
 	{
 	public:
 		enum { constant = 1, owner = 2, smart_pointer = 4, lua_class = 8, call_super = 16 };

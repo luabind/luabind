@@ -47,6 +47,7 @@ namespace luabind { namespace detail
 			const class_rep* crep = obj->crep();
 
 			int steps = implicit_cast(crep, LUABIND_TYPEID(T), offset);
+			(void)steps;
 
 			assert((steps >= 0) && "adopt_pointer used with type that cannot be converted");
 			obj->remove_ownership();

@@ -23,11 +23,13 @@
 #ifndef WEAK_REF_040402_HPP
 #define WEAK_REF_040402_HPP
 
+#include <luabind/config.hpp>
+
 struct lua_State;
 
 namespace luabind {
 
-    class weak_ref
+    class LUABIND_API weak_ref
     {
     public:
         weak_ref();
