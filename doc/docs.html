@@ -1675,6 +1675,17 @@ This namespace contains non-public classes and are not supposed to be used direc
 	relies on that the compiler is able to inline functions. If you built in release mode, try running
 	<tt>strip</tt> on your executable to remove export-symbols, this will trim down the size.</p>
 
+	<li><h3>Can I register template classes with luabind?</h3>
+	<p>Yes you can, but you can only register explicit instantiations of the class. Because there's no
+	lua counterpart to C++ templates. For example, you can register an explicit instantiation of
+	<tt>std::vector</tt> like this:</p>
+	<pre>
+	class_&lt;std::vector&lt;int&gt;&nbsp;&gt;(L, "vector")
+		.def(constructor&lt;int&gt;)
+		.def("push_back", &amp;std::vector&lt;int&gt;::push_back)
+		;
+	</pre>
+	<p>Note that the space between the two &gt; is required by C++.</p>
 </ul>
 
 <h1><a name="future"></a>Future additions</h1>
