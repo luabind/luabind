@@ -67,12 +67,15 @@ corrections/spelling corrections.</p>
 </ul>
 </li>
 <li><a class="reference" href="#splitting-up-the-registration" id="id39" name="id39">13   Splitting up the registration</a></li>
-<li><a class="reference" href="#configuration" id="id40" name="id40">14   Configuration</a></li>
-<li><a class="reference" href="#implementation-notes" id="id41" name="id41">15   Implementation notes</a></li>
-<li><a class="reference" href="#error-messages" id="id42" name="id42">16   Error messages</a></li>
-<li><a class="reference" href="#faq" id="id43" name="id43">17   FAQ</a></li>
-<li><a class="reference" href="#known-issues" id="id44" name="id44">18   Known issues</a></li>
-<li><a class="reference" href="#acknowledgments" id="id45" name="id45">19   Acknowledgments</a></li>
+<li><a class="reference" href="#configuration" id="id40" name="id40">14   Configuration</a><ul class="auto-toc">
+<li><a class="reference" href="#build-options" id="id41" name="id41">14.1   Build options</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#implementation-notes" id="id42" name="id42">15   Implementation notes</a></li>
+<li><a class="reference" href="#error-messages" id="id43" name="id43">16   Error messages</a></li>
+<li><a class="reference" href="#faq" id="id44" name="id44">17   FAQ</a></li>
+<li><a class="reference" href="#known-issues" id="id45" name="id45">18   Known issues</a></li>
+<li><a class="reference" href="#acknowledgments" id="id46" name="id46">19   Acknowledgments</a></li>
 </ul>
 </div>
 <div class="section" id="introduction">
@@ -687,7 +690,7 @@ to wrap a nested class, or a static function.</p>
 class_&lt;foo&gt;(&quot;foo&quot;)
     .def(constructor&lt;&gt;()
     ...
-    .static_ 
+    .scope
     [
         class_&lt;inner&gt;(&quot;nested&quot;),
         def(&quot;f&quot;, &amp;f)
@@ -1206,7 +1209,7 @@ virtual functions with lua functions. To do this we have to create a wrapper
 class for our C++ base class. This is the class that will hold the lua object
 when we instantiate a lua class.</p>
 <p>The wrapper class has to provide the same constructors as the base class, with
-the addition of one extra parameter: <tt class="literal"><span class="pre">luabind::object</span></tt>. This is the reference
+the addition of one extra parameter: <tt class="literal"><span class="pre">luabind::weak_ref</span></tt>. This is the reference
 to the lua object that should be held by the wrapper, and should be stored in a
 member variable as done in the sample below.</p>
 <pre class="literal-block">
@@ -1222,8 +1225,8 @@ public:
 
 struct base_wrapper : base
 {
-    object self;
-    base_wrapper(object self_, const char* s)
+    weak_ref self;
+    base_wrapper(weak_ref self_, const char* s)
         : base(s), self(self_) 
     {}
 
@@ -1789,6 +1792,19 @@ void register_module(lua_State* L)
 </div>
 <div class="section" id="configuration">
 <h1><a class="toc-backref" href="#id40" name="configuration">14   Configuration</a></h1>
+<p>As mentioned in the <a class="reference" href="http://www.lua.org/manual/5.0/manual.html">Lua documentation</a>, it is possible to pass an
+error handler function to <tt class="literal"><span class="pre">lua_pcall()</span></tt>. Luabind makes use of 
+<tt class="literal"><span class="pre">lua_pcall()</span></tt> internally when calling methods and functions. It is
+possible to set the error handler function that Luabind will use 
+globally:</p>
+<pre class="literal-block">
+typedef void(*pcall_callback_fun)(lua_State*);
+void set_pcall_callback(pcall_callback_fun fn);
+</pre>
+<p>This is primarily useful for adding more information to the error message
+returned by a failed protected call.</p>
+<div class="section" id="build-options">
+<h2><a class="toc-backref" href="#id41" name="build-options">14.1   Build options</a></h2>
 <p>There are a number of configuration options available when building luabind.
 It is very important that your project has the exact same conmfiguration 
 options as the ones given when the library was build! The exceptions are the
@@ -1887,8 +1903,9 @@ comparable!</p>
 build.</dd>
 </dl>
 </div>
+</div>
 <div class="section" id="implementation-notes">
-<h1><a class="toc-backref" href="#id41" name="implementation-notes">15   Implementation notes</a></h1>
+<h1><a class="toc-backref" href="#id42" name="implementation-notes">15   Implementation notes</a></h1>
 <p>The classes and objects are implemented as user data in lua. To make sure that
 the user data really is the internal structure it is supposed to be, we tag
 their metatables. A user data who's metatable contains a boolean member named
@@ -1917,7 +1934,7 @@ another overload to it.</p>
 namespace contains non-public classes and are not supposed to be used directly.</p>
 </div>
 <div class="section" id="error-messages">
-<h1><a class="toc-backref" href="#id42" name="error-messages">16   Error messages</a></h1>
+<h1><a class="toc-backref" href="#id43" name="error-messages">16   Error messages</a></h1>
 <ul>
 <li><p class="first"><cite>the attribute '&lt;class-name&gt;.&lt;attribute-name&gt;' is read only</cite></p>
 <blockquote>
@@ -2018,7 +2035,7 @@ define.</p>
 </ul>
 </div>
 <div class="section" id="faq">
-<h1><a class="toc-backref" href="#id43" name="faq">17   FAQ</a></h1>
+<h1><a class="toc-backref" href="#id44" name="faq">17   FAQ</a></h1>
 <dl>
 <dt>What's up with __cdecl and __stdcall? </dt>
 <dd>If you're having problem with functions
@@ -2101,7 +2118,7 @@ a look at out_value and pure_out_value policies.</dd>
 </dl>
 </div>
 <div class="section" id="known-issues">
-<h1><a class="toc-backref" href="#id44" name="known-issues">18   Known issues</a></h1>
+<h1><a class="toc-backref" href="#id45" name="known-issues">18   Known issues</a></h1>
 <ul class="simple">
 <li>You cannot use strings with extra nulls in them as member names that refers
 to C++ members.</li>
@@ -2118,7 +2135,7 @@ original function name.</li>
 </ul>
 </div>
 <div class="section" id="acknowledgments">
-<h1><a class="toc-backref" href="#id45" name="acknowledgments">19   Acknowledgments</a></h1>
+<h1><a class="toc-backref" href="#id46" name="acknowledgments">19   Acknowledgments</a></h1>
 <p>This library was written by Daniel Wallin and Arvid Norberg. © Copyright 2003. 
 All rights reserved.</p>
 <p>This library was inspired by Dave Abrahams' Boost.Python library which can be 
@@ -2127,6 +2144,12 @@ found in the <a class="reference" href="http://www.boost.org">boost</a> library.
 feature ideas.</p>
 <p>Thanks to Umeå university for providing development and testing hardware.</p>
 </div>
+</div>
+<hr class="footer" />
+<div class="footer">
+<a class="reference" href="docs.rst">View document source</a>.
+Generated on: 2004-04-04 16:39 UTC.
+Generated by <a class="reference" href="http://docutils.sourceforge.net/">Docutils</a> from <a class="reference" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
 </div>
 </body>
 </html>

@@ -1859,7 +1859,7 @@ module_ab.cpp::
 Configuration
 =============
 
-As mentioned in ``the Lua documentation``_, it is possible to pass an
+As mentioned in the `Lua documentation`_, it is possible to pass an
 error handler function to ``lua_pcall()``. Luabind makes use of 
 ``lua_pcall()`` internally when calling methods and functions. It is
 possible to set the error handler function that Luabind will use 
@@ -1871,6 +1871,7 @@ globally::
 This is primarily useful for adding more information to the error message
 returned by a failed protected call.
 
+.. _Lua documentation: http://www.lua.org/manual/5.0/manual.html
 
 Build options
 -------------
