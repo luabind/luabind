@@ -152,6 +152,7 @@ namespace luabind { namespace detail
 		inline LUABIND_TYPE_INFO type() const throw() { return m_type; }
 		inline LUABIND_TYPE_INFO holder_type() const throw() { return m_held_type; }
 		inline LUABIND_TYPE_INFO const_holder_type() const throw() { return m_const_holder_type; }
+		inline bool has_holder() const throw() { return m_held_type_constructor != 0; }
 
 		inline const char* name() const throw() { return m_name; }
 

@@ -55,7 +55,8 @@ namespace luabind { namespace detail
 			assert((((m_flags & owner) && dest) || !(m_flags & owner)) && "internal error, please report");
 
 			// an object can't be collected if it's const
-			assert((!((m_flags & constant) && (m_flags & owner))) && "internal error, please report");
+			// if it has a holder type, the holder can be collected
+//			assert((!((m_flags & constant) && (m_flags & owner))) && "internal error, please report");
 		}
 
 		object_rep(class_rep* crep, int flags, int table_ref)

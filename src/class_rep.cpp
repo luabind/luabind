@@ -88,6 +88,7 @@ luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	, m_extract_underlying_fun(0)
 	, m_class_type(lua_class)
 	, m_held_type_constructor(0)
+	, m_userdata_alignment(0)
 	, m_destructor(0)
 {
 	// TODO: don't we need to copy the name?
@@ -126,12 +127,12 @@ luabind::detail::class_rep::~class_rep()
 std::pair<void*,void*> 
 luabind::detail::class_rep::allocate(lua_State* L) const
 {
-	const int size = sizeof(object_rep) 
-		+ m_userdata_size + m_userdata_alignment;
+	const int overlap = sizeof(object_rep)&(m_userdata_alignment-1);
+	const int padding = (overlap==0)?0:m_userdata_alignment-overlap;
+	const int size = sizeof(object_rep) + padding + m_userdata_size;
 
 	char* mem = static_cast<char*>(lua_newuserdata(L, size));
-	char* ptr = mem + (sizeof(object_rep) & ~(m_userdata_alignment - 1))
-			+ m_userdata_alignment;;
+	char* ptr = mem + sizeof(object_rep) + padding;
 
 	return std::pair<void*,void*>(mem,ptr);
 }
@@ -513,21 +514,15 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 
 		void* object_ptr = rep->overloads[match_index].construct(L);
 
-		// TODO: if we're holding a smart pointer, allocate more space in the lua-userdata
-		// to hold the smart pointer after the object_rep and construct it there and give it
-		// the object pointer as parameter. To do this we need another function pointer, right?
-		// another constructor that constructs the smart_pointer. The destructor function
-		// we have could be used to destruct the smart pointer
-		void* obj_rep = lua_newuserdata(L, crep->m_userdata_size);
+		void* obj_rep;
+		void* held;
 
-		// TODO: since we know the outcome of this if-statement compile-time
-		// we could potentially generate a bit less code by making it compile-time
-		if (crep->m_held_type_constructor)
+		boost::tie(obj_rep,held) = crep->allocate(L);
+
+		if (crep->has_holder())
 		{
-			// TODO: ALIGN!
-			void* held_type_ptr = static_cast<char*>(obj_rep) + sizeof(object_rep);
-			crep->m_held_type_constructor(held_type_ptr, object_ptr);
-			object_ptr = held_type_ptr;
+			crep->m_held_type_constructor(held, object_ptr);
+			object_ptr = held;
 		}
 		new(obj_rep) object_rep(object_ptr, crep, object_rep::owner, crep->destructor());
 

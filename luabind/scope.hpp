@@ -38,10 +38,7 @@ namespace luabind
 
 		struct scoped_object
 		{
-			scoped_object()
-			{
-			}
-
+			scoped_object() {}
 			virtual ~scoped_object() {}
 
 			virtual void commit(lua_State*) = 0;
@@ -141,12 +138,7 @@ namespace luabind
 				lua_touserdata(L, -1)
 			);
 
-			assert(scopes->scopes.size() == 1);
-
-			int top = scopes->scopes.top();
-			scopes->scopes.pop();
-
-			detail::unref(L, top);
+			assert(scopes->scopes.size() == 0);
 
 			scopes->~scope_stack();
 
@@ -225,9 +217,6 @@ namespace luabind
 
 				new (scopes) scope_stack();
 
-				lua_pushvalue(L, LUA_GLOBALSINDEX);
-				scopes->scopes.push(detail::ref(L));
-
 				lua_newtable(L);
 				lua_pushstring(L, "__gc");
 				lua_pushcclosure(L, scope_stack::gc, 0);
@@ -238,57 +227,18 @@ namespace luabind
 			}
 		}
 
-		scope(lua_State* L, const char* name)
-			: m_state(L)
-			, m_name(name)
-		{
-#ifndef NDEBUG
-			m_cloned = false;
-#endif
-			init(L);
-		}
-
 		scope(const char* name)
-			: m_state(0)
-			, m_name(name)
+			: m_name(name)
 		{
 #ifndef NDEBUG
 			m_cloned = false;
 #endif
-		}
-
-		virtual ~scope()
-		{
-			for (std::vector<detail::scoped_object*>
-					::const_iterator i = m_children.begin()
-										; i != m_children.end()
-										; ++i)
-			{
-				detail::scoped_object* ptr = *i;
-				delete ptr;
-			}
 		}
 
 		scope& operator[](const detail::scoped_object& x)
 		{
-			m_children.push_back(const_cast<detail::scoped_object&>(x).clone());
-
-			if (m_state)
-			{
-				this->commit(m_state);
-
-				for (std::vector<detail::scoped_object*>
-						::const_iterator i = m_children.begin()
-											; i != m_children.end()
-											; ++i)
-				{
-					detail::scoped_object* ptr = *i;
-					delete ptr;
-				}
-
-				m_children.clear();
-			}
-
+			detail::scoped_object* ptr = &const_cast<detail::scoped_object&>(x);
+			m_children.push_back(ptr->clone());
 			return *this;
 		}
 
@@ -300,7 +250,7 @@ namespace luabind
 #endif
 			std::vector<detail::scoped_object*> tmp;
 			tmp.swap(this->m_children);
-			scope* copy = new scope(m_name.c_str());
+			scope* copy = new scope(m_name);
 			copy->m_children.swap(tmp);
 			return copy;
 		}
@@ -314,7 +264,7 @@ namespace luabind
 			init(L);
 
 			detail::getref(L, scope_stack::top(L)); // get current scope
-			lua_pushstring(L, m_name.c_str());
+			lua_pushstring(L, m_name);
 			lua_gettable(L, -2);
 			lua_remove(L, -2); // remove scope
 
@@ -324,7 +274,7 @@ namespace luabind
 
 				lua_newtable(L);
 				detail::getref(L, scope_stack::top(L));
-				lua_pushstring(L, m_name.c_str());
+				lua_pushstring(L, m_name);
 				lua_pushvalue(L, -3);
 				lua_settable(L, -3);
 				lua_pop(L, 1);
@@ -339,7 +289,12 @@ namespace luabind
 			{
 				detail::scoped_object* ptr = *i;
 				ptr->commit(L);
+				delete ptr;
 			}
+
+#ifndef NDEBUG
+			m_children.clear();
+#endif
 
 			scope_stack::pop(L);
 		}
@@ -349,9 +304,65 @@ namespace luabind
 		bool m_cloned;
 #endif
 		mutable std::vector<detail::scoped_object*> m_children;
-		lua_State* m_state;
-		std::string m_name;
+		const char* m_name;
 	};
+
+
+
+
+
+
+
+	class module_proxy
+	{
+	public:
+
+		module_proxy(lua_State* L, const char* name)
+			: m_state(L)
+			, m_name(name)
+		{
+			scope::init(L);
+		}
+/*
+		module_proxy(lua_State* L)
+			: m_state(L)
+			, m_name(0)
+		{
+			scope::init(L);
+		}
+*/
+		void operator[](const detail::scoped_object& x) const
+		{
+			lua_State* L = m_state;
+			if (m_name)
+			{
+				lua_newtable(L);
+				lua_pushstring(L, m_name);
+				lua_pushvalue(L, -2);
+				lua_settable(L, LUA_GLOBALSINDEX);
+			}
+			else
+			{
+				lua_pushvalue(L, LUA_GLOBALSINDEX);
+			}
+
+			scope_stack::push(L);
+
+			detail::scoped_object* ptr = &const_cast<detail::scoped_object&>(x);
+			ptr->commit(L);
+
+			scope_stack::pop(L);
+		}
+
+	private:
+
+		lua_State* m_state;
+		const char* m_name;
+	};
+
+
+	inline module_proxy module(lua_State* L) { return module_proxy(L,0); }
+	inline module_proxy module(lua_State* L, const char* name) { return module_proxy(L, name); }
 
 	typedef scope namespace_;
 }

@@ -334,6 +334,7 @@ namespace luabind
 				lua_pushlightuserdata(L, &rep);
 				lua_pushcclosure(L, free_functions::function_dispatcher, 1);
 				lua_settable(L, -3);
+				lua_pop(L, 1);
 			}
 
 			std::string name;

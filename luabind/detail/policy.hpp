@@ -535,9 +535,11 @@ namespace luabind { namespace detail
 			// cannot cast a constant object to nonconst
 			if (obj->flags() & object_rep::constant) return -1;
 
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T)))
-				|| LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T)))
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
+				return (obj->flags() & object_rep::constant)?-1:0;
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
 				return 0;
+
 
 			int d;
 			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
@@ -564,14 +566,25 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			T* copied_obj = new T(ref);
+			void* obj_rep;
+			void* held;
 
-//			std::cerr << "value_converter<cpp_to_lua>: " << copied_obj << "\n";
+			boost::tie(obj_rep,held) = crep->allocate(L);
 
-			// create the struct to hold the object
-			void* obj = lua_newuserdata(L, sizeof(object_rep));
-			// we send 0 as destructor since we know it will never be called
-			new(obj) object_rep(copied_obj, crep, object_rep::owner, delete_s<T>::apply);
+			void* object_ptr;
+			int flags = object_rep::owner;
+			if (crep->has_holder())
+			{
+				new(held) T(ref);
+				object_ptr = held;
+				if (LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->const_holder_type()))
+					flags |= object_rep::constant;
+			}
+			else
+			{
+				object_ptr = new T(ref);
+			}
+			new(obj_rep) object_rep(object_ptr, crep, flags, crep->destructor());
 
 			// set the meta table
 			detail::getref(L, crep->metatable_ref());
@@ -612,8 +625,9 @@ namespace luabind { namespace detail
 			if (obj == 0) return -1;
 			int d;
 
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T)))
-				|| LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T)))
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
+				return (obj->flags() & object_rep::constant)?-1:0;
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
 				return 0;
 
 			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
@@ -677,8 +691,9 @@ namespace luabind { namespace detail
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
 
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T)))
-				|| LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T)))
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
+				return (obj->flags() & object_rep::constant)?-1:0;
+			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
 				return 0;
 
 			int d;
@@ -757,14 +772,27 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			T* ptr = const_cast<T*>(&ref);
 
-//			std::cerr << "const_ref_converter<cpp_to_lua>: " << ptr << "\n";
+			void* obj_rep;
+			void* held;
 
-			// create the table to hold the object
-			object_rep* obj = static_cast<object_rep*>(lua_newuserdata(L, sizeof(object_rep)));
-			assert(obj && "internal error, please report");
-			new(obj) object_rep(ptr, crep, object_rep::constant, 0);
+			boost::tie(obj_rep,held) = crep->allocate(L);
+
+			void* object_ptr;
+			int flags = 0;
+			if (crep->has_holder())
+			{
+				new(held) T(ref);
+				object_ptr = held;
+				flags = object_rep::owner;
+				if (LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->const_holder_type()))
+					flags |= object_rep::constant;
+			}
+			else
+			{
+				object_ptr = const_cast<T*>(&ref);
+			}
+			new(obj_rep) object_rep(object_ptr, crep, flags, crep->destructor());
 
 			// set the meta table
 			detail::getref(L, crep->metatable_ref());

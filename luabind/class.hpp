@@ -57,9 +57,6 @@
 	finish scopes (and document)
 
 	finish smart pointer support
-		* we need a special case in the value_converter matcher to know that smart
-		pointers can be implicitly cast to base types.
-		* holder_type<const A> must be supported by the converters
 		* the adopt policy should not be able to adopt pointers to held_types. This
 		must be prohibited.
 		* name_of_type must recognize holder_types and not return "custom"
@@ -215,7 +212,7 @@ namespace luabind
 			{
 				HeldType& held_obj = *static_cast<HeldType*>(obj_ptr);
 
-				T* ptr = static_cast<T*>(get_pointer(held_obj));
+				T* ptr = static_cast<T*>(luabind::get_pointer(held_obj));
 
 				return call(f, ptr, L, static_cast<Policies*>(this));
 			}
@@ -639,8 +636,6 @@ namespace luabind
 		{
 			assert(!m_cloned && "class already commited");
 				  
-			scope::init(L);
-
 			detail::getref(L, scope_stack::top(L));
 			lua_pushstring(L, m_name);
 
@@ -668,7 +663,11 @@ namespace luabind
 				// but only for the base class, if it already
 				// exists, we don't have to register it
 				detail::class_rep* c = r->find_class(m_held_type);
-				if (c == 0) r->add_class(m_held_type, crep);
+				if (c == 0)
+				{
+					r->add_class(m_held_type, crep);
+					r->add_class(m_const_holder_type, crep);
+				}
 			}
 
 			// add methods
@@ -739,10 +738,13 @@ namespace luabind
 			ret->m_extractor = m_extractor;
 			ret->m_construct_held_type = m_construct_held_type;
 			ret->m_held_type_size = m_held_type_size;
+			ret->m_held_type_alignment = m_held_type_alignment;
 
 			std::swap(ret->m_bases, m_bases);
 			std::swap(ret->m_methods, m_methods);
 			m_constructor.swap(ret->m_constructor);
+
+			ret->m_name = m_name;
 
 			ret->m_type = m_type;
 			ret->m_held_type = m_held_type;
@@ -920,7 +922,11 @@ namespace luabind
 		{
 			if (m_L != 0)
 			{
+				scope::init(m_L);
+				lua_pushvalue(m_L, LUA_GLOBALSINDEX);
+				scope_stack::push(m_L);
 				commit(m_L);
+				scope_stack::pop(m_L);
 			}
 		}
 
