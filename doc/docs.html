@@ -20,7 +20,9 @@ Please report any grammatical corrections/spelling corrections.</p>
 		<li><a href="#features">features</a> 
 		<li><a href="#compilers">tested compilers</a>
 	</ul>
+	<li><a href="#build">Building luabind</a> 
 	<li><a href="#basic">Basic usage</a> 
+	<li><a href="#scopes">Scopes</a> 
 	<li><a href="#fun">Binding functions to lua</a> 
 	<ul>
 		<li><a href="#fun_overload">overloaded functions</a> 
@@ -35,7 +37,6 @@ Please report any grammatical corrections/spelling corrections.</p>
 		<li><a href="#class_derived">derived classes</a> 
 		<li><a href="#class_smart_pointers">smart_pointers</a> 
 	</ul>
-	<li><a href="#scopes">Scopes</a> 
 	<li><a href="#object">Object</a>
 	<ul>
 		<li><a href="#object_iterators">iterators</a>
@@ -149,13 +150,27 @@ functions are treated as non-const member functions.</p>
 <p>If you have tried luabind with a compiler not listed here, let us know
 your result with it.</p>
 
-<h1><a name="basic"></a>Basic usage</h1>
+<h1><a name="build"></a>Building luabind</h1>
 
-<p>To keep luabind easy to use, it's implemented in headers 
-only, this means you don't have to install it nor build it to use it. You just 
-have to make sure the <tt>luabind</tt> directory is 
-somewhere in your compilers include path. It requires <a href="http://www.boost.org">
-boost</a> 1.30.0 to be installed (only boost headers). It also requires that lua is installed.</p>
+<p>To keep down the compilation-time luabind is built as a library. This means you
+have to either build it and lika against it, or include its source files in your project.
+You also have to make sure the <tt>luabind</tt> directory is somewhere in your compiler's
+include path. It requires <a href="http://www.boost.org">boost</a> 1.30.0 to be installed
+(only boost headers). It also requires that lua is installed.</p>
+
+<p>There is a makefile in the root-directory that will build the library and the test program.
+If you are using a UNIX-system (or cygwin) they will make it easy to build luabind as a static
+library. If you are using Visual Studio it may be easier to include the files in the <tt>src</tt>
+directory in your project.</p>
+
+<p>When building luabind you have several options that may streamline the library to better suit
+your needs. It is extremely important that your application has the same settings as the library
+was built with. The available options are found in the <a href="#config">Configuration</a> section.</p>
+
+<p>If you want to change the settings to differ from the default, it's recommended that you define
+the settings on the commandline of all your files (in the project settings in visual studio).</p>
+
+<h1><a name="basic"></a>Basic usage</h1>
 
 <p>To use luabind, you must include <tt>lua.h</tt> and luabind's main header file.</p>
 
@@ -188,6 +203,76 @@ is closed though.</p>
 <p>Note that no luabind header will include <tt>"lua.h"</tt>, this is up to you. You have to include
 it before any luabind header is included.</p>
 
+
+<h1><a name="scopes"></a>Scopes</h1>
+
+<p>Everything that gets registered in lua is registered in a namespace (lua tables) or in the global
+scope (called module). All registrations must be surrounded by its scope. To define a module, the
+<tt>luabind::module</tt> class is used. It is used like this:</p>
+
+<pre>
+module(L)
+[
+	// declarations
+];
+</pre>
+
+<p>This will register all declared functions or classes in the global namespace in lua. If you want
+to have a namespace for your module (like the standard libraries) you can give a name to the constructor,
+like this:</p>
+
+<pre>
+module(L, "my_library")
+[
+	// declarations
+];
+</pre>
+
+<p>Here all declarations will be put in the <tt>my_library</tt> table.</p>
+
+<p>If you want nested namespaces you can use the <tt>luabind::namespace_</tt> class. It works exactly
+as <tt>luabind::module</tt> except that it doesn't take a <tt>lua_State*</tt> in it's constructor.
+An example of its usage could look like this:</p>
+
+<pre>
+module(L, "my_library")
+[
+
+// declarations
+
+	namespace("detail")
+	[
+		// library-private declarations
+	]
+
+];
+</pre>
+
+<p>As you might have figured out, the following declarations are equivalent:</p>
+
+<pre>
+module(L)
+[
+	namespace("my_library")
+	[
+		// declarations
+	]
+
+];
+</pre>
+
+<pre>
+module(L, "my_library")
+[
+	// declarations
+];
+</pre>
+
+<p>In the rest of the documentation the <tt>module</tt> around declarations is ommited to make the
+examples focus on the actual declaration.</p>
+
+<p>A word of caution, if you are in <b>really</b> bad need for performance, putting your functions
+in tables will increase the lookup time.</p>
 
 <h1><a name="fun"></a>Binding functions to lua</h1>
 
@@ -644,43 +729,102 @@ f(b) -- error, no function 'f' matches the arguments (B)
 
 <h2><a name="class_smart_pointers"></a>smart_pointers</h2> 
 
-<p>TODO: document.</p>
-
-<h1><a name="scopes"></a>Scopes</h1>
-
-<p>If you don't want to register your classes or functions in the global scope (as global variables),
-you can use the <tt>luabind::namespace_</tt> class. It will enable you to register your classes and
-function into tables. Its use is pretty straightforward:</p>
+<p>When you register a class you can tell luabind that all instances of that class should be held
+by some kind of smart pointer (<tt>boost::shared_ptr</tt> for instance). You do this by giving
+the holder type as an extra template-parameter to the <tt>class_</tt> your constructing, like this:</p>
 
 <pre>
-	
-namespace_(L, "my_library")
-[
-	class_&lt;A&gt;("A")
-		.def("method", &amp;A::method)
-		,
-	
-	def("f", &amp;f),
-
-	namespace_("inner_namespace")
-	[
-		function("g", &amp;g)
-	]
-];
+	class_&lt;A, boost::shared_ptr&lt;A&gt; &gt;("A");
 </pre>
 
-<p>A word of caution though, if you are in really bad need for performance, putting your functions
-in tables will increase the lookup time.</p>
+<p>You also have to supply two functions for your smart pointer. One that returns the type of const
+version of the smart pointer type (<tt>boost::shared_ptr&lt;const A&gt;</tt> in this case). And one
+function that extracts the raw pointer from the smart pointer. The first function is needed becaues
+luabind has to allow the non-const&nbsp;-&gt;&nbsp;conversion when passing values from lua to C++. The second
+function is needed when lua calls member functions on held types, the this pointer must be a raw
+pointer, it is also needed to allow the smart_pointer&nbsp;-&gt;&nbsp;raw_pointer conversion from
+lua to C++. They look like this:</p>
 
-<p>Note here that you do not commit the classes explicitly, you separate your classes and functions
-with commas, you do not supply a <tt>lua_State*</tt> when you register functions and you can nest
-namespaces.</p>
+<pre>
+namespace luabind
+{
+	template&lt;class T&gt;
+	T* get_pointer(boost::shared_ptr&lt;T&gt;&amp; p) { return p.get(); }
 
-<p>The code above will create a table called <tt>my_library</tt> as a global variable, within
-this table it will register the class <tt>A</tt> and the function <tt>f</tt>. It will also
-create another table inside it, and register the function <tt>g</tt> in there.</p>
+	template&lt;class A&gt;
+	LUABIND_TYPE_INFO get_const_holder(luabind::detail::type&lt;boost::shared_ptr&lt;A&gt; &gt;)
+	{
+		return LUABIND_TYPEID(boost::shared_ptr&lt;const A&gt;);
+	}
+}
+</pre>
 
-<p>TODO: finish this section</p>
+<p>The current implementation requires that the const-version and non-const versoion of the holder type
+has the exact same memory layout and can be <tt>reinterpret_cast</tt>:ed between each other.</p>
+
+<p>The conversion that works are (given that B is a base class of A):</p>
+
+<table>
+	<tr>
+		<td colspan="2"><h3>from lua to C++</h3></td>
+	</tr>
+	<tr>
+		<td>holder_type&lt;A&gt;</td>
+		<td>A*</td>
+	</tr>
+	<tr>
+		<td>holder_type&lt;A&gt;</td>
+		<td>B*</td>
+	</tr>
+	<tr>
+		<td>holder_type&lt;A&gt;</td>
+		<td>const A*</td>
+	</tr>
+	<tr>
+		<td>holder_type&lt;A&gt;</td>
+		<td>const B*</td>
+	</tr>
+	<tr>
+		<td>holder_type&lt;A&gt;</td>
+		<td>holder_type&lt;A&gt;</td>
+	</tr>
+	<tr>
+		<td>holder_type&lt;A&gt;</td>
+		<td>holder_type&lt;const A&gt;</td>
+	</tr>
+	<tr>
+		<td>holder_type&lt;const A&gt;</td>
+		<td>const A*</td>
+	</tr>
+	<tr>
+		<td>holder_type&lt;const A&gt;</td>
+		<td>const B*</td>
+	</tr>
+	<tr>
+		<td>holder_type&lt;const A&gt;</td>
+		<td>holder_type&lt;const A&gt;</td>
+	</tr>
+	<tr>
+		<td colspan="2"><h3>from C++ to lua</h3></td>
+	</tr>
+	<tr>
+		<td>holder_type&lt;A&gt;</td>
+		<td>holder_type&lt;A&gt;</td>
+	</tr>
+	<tr>
+		<td>holder_type&lt;const A&gt;</td>
+		<td>holder_type&lt;const A&gt;</td>
+	</tr>
+	<tr>
+		<td>const holder_type&lt;A&gt;&amp;</td>
+		<td>holder_type&lt;A&gt;</td>
+	</tr>
+	<tr>
+		<td>const holder_type&lt;const A&gt;&amp;</td>
+		<td>holder_type&lt;const A&gt;</td>
+	</tr>
+
+</table>
 
 <h1><a name="object"></a>Object</h1>
 
@@ -734,7 +878,6 @@ public:
 	template&lt;class T&gt;
 	bool operator==(const T&amp;) const;
 	bool operator==(const object&amp;) const;
-
 	bool operator&lt;(const object&amp;) const;
 	bool operator&lt;=(const object&amp;) const;
 	bool operator&gt;(const object&amp;) const;
@@ -1471,7 +1614,9 @@ is a perfect match to the return-type (such as in the example).</p>
 
 <pre>
 void f(float&amp; val) { val = val + 10.f; }
+</pre>
 or
+<pre>
 void f(float* val) { *val = *val + 10.f; }
 </pre>
 
@@ -1611,9 +1756,17 @@ end
 
 <h1><a name="config"></a>Configuration</h1>
 
-<p>You can configure luabind by defining macros before you include any of luabind's headers.
-It is important that you have the same settings in all your compilation units.
-The available configuration options follows:</p>
+<p>There are a number of configuration options available when building luabind. It is very important
+that your project has the exact same conmfiguration options as the ones given when the library was build!
+The exceptions are the <tt>LUABIND_MAX_ARITY</tt> and <tt>LUABIND_MAX_BASES</tt> which are template-based
+options only and only matters when you use the library (which means they can differ from the settings of the
+library).</p>
+
+<p>The default settings can be found in <tt>luabind/config.hpp</tt> they will be used if no other settings
+are given.</p>
+
+<p>If you want to change the settings of the library, you can modify the config-file. It is included and used
+by all make-files. You can change paths to lua and boost in there as well.</p>
 
 <table cellpadding="10">
 	<tr>
@@ -1894,11 +2047,6 @@ This namespace contains non-public classes and are not supposed to be used direc
 
 <h1><a name="future"></a>Future additions</h1>
 <ul>
-	<li>Smart pointer wrappers. wraps smart pointers by just 
-		keeping one copy of it and let lua garbage collect it when there are no more 
-		references to it.
-	<li>Scopes and namespaces. Add the ability to register classes and 
-		functions within lua tables.
 	<li>A mechanism for wrapping iterators with generators.
 </ul>
 
@@ -1906,7 +2054,7 @@ This namespace contains non-public classes and are not supposed to be used direc
 <ul>
 	<li>If one class registers two functions with the same name and the same signature,
 	there's currently no error. The last registered function will be the one that's used.
-	<li>In vc7, classes can not be called <tt>test</tt>. (due to boost.mpl)
+	<li>In vc7, classes can not be called <tt>test</tt>.
 	<li>Visual studio have problems selecting the correct overload of <tt>std::swap()</tt> for <tt>luabind::object</tt>.
 </ul>
 
