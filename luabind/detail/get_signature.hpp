@@ -54,7 +54,22 @@ namespace luabind { namespace detail
 		}
 		else
 		{
-			ret += crep->name();
+			if (LUABIND_TYPE_INFO_EQUAL(i, crep->holder_type()))
+			{
+				ret += "smart_ptr<";
+				ret += crep->name();
+				ret += ">";
+			}
+			else if (LUABIND_TYPE_INFO_EQUAL(i, crep->const_holder_type()))
+			{
+				ret += "smart_ptr<const ";
+				ret += crep->name();
+				ret += ">";
+			}
+			else
+			{
+				ret += crep->name();
+			}
 		}
 		return ret;
 	};
@@ -239,7 +254,7 @@ namespace luabind { namespace detail
 		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L);
 		BOOST_PP_REPEAT(BOOST_PP_DEC(BOOST_PP_ITERATION()), LUABIND_ADD_LUA_TYPE_NAME, _)
 #endif
-		s += ") const";
+		s += ")";
 	}
 
 #endif

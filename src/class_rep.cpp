@@ -57,6 +57,7 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO type
 	, LUABIND_TYPE_INFO const_holder_type
 	, void*(*extractor)(void*)
 	, const void*(*const_extractor)(void*)
+	, void(*const_converter)(void*,void*)
 	, void(*construct_holder)(void*,void*)
 	, void(*construct_const_holder)(void*,void*)
 	, int holder_size
@@ -67,6 +68,7 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO type
 	, m_const_holder_type(const_holder_type)
 	, m_extractor(extractor)
 	, m_const_extractor(const_extractor)
+	, m_const_converter(const_converter)
 	, m_construct_holder(construct_holder)
 	, m_construct_const_holder(construct_const_holder)
 	, m_holder_size(holder_size)
@@ -95,6 +97,7 @@ luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	, m_const_holder_type(LUABIND_INVALID_TYPE_INFO)
 	, m_extractor(0)
 	, m_const_extractor(0)
+	, m_const_converter(0)
 	, m_construct_holder(0)
 	, m_construct_const_holder(0)
 	, m_holder_size(0)
@@ -1420,7 +1423,7 @@ void luabind::detail::finalize(lua_State* L, class_rep* crep)
 	}
 }
 
-void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj) const
+void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj, void* target_memory) const
 {
 	// TODO: since this is a member function, we don't have to use the accesor functions for
 	// the types and the extractor
@@ -1448,14 +1451,18 @@ void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, cons
 
 	if (LUABIND_TYPE_INFO_EQUAL(target_type, const_holder_type()))
 	{
-		// if the type we are trying to convert to is the const_holder_type
-		// it means that his crep has a holder_type. It also means
-		// that we need no conversion, since the holder_type and
-		// the const_holder_type is supposed to have the same
-		// size and memory layout (holds for most smart pointers)
-		// so, we just do a reinterpret_cast from
-		// holder_type<A> to holder_type<const A>
-		return obj->ptr();
+		if (obj->flags() & object_rep::constant)
+		{
+			// we are holding a constant
+			return obj->ptr();
+		}
+		else
+		{
+			// we are holding a non-constant, we need to convert it
+			// to a const_holder.
+			m_const_converter(obj->ptr(), target_memory);
+			return target_memory;
+		}
 	}
 
 	void* raw_pointer;

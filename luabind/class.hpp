@@ -56,9 +56,7 @@
 		classes with the same name in different scopes will have the same (fully qualified) name.
 
  	finish smart pointer support
-		* holder_type<const A> should be constructed as it's correct class, not constructed
-		   as holder_type<A> and then reinterpret_casted. We will need another constructor
-		   function and another extractor function.
+		* make sure there are no bugs in the conversion from holder to const_holder
 		* the adopt policy should not be able to adopt pointers to held_types. This
 		must be prohibited.
 		* name_of_type must recognize holder_types and not return "custom"
@@ -333,6 +331,42 @@ namespace luabind
 				return 0;
 			}
 		};
+
+
+		template<class HeldType, class ConstHolderType>
+		struct convert_holder
+		{
+			static void apply(void* holder, void* target)
+			{
+				new(target) ConstHolderType(*reinterpret_cast<HeldType*>(holder));
+			};
+		};
+
+
+		template<class HeldType>
+		struct const_converter
+		{
+			typedef void(*converter_fun)(void*, void*);
+
+			template<class ConstHolderType>
+			static converter_fun apply(detail::type<ConstHolderType>)
+			{
+				return &detail::convert_holder<HeldType, ConstHolderType>::apply;
+			}
+		};
+
+		template<>
+		struct const_converter<detail::null_type>
+		{
+			typedef void(*converter_fun)(void*, void*);
+
+			template<class T>
+			static converter_fun apply(detail::type<T>)
+			{
+				return 0;
+			}
+		};
+
 
 
 
@@ -625,6 +659,8 @@ namespace luabind
 		void*(*m_extractor)(void*);
 		const void*(*m_const_extractor)(void*);
 
+		void(*m_const_converter)(void*,void*);
+
 		void(*m_construct_holder)(void*, void*);
 		void(*m_construct_const_holder)(void*, void*);
 
@@ -655,6 +691,7 @@ namespace luabind
 			, LUABIND_TYPE_INFO holder_type
 			, void*(*extractor)(void*)
 			, const void*(*const_extractor)(void*)
+			, void(*const_converter)(void*,void*)
 			, void(*holder_constructor)(void*,void*)
 			, void(*const_holder_constructor)(void*,void*)
 			, void(*destructor)(void*)
@@ -666,6 +703,7 @@ namespace luabind
 			m_holder_type = holder_type;
 			m_extractor = extractor;
 			m_const_extractor = const_extractor;
+			m_const_converter = const_converter;
 			m_construct_holder = holder_constructor;
 			m_construct_const_holder = const_holder_constructor;
 			m_destructor = destructor;
@@ -812,6 +850,7 @@ namespace luabind
 				, m_const_holder_type
 				, m_extractor
 				, m_const_extractor
+				, m_const_converter
 				, m_construct_holder
 				, m_construct_const_holder
 				, m_holder_size
@@ -902,6 +941,7 @@ namespace luabind
 				, m_holder_type
 				, m_extractor
 				, m_const_extractor
+				, m_const_converter
 				, m_construct_holder
 				, m_construct_const_holder
 				, m_destructor
@@ -1294,6 +1334,7 @@ namespace luabind
 				, detail::internal_holder_type<HeldType>::apply()
 				, detail::internal_holder_extractor<HeldType>::apply(detail::type<T>())
 				, detail::internal_const_holder_extractor<HeldType>::apply(detail::type<T>())
+				, detail::const_converter<HeldType>::apply(luabind::get_const_holder(detail::type<HeldType>()))
 				, detail::holder_constructor<HeldType>::apply(detail::type<T>())
 				, detail::const_holder_constructor<HeldType>::apply(detail::type<T>())
 				, detail::internal_holder_destructor<HeldType>::apply(detail::type<T>())

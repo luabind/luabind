@@ -99,6 +99,7 @@ namespace luabind { namespace detail
 			, LUABIND_TYPE_INFO const_holder_type
 			, void*(*extractor)(void*)
 			, const void*(*const_extractor)(void*)
+			, void(*const_converter)(void*,void*)
 			, void(*construct_holder)(void*,void*)
 			, void(*construct_const_holder)(void*,void*)
 			, int holder_size
@@ -170,6 +171,8 @@ namespace luabind { namespace detail
 		inline void*(*extractor() const)(void*) { return m_extractor; }
 		inline const void*(*const_extractor() const)(void*) { return m_const_extractor; }
 
+		inline void(*const_converter() const)(void*,void*) { return m_const_converter; }
+
 		inline class_type get_class_type() const { return m_class_type; }
 
 		void add_static_constant(const char* name, int val);
@@ -189,7 +192,7 @@ namespace luabind { namespace detail
 
 		static int static_class_gettable(lua_State* L);
 
-		void* convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj) const;
+		void* convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj, void*) const;
 
 	private:
 
@@ -208,6 +211,8 @@ namespace luabind { namespace detail
 		// pointer.
 		void*(*m_extractor)(void*);
 		const void*(*m_const_extractor)(void*);
+
+		void(*m_const_converter)(void*, void*);
 
 		// this function is used to construct the held_type
 		// (the smart pointer). The arguments are the memory

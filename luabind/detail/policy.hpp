@@ -583,7 +583,8 @@ namespace luabind { namespace detail
 			assert((obj != 0) && "internal error, please report"); // internal error
 			const class_rep* crep = obj->crep();
 
-			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj));
+			char target[sizeof(T)];
+			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, target));
 			
 //			std::cerr << "pointer_converter<lua_to_cpp>: " << ptr << " " << offset << "\n";
 
@@ -602,7 +603,7 @@ namespace luabind { namespace detail
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
 				return (obj->flags() & object_rep::constant)?-1:0;
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
-				return 0;
+				return (obj->flags() & object_rep::constant)?0:-1;
 
 
 			int d;
@@ -636,19 +637,24 @@ namespace luabind { namespace detail
 			boost::tie(obj_rep,held) = crep->allocate(L);
 
 			void* object_ptr;
+			void(*destructor)(void*);
+			destructor = crep->destructor();
 			int flags = object_rep::owner;
 			if (crep->has_holder())
 			{
 				new(held) T(ref);
 				object_ptr = held;
 				if (LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->const_holder_type()))
+				{
 					flags |= object_rep::constant;
+					destructor = crep->const_holder_destructor();
+				}
 			}
 			else
 			{
 				object_ptr = new T(ref);
 			}
-			new(obj_rep) object_rep(object_ptr, crep, flags, crep->destructor());
+			new(obj_rep) object_rep(object_ptr, crep, flags, destructor);
 
 			// set the meta table
 			detail::getref(L, crep->metatable_ref());
@@ -676,7 +682,9 @@ namespace luabind { namespace detail
 			assert((obj != 0) && "internal error, please report"); // internal error
 			const class_rep* crep = obj->crep();
 
-			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj));
+			// TODO: align?
+			char target[sizeof(T)];
+			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, target));
 
 			return *ptr;
 		}
@@ -758,7 +766,7 @@ namespace luabind { namespace detail
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
 				return (obj->flags() & object_rep::constant)?-1:0;
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
-				return 0;
+				return (obj->flags() & object_rep::constant)?0:-1;
 
 			int d;
 			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
@@ -843,20 +851,25 @@ namespace luabind { namespace detail
 			boost::tie(obj_rep,held) = crep->allocate(L);
 
 			void* object_ptr;
+			void(*destructor)(void*);
+			destructor = crep->destructor();
 			int flags = 0;
 			if (crep->has_holder())
 			{
+				flags = object_rep::owner;
 				new(held) T(ref);
 				object_ptr = held;
-				flags = object_rep::owner;
 				if (LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->const_holder_type()))
+				{
 					flags |= object_rep::constant;
+					destructor = crep->const_holder_destructor();
+				}
 			}
 			else
 			{
-				object_ptr = const_cast<T*>(&ref);
+				object_ptr = new T(ref);
 			}
-			new(obj_rep) object_rep(object_ptr, crep, flags, crep->destructor());
+			new(obj_rep) object_rep(object_ptr, crep, flags, destructor);
 
 			// set the meta table
 			detail::getref(L, crep->metatable_ref());

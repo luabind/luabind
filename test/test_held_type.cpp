@@ -190,9 +190,9 @@ bool test_held_type()
 		if (feedback != 9) return false;
 		if (dostring(L, "tester3(b)")) return false;
 		if (feedback != 10) return false;
-		if (dostring(L, "tester4(b)")) return false;
+		if (dostring(L, "tester4(foobar)")) return false;
 		if (feedback != 11) return false;
-		if (dostring(L, "tester5(b)")) return false;
+		if (dostring(L, "tester5(foobar)")) return false;
 		if (feedback != 12) return false;
 		if (dostring(L, "tester6(b)")) return false;
 		if (feedback != 13) return false;
