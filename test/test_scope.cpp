@@ -25,6 +25,11 @@ namespace
 		feedback = 2;
 	}
 
+	void g_(int)
+	{
+		feedback = 5;
+	}
+
 	void h()
 	{
 		feedback = 1;
@@ -65,6 +70,11 @@ bool test_scope()
 			[
 				def("g", &g),
 				def("f", &f__)
+			],
+
+			namespace_("inner")
+			[
+				def("g", &g_)
 			]
 
 		];
@@ -87,6 +97,8 @@ bool test_scope()
 		if (dostring(L, "b = test.test_class.val2")) return false;
 		if (dostring(L, "test.inner.g()")) return false;
 		if (feedback != 2) return false;
+		if (dostring(L, "test.inner.g(7)")) return false;
+		if (feedback != 5) return false;
 		if (dostring(L, "test.inner.f(4)")) return false;
 		if (feedback != 125) return false;
 		if (dostring(L, "test.inner.h()")) return false;

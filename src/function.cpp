@@ -25,6 +25,8 @@ extern "C"
 	#include "lua.h"
 }
 
+#define LUABIND_BUILDING
+
 #include <luabind/luabind.hpp>
 
 int luabind::detail::free_functions::function_dispatcher(lua_State* L)

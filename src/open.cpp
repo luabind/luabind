@@ -25,6 +25,8 @@ extern "C"
 	#include "lua.h"
 }
 
+#define LUABIND_BUILDING
+
 #include <luabind/luabind.hpp>
 
 using namespace luabind::detail;

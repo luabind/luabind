@@ -25,6 +25,8 @@ extern "C"
 	#include "lua.h"
 }
 
+#define LUABIND_BUILDING
+
 #include <luabind/luabind.hpp>
 #include <utility>
 
@@ -352,7 +354,7 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 					// this operator. Set match_index to
 					// 0 to signal that this operand has
 					// an overload, but leave the min_match
-					// at int-max to mark it as a last resort
+					// at int-max to mark it as a last fallback
 					operand_id = i;
 					if (match_index == -1) match_index = 0;
 				}
@@ -578,24 +580,6 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 #endif
 
 }
-
-// TODO: remove
-/*
- int luabind::detail::class_rep::implicit_cast(const class_rep* from, const class_rep* to, int& pointer_offset)
-{
-	int offset = 0;
-	if (LUABIND_TYPE_INFO_EQUAL(from->type(), to->type())) return 0;
-
-	for (std::vector<class_rep::base_info>::const_iterator i = from->bases().begin(); i != from->bases().end(); ++i)
-	{
-		int steps = implicit_cast(i->base, to, offset);
-		pointer_offset = offset + i->pointer_offset;
-		if (steps >= 0) return steps + 2;
-	}
-	return -1;
-}
-*/
-
 
 // the functions dispatcher assumes the following:
 // there is one upvalue that points to the method_rep that this dispatcher is to call
@@ -1491,7 +1475,7 @@ void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, cons
 	return static_cast<char*>(raw_pointer) + offset;
 }
 
-void class_rep::cache_operators(lua_State* L)
+void luabind::detail::class_rep::cache_operators(lua_State* L)
 {
 	m_operator_cache = 0x1;
 
@@ -1507,7 +1491,7 @@ void class_rep::cache_operators(lua_State* L)
 	}
 }
 
-bool class_rep::has_operator_in_lua(lua_State* L, int id)
+bool luabind::detail::class_rep::has_operator_in_lua(lua_State* L, int id)
 {
 	if ((m_operator_cache & 0x1) == 0)
 		cache_operators(L);

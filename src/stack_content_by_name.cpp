@@ -27,7 +27,7 @@ extern "C"
 	#include "lualib.h"
 }
 
-#define LUABIND_NO_HEADERS_ONLY
+#define LUABIND_BUILDING
 
 #include <luabind/luabind.hpp>
 

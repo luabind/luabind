@@ -25,6 +25,8 @@ extern "C"
 	#include "lua.h"
 }
 
+#define LUABIND_BUILDING
+
 #include <luabind/luabind.hpp>
 #include <luabind/detail/implicit_cast.hpp>
 
