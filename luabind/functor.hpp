@@ -444,6 +444,7 @@ namespace luabind
 		void dummy() const {}
 
 		lua_State* L_;
+		// TODO: should be replaced with a detail::lua_reference
 		int ref_;
 	};
 }

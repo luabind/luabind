@@ -55,6 +55,10 @@
 // TODO: move thses functions into their
 // own compilation unit
 
+#include <luabind/lua_include.hpp>
+
+struct lua_State;
+
 namespace luabind { namespace detail
 {
 	enum
@@ -177,6 +181,66 @@ namespace luabind { namespace detail
 	{
 		lua_rawgeti(L, LUA_REGISTRYINDEX, r);
 	}
+
+	struct lua_reference
+	{
+		lua_reference(lua_State* L_ = 0): L(L_), m_ref(LUA_NOREF) {}
+		lua_reference(lua_reference const& r)
+			: L(r.L)
+			, m_ref(LUA_NOREF)
+		{
+			r.get(L);
+			set(L);
+		}
+		~lua_reference() { reset(); }
+
+		lua_State* get_state() const { return L; }
+
+		void operator=(lua_reference const& r)
+		{
+			reset();
+			r.get(r.get_state());
+			set(r.get_state());
+		}
+
+		bool is_valid() const
+		{ return m_ref != LUA_NOREF; }
+
+		void set(lua_State* L_)
+		{
+			reset();
+			L = L_;
+			m_ref = ref(L);
+		}
+
+		void replace(lua_State* L_)
+		{
+			assert(L == L_);
+			lua_rawseti(L, LUA_REGISTRYINDEX, m_ref);
+		}
+
+		void get(lua_State* L_) const
+		{
+			assert(L_ == L);
+			getref(L, m_ref);
+		}
+
+		void reset()
+		{
+			if (L && m_ref != LUA_NOREF) unref(L, m_ref);
+			m_ref = LUA_NOREF;
+		}
+
+		void swap(lua_reference& r)
+		{
+			assert(r.L == L);
+			std::swap(r.m_ref, m_ref);
+		}
+
+	private:
+		lua_State* L;
+		int m_ref;
+	};
 
 }}
 

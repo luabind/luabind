@@ -160,21 +160,24 @@ namespace luabind
 	inline object get_globals(lua_State* L)
 	{
 		lua_pushvalue(L, LUA_GLOBALSINDEX);
-		int ref = detail::ref(L);
+		detail::lua_reference ref;
+		ref.set(L);
 		return object(L, ref, true/*object::reference()*/);
 	}
 
 	inline object get_registry(lua_State* L)
 	{
 		lua_pushvalue(L, LUA_REGISTRYINDEX);
-		int ref = detail::ref(L);
+		detail::lua_reference ref;
+		ref.set(L);
 		return object(L, ref, true/*object::reference()*/);
 	}
 
 	inline object newtable(lua_State* L)
 	{
 		lua_newtable(L);
-		int ref = detail::ref(L);
+		detail::lua_reference ref;
+		ref.set(L);
 		return object(L, ref, true/*object::reference()*/);
 	}
 }

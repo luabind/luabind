@@ -42,6 +42,7 @@
 namespace luabind { namespace detail
 {
 
+	// TODO: move to its own transation unit
 	static std::string get_class_name(lua_State* L, LUABIND_TYPE_INFO i)
 	{
 		std::string ret;

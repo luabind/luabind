@@ -110,8 +110,13 @@ namespace luabind { namespace detail
 			template<class Policies, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
 			static T* call(lua_State* L, int ref, const constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY,A)>*, const Policies*)
 			{
+				// TODO: this is not as efficient as it could be
+				detail::getref(L, ref);
+				detail::unref(L, ref);
+				detail::lua_reference r;
+				r.set(L);
 				BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
-					return new T(luabind::object(L, ref, true/*luabind::object::reference()*/) BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
+					return new T(luabind::object(L, r, true/*luabind::object::reference()*/) BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
 			}
 		};
 	};

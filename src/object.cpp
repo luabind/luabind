@@ -44,7 +44,7 @@ namespace luabind
 			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state"); \
 			lua_State* L = lua_state(); \
 			m_obj->pushvalue(); \
-			detail::getref(L, m_key_ref); \
+			m_key.get(L);\
 			p.pushvalue(); \
 			lua_settable(L, -3); \
 			lua_pop(L, 1); \
@@ -60,11 +60,11 @@ LUABIND_PROXY_ASSIGNMENT_OPERATOR(proxy_array_object)
 
 		void proxy_object::pushvalue() const
 		{
-			assert((m_key_ref != LUA_NOREF) && "you cannot call pushvalue() on an uninitialized object");
+			assert((m_key.is_valid()) && "you cannot call pushvalue() on an uninitialized object");
 
 			lua_State* L = m_obj->lua_state();
 			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
+			m_key.get(L);
 			lua_gettable(L, -2);
 			// remove the table and leave the value on top of the stack
 			lua_remove(L, -2);
@@ -74,7 +74,7 @@ LUABIND_PROXY_ASSIGNMENT_OPERATOR(proxy_array_object)
 		{
 			lua_State* L = lua_state();
 			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
+			m_key.get(L);
 			lua_pushvalue(L, -3);
 			lua_settable(L, -3);
 			// pop table and value
@@ -139,7 +139,7 @@ LUABIND_ARRAY_PROXY_ASSIGNMENT_OPERATOR(proxy_array_object)
 			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state"); \
 			lua_State* L = lua_state(); \
 			m_obj->pushvalue(); \
-			detail::getref(L, m_key_ref); \
+			m_key.get(L);\
 			p.pushvalue(); \
 			lua_rawset(L, -3); \
 			lua_pop(L, 1); \
@@ -155,11 +155,11 @@ LUABIND_RAW_PROXY_ASSIGNMENT_OPERATOR(proxy_array_object)
 
 		void proxy_raw_object::pushvalue() const
 		{
-			assert((m_key_ref != LUA_NOREF) && "you cannot call pushvalue() on an uninitiallized object");
+			assert((m_key.is_valid()) && "you cannot call pushvalue() on an uninitiallized object");
 
 			lua_State* L = lua_state();
 			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
+			m_key.get(L);
 			lua_rawget(L, -2);
 			// remove the table and leave the value on top of the stack
 			lua_remove(L, -2);
@@ -169,7 +169,7 @@ LUABIND_RAW_PROXY_ASSIGNMENT_OPERATOR(proxy_array_object)
 		{
 			lua_State* L = lua_state();
 			m_obj->pushvalue();
-			detail::getref(L, m_key_ref);
+			m_key.get(L);
 			lua_pushvalue(L, -3);
 			lua_rawset(L, -3);
 			// pop table and value

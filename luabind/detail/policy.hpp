@@ -401,7 +401,9 @@ namespace luabind { namespace detail
 		PRIMITIVE_CONVERTER(luabind::object)
 		{
 			lua_pushvalue(L, index);
-			return luabind::object(L, detail::ref(L), true);
+			detail::lua_reference ref;
+			ref.set(L);
+			return luabind::object(L, ref, true);
 		}
 
 		PRIMITIVE_MATCHER(luabind::object) { return std::numeric_limits<int>::max() - 1; }

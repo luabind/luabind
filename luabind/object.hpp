@@ -182,7 +182,7 @@ namespace luabind
 				//std::cout << "proxy assigment\n";
 				lua_State* L = m_obj->m_state;
 				m_obj->pushvalue();
-				detail::getref(L, m_key_ref);
+				m_key.get(L);
 				detail::convert_to_lua(L, val);
 				lua_settable(L, -3);
 				// pop table
@@ -277,14 +277,14 @@ namespace luabind
 
 			void dummy() const {}
 
-			proxy_object(luabind::object* o, int key)
+			proxy_object(luabind::object* o, const lua_reference& key)
 				: m_obj(o)
-				, m_key_ref(key)
+				, m_key(key)
 			{
 			}
 
 			luabind::object* m_obj;
-			int m_key_ref;
+			detail::lua_reference m_key;
 		};
 
 
@@ -376,14 +376,14 @@ namespace luabind
 
 			void dummy() const {}
 
-			proxy_raw_object(luabind::object* o, int key)
+			proxy_raw_object(luabind::object* o, const lua_reference& key)
 				: m_obj(o)
-				, m_key_ref(key)
+				, m_key(key)
 			{
 			}
 
 			luabind::object* m_obj;
-			int m_key_ref;
+			detail::lua_reference m_key;
 		};
 
 
@@ -416,9 +416,8 @@ namespace luabind
 				//std::cout << "proxy assigment\n";
 				lua_State* L = m_obj->m_state;
 				m_obj->pushvalue();
-				detail::getref(L, m_key_ref);
 				detail::convert_to_lua_p(L, val, p);
-				lua_settable(L, -3);
+				lua_rawseti(L, -2, m_key);
 				// pop table
 				lua_pop(L, 1);
 				return *this;
@@ -439,24 +438,26 @@ namespace luabind
 				return lua_type(lua_state(), -1);
 			}
 
-#define LUABIND_PROXY_ARRAY_RAW_AT_BODY				\
-			{																							\
-				pushvalue();																	\
-				detail::convert_to_lua(m_state, key);							\
-				lua_rawget(m_state, -2);												\
-				int ref = detail::ref(m_state);										\
-				lua_pop(m_state, 1);														\
-				return object(m_state, ref, true);									\
+#define LUABIND_PROXY_ARRAY_RAW_AT_BODY\
+			{\
+				pushvalue();\
+				detail::convert_to_lua(m_state, key);\
+				lua_rawget(m_state, -2);\
+				lua_reference ref;\
+				ref.set(m_state);\
+				lua_pop(m_state, 1);\
+				return object(m_state, ref, true);\
 			}
 
-#define LUABIND_PROXY_ARRAY_AT_BODY							\
-			{																							\
-				pushvalue();																	\
-				detail::convert_to_lua(m_state, key);							\
-				lua_gettable(m_state, -2);											\
-				int ref = detail::ref(m_state);										\
-				lua_pop(m_state, 1);														\
-				return object(m_state, ref, true);									\
+#define LUABIND_PROXY_ARRAY_AT_BODY\
+			{\
+				pushvalue();\
+				detail::convert_to_lua(m_state, key);\
+				lua_gettable(m_state, -2);\
+				lua_reference ref;\
+				ref.set(m_state);\
+				lua_pop(m_state, 1);\
+				return object(m_state, ref, true);\
 			}
 
 #if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
@@ -482,7 +483,8 @@ namespace luabind
 			inline detail::proxy_object operator[](const T& key) const
 			{
 				detail::convert_to_lua(m_state, key);
-				int ref = detail::ref(m_state);
+				lua_reference ref;\
+				ref.set(m_state);\
 				return detail::proxy_object(const_cast<object*>(this), ref);
 			}
 
@@ -506,8 +508,7 @@ namespace luabind
 			proxy_array_object(luabind::object* o, int key)
 				: m_obj(o)
 				, m_key(key)
-			{
-			}
+			{}
 			luabind::object* m_obj;
 			int m_key;
 		};
@@ -553,7 +554,7 @@ namespace luabind
 
 			array_iterator()
 				: m_obj(0)
-				, m_key(LUA_NOREF)
+				, m_key(0)
 			{
 			}
 
@@ -567,7 +568,6 @@ namespace luabind
 
 			array_iterator& operator=(const array_iterator& rhs)
 			{
-				//std::cout << "===\n";
 				m_obj = rhs.m_obj;
 				m_key = rhs.m_key;
 				return *this;
@@ -642,40 +642,28 @@ namespace luabind
 
 			iterator()
 				: m_obj(0)
-				, m_key(LUA_NOREF)
 			{
 			}
 
 			iterator(const iterator& iter)
 				: m_obj(iter.m_obj)
-				, m_key(LUA_NOREF)
 			{
 				if (m_obj)
 				{
-					lua_State* L = m_obj->lua_state();
-					detail::getref(L, iter.m_key);
-					m_key = detail::ref(L);
+					m_key = iter.m_key;
 				}
-			}
-
-			~iterator()
-			{
-				if (m_obj && m_key != LUA_NOREF) detail::unref(m_obj->lua_state(), m_key);
 			}
 
 			iterator& operator=(const iterator& rhs)
 			{
-				//std::cout << "===\n";
 				m_obj = rhs.m_obj;
 				if (m_obj)
 				{
-					lua_State* L = m_obj->lua_state();
-					detail::getref(L, rhs.m_key);
-					m_key = detail::ref(L);
+					m_key = rhs.m_key;
 				}
 				else
 				{
-					m_key = LUA_NOREF;
+					m_key.reset();
 				}
 				return *this;
 			}
@@ -688,43 +676,52 @@ namespace luabind
 			iterator& operator++()
 			{
 				lua_State* L = m_obj->lua_state();
+
+				int n = lua_gettop(L);
+
 				m_obj->pushvalue();
-				detail::getref(L, m_key);
+				m_key.get(L);
 
 				if (lua_next(L, -2) != 0)
 				{
 					lua_pop(L, 1);
-					lua_rawseti(L, LUA_REGISTRYINDEX, m_key);
+					m_key.replace(L);
 					lua_pop(L, 1);
 				}
 				else
 				{
 					lua_pop(L, 1);
-					detail::unref(L, m_key);
 					m_obj = 0;
-					m_key = LUA_NOREF;
+					m_key.reset();
 				}
 
+				assert(n == lua_gettop(L));
 				return *this;
 			}
 
 			bool operator!=(const iterator& rhs) const
 			{
-				return m_obj != rhs.m_obj || m_key != rhs.m_key;
+				if (m_obj != rhs.m_obj) return true;
+				if (m_obj == 0) return false;
+				if (m_obj->lua_state() != rhs.m_obj->lua_state()) return true;
+				if (m_key.is_valid() != rhs.m_key.is_valid()) return true;
+
+				// TODO: fix this. add a real equality test of the keys
+				return true;
 			}
 
 			object key() const;
 
 		private:
 
-			iterator(object* obj, int key)
+			iterator(luabind::object* obj, detail::lua_reference const& key)
 				: m_obj(obj)
 				, m_key(key)
 			{
 			}
 
 			object* m_obj;
-			int m_key;
+			detail::lua_reference m_key;
 		};
 
 
@@ -743,25 +740,17 @@ namespace luabind
 
 			raw_iterator()
 				: m_obj(0)
-				, m_key(LUA_NOREF)
 			{
 			}
 
 			raw_iterator(const raw_iterator& iter)
 				: m_obj(iter.m_obj)
-				, m_key(LUA_NOREF)
+				, m_key()
 			{
 				if (m_obj)
 				{
-					lua_State* L = m_obj->lua_state();
-					detail::getref(L, iter.m_key);
-					m_key = detail::ref(L);
+					m_key = iter.m_key;
 				}
-			}
-
-			~raw_iterator()
-			{
-				if (m_obj && m_key != LUA_NOREF) detail::unref(m_obj->lua_state(), m_key);
 			}
 
 			raw_iterator& operator=(const raw_iterator& rhs)
@@ -770,13 +759,11 @@ namespace luabind
 				m_obj = rhs.m_obj;
 				if (m_obj)
 				{
-					lua_State* L = m_obj->lua_state();
-					detail::getref(L, rhs.m_key);
-					m_key = detail::ref(L);
+					m_key = rhs.m_key;
 				}
 				else
 				{
-					m_key = LUA_NOREF;
+					m_key.reset();
 				}
 				return *this;
 			}
@@ -790,20 +777,19 @@ namespace luabind
 			{
 				lua_State* L = m_obj->lua_state();
 				m_obj->pushvalue();
-				detail::getref(L, m_key);
+				m_key.get(L);
 
 				if (lua_next(L, -2) != 0)
 				{
 					lua_pop(L, 1);
-					lua_rawseti(L, LUA_REGISTRYINDEX, m_key);
+					m_key.replace(L);
 					lua_pop(L, 1);
 				}
 				else
 				{
 					lua_pop(L, 1);
-					detail::unref(L, m_key);
+					m_key.reset();
 					m_obj = 0;
-					m_key = LUA_NOREF;
 				}
 
 				return *this;
@@ -813,19 +799,24 @@ namespace luabind
 
 			bool operator!=(const raw_iterator& rhs) const
 			{
-				return m_obj != rhs.m_obj || m_key != rhs.m_key;
+				if (m_obj != rhs.m_obj) return true;
+				if (m_obj == 0) return false;
+				if (m_obj->lua_state() != rhs.m_obj->lua_state()) return true;
+				if (m_key.is_valid() != rhs.m_key.is_valid()) return true;
+
+				// TODO: fix this. add a real equality test of the keys
+				return true;
 			}
 
 		private:
 
-			raw_iterator(object* obj, int key)
+			raw_iterator(object* obj, detail::lua_reference const& key)
 				: m_obj(obj)
 				, m_key(key)
-			{
-			}
+			{}
 
 			object* m_obj;
-			int m_key;
+			detail::lua_reference m_key;
 		};
 
 
@@ -835,40 +826,32 @@ namespace luabind
 
 		object()
 			: m_state(0)
-			, m_ref(LUA_NOREF)
 		{
 		}
 
 		explicit object(lua_State* L)
 			: m_state(L)
-			, m_ref(LUA_NOREF)
 		{
 		}
 
 		template<class T>
 		object(lua_State* L, const T& val)
 			: m_state(L)
-			, m_ref(LUA_NOREF)
 		{
 			*this = val;
 		}
 
 		object(const object& o)
 			: m_state(o.m_state)
-			, m_ref(LUA_NOREF)
 		{
-			lua_getref(m_state, o.m_ref);
-			m_ref = detail::ref(m_state);
+			o.m_ref.get(m_state);
+			m_ref.set(m_state);
 		}
 
 		inline ~object()
-		{
-			// If you crash in the detail::unref() call you have probably
-			// closed the lua_State before destructing all object instances.
-			if (m_ref != LUA_NOREF) detail::unref(m_state, m_ref);
-		}
+		{}
 
-		inline bool is_valid() const { return m_ref != LUA_NOREF; }
+		inline bool is_valid() const { return m_ref.is_valid(); }
 
 		// this is a safe substitute for an implicit converter to bool
 		typedef void (object::*member_ptr)() const;
@@ -887,18 +870,20 @@ namespace luabind
 
 		inline iterator begin() const
 		{
-			lua_getref(m_state, m_ref);
+			m_ref.get(m_state);
 			lua_pushnil(m_state);
 			lua_next(m_state, -2);
 			lua_pop(m_state, 1);
-			iterator i(const_cast<object*>(this), detail::ref(m_state));
+			detail::lua_reference r;
+			r.set(m_state);
+			iterator i(const_cast<object*>(this), r);
 			lua_pop(m_state, 1);
 			return i;
 		}
 
 		inline iterator end() const
 		{
-			return iterator(0, LUA_NOREF);
+			return iterator(0, detail::lua_reference());
 		}
 
 		inline array_iterator abegin() const
@@ -908,23 +893,25 @@ namespace luabind
 
 		inline array_iterator aend() const
 		{
-			return array_iterator(const_cast<object*>(this), LUA_NOREF);
+			return array_iterator(const_cast<object*>(this), -1);
 		}
 
 		raw_iterator raw_begin() const
 		{
-			lua_getref(m_state, m_ref);
+			m_ref.get(m_state);
 			lua_pushnil(m_state);
 			lua_next(m_state, -2);
 			lua_pop(m_state, 1);
-			raw_iterator i(const_cast<object*>(this), detail::ref(m_state));
+			detail::lua_reference r;
+			r.set(m_state);
+			raw_iterator i(const_cast<object*>(this), r);
 			lua_pop(m_state, 1);
 			return i;
 		}
 
 		raw_iterator raw_end() const
 		{
-			return raw_iterator(0, LUA_NOREF);
+			return raw_iterator(0, detail::lua_reference());
 		}
 
 		inline void set() const
@@ -933,16 +920,16 @@ namespace luabind
 			assert((m_state != 0) && "you are trying to access an invalid (uninitialized) object");
 
 			allocate_slot();
-			lua_rawseti(m_state, LUA_REGISTRYINDEX, m_ref);
+			m_ref.replace(m_state);
 		}
 		inline lua_State* lua_state() const { return m_state; }
 		inline void pushvalue() const
 		{
 			// you are trying to dereference an invalid object
-			assert((m_ref != LUA_NOREF) && "you are trying to access an invalid (uninitialized) object");
+			assert((!m_ref.is_valid()) && "you are trying to access an invalid (uninitialized) object");
 			assert((m_state != 0) && "internal error, please report");
 
-			lua_getref(m_state, m_ref);
+			m_ref.get(m_state);
 		}
 
 		void swap(object& rhs);
@@ -954,7 +941,8 @@ namespace luabind
 			pushvalue();
 			detail::convert_to_lua(L, key);
 			lua_rawget(L, -2);
-			int ref = detail::ref(L);
+			detail::lua_reference ref;
+			ref.set(L);
 			lua_pop(L, 1);
 			return object(L, ref, true);
 		}
@@ -966,7 +954,8 @@ namespace luabind
 			pushvalue();
 			detail::convert_to_lua(L, key);
 			lua_gettable(L, -2);
-			int ref = detail::ref(L);
+			detail::lua_reference ref;
+			ref.set(L);
 			lua_pop(L, 1);
 			return object(L, ref, true);
 		}
@@ -975,7 +964,8 @@ namespace luabind
 		inline detail::proxy_object operator[](const T& key) const
 		{
 			detail::convert_to_lua(m_state, key);
-			int ref = detail::ref(m_state);
+			detail::lua_reference ref;
+			ref.set(m_state);
 			return detail::proxy_object(const_cast<object*>(this), ref);
 		}
 
@@ -1021,12 +1011,12 @@ namespace luabind
 
 
 
-		inline detail::proxy_object make_proxy(int key)
+		inline detail::proxy_object make_proxy(detail::lua_reference const& key)
 		{
 			return detail::proxy_object(this, key);
 		}
 
-		inline detail::proxy_raw_object make_raw_proxy(int key)
+		inline detail::proxy_raw_object make_raw_proxy(detail::lua_reference const& key)
 		{
 			return detail::proxy_raw_object(this, key);
 		}
@@ -1040,7 +1030,7 @@ namespace luabind
 		// it's an inner class), that's why this interface is public
 //	private:
 
-		object(lua_State* L, int ref, bool/*, reference*/)
+		object(lua_State* L, detail::lua_reference const& ref, bool/*, reference*/)
 			: m_state(L)
 			, m_ref(ref)
 		{
@@ -1052,15 +1042,15 @@ private:
 
 		void allocate_slot() const
 		{
-			if (m_ref == LUA_NOREF)
+			if (!m_ref.is_valid())
 			{
 				lua_pushboolean(m_state, 0);
-				m_ref = detail::ref(m_state);
+				m_ref.set(m_state);
 			}
 		}
 
 		mutable lua_State* m_state;
-		mutable int m_ref;
+		mutable detail::lua_reference m_ref;
 	};
 
 
@@ -1071,21 +1061,19 @@ private:
 	{
 		// you cannot swap objects from different lua states
 		assert((lua_state() == rhs.lua_state()) && "you cannot swap objects from different lua states");
-		std::swap(m_ref, rhs.m_ref);
+		m_ref.swap(rhs.m_ref);
 	}
 
 	inline object object::iterator::key() const
 	{
 		lua_State* L = m_obj->lua_state();
-		detail::getref(L, m_key);
-		return object(L, detail::ref(L), true);
+		return object(L, m_key, true);
 	}
 
 	inline object object::raw_iterator::key() const
 	{
 		lua_State* L = m_obj->lua_state();
-		detail::getref(L, m_key);
-		return object(L, detail::ref(L), true);
+		return object(L, m_key, true);
 	}
 
 	namespace detail
@@ -1194,7 +1182,8 @@ private:
 				std::terminate();
 #endif
 			}
-			int ref = detail::ref(L);
+			detail::lua_reference ref;
+			ref.set(L);
 			return luabind::object(m_obj->lua_state(), ref, true/*luabind::object::reference()*/);
 		}
 #endif
@@ -1220,7 +1209,8 @@ private:
 		{
 			lua_State* L = m_obj->lua_state();
 			pushvalue();
-			int ref = detail::ref(L);
+			detail::lua_reference ref;
+			ref.set(L);
 			return luabind::object(L, ref, true/*luabind::object::reference()*/);
 		}
 
@@ -1250,7 +1240,8 @@ private:
 		{
 			lua_State* L = m_obj->lua_state();
 			pushvalue();
-			int ref = detail::ref(L);
+			detail::lua_reference ref;
+			ref.set(L);
 			return luabind::object(L, ref, true/*luabind::object::reference()*/);
 		}
 
@@ -1280,7 +1271,8 @@ private:
 		{
 			lua_State* L = lua_state();
 			pushvalue();
-			int ref = detail::ref(L);
+			detail::lua_reference ref;
+			ref.set(L);
 			return luabind::object(L, ref, true/*luabind::object::reference()*/);
 		}
 
@@ -1335,7 +1327,8 @@ private:
 				std::terminate();
 #endif
 			}
-			int ref = detail::ref(L);
+			detail::lua_reference ref;
+			ref.set(L);
 			return luabind::object(m_obj->lua_state(), ref, true/*luabind::object::reference()*/);
 		}
 
