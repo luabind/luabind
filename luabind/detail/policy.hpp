@@ -44,6 +44,8 @@
 
 #include <luabind/detail/decorate_type.hpp>
 #include <luabind/object.hpp>
+#include <luabind/detail/make_instance.hpp>
+#include <luabind/pointer_holder.hpp>
 
 namespace luabind
 {
@@ -627,6 +629,8 @@ namespace luabind { namespace detail
 			// set the meta table
 			detail::getref(L, crep->metatable_ref());
 			lua_setmetatable(L, -2);
+
+//			make_instance(L, ptr, (pointer_holder<T, T*>*)0);
 		}
 	};
 
@@ -652,7 +656,16 @@ namespace luabind { namespace detail
 			const class_rep* crep = obj->crep();
 
 			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, target));
+/*
+			void* result = boost::langbinding::inheritance_graph::instance().find_dynamic_type(
+					obj->ptr()
+				,	LUABIND_TYPEID(T)
+				,	crep->type());
 
+			made_conversion = false;
+
+			return (T*)result;
+*/
 			made_conversion = (void*)ptr == (char*)target;
 			assert(!made_conversion || sizeof(T) <= 32);
 
@@ -1039,6 +1052,9 @@ namespace luabind { namespace detail
 		template<class T>
 		functor<T> apply(lua_State* L, by_const_reference<functor<T> >, int index)
 		{
+			if (lua_isnil(L, index))
+				return functor<T>();
+
 			lua_pushvalue(L, index);
 			int ref = detail::ref(L);
 			return functor<T>(L, ref);
@@ -1047,6 +1063,9 @@ namespace luabind { namespace detail
 		template<class T>
 		functor<T> apply(lua_State* L, by_value<functor<T> >, int index)
 		{
+			if (lua_isnil(L, index))
+				return functor<T>();
+
 			lua_pushvalue(L, index);
 			int ref = detail::ref(L);
 			return functor<T>(L, ref);
