@@ -39,6 +39,9 @@
 
 namespace luabind
 {
+	// below are some considerations that haven't been implemented
+	//
+	//
 	// object might need to be able to store values temporarily
 	// without knowing about a lua_State.
 	//
@@ -150,13 +153,13 @@ namespace luabind
 			operator luabind::object();
 
 #if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
-	#define SEMICOLON
+	#define LUABIND_SEMICOLON
 #else
-	#define SEMICOLON ;
+	#define LUABIND_SEMICOLON ;
 #endif
 
 			template<class Policies>
-			luabind::object operator[](const Policies& p) SEMICOLON
+			luabind::object operator[](const Policies& p) LUABIND_SEMICOLON
 #if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
 			{
 				m_called = true;
@@ -177,7 +180,7 @@ namespace luabind
 #endif
 
 
-#undef SEMICOLON
+#undef LUABIND_SEMICOLON
 		private:
 
 			luabind::object* m_obj;
@@ -233,16 +236,62 @@ namespace luabind
 				return *this;
 			}
 
+			proxy_object& operator=(const object& p);
 			proxy_object& operator=(const proxy_object& p);
 			proxy_object& operator=(const proxy_raw_object& p);
 			proxy_object& operator=(const proxy_array_object& p);
 
+			void swap(const proxy_object& rhs);
+
 			operator luabind::object();
 
+			int type() const
+			{
+				pushvalue();
+				detail::stack_pop p(lua_state(), 1);
+				return lua_type(lua_state(), -1);
+			}
+
+			template<class T>
+			inline object raw_at(const T& key)
+			{
+				lua_State* L = lua_state();
+				pushvalue();
+				detail::convert_to_lua(L, key);
+				lua_rawget(L, -2);
+				int ref = detail::ref(L);
+				lua_pop(L, 1);
+				return object(L, ref, true);
+			}
+
+			template<class T>
+			inline object at(const T& key)
+			{
+				lua_State* L = lua_state();
+				pushvalue();
+				detail::convert_to_lua(L, key);
+				lua_gettable(L, -2);
+				int ref = detail::ref(L);
+				lua_pop(L, 1);
+				return object(L, ref, true);
+			}
+
+			inline bool is_valid() const { return true; }
 			lua_State* lua_state() const;
 			void pushvalue() const;
+			void set() const;
+
+			// this is a safe substitute for an implicit converter to bool
+			typedef void (proxy_object::*member_ptr)() const;
+			operator member_ptr() const
+			{
+				if (is_valid()) return &proxy_object::dummy;
+				return 0;
+			}
 
 		private:
+
+			void dummy() const {}
 
 			proxy_object(luabind::object* o, int key)
 				: m_obj(o)
@@ -278,16 +327,62 @@ namespace luabind
 				return *this;
 			}
 
+			proxy_raw_object& operator=(const object& p);
 			proxy_raw_object& operator=(const proxy_object& p);
 			proxy_raw_object& operator=(const proxy_raw_object& p);
 			proxy_raw_object& operator=(const proxy_array_object& p);
+			void swap(const proxy_raw_object& rhs);
 
 			operator luabind::object();
 
+			int type() const
+			{
+				pushvalue();
+				detail::stack_pop p(lua_state(), 1);
+				return lua_type(lua_state(), -1);
+			}
+
+			template<class T>
+			inline object raw_at(const T& key)
+			{
+				lua_State* L = lua_state();
+				pushvalue();
+				detail::convert_to_lua(L, key);
+				lua_rawget(L, -2);
+				int ref = detail::ref(L);
+				lua_pop(L, 1);
+				return object(L, ref, true);
+			}
+
+			template<class T>
+			inline object at(const T& key)
+			{
+				lua_State* L = lua_state();
+				pushvalue();
+				detail::convert_to_lua(L, key);
+				lua_gettable(L, -2);
+				int ref = detail::ref(L);
+				lua_pop(L, 1);
+				return object(L, ref, true);
+			}
+
+			inline bool is_valid() const { return true; }
 			lua_State* lua_state() const;
 			void pushvalue() const;
+			void set() const;
+
+			// this is a safe substitute for an implicit converter to bool
+			typedef void (proxy_raw_object::*member_ptr)() const;
+			operator member_ptr() const
+			{
+				if (is_valid()) return &proxy_raw_object::dummy;
+				return 0;
+			}
+
 
 		private:
+
+			void dummy() const {}
 
 			proxy_raw_object(luabind::object* o, int key)
 				: m_obj(o)
@@ -323,16 +418,67 @@ namespace luabind
 				return *this;
 			}
 
+			proxy_array_object& operator=(const object& p);
 			proxy_array_object& operator=(const proxy_object& p);
 			proxy_array_object& operator=(const proxy_raw_object& p);
 			proxy_array_object& operator=(const proxy_array_object& p);
+			void swap(const proxy_array_object& rhs);
 
 			operator luabind::object();
 
+			int type() const
+			{
+				pushvalue();
+				detail::stack_pop p(lua_state(), 1);
+				return lua_type(lua_state(), -1);
+			}
+
+			template<class T>
+			inline object raw_at(const T& key)
+			{
+				pushvalue();
+				detail::convert_to_lua(m_state, key);
+				lua_rawget(m_state, -2);
+				int ref = detail::ref(m_state);
+				lua_pop(m_state, 1);
+				return object(m_state, ref, true);
+			}
+
+			template<class T>
+			inline object at(const T& key)
+			{
+				pushvalue();
+				detail::convert_to_lua(m_state, key);
+				lua_gettable(m_state, -2);
+				int ref = detail::ref(m_state);
+				lua_pop(m_state, 1);
+				return object(m_state, ref, true);
+			}
+
+			template<class T>
+			inline detail::proxy_object operator[](const T& key) const
+			{
+				detail::convert_to_lua(m_state, key);
+				int ref = detail::ref(m_state);
+				return detail::proxy_object(const_cast<object*>(this), ref);
+			}
+
+			inline bool is_valid() const { return true; }
 			lua_State* lua_state() const;
 			void pushvalue() const;
+			void set() const;
+
+			// this is a safe substitute for an implicit converter to bool
+			typedef void (proxy_array_object::*member_ptr)() const;
+			operator member_ptr() const
+			{
+				if (is_valid()) return &proxy_array_object::dummy;
+				return 0;
+			}
 
 		private:
+
+			void dummy() const {}
 
 			proxy_array_object(luabind::object* o, int key)
 				: m_obj(o)
@@ -379,8 +525,8 @@ namespace luabind
 
 			typedef std::forward_iterator_tag iterator_category;
 			typedef luabind::object value_type;
-		    typedef value_type& reference;
-		    typedef value_type* pointer;
+			typedef value_type& reference;
+			typedef value_type* pointer;
 			typedef void difference_type;
 
 			array_iterator()
@@ -468,8 +614,8 @@ namespace luabind
 
 			typedef std::forward_iterator_tag iterator_category;
 			typedef luabind::object value_type;
-		    typedef value_type& reference;
-		    typedef value_type* pointer;
+			typedef value_type& reference;
+			typedef value_type* pointer;
 			typedef void difference_type;
 
 			iterator()
@@ -567,8 +713,8 @@ namespace luabind
 
 			typedef std::forward_iterator_tag iterator_category;
 			typedef luabind::object value_type;
-		    typedef value_type& reference;
-		    typedef value_type* pointer;
+			typedef value_type& reference;
+			typedef value_type* pointer;
 			typedef void difference_type;
 
 			raw_iterator()
@@ -696,13 +842,6 @@ namespace luabind
 			if (m_ref != LUA_NOREF) detail::unref(m_state, m_ref);
 		}
 
-		inline void swap(object& rhs)
-		{
-			// you cannot swap objects from different lua states
-			assert(m_state == rhs.m_state);
-			std::swap(m_ref, rhs.m_ref);
-		}
-
 		inline bool is_valid() const { return m_ref != LUA_NOREF; }
 
 		// this is a safe substitute for an implicit converter to bool
@@ -715,9 +854,9 @@ namespace luabind
 
 		int type() const
 		{
-			lua_getref(m_state, m_ref);
-			detail::stack_pop p(m_state, 1);
-			return lua_type(m_state, -1);
+			pushvalue();
+			detail::stack_pop p(lua_state(), 1);
+			return lua_type(lua_state(), -1);
 		}
 
 		inline iterator begin() const
@@ -763,6 +902,14 @@ namespace luabind
 			return raw_iterator(0, LUA_NOREF);
 		}
 
+		inline void set() const
+		{
+			// you are trying to access an invalid object
+			assert(m_state != 0);
+
+			allocate_slot();
+			lua_rawseti(m_state, LUA_REGISTRYINDEX, m_ref);
+		}
 		inline lua_State* lua_state() const { return m_state; }
 		inline void pushvalue() const
 		{
@@ -773,27 +920,30 @@ namespace luabind
 			lua_getref(m_state, m_ref);
 		}
 
+		void swap(object& rhs);
 
 		template<class T>
 		inline object raw_at(const T& key)
 		{
+			lua_State* L = lua_state();
 			pushvalue();
-			detail::convert_to_lua(m_state, key);
-			lua_rawget(m_state, -2);
-			int ref = detail::ref(m_state);
-			lua_pop(m_state, 1);
-			return object(m_state, ref, true);
+			detail::convert_to_lua(L, key);
+			lua_rawget(L, -2);
+			int ref = detail::ref(L);
+			lua_pop(L, 1);
+			return object(L, ref, true);
 		}
 
 		template<class T>
 		inline object at(const T& key)
 		{
+			lua_State* L = lua_state();
 			pushvalue();
-			detail::convert_to_lua(m_state, key);
-			lua_gettable(m_state, -2);
-			int ref = detail::ref(m_state);
-			lua_pop(m_state, 1);
-			return object(m_state, ref, true);
+			detail::convert_to_lua(L, key);
+			lua_gettable(L, -2);
+			int ref = detail::ref(L);
+			lua_pop(L, 1);
+			return object(L, ref, true);
 		}
 
 		template<class T>
@@ -805,18 +955,6 @@ namespace luabind
 		}
 
 
-		template<class T>
-		object operator+(const T& rhs) const;
-
-		template<class T>
-		object operator-(const T& rhs) const;
-
-		template<class T>
-		object operator*(const T& rhs) const;
-
-		template<class T>
-		object operator/(const T& rhs) const;
-
 
 		// *****************************
 		// OPERATOR =
@@ -827,6 +965,7 @@ namespace luabind
 			m_state = o.lua_state();
 			allocate_slot();
 			o.pushvalue();
+//TODO: move lua_rawseti into a function set_ref() or something
 			lua_rawseti(m_state, LUA_REGISTRYINDEX, m_ref);
 			return const_cast<luabind::object&>(*this);
 		}
@@ -991,9 +1130,21 @@ private:
 	};
 
 
+	// *************************************
+	// OBJECT
+
+	inline void object::swap(object& rhs)
+	{
+		// you cannot swap objects from different lua states
+		assert(lua_state() == rhs.lua_state());
+		std::swap(m_ref, rhs.m_ref);
+	}
 
 	namespace detail
 	{
+
+		// *************************************
+		// PROXY CALLER
 
 #if !defined(BOOST_MSVC) || (defined(BOOST_MSVC) && (BOOST_MSVC > 1300))
 		template<class Tuple>
@@ -1016,17 +1167,33 @@ private:
 			return luabind::object(m_obj->lua_state(), ref, true/*luabind::object::reference()*/);
 		}
 #endif
-
 		// *************************************
 		// PROXY OBJECT
+
+		inline proxy_object& proxy_object::operator=(const object& p)
+		{
+			assert(lua_state() == p.lua_state());
+			
+			lua_State* L = lua_state();
+
+			m_obj->pushvalue();
+			detail::getref(L, m_key_ref);
+
+			// retrive the rhs value
+			p.pushvalue();
+
+			lua_settable(L, -3);
+			lua_pop(L, 1);
+			return *this;
+		}
 
 		inline proxy_object& proxy_object::operator=(const proxy_object& p)
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(m_obj->lua_state() == p.m_obj->lua_state());
+			assert(lua_state() == p.lua_state());
 
-			lua_State* L = m_obj->lua_state();
+			lua_State* L = lua_state();
 
 			//std::cout << "proxy-proxy assigment\n";
 			m_obj->pushvalue();
@@ -1044,9 +1211,9 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(m_obj->lua_state() == p.m_obj->lua_state());
+			assert(lua_state() == p.lua_state());
 
-			lua_State* L = m_obj->lua_state();
+			lua_State* L = lua_state();
 
 			//std::cout << "proxy-proxy assigment\n";
 			m_obj->pushvalue();
@@ -1064,17 +1231,16 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(m_obj->lua_state() == p.m_obj->lua_state());
+			assert(lua_state() == p.lua_state());
 
-			lua_State* L = m_obj->lua_state();
+			lua_State* L = lua_state();
 
 			//std::cout << "proxy-proxy assigment\n";
 			m_obj->pushvalue();
 			detail::getref(L, m_key_ref);
 
 			// retrive the rhs value
-			p.m_obj->pushvalue();
-			lua_rawgeti(L, -1, p.m_key);
+			p.pushvalue();
 
 			lua_settable(L, -3);
 			lua_pop(L, 1);
@@ -1098,6 +1264,16 @@ private:
 			return m_obj->lua_state();
 		}
 
+		inline void proxy_object::set() const
+		{
+			lua_State* L = lua_state();
+			m_obj->pushvalue();
+			detail::getref(L, m_key_ref);
+			lua_pushvalue(L, -3);
+			lua_settable(L, -3);
+			lua_pop(L, 1);
+		}
+
 		inline proxy_object::operator luabind::object()
 		{
 			lua_State* L = m_obj->lua_state();
@@ -1110,14 +1286,28 @@ private:
 		// *************************************
 		// PROXY ARRAY OBJECT
 
+		inline proxy_array_object& proxy_array_object::operator=(const object& p)
+		{
+			// if you hit this assert you are trying to transfer values
+			// from one lua state to another without first going through C++
+			assert(lua_state() == p.lua_state());
+			lua_State* L = lua_state();
+			m_obj->pushvalue();
+			// retrieve the rhs value
+			p.pushvalue();
+
+			lua_rawseti(L, -2, m_key);
+			lua_pop(L, 1);
+			return *this;
+		}
 
 		inline proxy_array_object& proxy_array_object::operator=(const proxy_object& p)
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(m_obj->lua_state() == p.m_obj->lua_state());
+			assert(lua_state() == p.lua_state());
 
-			lua_State* L = m_obj->lua_state();
+			lua_State* L = lua_state();
 
 			//std::cout << "proxy-proxy assigment\n";
 			m_obj->pushvalue();
@@ -1134,9 +1324,9 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(m_obj->lua_state() == p.m_obj->lua_state());
+			assert(lua_state() == p.lua_state());
 
-			lua_State* L = m_obj->lua_state();
+			lua_State* L = lua_state();
 
 			m_obj->pushvalue();
 			p.pushvalue();
@@ -1150,9 +1340,9 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(m_obj->lua_state() == p.m_obj->lua_state());
+			assert(lua_state() == p.lua_state());
 
-			lua_State* L = m_obj->lua_state();
+			lua_State* L = lua_state();
 
 			m_obj->pushvalue();
 			p.pushvalue();
@@ -1178,6 +1368,15 @@ private:
 			lua_remove(L, -2);
 		}
 
+		inline void proxy_array_object::set() const
+		{
+			lua_State* L = lua_state();
+			m_obj->pushvalue();
+			lua_pushvalue(L, -2);
+			lua_rawseti(L, -2, m_key);
+			lua_pop(L, 1);
+		}
+
 		inline proxy_array_object::operator luabind::object()
 		{
 			lua_State* L = m_obj->lua_state();
@@ -1190,13 +1389,32 @@ private:
 		// *************************************
 		// PROXY RAW OBJECT
 
+		inline proxy_raw_object& proxy_raw_object::operator=(const object& p)
+		{
+			// if you hit this assert you are trying to transfer values from one lua state to another
+			// without first going through C++
+			assert(lua_state() == p.lua_state());
+			lua_State* L = lua_state();
+
+			m_obj->pushvalue();
+			detail::getref(L, m_key_ref);
+
+			// retrive the rhs value
+			p.pushvalue();
+
+			lua_rawset(L, -3);
+			lua_pop(L, 1);
+			return *this;
+		}
+
+		
 		inline proxy_raw_object& proxy_raw_object::operator=(const proxy_object& p)
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(m_obj->lua_state() == p.m_obj->lua_state());
+			assert(lua_state() == p.lua_state());
 
-			lua_State* L = m_obj->lua_state();
+			lua_State* L = lua_state();
 
 			//std::cout << "proxy-proxy assigment\n";
 			m_obj->pushvalue();
@@ -1214,9 +1432,9 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(m_obj->lua_state() == p.m_obj->lua_state());
+			assert(lua_state() == p.lua_state());
 
-			lua_State* L = m_obj->lua_state();
+			lua_State* L = lua_state();
 
 			//std::cout << "proxy-proxy assigment\n";
 			m_obj->pushvalue();
@@ -1234,9 +1452,9 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(m_obj->lua_state() == p.m_obj->lua_state());
+			assert(lua_state() == p.lua_state());
 
-			lua_State* L = m_obj->lua_state();
+			lua_State* L = lua_state();
 
 			//std::cout << "proxy-proxy assigment\n";
 			m_obj->pushvalue();
@@ -1253,14 +1471,24 @@ private:
 
 		inline void proxy_raw_object::pushvalue() const
 		{
-			assert(m_key_ref >= 0);
+			assert(m_key_ref != LUA_NOREF);
 
-			lua_State* L = m_obj->lua_state();
+			lua_State* L = lua_state();
 			m_obj->pushvalue();
 			detail::getref(L, m_key_ref);
 			lua_rawget(L, -2);
 			// remove the table and leave the value on top of the stack
 			lua_remove(L, -2);
+		}
+
+		inline void proxy_raw_object::set() const
+		{
+			lua_State* L = lua_state();
+			m_obj->pushvalue();
+			detail::getref(L, m_key_ref);
+			lua_pushvalue(L, -3);
+			lua_rawset(L, -3);
+			lua_pop(L, 1);
 		}
 
 		inline lua_State* proxy_raw_object::lua_state() const
@@ -1270,7 +1498,7 @@ private:
 
 		inline proxy_raw_object::operator luabind::object()
 		{
-			lua_State* L = m_obj->lua_state();
+			lua_State* L = lua_state();
 			pushvalue();
 			int ref = detail::ref(L);
 			return luabind::object(L, ref, true/*luabind::object::reference()*/);
@@ -1327,12 +1555,47 @@ private:
 
 namespace std
 {
+
+#define LUABIND_DEFINE_SWAP(t1,t2)\
+	inline void swap(t1 lhs, t2 rhs)\
+	{\
+			assert(lhs.lua_state() == rhs.lua_state());\
+			rhs.pushvalue();\
+			lhs.pushvalue();\
+			rhs.set();\
+			lhs.set();\
+	}
+
 	inline void swap(luabind::object& lhs, luabind::object& rhs)
 	{
 		lhs.swap(rhs);
 	}
 
-	// TODO: add swap() for all proxy objects
+	// object against all other
+	LUABIND_DEFINE_SWAP(luabind::object&, const luabind::detail::proxy_object&)
+	LUABIND_DEFINE_SWAP(luabind::object&, const luabind::detail::proxy_raw_object&)
+	LUABIND_DEFINE_SWAP(luabind::object&, const luabind::detail::proxy_array_object&)
+	LUABIND_DEFINE_SWAP(const luabind::detail::proxy_object&, luabind::object&)
+	LUABIND_DEFINE_SWAP(const luabind::detail::proxy_raw_object&, luabind::object&)
+	LUABIND_DEFINE_SWAP(const luabind::detail::proxy_array_object&, luabind::object&)
+
+	// proxy_object against all other
+	LUABIND_DEFINE_SWAP(const luabind::detail::proxy_object&, const luabind::detail::proxy_object&)
+	LUABIND_DEFINE_SWAP(const luabind::detail::proxy_object&, const luabind::detail::proxy_raw_object&)
+	LUABIND_DEFINE_SWAP(const luabind::detail::proxy_object&, const luabind::detail::proxy_array_object&)
+	LUABIND_DEFINE_SWAP(const luabind::detail::proxy_raw_object&, const luabind::detail::proxy_object&)
+	LUABIND_DEFINE_SWAP(const luabind::detail::proxy_array_object&, const luabind::detail::proxy_object&)
+
+	// proxy_raw_object against all other
+	LUABIND_DEFINE_SWAP(const luabind::detail::proxy_raw_object&, const luabind::detail::proxy_raw_object&)
+	LUABIND_DEFINE_SWAP(const luabind::detail::proxy_raw_object&, const luabind::detail::proxy_array_object&)
+	LUABIND_DEFINE_SWAP(const luabind::detail::proxy_array_object&, const luabind::detail::proxy_raw_object&)
+
+	// proxy_array_object against all other
+	LUABIND_DEFINE_SWAP(const luabind::detail::proxy_array_object&, const luabind::detail::proxy_array_object&)
+
+#undef LUABIND_DEFINE_SWAP
+
 }
 
 #endif // LUABIND_OBJECT_HPP_INCLUDED

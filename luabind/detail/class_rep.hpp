@@ -66,6 +66,7 @@ namespace luabind { namespace detail
 	class class_rep
 	{
 	friend int super_callback(lua_State*);
+//TODO: avoid the lua-prefix
 	friend int lua_class_gettable(lua_State*);
 	friend int lua_class_settable(lua_State*);
 	friend int static_class_gettable(lua_State*);

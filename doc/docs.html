@@ -657,6 +657,7 @@ public:
 	array_iterator abegin() const;
 	array_iterator aend() const;
 
+	void set();
 	lua_State* lua_state() const;
 	void pushvalue() const;
 	bool is_valid() const;
@@ -710,6 +711,11 @@ and the latter uses <tt>lua_rawget</tt>.</p>
 <p>The iterators are (almost) models of the <a href="http://www.sgi.com/tech/stl/ForwardIterator.html">
 ForwardIterator</a> concept. The exceptions are that operator-&gt; and postincrement doesn't exist on
 them.</p>
+
+<p>The <tt>lua_state()</tt> function returns the lua state where this object is stored. If you want
+to manipulate the object with lua functions directly you can push it onto the lua stack by calling
+<tt>pushvalue()</tt>. And set the object's value by calling <tt>set()</tt>, which will pop the top
+value from the lua stack and assign it to the object.</p>
 
 <p>The operator== will run <tt>lua_equal()</tt>
 on the operands and return its result.</p>

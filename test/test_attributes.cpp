@@ -106,9 +106,34 @@ bool test_attributes()
 	if (dostring(L, "tester(test.o)")) return false;
 	if (feedback != 6) return false;
 
-	// TODO: this test should be moved to a section for testing error messages
+	object glob = get_globals(L);
+	
+	if (dostring(L, "a = test[nil]")) return false;
+	if (glob["a"].type() != LUA_TNIL) return false;
+
+	/* new stuff, doesn work yet
+
+	lua_pushstring(L, "test");
+	glob["test_string"].set();
+
+	if (object_cast<std::string>(glob["test_string"]) != "test") return false;
+
+	object t = glob["t"];
+	lua_pushnumber(L, 4);
+	t.set();
+	if (object_cast<int>(t) != 4) return false;
+	
+	glob["test_string"] = std::string("barfoo");
+	std::swap(glob["test_string"], glob["a"]);
+	if (object_cast<std::string>(glob["a"]) != "barfoo") return false;
+	if (glob["test_string"].type() != LUA_TNIL) return false;
+	
+//	object t = get_globals(L)["test"]["nil"];
+//	if (t.type() != LUA_TNIL) return false;
+
+*/
 	if (dostring2(L, "test.o = 5") != 1) return false;
-	if (std::string("cannot set attribute 'property.o'") != lua_tostring(L, -1)) 	return false;
+	if (std::string("cannot set attribute 'property.o'") != lua_tostring(L, -1)) return false;
 	lua_pop(L, 1);
 
 	if (dostring(L, "tester(test.name)")) return false;
