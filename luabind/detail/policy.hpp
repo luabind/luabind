@@ -86,6 +86,11 @@ namespace luabind
 		using luabind::detail::by_const_pointer;
 
 		no_t is_user_defined(...);
+
+		template<class T>
+		no_t is_implicit_conversion(T);
+
+		struct adl_helper {};
 	}
 
 	namespace detail
@@ -95,6 +100,13 @@ namespace luabind
 		{
 			BOOST_STATIC_CONSTANT(bool, value = 
 				sizeof(luabind::converters::is_user_defined(LUABIND_DECORATE_TYPE(T))) == sizeof(yes_t));
+		};
+
+		template<class T>
+		struct is_implicit_conversion
+		{
+			BOOST_STATIC_CONSTANT(bool, value =
+					sizeof(luabind::converters::is_implicit_conversion(LUABIND_DECORATE_TYPE(T))) == sizeof(yes_t));
 		};
 
 		int implicit_cast(const class_rep* crep, LUABIND_TYPE_INFO const&, int& pointer_offset);
@@ -367,6 +379,29 @@ namespace luabind { namespace detail
 
 
 // *********** default converters ***************
+
+	template<class> struct implicit_converter;
+
+	template<>
+	struct implicit_converter<lua_to_cpp>
+	{
+		template<class T>
+		T apply(lua_State* L, detail::by_value<T>, int index)
+		{
+			return implicit_conversion_lua_to_cpp(converters::adl_helper(), L, 
+					detail::by_value<T>(), index);
+		}
+
+		template<class T>
+		static int match(lua_State* L, T, int index)
+		{
+			return implicit_match_lua_to_cpp(converters::adl_helper(), L,
+					T(), index);
+		}
+
+		template<class T>
+		void converter_postcall(lua_State*, T, int) {}
+	};
 
 
 // ********** user defined converter ***********
@@ -844,22 +879,24 @@ namespace luabind { namespace detail
 		{
 			typedef typename boost::mpl::if_<is_user_defined<T>
 						, user_defined_converter<Direction>
-						, typename boost::mpl::if_<is_primitive<T>
-							, primitive_converter<Direction>
-							, typename boost::mpl::if_<is_lua_functor<T>
-								, functor_converter<Direction>
-								, typename boost::mpl::if_<boost::is_enum<T>
-									, enum_converter<Direction>
-									, typename boost::mpl::if_<is_nonconst_pointer<T>
-										, pointer_converter<Direction>
-										, typename boost::mpl::if_<is_const_pointer<T>
-											, const_pointer_converter<Direction>
-											, typename boost::mpl::if_<is_nonconst_reference<T>
-												, ref_converter<Direction>
-												, typename boost::mpl::if_<is_const_reference<T>
-													, const_ref_converter<Direction>
-													, value_converter<Direction>
-			>::type>::type>::type>::type>::type>::type>::type>::type type;
+						, typename boost::mpl::if_<is_implicit_conversion<T>
+							, implicit_converter<Direction>
+							, typename boost::mpl::if_<is_primitive<T>
+								, primitive_converter<Direction>
+								, typename boost::mpl::if_<is_lua_functor<T>
+									, functor_converter<Direction>
+									, typename boost::mpl::if_<boost::is_enum<T>
+										, enum_converter<Direction>
+										, typename boost::mpl::if_<is_nonconst_pointer<T>
+											, pointer_converter<Direction>
+											, typename boost::mpl::if_<is_const_pointer<T>
+												, const_pointer_converter<Direction>
+												, typename boost::mpl::if_<is_nonconst_reference<T>
+													, ref_converter<Direction>
+													, typename boost::mpl::if_<is_const_reference<T>
+														, const_ref_converter<Direction>
+														, value_converter<Direction>
+			>::type>::type>::type>::type>::type>::type>::type>::type>::type type;
 		};	
 	};
 
@@ -1123,7 +1160,31 @@ namespace luabind { namespace detail
 	};
 */
 
-}}
+}
+	namespace converters
+	{
+		template<class To, class From>
+		struct implicit_conversion
+		{
+			friend yes_t is_implicit_conversion(by_value<To>);
+
+			friend int implicit_match_lua_to_cpp(adl_helper, lua_State* L, by_value<To>, int index)
+			{
+				typename luabind::detail::default_policy
+					::generate_converter<From, detail::lua_to_cpp>::type c;
+				return c.match(L, by_value<From>(), index);
+			}
+
+			friend To implicit_conversion_lua_to_cpp(adl_helper, lua_State* L, by_value<To>, int index)
+			{
+				typename luabind::detail::default_policy
+					::generate_converter<From, detail::lua_to_cpp>::type c;
+				return static_cast<To>(c.apply(L,
+							by_value<From>(), index));
+			}
+		};
+	}
+}
 
 
 namespace luabind {	 namespace

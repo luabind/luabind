@@ -154,7 +154,8 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 	{
 		class_rep* crep = obj->crep();
 
-		void* p = crep->extract_ptr()(obj->ptr());
+		void* p = crep->extract_ptr() ? crep->extract_ptr()(obj->ptr())
+			: obj->ptr();
 
 		lua_pushboolean(L, p != 0);
 		return 1;
@@ -1204,7 +1205,8 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 	{
 		class_rep* crep = obj->crep();
 
-		void* p = crep->extract_ptr()(obj->ptr());
+		void* p = crep->extract_ptr() ? crep->extract_ptr()(obj->ptr())
+			: obj->ptr();
 
 		lua_pushboolean(L, p != 0);
 		return 1;
