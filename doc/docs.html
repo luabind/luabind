@@ -53,6 +53,7 @@ Please report any grammatic corrections/spelling corrections.</p>
 		<li><a href="#policies_out">out_value</a>
 		<li><a href="#policies_pure_out">pure_out_value</a>
 		<li><a href="#policies_discard_result">discard_result</a>
+		<li><a href="#policies_return_stl_iterator">return_stl_iterator</a>
 		<li><a href="#policies_custom">custom</a>
 		<li><a href="#policies_user_converter">user defined converter</a>
 	</ul>
@@ -827,6 +828,12 @@ public:
 	
 	bool is_valid() const;
 	operator bool() const;
+
+	lua_State* lua_state() const;
+	void pushvalue() const;
+	
+	bool operator==(const functor&lt;Ret&gt;&amp;);
+	bool operator!=(const functor&lt;Ret&gt;&amp;);
 	
 	<i>&lt;implementation-defined&gt;</i> operator()() const;
 	
@@ -1360,13 +1367,42 @@ class_&lt;simple&gt;(L, "simple")
 		
 <p>To use this policy you need to include <tt>&lt;luabind/discard_result.hpp&gt;</tt>.</p>
 
+<h2><a name="policies_return_stl_iterator"></a>return_stl_iterator</h2>
+
+<p>This policy converts an STL container to a generator function that can be used in lua to
+iterate over the container. It works on any container that defines <tt>begin()</tt> and <tt>end()</tt>
+member functions (they have to return iterators). It can be used like this:</p>
+
+<pre>
+struct A
+{
+	std::vector&lt;std::string&gt; names;
+};
+
+class_&lt;A&gt;(L, "A")
+	.def_readwrite("names", &amp;A::names, return_stl_iterator)
+	;
+</pre>
+
+<p>The lua code to iterate over the container:</p>
+
+<pre>
+a = A()
+
+for name in a.names do
+  print(name)
+end
+</pre>
+
+<p>To use this policy you need to include <tt>&lt;luabind/iterator_policy.hpp&gt;</tt></p>
+
 <h2><a name="policies_custom"></a>custom</h2>
 
-<p>The policies don't have a stable API yet.</p>
+<p>The policies don't have a stable API yet. See the examples directory.</p>
 
 <h2><a name="policies_user_converter"></a>user defined converter</h2>
 
-<p>The policies don't have a stable API yet.</p>
+<p>The policies don't have a stable API yet. See the examples directory.</p>
 
 <h1><a name="config"></a>Configuration</h1>
 
@@ -1374,15 +1410,15 @@ class_&lt;simple&gt;(L, "simple")
 It is important that you have the same settings in all your compilation units.
 The available configuration options follows:</p>
 
-<table border="1" cellspacing="0" cellpadding="10">
+<table cellpadding="10">
 	<tr>
 		<td valign="top"><tt>LUABIND_MAX_ARITY</tt></td>
 		<td>
 			<p>Controls the maximum arity of functions that are registered
 			with luabind. You can't register functions that takes more
 			parameters than the number this macro is set to. It defaults
-			to 4, so, if your functions have greater arity you have to
-			redefine it. A high limit will increase compilation times.</p>
+			to 5, so, if your functions have greater arity you have to
+			redefine it. A high limit will increase compilation time.</p>
 		</td>
 	</tr>
 	<tr>
@@ -1391,7 +1427,7 @@ The available configuration options follows:</p>
 			<p>Controls the maximum number of classes one class can derive from
 			in luabind (the number of classes specified within
 			<tt>bases&lt;&gt;</tt>). <tt>LUABIND_MAX_BASES</tt> defaults to 4.
-			A high limit will increase compilation times.</p>
+			A high limit will increase compilation time.</p>
 		</td>
 	</tr>
 	<tr>
