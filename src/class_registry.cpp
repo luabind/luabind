@@ -68,6 +68,10 @@ namespace luabind { namespace detail {
             lua_pushcclosure(L, &class_rep::static_class_gettable, 0);
             lua_rawset(L, -3);
 
+            lua_pushstring(L, "__newindex");
+            lua_pushcclosure(L, &class_rep::lua_settable_dispatcher, 0);
+            lua_rawset(L, -3);
+
             return detail::ref(L);
         }
 

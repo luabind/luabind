@@ -24,6 +24,7 @@
 #include <luabind/luabind.hpp>
 #include <luabind/adopt_policy.hpp>
 #include <luabind/detail/debug.hpp>
+#include <luabind/error.hpp>
 
 namespace
 {
@@ -42,19 +43,22 @@ namespace
 			int sum = object_cast<int>(table["oh"]);
 			for (object::array_iterator i = table.abegin(); i != table.aend(); ++i)
 			{
+				assert(i->type() == LUA_TNUMBER);
 				sum += object_cast<int>(*i);
 			}
 
 			int sum2 = 0;
-			for (object::iterator j = table.begin(); j != table.end(); ++j)
+			for (object::iterator i = table.begin(); i != table.end(); ++i)
 			{
-				sum2 += object_cast<int>(*j);
+				assert(i->type() == LUA_TNUMBER);
+				sum2 += object_cast<int>(*i);
 			}
 
 			int sum3 = 0;
-			for (object::raw_iterator j = table.raw_begin(); j != table.raw_end(); ++j)
+			for (object::raw_iterator i = table.raw_begin(); i != table.raw_end(); ++i)
 			{
-				sum3 += object_cast<int>(*j);
+				assert(i->type() == LUA_TNUMBER);
+				sum3 += object_cast<int>(*i);
 			}
 
 			table["sum"] = sum;
@@ -164,4 +168,19 @@ void test_object()
 	BOOST_CHECK(object_cast<std::string>(g["glob"]) == "teststring");
 	BOOST_CHECK(object_cast<std::string>(g.at("glob")) == "teststring");
 	BOOST_CHECK(object_cast<std::string>(g.raw_at("glob")) == "teststring");
+
+#ifndef LUABIND_NO_EXCEPTIONS
+
+	try
+	{
+		luabind::object null;
+		int i = luabind::object_cast<int>(null);
+		BOOST_ERROR("invalid cast succeeded");
+	}
+	catch(luabind::cast_failed&) {}
+
+#endif
+
+	luabind::object null;
+	BOOST_CHECK(!luabind::object_cast_nothrow<int>(null));
 }

@@ -98,7 +98,7 @@ void dostring(lua_State* state, char const* str)
     {
         std::string err(lua_tostring(state, -1));
         lua_pop(state, 2);
-        throw err;
+		throw err;
     }
 
     lua_pop(state, 1);

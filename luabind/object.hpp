@@ -213,6 +213,8 @@ namespace luabind
 			proxy_object& operator=(const proxy_array_object& p);
 
 			void swap(const proxy_object& rhs);
+			proxy_object* operator->()
+			{ return this; }
 
 			operator luabind::object();
 
@@ -335,6 +337,8 @@ namespace luabind
 			proxy_raw_object& operator=(const proxy_raw_object& p);
 			proxy_raw_object& operator=(const proxy_array_object& p);
 			void swap(const proxy_raw_object& rhs);
+			proxy_raw_object* operator->()
+			{ return this; }
 
 			operator luabind::object();
 
@@ -434,6 +438,8 @@ namespace luabind
 			proxy_array_object& operator=(const proxy_array_object& p);
 			void swap(const proxy_array_object& rhs);
 
+			proxy_array_object* operator->()
+			{ return this; }
 			operator luabind::object();
 
 			int type() const
@@ -583,6 +589,11 @@ namespace luabind
 				return m_obj->make_array_proxy(m_key);
 			}
 
+			detail::proxy_array_object operator->()
+			{
+				return m_obj->make_array_proxy(m_key);
+			}
+
 			inline array_iterator& operator++()
 			{
 				LUABIND_CHECK_STACK(m_obj->lua_state());
@@ -678,6 +689,11 @@ namespace luabind
 			}
 
 			detail::proxy_object operator*()
+			{
+				return m_obj->make_proxy(m_key);
+			}
+
+			detail::proxy_object operator->()
 			{
 				return m_obj->make_proxy(m_key);
 			}
@@ -778,6 +794,11 @@ namespace luabind
 			}
 
 			detail::proxy_raw_object operator*()
+			{
+				return m_obj->make_raw_proxy(m_key);
+			}
+
+			detail::proxy_raw_object operator->()
 			{
 				return m_obj->make_raw_proxy(m_key);
 			}

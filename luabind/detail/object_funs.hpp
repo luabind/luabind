@@ -40,6 +40,7 @@ namespace luabind
 		template<class T, class Obj, class Policies>
 		inline T object_cast_impl(const Obj& obj, const Policies&)
 		{
+			if (obj.lua_state() == 0) throw cast_failed(0, LUABIND_TYPEID(T));
 			LUABIND_CHECK_STACK(obj.lua_state());
 
 			typedef typename detail::find_conversion_policy<0, Policies>::type converter_policy;
@@ -74,6 +75,9 @@ namespace luabind
 		{
 			typedef typename detail::find_conversion_policy<0, Policies>::type converter_policy;
 			typename converter_policy::template generate_converter<T, lua_to_cpp>::type converter;
+
+			if (obj.lua_state() == 0) return boost::optional<T>();
+			LUABIND_CHECK_STACK(obj.lua_state());
 
 			obj.pushvalue();
 

@@ -66,7 +66,7 @@ namespace luabind { namespace detail
 		}
 
 		~object_rep() 
-		{ 
+		{
 //			delete m_instance;
 
 			if (m_flags & owner && m_destructor) m_destructor(m_object);

@@ -973,8 +973,8 @@ Iterators
 ---------
 
 The iterators, that are returned by ``begin() and ``end()`` (and their
-variants) are (almost) models of the ForwardIterator concept. The exceptions
-are that operator-> and post increment doesn't exist on them.
+variants) are (almost) models of the ForwardIterator concept. The exception
+is that post increment doesn't exist on them.
 
 They look like this::
 

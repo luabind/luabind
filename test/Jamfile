@@ -19,9 +19,12 @@ SOURCES =
     test_separate_registration.cpp
  ;
 
+stage bin : /luabind//luabind ;
+
 test-suite luabind-test
     : [ 
         run main.cpp $(SOURCES) /luabind//luabind /luabind//lua /luabind//lualib
       ]
     ;
+
 

@@ -194,6 +194,8 @@ namespace luabind { namespace detail
 		// obj is the object pointer
 		static int lua_class_settable(lua_State* L);
 
+		// called from the metamethod for __index
+		// obj is the object pointer
 		static int static_class_gettable(lua_State* L);
 
 		void* convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj, void*) const;

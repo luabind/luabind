@@ -97,6 +97,14 @@ void test_lua_classes()
             .def("f", &base_wrap::f_static)
     ];
 
+	DOSTRING(L,
+		"function base:fun()\n"
+		"  test = 4\n"
+		"end\n"
+		"a = base()\n"
+		"a:fun()\n"
+		"assert(test == 4)\n");
+
     DOSTRING(L, 
         "class 'derived' (base)\n"
         "  function derived:__init() super() end\n"
