@@ -148,6 +148,9 @@ bool test_attributes()
 	if (dostring(L, "a = test[3.6]")) return false;
 	if (glob["a"].type() != LUA_TNIL) return false;
 
+	if (dostring(L, "temp = my_enum.my_value")) return false;
+	if (object_cast<int>(glob["temp"]) != my_value) return false;
+	
 	lua_pushstring(L, "test");
 	glob["test_string"].set();
 
