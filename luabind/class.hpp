@@ -139,9 +139,9 @@ namespace luabind
 
 	// TODO: this function will only be invoked if the user hasn't defined a correct overload
 	// maybe we should have a static assert in here?
-	inline type<detail::null_type> get_const_holder(...)
+	inline detail::null_type* get_const_holder(...)
 	{
-		return type<detail::null_type>();
+		return 0;
 	}
 
 	namespace detail
@@ -349,7 +349,7 @@ namespace luabind
 			typedef void(*converter_fun)(void*, void*);
 
 			template<class ConstHolderType>
-			static converter_fun apply(detail::type<ConstHolderType>)
+			static converter_fun apply(ConstHolderType*)
 			{
 				return &detail::convert_holder<HeldType, ConstHolderType>::apply;
 			}
@@ -361,7 +361,7 @@ namespace luabind
 			typedef void(*converter_fun)(void*, void*);
 
 			template<class T>
-			static converter_fun apply(detail::type<T>)
+			static converter_fun apply(T*)
 			{
 				return 0;
 			}
@@ -378,11 +378,11 @@ namespace luabind
 			template<class T>
 			static extractor_fun apply(detail::type<T>)
 			{
-				return get_extractor(detail::type<T>(), luabind::get_const_holder(detail::type<HeldType>()));
+				return get_extractor(detail::type<T>(), luabind::get_const_holder(static_cast<HeldType*>(0)));
 			}
 		private:
 			template<class T, class ConstHolderType>
-			static extractor_fun get_extractor(detail::type<T>, detail::type<ConstHolderType>)
+			static extractor_fun get_extractor(detail::type<T>, ConstHolderType*)
 			{
 				return &detail::extract_underlying_const_type<T, ConstHolderType>::extract;
 			}
@@ -469,13 +469,13 @@ namespace luabind
 			template<class T>
 			static constructor apply(detail::type<T>)
 			{
-				return get_const_holder_constructor(detail::type<T>(), luabind::get_const_holder(detail::type<HolderType>()));
+				return get_const_holder_constructor(detail::type<T>(), luabind::get_const_holder(static_cast<HolderType*>(0)));
 			}
 
 		private:
 
 			template<class T, class ConstHolderType>
-				static constructor get_const_holder_constructor(detail::type<T>, detail::type<ConstHolderType>)
+				static constructor get_const_holder_constructor(detail::type<T>, ConstHolderType*)
 			{
 				return &internal_construct_holder<ConstHolderType, T>::apply;
 			}
@@ -499,10 +499,10 @@ namespace luabind
 		template <class HolderType>
 		struct internal_holder_size
 		{
-			static int apply() { return get_internal_holder_size(luabind::get_const_holder(detail::type<HolderType>())); }
+			static int apply() { return get_internal_holder_size(luabind::get_const_holder(static_cast<HolderType*>(0))); }
 		private:
 			template<class ConstHolderType>
-			static int get_internal_holder_size(detail::type<ConstHolderType>)
+			static int get_internal_holder_size(ConstHolderType*)
 			{
 				return max<sizeof(HolderType), sizeof(ConstHolderType)>::value;
 			}
@@ -550,13 +550,13 @@ namespace luabind
 			template<class T>
 			static destructor_t apply(detail::type<T>)
 			{
-				return const_holder_type_destructor(luabind::get_const_holder(detail::type<HolderType>()));
+				return const_holder_type_destructor(luabind::get_const_holder(static_cast<HolderType*>(0)));
 			}
 
 		private:
 
 			template<class ConstHolderType>
-			static destructor_t const_holder_type_destructor(detail::type<ConstHolderType>)
+			static destructor_t const_holder_type_destructor(ConstHolderType*)
 			{
 				return &detail::destruct_only_s<ConstHolderType>::apply;
 			}
@@ -583,13 +583,13 @@ namespace luabind
 		{
 			static int apply()
 			{
-				return internal_alignment(luabind::get_const_holder(detail::type<HolderType>()));
+				return internal_alignment(luabind::get_const_holder(static_cast<HolderType*>(0)));
 			}
 
 		private:
 
 			template<class ConstHolderType>
-			static int internal_alignment(detail::type<ConstHolderType>)
+			static int internal_alignment(ConstHolderType*)
 			{
 				return detail::max<boost::alignment_of<HolderType>::value
 					, boost::alignment_of<ConstHolderType>::value>::value;
@@ -713,7 +713,7 @@ namespace luabind
 		}
 
 		template<class T>
-		void set_const_holder_type(type<T>)
+		void set_const_holder_type(T*)
 		{
 			m_const_holder_type = LUABIND_TYPEID(T);
 		}
@@ -1330,11 +1330,13 @@ namespace luabind
 					,	bases<bases_t>
 				>::type Base;
 	
+			HeldType* crap = 0;
+
 			class_base::init(LUABIND_TYPEID(T)
 				, detail::internal_holder_type<HeldType>::apply()
 				, detail::internal_holder_extractor<HeldType>::apply(detail::type<T>())
 				, detail::internal_const_holder_extractor<HeldType>::apply(detail::type<T>())
-				, detail::const_converter<HeldType>::apply(luabind::get_const_holder(detail::type<HeldType>()))
+				, detail::const_converter<HeldType>::apply(luabind::get_const_holder(crap))
 				, detail::holder_constructor<HeldType>::apply(detail::type<T>())
 				, detail::const_holder_constructor<HeldType>::apply(detail::type<T>())
 				, detail::internal_holder_destructor<HeldType>::apply(detail::type<T>())
@@ -1342,7 +1344,7 @@ namespace luabind
 				, detail::internal_holder_size<HeldType>::apply()
 				, detail::get_holder_alignment<HeldType>::apply());
 
-			set_const_holder_type(luabind::get_const_holder(detail::type<HeldType>()));
+			set_const_holder_type(luabind::get_const_holder(static_cast<HeldType*>(0)));
 
 			generate_baseclass_list(detail::type<Base>());
 		}

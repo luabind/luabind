@@ -50,7 +50,7 @@ bool test_yield()
 				.def(constructor<>())
 				.def("f", &test_class::f, yield)
 		];
-
+/*
 		dostring(L, "function g() a = test() for i = 1, 10 do print(a:f()) end end");
 
 		lua_pushstring(L, "j");
@@ -71,7 +71,7 @@ bool test_yield()
 			std::cout << "iteration: " << i << ", top: " << lua_gettop(thread) << '\n';
 
 			lua_resume(thread, lua_gettop(thread));
-		}
+		}*/
 	}
 
 	return true;

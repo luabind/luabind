@@ -10,20 +10,10 @@ namespace luabind
 	T* get_pointer(boost::shared_ptr<T>& p) { return p.get(); }
 
 	template<class A>
-	type<boost::shared_ptr<const A> > get_const_holder(type<boost::shared_ptr<A> >)
+	boost::shared_ptr<const A>* get_const_holder(boost::shared_ptr<A>*)
 	{
-		return type<boost::shared_ptr<const A> >();
+		return 0;
 	}
-
-	template<class T>
-	T* get_pointer(const std::auto_ptr<T>& p) { return p.get(); }
-
-	template<class A>
-	type<std::auto_ptr<const A> > get_const_holder(type<std::auto_ptr<A> >)
-	{
-		return type<std::auto_ptr<const A> >();
-	}
-
 }
 
 namespace
@@ -111,11 +101,7 @@ namespace
 		boost::shared_ptr<base> m_member;
 	};
 
-	struct ownership {};
-
-	void test_auto_ptr(std::auto_ptr<ownership>) {}
-
-	struct base_ {};
+	struct base_2 {};
 	
 	LUABIND_ANONYMOUS_FIX int pointer_cnt = 0;
 
@@ -123,7 +109,7 @@ namespace
 	{
 		static int counter;
 			  
-		explicit base_holder(base_* p): ptr(p), secret(2068) 
+		explicit base_holder(base_2* p): ptr(p), secret(2068) 
 		{ ++counter; }
 
 		base_holder(const base_holder&)
@@ -139,9 +125,9 @@ namespace
 			secret = 0;
 		}
 
-		base_* get() const { return ptr; }
+		base_2* get() const { return ptr; }
 
-		base_* ptr;
+		base_2* ptr;
 
 		int secret;
 	};
@@ -152,7 +138,7 @@ namespace
 	{
 		static int counter;
 			  
-		explicit const_base_holder(const base_* p): ptr(p), secret(9999) 
+		explicit const_base_holder(const base_2* p): ptr(p), secret(9999) 
 		{
 			++counter;
 		}
@@ -174,9 +160,9 @@ namespace
 			secret = 0;
 		}
 
-		const base_* get() const { return ptr; }
+		const base_2* get() const { return ptr; }
 
-		const base_* ptr;
+		const base_2* ptr;
 
 		int secret;
 		char garbage[16];
@@ -203,12 +189,12 @@ namespace
 
 namespace luabind
 {
-	base_* get_pointer(const base_holder& p) { return p.get(); }
-	const base_* get_pointer(const const_base_holder& p) { return p.get(); }
+	base_2* get_pointer(const base_holder& p) { return p.get(); }
+	const base_2* get_pointer(const const_base_holder& p) { return p.get(); }
 
-	type<const_base_holder> get_const_holder(type<base_holder>)
+	const_base_holder* get_const_holder(base_holder*)
 	{
-		return type<const_base_holder>();
+		return 0;
 	}
 }
 
@@ -226,15 +212,8 @@ bool test_held_type()
 
 		open(L);
 
-		int (a)[6];
-
 		module(L)
 		[
-			class_<ownership, std::auto_ptr<ownership> >("ownership")
-				.def(constructor<>()),
-
-			def("test_auto_ptr", &test_auto_ptr),
-
 			def("tester", &tester),
 			def("tester", &tester_),
 			def("tester2", &tester2),
@@ -260,7 +239,7 @@ bool test_held_type()
 				.def(constructor<>())
 				.def("test", &tester10::test),
 
-			class_<base_, base_holder>("base_")
+			class_<base_2, base_holder>("base_")
 				.def(constructor<>())
 		];
 

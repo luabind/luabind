@@ -102,9 +102,9 @@ bool test_attributes()
 	if (dostring(L, "function d(x) end d(test.a)")) return false;
 	if (feedback != 5) return false;
 
-	if (dostring(L, "test.name = 'red brigade | mango'")) return false;
+	if (dostring(L, "test.name = 'mango'")) return false;
 	if (feedback != 0) return false;
-	if (str != "red brigade | mango") return false;
+	if (str != "mango") return false;
 
 	if (dostring(L, "tester(test.o)")) return false;
 	if (feedback != 6) return false;
@@ -146,7 +146,7 @@ bool test_attributes()
 
 	if (dostring(L, "tester(test.name)")) return false;
 	if (feedback != 0) return false;
-	if (str != "red brigade | mango") return false;
+	if (str != "mango") return false;
 
 	if (top != lua_gettop(L)) return false;
 
@@ -155,6 +155,5 @@ bool test_attributes()
 	dostring(L, "a = nil");
 	dostring(L, "collectgarbage(0)");
 	dostring(L, "collectgarbage(0)");
-	dostring(L, "print(b.name)");
 	return true;
 }
