@@ -114,6 +114,21 @@ boost::shared_ptr<base> tester9()
     return boost::shared_ptr<base>(new base());
 }
 
+void tester10(boost::shared_ptr<base> const& r)
+{
+	if (r->n == 4) feedback = 10;
+}
+
+void tester11(boost::shared_ptr<const base> const& r)
+{
+	if (r->n == 4) feedback = 11;
+}
+
+void tester12(boost::shared_ptr<derived> const& r)
+{
+	if (r->n2 == 7) feedback = 12;
+}
+
 } // namespace unnamed
 
 void test_held_type()
@@ -138,6 +153,9 @@ void test_held_type()
         def("tester6", &tester6),
         def("tester7", &tester7),
         def("tester9", &tester9),
+		def("tester10", &tester10),
+		def("tester11", &tester11),
+		def("tester12", &tester12),
 
         class_<base, boost::shared_ptr<base> >("base")
             .def(constructor<>())
@@ -177,5 +195,23 @@ void test_held_type()
 
     DOSTRING(L, "tester4(a)");
     BOOST_CHECK(feedback == 5);
+
+    DOSTRING(L, "tester10(b)");
+    BOOST_CHECK(feedback == 10);
+
+    DOSTRING(L, "tester11(b)");
+    BOOST_CHECK(feedback == 11);
+
+	DOSTRING_EXPECTED(
+		L
+		, "tester12(b)"
+		, "no match for function call 'tester12' with the parameters (derived)\n"
+		"candidates are:\n"
+		"tester12(const custom&)\n");
+
+	object nil = get_globals(L)["non_existing_variable_is_nil"];
+	BOOST_CHECK(object_cast<boost::shared_ptr<base> >(nil).get() == 0);
+	BOOST_CHECK(object_cast<boost::shared_ptr<const base> >(nil).get() == 0);
+
 }
 

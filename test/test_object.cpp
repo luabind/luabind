@@ -169,10 +169,6 @@ void test_object()
 	BOOST_CHECK(object_cast<std::string>(g.at("glob")) == "teststring");
 	BOOST_CHECK(object_cast<std::string>(g.raw_at("glob")) == "teststring");
 
-// TODO: this fails!
-//	object nil = get_globals(L)["non_existing_variable_is_nil"];
-//	BOOST_CHECK(object_cast<boost::shared_ptr<void> >(nil).get() == 0);
-
 #ifndef LUABIND_NO_EXCEPTIONS
 
 	try
