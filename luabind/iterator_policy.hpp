@@ -47,9 +47,8 @@ namespace luabind { namespace detail
 			else
 			{
 				convert_to_lua(L, *state.start);
+				++state.start;
 			}
-
-			++state.start;
 
 			return 1;
 		}

@@ -65,10 +65,10 @@ namespace luabind
 					return true;
 				}
 
-				typedef int(*call_ptr)(lua_State*, void(*)());
+				typedef int(*call_ptr)(lua_State*, void(*)(), void*);
 
 				inline void set_fun(call_ptr f) { call_fun = f; }
-				inline int call(lua_State* L, void(*f)()) const { return call_fun(L, f); }
+				inline int call(lua_State* L, void(*f)(), void* storage) const { return call_fun(L, f, storage); }
 
 				// this is the actual function pointer to be called when this overload is invoked
 				void (*fun)();
@@ -195,9 +195,9 @@ namespace luabind
 			template<class F, class Policies>
 			struct function_callback_s
 			{
-				static inline int apply(lua_State* L, void(*fun)())
+				static inline int apply(lua_State* L, void(*fun)(), void* storage)
 				{
-					return free_functions::call(reinterpret_cast<F>(fun), L, static_cast<const Policies*>(0));
+					return free_functions::call(reinterpret_cast<F>(fun), L, static_cast<const Policies*>(0), storage);
 				}
 			};
 
@@ -354,7 +354,7 @@ overload_rep(R(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), Policies*)
 #elif BOOST_PP_ITERATION_FLAGS() == 2
 
 template<class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-static int call(T(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, const Policies*)
+static int call(T(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, const Policies*, void* storage)
 {
 /*	typedef typename get_policy<0, Policies>::type ret_policy;
 	typedef typename ret_policy::head return_value_converter_intermediate;
@@ -393,7 +393,7 @@ static int call(T(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State*
 #elif BOOST_PP_ITERATION_FLAGS() == 3
 
 template<class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-static int call(void(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, const Policies*)
+static int call(void(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, const Policies*, void* storage)
 {
 	int nargs = lua_gettop(L);
 
@@ -422,9 +422,9 @@ static int call(void(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_Sta
 #elif BOOST_PP_ITERATION_FLAGS() == 4
 
 template<class Policies, class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-int call(R(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, const Policies* policies)
+int call(R(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, const Policies* policies, void* storage)
 {
-	return free_functions::returns<R>::call(f, L, policies);
+	return free_functions::returns<R>::call(f, L, policies, storage);
 }
 
 #elif BOOST_PP_ITERATION_FLAGS() == 5
