@@ -2,6 +2,7 @@ include ../config
 
 SOURCES = \
 	main.cpp \
+	test_abstract_base.cpp \
 	test_attributes.cpp \
 	test_const.cpp \
 	test_construction.cpp \
@@ -18,6 +19,7 @@ SOURCES = \
 	test_scope.cpp \
 	test_separate_registration.cpp \
 	test_separation.cpp \
+	test_simple_class.cpp \
 	test_typetraits.cpp \
 	test_yield.cpp
 
