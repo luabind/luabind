@@ -141,7 +141,7 @@ namespace luabind { namespace detail
 		class_rep* m_classrep; // the class information about this object's type
 		int m_flags;
 		int m_lua_table_ref; // reference to lua table if this is a lua class
-		void(*m_destructor)(void*); // this could be in class_rep?
+		void(*m_destructor)(void*); // this could be in class_rep? it can't: see intrusive_ptr
 		int m_dependency_cnt; // counts dependencies
 		int m_dependency_ref; // reference to lua table holding dependency references
 	};

@@ -1221,7 +1221,11 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 	lua_pushvalue(L, 2);
 	lua_gettable(L, -2);
 
-	if (!lua_isnil(L, -1)) return 1;
+	if (!lua_isnil(L, -1)) 
+	{
+		lua_remove(L, -2); // remove table
+		return 1;
+	}
 
 	lua_pop(L, 2);
 
@@ -1229,7 +1233,11 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 	lua_pushvalue(L, 2);
 	lua_gettable(L, -2);
 
-	if (!lua_isnil(L, -1)) return 1;
+	if (!lua_isnil(L, -1)) 
+	{
+		lua_remove(L, -2); // more table
+		return 1;
+	}
 
 	lua_pop(L, 2);
 

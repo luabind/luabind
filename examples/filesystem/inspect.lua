@@ -104,6 +104,31 @@ class 'line_length_inspector' (inspector)
     end
   end
 
+-- checks that the file doesn't contain too long lines
+class 'define_inspector' (inspector)
+
+  function define_inspector:__init()
+    super("define inspector")
+  end
+
+  function define_inspector:inspect(path)
+    if has_endings(path:leaf(), ".hpp") then
+
+      local defs = {}
+
+      for line in io.lines(path:string()) do
+        local pos, _, def = string.find(line, "#%s*define%s+([%w_]+)")
+        if pos ~= nil then defs[def] = true end
+        local pos, _, def = string.find(line, "#%s*undef%s+([%w_]+)")
+        if pos ~= nil then defs[def] = nil end
+      end
+
+      table.foreach(defs, function(def)
+              self:warning(path, def)
+            end)
+    end
+  end
+
 -- helper functions
 
 function file_ending(name)
@@ -137,7 +162,8 @@ end
 -- main
 
 inspectors = { filename_length(31), filename_case(), 
-               tab_inspector(), line_length_inspector(79) }
+               tab_inspector(), line_length_inspector(79),
+               define_inspector() }
 number_of_files = 0
 
 if args.n >= 3 then root = filesystem.path(args[3])
