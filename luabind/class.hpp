@@ -57,10 +57,11 @@
 	finish scopes (and document)
 
 	finish smart pointer support
-		all converters need to take holder_types int oaccount
-		the signature and type names must take smart pointers into account
-		holder_type<const A> must be supported by the converters
-		the adopt policy should not be able to adopt pointers to held_types. This must be prohibited.
+		* we need a special case in the value_converter matcher to know that smart
+		pointers can be implicitly cast to base types.
+		* holder_type<const A> must be supported by the converters
+		* the adopt policy should not be able to adopt pointers to held_types. This
+		must be prohibited.
 
 	document the new yield-policy
 
