@@ -35,15 +35,17 @@ bool test_exceptions()
 
 		open(L);
 
-		class_<exception_thrower>(L, "exception_thrower")
-			.def(constructor<>())
-			.def(constructor<int>())
-			.def(constructor<int, int>())
-			.def(constructor<int, int, int>())
-			.def("f", &exception_thrower::f)
-			.def("g", &exception_thrower::g)
-			.def("h", &exception_thrower::h)
-			;
+		module(L)
+		[
+			class_<exception_thrower>("exception_thrower")
+				.def(constructor<>())
+				.def(constructor<int>())
+				.def(constructor<int, int>())
+				.def(constructor<int, int, int>())
+				.def("f", &exception_thrower::f)
+				.def("g", &exception_thrower::g)
+				.def("h", &exception_thrower::h)
+		];
 
 		if (dostring2(L, "a = exception_thrower(1)") != 1) throw 0;
 		if (std::string("exception description") != lua_tostring(L, -1)) throw 0;

@@ -89,27 +89,30 @@ bool test_free_functions()
 
 		open(L);
 
-		class_<copy_me>(L, "copy_me")
-			.def(constructor<>())
-			;
+		module(L)
+		[
+			class_<copy_me>("copy_me")
+				.def(constructor<>()),
 		
-		class_<base>(L, "base")
-			.def("f", &base::f)
-			;
+			class_<base>("base")
+				.def("f", &base::f),
 
 
-		function(L, "by_value", &take_by_value);
+			def("by_value", &take_by_value),
 	
-		function(L, "f", (void(*)(int)) &f);
-		function(L, "f", (void(*)(int, int)) &f);
-		function(L, "g", &g);
-		function(L, "create", &create_base, adopt(return_value));
-		function(L, "test_functor", &test_functor);
+			def("f", (void(*)(int)) &f),
+			def("f", (void(*)(int, int)) &f),
+			def("g", &g),
+			def("create", &create_base, adopt(return_value)),
+			def("test_functor", &test_functor)
 
 #if !(BOOST_MSVC < 1300)
-		function(L, "test_value_converter", &test_value_converter);
-		function(L, "test_pointer_converter", &test_pointer_converter);
+			,
+			def("test_value_converter", &test_value_converter),
+			def("test_pointer_converter", &test_pointer_converter)
 #endif
+				
+		];
 
 		if (dostring(L, "e = create()")) return false;
 		if (dostring(L, "e:f()")) return false;

@@ -72,24 +72,24 @@ bool test_lua_classes()
 
 	open(L);
 
-	class_<no_copy>(L, "no copy")
-		;
+	module(L)
+	[
+		class_<no_copy>("no copy"),
 	
-	class_<base, baseWrap>(L, "base")
-		.def(constructor<>())
-		.def("f", &baseWrap::fS)
-		;
+		class_<base, baseWrap>("base")
+			.def(constructor<>())
+			.def("f", &baseWrap::fS),
 
-	class_<simple_class>(L, "simple_class")
-		.def(constructor<>())
-		.def("f", &simple_class::f)
-		;
+		class_<simple_class>("simple_class")
+			.def(constructor<>())
+			.def("f", &simple_class::f),
 
-	function(L, "set_feedback", &set_feedback);
+		def("set_feedback", &set_feedback)
+	];
 
 	dostring(L, "class 'derived' (base)\n"
-					"function derived:__init() super() end\n"
-					"function derived:f() return 'derived -> ' .. base.f(self) end\n");
+			"function derived:__init() super() end\n"
+			"function derived:f() return 'derived -> ' .. base.f(self) end\n");
 
 	dostring(L, "function create_derived() return derived() end");
 

@@ -25,22 +25,22 @@ bool test_implicit_cast()
 
 	open(L);
 
-	class_<A>(L, "A")
-		.def(constructor<>())
-		;
-
-	class_<B, A>(L, "B")
-		.def(constructor<>())
-		;
-
 	typedef void (test_implicit::*f1)(A*);
 	typedef void (test_implicit::*f2)(B*);
 
-	class_<test_implicit>(L, "test")
-		.def(constructor<>())
-		.def("f", (f1) &test_implicit::f)
-		.def("f", (f2) &test_implicit::f)
-		;
+	module(L)
+	[
+		class_<A>("A")
+			.def(constructor<>()),
+	
+		class_<B, A>("B")
+			.def(constructor<>()),
+	
+		class_<test_implicit>("test")
+			.def(constructor<>())
+			.def("f", (f1) &test_implicit::f)
+			.def("f", (f2) &test_implicit::f)
+	];
 
 	if (dostring(L, "a = A()")) return false;
 	if (dostring(L, "b = B()")) return false;

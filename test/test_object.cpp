@@ -86,13 +86,16 @@ bool test_object()
 	{
 		open(L);
 
-		function(L, "test_object_param", &test_object_param);
-		function(L, "test_fun", &test_fun);
-		function(L, "test_match", (void(*)(const luabind::object&))&test_match);
-		function(L, "test_match", (void(*)(int))&test_match);
-		class_<test_param>(L, "test_param")
-			.def(constructor<>())
-			;
+		module(L)
+		[
+			def("test_object_param", &test_object_param),
+			def("test_fun", &test_fun),
+			def("test_match", (void(*)(const luabind::object&))&test_match),
+			def("test_match", (void(*)(int))&test_match),
+		
+			class_<test_param>("test_param")
+				.def(constructor<>())
+		];
 
 		dostring(L, "t = 2");
 		dostring(L, "test_object_param(t)");

@@ -62,11 +62,12 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO t
 	, m_held_type(held_t)
 	, m_const_holder_type(held_const_t)
 	, m_extract_underlying_fun(extractor)
-	, m_name(name)
-	, m_class_type(cpp_class)
 	, m_held_type_constructor(held_type_constructor)
 	, m_userdata_size(sizeof(object_rep) + held_type_size)
 	, m_userdata_alignment(held_type_alignment)
+	, m_name(name)
+	, m_table_ref(LUA_NOREF)
+	, m_class_type(cpp_class)
 	, m_destructor(destructor)
 {
 	class_registry* r = class_registry::get_registry(L);
@@ -86,13 +87,12 @@ luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	, m_held_type(LUABIND_INVALID_TYPE_INFO)
 	, m_const_holder_type(LUABIND_INVALID_TYPE_INFO)
 	, m_extract_underlying_fun(0)
-	, m_class_type(lua_class)
 	, m_held_type_constructor(0)
+	, m_userdata_size(sizeof(object_rep))
 	, m_userdata_alignment(0)
+	, m_class_type(lua_class)
 	, m_destructor(0)
 {
-	// TODO: don't we need to copy the name?
-	// Since this is a lua-class, I think we have to copy it.
 #ifndef LUABIND_DONT_COPY_STRINGS
 	m_strings.push_back(detail::dup_string(name));
 	m_name = m_strings.back();

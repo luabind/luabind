@@ -35,17 +35,19 @@ bool test_construction()
 
 	open(L);
 
-	class_<A>(L, "A")
-		.def("f", &f)
-		.def(constructor<int>())
-		.def(constructor<const A&>())
-		.def(constructor<>())
-		;
+	module(L)
+	[
+		class_<A>("A")
+			.def("f", &f)
+			.def(constructor<int>())
+			.def(constructor<const A&>())
+			.def(constructor<>()),
 
-	class_<B>(L, "B")
-		.def(constructor<int>())
-		.def(constructor<>())
-		;
+		class_<B>("B")
+			.def(constructor<int>())
+			.def(constructor<>())
+	];
+
 
 	if (dostring(L, "a = A(4)")) return false;
 	if (feedback != 4) return false;

@@ -62,17 +62,19 @@ bool test_policies()
 
 		luabind::open(L);
 
-		class_<policies_test_class>(L, "test")
-			.def(constructor<>())
-			.def("f", &policies_test_class::f, adopt(_1))
-			.def("make", &policies_test_class::make, adopt(return_value))
-			.def("internal_ref", &policies_test_class::internal_ref, dependency(return_value, self))
-			.def("self_ref", &policies_test_class::self_ref, return_reference_to(self))
-			;
+		module(L)
+		[
+			class_<policies_test_class>("test")
+				.def(constructor<>())
+				.def("f", &policies_test_class::f, adopt(_1))
+				.def("make", &policies_test_class::make, adopt(return_value))
+				.def("internal_ref", &policies_test_class::internal_ref, dependency(return_value, self))
+				.def("self_ref", &policies_test_class::self_ref, return_reference_to(self)),
 
-		function(L, "out_val", &out_val, pure_out_value(_1));
-		function(L, "copy_val", &copy_val, copy(result));
-		function(L, "secret", &secret, discard_result);
+			def("out_val", &out_val, pure_out_value(_1)),
+			def("copy_val", &copy_val, copy(result)),
+			def("secret", &secret, discard_result)
+		];
 
 		feedback = 1;
 

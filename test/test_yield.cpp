@@ -44,10 +44,12 @@ bool test_yield()
 
 		open(L);
 
-		class_<test_class>(L, "test")
+		module(L)
+		[
+			class_<test_class>("test")
 				.def(constructor<>())
 				.def("f", &test_class::f, yield)
-				;
+		];
 
 		dostring(L, "function g() a = test() for i = 1, 10 do print(a:f()) end end");
 

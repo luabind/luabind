@@ -37,10 +37,12 @@ bool test_iterator()
 
 	open(L);
 
-	class_<IteratorTest>(L, "A")
-		.def(constructor<>())
-		.def_readonly("names", &IteratorTest::names, return_stl_iterator)
-		;
+	module(L)
+	[
+		class_<IteratorTest>("A")
+			.def(constructor<>())
+			.def_readonly("names", &IteratorTest::names, return_stl_iterator)
+	];
 
 	dostring(L, "a = A()");
 	dostring(L, "b = ''");

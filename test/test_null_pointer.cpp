@@ -26,12 +26,14 @@ bool test_null_pointer()
 
 	open(L);
 
-	class_<A>(L, "A")
-		.def(constructor<>())
-		.def("f", &A::f)
-		;
+	module(L)
+	[
+		class_<A>("A")
+			.def(constructor<>())
+			.def("f", &A::f),
 
-	function(L, "get_pointer", get_pointer);
+		def("get_pointer", get_pointer)
+	];
 	if (dostring(L, "e = get_pointer()")) return false;
 
 	lua_pushstring(L, "e");

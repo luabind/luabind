@@ -271,22 +271,36 @@ module(L, "my_library")
 <p>In the rest of the documentation the <tt>module</tt> around declarations is ommited to make the
 examples focus on the actual declaration.</p>
 
+<p>Each declaration must be separated by a comma, like this:</p>
+
+<pre>
+module(L)
+[
+	def("f", &amp;f),
+	def("g", &amp;g),
+	class_&lt;A&gt;("A")
+		.def(construcor&lt;int, int&gt;),
+	def("h", &amp;h)
+];
+</pre>
+
+<p>More about the actual declarations in the <a href="#fun">Binding functions to lua</a> and
+<a href="#bind_classes" >Binding classes to lua</a> sections.</p>
+
 <p>A word of caution, if you are in <b>really</b> bad need for performance, putting your functions
 in tables will increase the lookup time.</p>
 
 <h1><a name="fun"></a>Binding functions to lua</h1>
 
-<p>To bind functions to lua you use the function <tt>luabind::function()</tt>. It has the following 
+<p>To bind functions to lua you use the function <tt>luabind::def()</tt>. It has the following 
 synopsis:</p>
 
 <pre>
 template&lt;class F, class policies&gt;
-void function(lua_State* L, const char* name, F f, const Policies&amp;);
+void def(const char* name, F f, const Policies&amp;);
 </pre>
 
 <ul>
-	<li>L is the lua state you want this function registered 
-	in. 
 	<li>name is the name the function will have within lua. 
 	<li>F is the function pointer you want to register. 
 	<li>The Policies parameter is used to describe how 
@@ -298,7 +312,10 @@ void function(lua_State* L, const char* name, F f, const Policies&amp;);
 function <tt>float std::sin(float)</tt>:</p>
 
 <pre>
-luabind::function(L, "sin", &amp;std::sin);
+module(L)
+[
+	def("sin", &amp;std::sin)
+];
 </pre>
 
 <h2><a name="fun_overload"></a>overloaded functions</h2>
@@ -309,8 +326,11 @@ This is to let C++ know which function you refer to. For example, if you have
 two functions, <tt>int&nbsp;f(const&nbsp;char*)</tt> and <tt>void&nbsp;f(int)</tt>.</p>
 
 <pre>
-luabind::function(L, "f", (int(*)(const char*)) &amp;f);
-luabind::function(L, "f", (void(*)(int)) &amp;f);
+module(L)
+[
+	def("f", (int(*)(const char*)) &amp;f),
+	def(L, "f", (void(*)(int)) &amp;f)
+];
 </pre>
 
 <h2><a name="fun_sigmatch"></a>signature matching</h2>
@@ -421,16 +441,16 @@ private:
 (assuming you are <tt>using namespace luabind</tt>):</p>
 
 <pre>
-class_&lt;testclass&gt;("testclass")
-	.def(constructor&lt;const std::string&amp;&gt;())
-	.def("print_string", &amp;testclass::print_string)
-	.commit(L);
+module(L)
+[
+	class_&lt;testclass&gt;("testclass")
+		.def(constructor&lt;const std::string&amp;&gt;())
+		.def("print_string", &amp;testclass::print_string)
+];
 </pre>
 
 <p>This will register the class with the name <tt>testclass</tt> and constructor that takes a string as 
-argument and one member function with the name <tt>print_string</tt>. The <tt>commit</tt> member function
-will do the actual registration of the class, therefore, <tt>commit</tt> has to be the last member function called (You cannot add any more attributes or member functions to your class after <tt>commit</tt>).
-You can use this class in lua like this:</p>
+argument and one member function with the name <tt>print_string</tt>.</p>
 
 <pre>
 -- instantiate the class
@@ -463,8 +483,6 @@ member function on <tt>A</tt> like this:</p>
 <pre>
 class_&lt;A&gt;("A")
 	.def("plus", &amp;plus)
-	.commit(L)
-	;
 </pre>
 
 <p><tt>plus</tt> can now be called as 
@@ -487,19 +505,22 @@ struct A
 <p>This class is registered like this:</p>
 
 <pre>
-class_&lt;A&gt;("A")
-	.def_readwrite("a", &amp;A::a)
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;A&gt;("A")
+		.def_readwrite("a", &amp;A::a)
+];
 </pre>
 
 <p>Then it's both readable and writable. You can 
 also register attributes as read-only.</p>
 
-<pre>class_&lt;A&gt;("A")
+<pre>
+module(L)
+[
+	class_&lt;A&gt;("A")
 	.def_readonly("a", &amp;A::a)
-	.commit(L)
-	;
+];
 </pre>
 
 <p>You can also register getter and setter functions and 
@@ -522,8 +543,6 @@ private:
 <pre>
 class_&lt;A&gt;("A")
 	.property("a", &amp;A::get_a, &amp;A::set_a)
-	.commit(L)
-	;
 </pre>
 
 <p>This way the <tt>get_a()</tt> and 
@@ -539,15 +558,16 @@ be type safe, all enums are integers in lua, and all functions that takes an
 enum, will accept any integer. You register them like this:</p>
 
 <pre>
-class_&lt;A&gt;("A")
-	.enum_("constants")
-	[
-		value("my_enum", 4),
-		value("my_2nd_enum", 7),
-		value("another_enum", 6)
-	]
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;A&gt;("A")
+		.enum_("constants")
+		[
+			value("my_enum", 4),
+			value("my_2nd_enum", 7),
+			value("another_enum", 6)
+		]
+];
 </pre>
 
 <p>In lua they are reached like any data member, except 
@@ -578,10 +598,11 @@ struct vec
 <p>Is registered like this:</p>
 
 <pre>
-class_&lt;vec&gt;("vec")
-	.def(self + int())
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;vec&gt;("vec")
+		.def(self + int())
+];
 </pre>
 
 <p>This will work regardless if your plus operator is 
@@ -592,10 +613,11 @@ takes a const reference to the class itself) you have to use <tt>const_self</tt>
 instead of <tt>self</tt>. Like this:</p>
 
 <pre>
-class_&lt;vec&gt;("vec")
-	.def(const_self + int())
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;vec&gt;("vec")
+		.def(const_self + int())
+];
 </pre>
 
 <p>The operators supported are those available in lua:</p>
@@ -636,19 +658,21 @@ struct vec
 wrapper like this:</p>
 
 <pre>
-class_&lt;vec&gt;("vec")
-	.def(self + other&lt;std::string&gt;())
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;vec&gt;("vec")
+		.def(self + other&lt;std::string&gt;())
+];
 </pre>
 
 <p>To register an application operator:</p>
 
 <pre>
-class_&lt;vec&gt;("vec")
-	.def( self(int()) )
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;vec&gt;("vec")
+		.def( self(int()) )
+];
 </pre>
 
 <p>There's one special operator. In lua it's called <tt>__tostring</tt>,
@@ -667,10 +691,11 @@ std::ostream&amp; operator&lt;&lt;(ostream&amp;, number&amp;);
 </pre>
 
 <pre>
-class_&lt;number&gt;("number")
-	.def(tostring(self))
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;number&gt;("number")
+		.def(tostring(self))
+];
 </pre>
 
 
@@ -688,12 +713,11 @@ struct B: A{};
 <p>Would be registered like this:</p>
 
 <pre>
-class_&lt;A&gt;("A")
-	.commit(L)
-	;
-class_&lt;B, A&gt;("B")
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;A&gt;("A"),
+	class_&lt;B, A&gt;("B")
+];
 </pre>
 
 <p>If you have multiple inheritance you can specify more 
@@ -701,9 +725,10 @@ than one base. If <tt>B</tt> would also derive from a class
 <tt>C</tt>, it would be registered like this:</p>
 
 <pre>
-class_&lt;B, bases&lt;A, C&gt; &gt;("B")
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;B, bases&lt;A, C&gt; &gt;("B")
+];
 </pre>
 
 <p>Note that you can omit <tt>bases&lt;..&gt;</tt> when using single inheritance.</p>
@@ -734,7 +759,10 @@ by some kind of smart pointer (<tt>boost::shared_ptr</tt> for instance). You do 
 the holder type as an extra template-parameter to the <tt>class_</tt> your constructing, like this:</p>
 
 <pre>
+module(L)
+[
 	class_&lt;A, boost::shared_ptr&lt;A&gt; &gt;("A");
+];
 </pre>
 
 <p>You also have to supply two functions for your smart pointer. One that returns the type of const
@@ -1271,11 +1299,12 @@ struct baseclass_wrapper: baseclass
 };
 </pre>
 <pre>
-class_&lt;baseclass, baseclass_wrapper&gt;("baseclass")
-	.def(constructor&lt;const char*&gt;())
-	.def("f", &amp;baseclass_wrapper::f_static)
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;baseclass, baseclass_wrapper&gt;("baseclass")
+		.def(constructor&lt;const char*&gt;())
+		.def("f", &amp;baseclass_wrapper::f_static)
+];	
 </pre>
 
 <p>Note that if you have both base classes and a base class 
@@ -1509,7 +1538,10 @@ it to lua:</p><pre>base* create_base()
 </pre>
 
 <pre>
-function(L, "create_base", create_base);
+module(L)
+[
+	def("create_base", create_base)
+];
 </pre>
 
 <p>Here we need to make sure lua understands that it should 
@@ -1517,7 +1549,10 @@ adopt the pointer returned by the factory-function. This can be done using the
 adopt-policy.</p>
 
 <pre>
-function(L, "create_base", adopt(return_value));
+module(L)
+[
+	def(L, "create_base", adopt(return_value))
+];
 </pre>
 
 <p>To specify multiple policies we just separate them with '+'.</p>
@@ -1531,7 +1566,10 @@ base* set_and_get_new(base* ptr)
 </pre>
 
 <pre>
-function(L, "set_and_get_new", &amp;set_and_get_new, adopt(return_value) + adopt(_1));
+module(L)
+[
+	def(L, "set_and_get_new", &amp;set_and_get_new, adopt(return_value) + adopt(_1))
+];
 </pre>
 
 <p>When lua adopts a pointer, it will call <tt>delete</tt> on it. This means that it cannot adopt pointers allocated with
@@ -1558,11 +1596,12 @@ struct A
 <p>When wrapping this class, we would do something like:</p>
 
 <pre>
-class_&lt;A&gt;("A")
-	.def(constructor&lt;&gt;())
-	.def("get_member", &amp;A::get_member)
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;A&gt;("A")
+		.def(constructor&lt;&gt;())
+		.def("get_member", &amp;A::get_member)
+];
 </pre>
 
 <p>However, since the return value of get_member is a reference to a member of A, this will create
@@ -1580,11 +1619,12 @@ collectgarbage(0)  -- since there are no references left to a, it is removed
 object to another, like this:</p>
 
 <pre>
-class_&lt;A&gt;("A")
-	.def(constructor&lt;&gt;())
-	.def("get_member", &amp;A::get_member, dependency(result, self))
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;A&gt;("A")
+		.def(constructor&lt;&gt;())
+		.def("get_member", &amp;A::get_member, dependency(result, self))
+];
 </pre>
 
 <p>This will create a dependency between the return-value of the function, and the self-object. This means
@@ -1622,11 +1662,12 @@ isn't a problem, but could be a bit inefficient. When using the return_reference
 luabind that the return-value is already on the lua stack.</p>
 
 <pre>
-class_&lt;A&gt;("A")
-	.def(constructor&lt;&gt;())
-	.def("set", &amp;A::set, return_reference_to(self))
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;A&gt;("A")
+		.def(constructor&lt;&gt;())
+		.def("set", &amp;A::set, return_reference_to(self))
+];	
 </pre>
 
 <p>Instead of creating a new object, luabind will just copy the object that is already on the stack.</p>
@@ -1650,7 +1691,10 @@ void f(float* val) { *val = *val + 10.f; }
 <p>Can be wrapped by doing:</p>
 
 <pre>
-function(L, "f", &amp;f, out_value(_1))
+module(L)
+[
+	def("f", &amp;f, out_value(_1))
+];
 </pre>
 
 <p>When invoking this function from lua it will return the value assigned to its parameter.</p>
@@ -1674,11 +1718,12 @@ void f(A** obj) { *obj = new A(); }
 <p>Here we need to make sure luabind takes control over object returned, for this we use the <tt>adopt</tt> policy</p>
 
 <pre>
-class_&lt;A&gt;("A")
-	.commit(L)
-	;
+module(L)
+[
+	class_&lt;A&gt;("A"),
 
-function(L, "f", &amp;f, out_value(_1, adopt(_2)));
+	def("f", &amp;f, out_value(_1, adopt(_2)))
+];
 </pre>
 
 <p>Here we are using <tt>adopt</tt> as an internal policy to <tt>out_value</tt>. The index specified, <tt>_2</tt>, means adopt will be used to convert the value back to lua. Using <tt>_1</tt> means the policy will be used when converting from lua to C++.</p>
@@ -1696,8 +1741,12 @@ void get(float&amp; x, float&amp; y)
 	x = 3.f;
 	y = 4.f;
 }
-
-function(L, "get", &amp;get, pure_out_value(_1) + pure_out_value(_2));
+</pre>
+<pre>
+module(L)
+[
+	def("get", &amp;get, pure_out_value(_1) + pure_out_value(_2))
+];
 </pre>
 <pre>
 x,y = get()
@@ -1711,8 +1760,12 @@ void get(test_class*&amp; obj)
 {
 	obj = new test_class();
 }
-
-function(L, "get", &amp;get, pure_out_value(_1, adopt(_1)));
+</pre>
+<pre>
+module(L)
+[
+	def("get", &amp;get, pure_out_value(_1, adopt(_1)))
+];
 </pre>
 
 <h2><a name="policies_discard_result"></a>discard_result</h2>
@@ -1730,11 +1783,13 @@ struct simple
 
 	std::string name;
 };
-
-class_&lt;simple&gt;("simple")
-	.def("set_name", &amp;simple::set_name, discard_result)
-	.commit(L)
-	;
+</pre>
+<pre>
+module(L)
+[
+	class_&lt;simple&gt;("simple")
+		.def("set_name", &amp;simple::set_name, discard_result)
+];
 </pre>
 		
 <p>To use this policy you need to include <tt>&lt;luabind/discard_result.hpp&gt;</tt>.</p>
@@ -1750,11 +1805,13 @@ struct A
 {
 	std::vector&lt;std::string&gt; names;
 };
-
-class_&lt;A&gt;("A")
-	.def_readwrite("names", &amp;A::names, return_stl_iterator)
-	.commit(L)
-	;
+</pre>
+<pre>
+module(L)
+[
+	class_&lt;A&gt;("A")
+		.def_readwrite("names", &amp;A::names, return_stl_iterator)
+];
 </pre>
 
 <p>The lua code to iterate over the container:</p>
@@ -2026,11 +2083,12 @@ This namespace contains non-public classes and are not supposed to be used direc
 	lua counterpart to C++ templates. For example, you can register an explicit instantiation of
 	<tt>std::vector</tt> like this:</p>
 	<pre>
+module(L)
+[
 	class_&lt;std::vector&lt;int&gt;&nbsp;&gt;("vector")
 		.def(constructor&lt;int&gt;)
 		.def("push_back", &amp;std::vector&lt;int&gt;::push_back)
-		.commit(L)
-		;
+];
 	</pre>
 	<p>Note that the space between the two &gt; is required by C++.</p>
 
