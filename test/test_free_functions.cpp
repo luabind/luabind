@@ -184,5 +184,9 @@ void test_free_functions()
     functor<std::string> functor_test2 = object_cast<functor<std::string> >(get_globals(L)["functor_test"]);
 
 	BOOST_CHECK(functor_test == functor_test2);
+
+	// this must be reset before the lua state is destructed!
+	functor_test.reset();
+
 }
 

@@ -1075,6 +1075,7 @@ functions). It has the following synopsis::
         
         bool is_valid() const;
         operator safe_bool_type() const;
+        void reset();
 
         lua_State* lua_state() const;
         void pushvalue() const;
@@ -1153,6 +1154,10 @@ be called whenever the callback should be called, and it will simply call the
 lua function that we registered.
 
 You can also use ``object_cast`` to cast an object to a functor.
+
+``reset`` on ``functor`` will invalidate the functor (and remove any references
+to its lua value). If the functor object has longer lifetime than the lua state
+(e.g. if it's a global).
 
 
 Defining classes in lua

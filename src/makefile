@@ -17,7 +17,8 @@ SOURCES = \
 	object_rep.cpp \
 	class_info.cpp \
 	class_registry.cpp \
-	link_compatibility.cpp
+	link_compatibility.cpp \
+	weak_ref.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 

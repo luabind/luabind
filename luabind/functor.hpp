@@ -410,6 +410,12 @@ namespace luabind
 		lua_State* lua_state() const { return L_; }
 		void pushvalue() const { ref_.get(L_); }
 
+		void reset()
+		{
+			L_ = 0;
+			ref_.reset();
+		}
+
 		#define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/functor.hpp>, 1))
 		#include BOOST_PP_ITERATE()
 
