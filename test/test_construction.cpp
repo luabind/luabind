@@ -25,7 +25,24 @@ namespace
 
 	struct C {};
 
+	struct A_
+	{
+		virtual void doSomething() = 0;
+	};
+
+	struct B_ : public A_
+	{
+		void doSomething() {}
+	};
+
+	struct C_ : public B_
+	{
+		void doMore() {}
+	};
+
+	
 } // anonymous namespace
+
 
 bool test_construction()
 {
@@ -53,6 +70,17 @@ bool test_construction()
 
 	];
 
+	luabind::class_<A_>(L, "A_");
+
+	luabind::class_<B_, A_>(L, "B_")
+		.def(luabind::constructor<>())
+		.def("doSomething", &B_::doSomething);
+
+	luabind::class_<C_, B_>(L, "C_")
+		.def(luabind::constructor<>())
+		.def("doMore", &C_::doMore);
+
+		
 	if (dostring2(L, "a = C()") == 0) return false;
 	lua_pop(L, 1); // pop error message
 
