@@ -178,7 +178,6 @@ namespace luabind
 
 
 
-
 		struct stack_pop
 		{
 			stack_pop(lua_State* L, int n)
