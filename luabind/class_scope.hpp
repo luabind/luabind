@@ -146,6 +146,7 @@
 #include <boost/mpl/logical.hpp>
 
 #include <luabind/config.hpp>
+#include <luabind/scope.hpp>
 #include <luabind/detail/constructor.hpp>
 #include <luabind/detail/call.hpp>
 #include <luabind/detail/signature_match.hpp>
@@ -162,6 +163,7 @@
 #include <luabind/detail/get_signature.hpp>
 #include <luabind/detail/implicit_cast.hpp>
 #include <luabind/detail/calc_arity.hpp>
+#include <luabind/detail/operator_id.hpp>
 
 namespace luabind
 {
@@ -379,10 +381,14 @@ namespace luabind
 				const char* name = lua_tostring(L, 1);
 
 				void* c = lua_newuserdata(L, sizeof(class_rep));
-
-				lua_pushvalue(L, -1);
-				// the global name of the class is registered inside this constructor
 				new(c) class_rep(L, name);
+
+				// make the class globally available
+				lua_pushvalue(L, -1);
+				lua_pushstring(L, name);
+				lua_settable(L, LUA_GLOBALSINDEX);
+
+				// also add it to the closure as return value
 				lua_pushcclosure(L, &stage2, 1);
 
 				return 1;
@@ -427,8 +433,10 @@ namespace luabind
 		template<class HeldType>
 		struct internal_held_type_extractor
 		{
+			typedef void*(*extractor_fun)(void*);
+
 			template<class T>
-			static void*(*)(void*) apply(detail::type<T>)
+			static extractor_fun apply(detail::type<T>)
 			{
 				return detail::extract_underlying_type<T, HeldType>::extract;
 			}
@@ -437,8 +445,10 @@ namespace luabind
 		template<>
 		struct internal_held_type_extractor<detail::null_type>
 		{
+			typedef void*(*extractor_fun)(void*);
+
 			template<class T>
-			static void*(*)(void*) apply(detail::type<T>)
+			static extractor_fun apply(detail::type<T>)
 			{
 				return 0;
 			}
@@ -486,7 +496,7 @@ namespace luabind
 
 	struct class_base: detail::scoped_object
 	{
-	private:
+	protected:
 
 		struct base_desc
 		{
@@ -494,30 +504,27 @@ namespace luabind
 			int ptr_offset;
 		};
 
+	private:
+
 #ifndef NDEBUG
 		bool m_cloned;
 #endif
 
-#ifdef LUABIND_DONT_COPY_STRINGS
 		const char* m_name;
-#else
-		std::string m_name;
-#endif
 
-		std::map<const char*, detail::method_rep, ltstr> m_methods;
+		std::map<const char*, detail::method_rep, detail::ltstr> m_methods;
 
 		// datamembers, some members may be readonly, and
 		// only have a getter function
-		std::map<const char*, detail::class_rep::callback, ltstr> m_getters;
-		std::map<const char*, detail::class_rep::callback, ltstr> m_setters;
+		std::map<const char*, detail::class_rep::callback, detail::ltstr> m_getters;
+		std::map<const char*, detail::class_rep::callback, detail::ltstr> m_setters;
 
 		// the operators in lua
-		std::vector<detail::class_rep::operator_callback> m_operators[number_of_operators]; 
+		std::vector<detail::class_rep::operator_callback> m_operators[detail::number_of_operators]; 
 		std::map<const char*, int, detail::ltstr> m_static_constants;
 
 		std::vector<base_desc> m_bases;
 		detail::construct_rep m_constructor;
-		detail::construct_rep m_wrapped_constructor;
 
 		void(*m_destructor)(void*);
 		void*(*m_extractor)(void*);
@@ -533,33 +540,14 @@ namespace luabind
 
 	protected:
 
-		void add_method(const char* name, const detail::overload_rep& o)
-		{
-#ifdef LUABIND_DONT_COPY_STRINGS
-			detail::method_rep& method = m_methods[name];
-			method.name = name;
-#else
-			m_strings.push_back(detail::dup_string(name));
-			detail::method_rep& method = m_methods[m_strings.back()];
-			method.name = m_strings.back();
-#endif
-			method.add_overload(o);
-			method.crep = 0;
-		}
-
-		void add_constructor(const detail::construct_rep::overload_t& o)
-		{
-			m_constructor.overloads.push_back(o);
-		}
-
-		void add_wrapped_constructor(const detail::construct_rep::overload_t& o)
-		{
-			m_wrapped_constructor.overloads.push_back(o);
-		}
+		void set_type(LUABIND_TYPE_INFO t) { m_type = t; }
+		void set_held_type(LUABIND_TYPE_INFO t) { m_held_type = t; }
+		void set_extractor(void*(*f)(void*)) { m_extractor = f; }
+		void set_destructor(void(*f)(void*)) { m_destructor = f; }
 
 		inline void add_getter(const char* name, const boost::function2<int, lua_State*, int>& g)
 		{
-			callback c;
+			detail::class_rep::callback c;
 			c.func = g;
 			c.pointer_offset = 0;
 #ifndef LUABIND_DONT_COPY_STRINGS
@@ -572,7 +560,7 @@ namespace luabind
 
 		inline void add_setter(const char* name, const boost::function2<int, lua_State*, int>& s)
 		{
-			callback c;
+			detail::class_rep::callback c;
 			c.func = s;
 			c.pointer_offset = 0;
 #ifndef LUABIND_DONT_COPY_STRINGS
@@ -590,7 +578,53 @@ namespace luabind
 
 	public:
 
-		class_base()
+		void add_constructor(const detail::construct_rep::overload_t& o)
+		{
+			m_constructor.overloads.push_back(o);
+		}
+
+		void add_method(const char* name, const detail::overload_rep& o)
+		{
+#ifdef LUABIND_DONT_COPY_STRINGS
+			detail::method_rep& method = m_methods[name];
+			method.name = name;
+#else
+			m_strings.push_back(detail::dup_string(name));
+			detail::method_rep& method = m_methods[m_strings.back()];
+			method.name = m_strings.back();
+#endif
+			method.add_overload(o);
+			method.crep = 0;
+		}
+
+#ifndef LUABIND_NO_ERROR_CHECKING
+		inline void add_operator(int op_id,  int(*func)(lua_State*), int(*matcher)(lua_State*), void(*sig)(lua_State*, std::string&), int arity)
+#else
+		inline void add_operator(int op_id,  int(*func)(lua_State*), int(*matcher)(lua_State*), int arity)
+#endif
+		{
+			detail::class_rep::operator_callback o;
+			o.set_fun(func);
+			o.set_match_fun(matcher);
+			o.set_arity(arity);
+
+#ifndef LUABIND_NO_ERROR_CHECKING
+
+			o.set_sig_fun(sig);
+
+#endif
+			m_operators[op_id].push_back(o);
+		}
+
+
+
+
+
+
+
+		const char* name() const { return m_name; }
+
+		class_base(const char* name): m_name(name)
 		{
 #ifndef NDEBUG
 			m_cloned = false;
@@ -621,11 +655,15 @@ namespace luabind
 			// move the userdata memory.
 			lua_newuserdata(L, sizeof(detail::class_rep));
 			crep = reinterpret_cast<detail::class_rep*>(lua_touserdata(L, -1));
+			
+			const char* n = lua_typename(L, lua_type(L, -1));
 
 			new(crep) detail::class_rep(m_type, m_name, L, m_destructor, m_held_type, m_extractor);
 
+			const char* b = lua_typename(L, lua_type(L, -1));
+
 			// register this new type in the class registry
-			r->add_class(LUABIND_TYPEID(T), crep);
+			r->add_class(m_type, crep);
 
 			for (std::vector<base_desc>::iterator i = m_bases.begin();
 							i != m_bases.end(); 
@@ -635,21 +673,32 @@ namespace luabind
 			}
 
 			// add methods
-			for (std::map<const char*, detail::method_rep, ltstr>::iterator i = m_methods.begin();
+			for (std::map<const char*, detail::method_rep, detail::ltstr>::iterator i = m_methods.begin();
 										i != m_methods.end(); 
 										++i)
 			{
-				i->crep = crep;
+				i->second.crep = crep;
 			}
-			swap(crep->m_methods, m_methods);
+			std::swap(crep->m_methods, m_methods);
 
 			// constructors
 			m_constructor.swap(crep->m_constructor);
-			m_wrapped_constructor.swap(crep->m_wrapped_constructor);
+
+			#ifndef LUABIND_DONT_COPY_STRINGS
+				std::swap(crep->m_strings, m_strings);
+			#endif
+
+			std::swap(crep->m_getters, m_getters);
+			std::swap(crep->m_setters, m_setters);
+
+			for(int i = 0; i < detail::number_of_operators; ++i)
+				std::swap(crep->m_operators[i], m_operators[i]);
+	
+			std::swap(crep->m_static_constants, m_static_constants);
 		}
 
 		// destructive copy
-		virtual scoped_object* clone() const
+		virtual scoped_object* clone()
 		{
 			assert(m_cloned == false);
 
@@ -657,28 +706,26 @@ namespace luabind
 			m_cloned = true;
 #endif
 
-			class_base* ret = new class_base();
-#ifdef LUABIND_DONT_COPY_STRING
-			ret->m_name = m_name;
-#else
-			std::swap(ret->m_name, m_name);
-#endif
+			class_base* ret = new class_base(m_name);
 
 			std::swap(ret->m_getters, m_getters);
 			std::swap(ret->m_setters, m_setters);
-			std::swap(ret->m_operators, m_operators);
+
+			for(int i = 0; i < detail::number_of_operators; ++i)
+				std::swap(ret->m_operators[i], m_operators[i]);
+	
 			std::swap(ret->m_static_constants, m_static_constants);
 			ret->m_destructor = m_destructor;
 
 			std::swap(ret->m_bases, m_bases);
 			std::swap(ret->m_methods, m_methods);
 			m_constructor.swap(ret->m_constructor);
-			m_wrapped_constructor.swap(ret->m_wrapped_constructor);
 
 #ifndef LUABIND_DONT_COPY_STRINGS
 			std::swap(ret->m_strings, m_strings);
 #endif
 
+			return ret;
 		}
 
 	};
@@ -752,17 +799,17 @@ namespace luabind
 			// store the information in this class' base class-vector
 			base_desc base;
 			base.type = LUABIND_TYPEID(To);
-			base.ptr_offset = ptr_offset(detail::type<T>(), detail::type<To>());
+			base.ptr_offset = detail::ptr_offset(detail::type<T>(), detail::type<To>());
 			add_base(base);
 		}
 
 		void gen_base_info(detail::type<detail::null_type>)
 		{}
 
-#define LUABIND_GEN_BASE_INFO(z, n, text) gen_base_info(crep, reg, detail::type<B##n>());
+#define LUABIND_GEN_BASE_INFO(z, n, text) gen_base_info(detail::type<B##n>());
 
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, class B)>
-		void generate_baseclass_list(detail::class_rep* crep, detail::class_registry* reg, detail::type<bases<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, B)> >)
+		void generate_baseclass_list(detail::type<bases<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, B)> >)
 		{
 			BOOST_PP_REPEAT(LUABIND_MAX_BASES, LUABIND_GEN_BASE_INFO, _)
 		}
@@ -793,7 +840,7 @@ namespace luabind
 
 #endif
 
-				c->add_function(name, o);
+				c->add_method(name, o);
 			}
 
 			template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
@@ -840,37 +887,19 @@ namespace luabind
 		};
 
 
+		class_(lua_State* L_, const char* name): class_base(name), m_L(L_) { init(); }
+		class_(const char* name): class_bae(name), m_L(0) { init(); }
 
-		class_(lua_State* L_, const char* name_): L(L_), name(name_)
+		// TODO: we sould probably commit the object someplace else
+		~class_()
 		{
-/*
-					std::cout << "X1: " << typeid(X1).name() << "\n";
-					std::cout << "X2: " << typeid(X2).name() << "\n";
-					std::cout << "X3: " << typeid(X3).name() << "\n";
-					std::cout << "HeldType1: " << typeid(HeldType).name() << "\n";
-*/
-
-			typedef typename detail::extract_parameter<
-					boost::mpl::vector3<X1,X2,X3>
-				,	boost::mpl::or_<
-							detail::is_bases<boost::mpl::_>
-						,	boost::is_base_and_derived<boost::mpl::_, T>
-					>
-				,	no_bases
-			>::type bases_t;
-
-			typedef typename 
-				boost::mpl::if_<detail::is_bases<bases_t>
-					,	bases_t
-					,	bases<bases_t>
-				>::type Base;
-	
-			m_type = LUABIND_TYPEID(T);
-			m_held_type = detail::internal_held_type<HeldType>::apply();
-			m_extractor = detail::internal_held_type_extractor<HeldType>::apply(detail::type<T>());
-			generate_baseclass_list(r, detail::type<Base>());
-
-//			std::cout << "held type: " << typeid(HeldType).name() << '\n';
+			if (m_L)
+			{
+				lua_pushstring(m_L, name());
+				commit(m_L);
+				const char* n = lua_typename(m_L, lua_type(m_L, -1));
+				lua_settable(m_L, LUA_GLOBALSINDEX);
+			}
 		}
 
 		template<class F>
@@ -976,18 +1005,16 @@ namespace luabind
 		{
 			typedef typename detail::operator_unwrapper<Policies, op_id, T, Left, Right> op_type;
 #ifndef LUABIND_NO_ERROR_CHECKING
-			add_operator(L
-													, op_type::get_id()
-													, &op_type::execute
-													, &op_type::match
-													, &detail::get_signature<constructor<typename op_type::left_t, typename op_type::right_t> >::apply
-													, detail::is_unary(op_type::get_id()) ? 1 : 2);
+			add_operator(op_type::get_id()
+									, &op_type::execute
+									, &op_type::match
+									, &detail::get_signature<constructor<typename op_type::left_t, typename op_type::right_t> >::apply
+									, detail::is_unary(op_type::get_id()) ? 1 : 2);
 #else
-			add_operator(L
-													, op_type::get_id()
-													, &op_type::execute
-													, &op_type::match
-													, detail::is_unary(op_type::get_id()) ? 1 : 2);
+			add_operator(op_type::get_id()
+									, &op_type::execute
+									, &op_type::match
+									, detail::is_unary(op_type::get_id()) ? 1 : 2);
 #endif
 			return *this;
 		}
@@ -998,18 +1025,16 @@ namespace luabind
 			typedef typename detail::operator_unwrapper<detail::null_type, op_id, T, Left, Right> op_type;
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-			add_operator(L
-													, op_type::get_id()
-													, &op_type::execute
-													, &op_type::match
-													, &detail::get_signature<constructor<LUABIND_MSVC_TYPENAME op_type::left_t, LUABIND_MSVC_TYPENAME op_type::right_t> >::apply
-													, detail::is_unary(op_type::get_id()) ? 1 : 2);
+			add_operator(op_type::get_id()
+									, &op_type::execute
+									, &op_type::match
+									, &detail::get_signature<constructor<LUABIND_MSVC_TYPENAME op_type::left_t, LUABIND_MSVC_TYPENAME op_type::right_t> >::apply
+									, detail::is_unary(op_type::get_id()) ? 1 : 2);
 #else
-			add_operator(L
-													, op_type::get_id()
-													, &op_type::execute
-													, &op_type::match
-													, detail::is_unary(op_type::get_id()) ? 1 : 2);
+			add_operator(op_type::get_id()
+									, &op_type::execute
+									, &op_type::match
+									, detail::is_unary(op_type::get_id()) ? 1 : 2);
 #endif
 			return *this;
 		}
@@ -1022,9 +1047,9 @@ namespace luabind
 			int arity = detail::calc_arity<Signature::arity>::apply(Signature(), static_cast<detail::null_type*>(0));
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-			add_operator(L, detail::op_call, &op_t::template apply<T>::execute, &op_t::match, &detail::get_signature<Signature>::apply, arity + 1);
+			add_operator(detail::op_call, &op_t::template apply<T>::execute, &op_t::match, &detail::get_signature<Signature>::apply, arity + 1);
 #else
-			add_operator(L, detail::op_call, &op_t::template apply<T>::execute, &op_t::match, arity + 1);
+			add_operator(detail::op_call, &op_t::template apply<T>::execute, &op_t::match, arity + 1);
 #endif
 
 			return *this;
@@ -1038,9 +1063,9 @@ namespace luabind
 			int arity = detail::calc_arity<Signature::arity>::apply(Signature(), static_cast<Policies*>(0));
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-			add_operator(L, detail::op_call, &op_t::template apply<T>::execute, &op_t::match, &detail::get_signature<Signature>::apply, arity + 1);
+			add_operator(detail::op_call, &op_t::template apply<T>::execute, &op_t::match, &detail::get_signature<Signature>::apply, arity + 1);
 #else
-			add_operator(L, detail::op_call, &op_t::template apply<T>::execute, &op_t::match, arity + 1);
+			add_operator(detail::op_call, &op_t::template apply<T>::execute, &op_t::match, arity + 1);
 #endif
 
 			return *this;
@@ -1052,6 +1077,31 @@ namespace luabind
 		}
 
 	private:
+
+		void init()
+		{
+			typedef typename detail::extract_parameter<
+					boost::mpl::vector3<X1,X2,X3>
+				,	boost::mpl::or_<
+							detail::is_bases<boost::mpl::_>
+						,	boost::is_base_and_derived<boost::mpl::_, T>
+					>
+				,	no_bases
+			>::type bases_t;
+
+			typedef typename 
+				boost::mpl::if_<detail::is_bases<bases_t>
+					,	bases_t
+					,	bases<bases_t>
+				>::type Base;
+	
+			set_type(LUABIND_TYPEID(T));
+			set_held_type(detail::internal_held_type<HeldType>::apply());
+			set_extractor(detail::internal_held_type_extractor<HeldType>::apply(detail::type<T>()));
+			set_destructor(detail::destructor_s<T>::apply);
+
+			generate_baseclass_list(detail::type<Base>());
+		}
 
 		template<class Getter, class GetPolicies>
 		class_& property_impl(const char* name,

@@ -127,8 +127,8 @@ bool test_attributes()
 	
 	glob["test_string"] = std::string("barfoo");
 
-//	swap overloads doesn't work on vc6
-#if !defined(BOOST_MSVC) || (defined(BOOST_MSVC) && (BOOST_MSVC >= 1300))	
+//	swap overloads doesn't work on vc
+#if !defined(BOOST_MSVC)
 	std::swap(glob["test_string"], glob["a"]);
 	if (object_cast<std::string>(glob["a"]) != "barfoo") return false;
 	int type = glob["test_string"].type();
@@ -148,15 +148,11 @@ bool test_attributes()
 	if (top != lua_gettop(L)) return false;
 
 	dostring(L, "a = property()");
-//#ifndef BOOST_MSVC
 	dostring(L, "b = a.internal");
-//#endif
 	dostring(L, "a = nil");
 	dostring(L, "collectgarbage(0)");
 	dostring(L, "collectgarbage(0)");
-//#ifndef BOOST_MSVC
 	dostring(L, "print(b.name)");
-//#endif
 	return true;
 }
 

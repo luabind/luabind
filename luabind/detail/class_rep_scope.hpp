@@ -48,6 +48,8 @@ namespace luabind
 	struct bases {};
 	typedef bases<detail::null_type> no_bases;
 
+	struct class_base;
+
 }
 
 namespace luabind { namespace detail
@@ -65,7 +67,7 @@ namespace luabind { namespace detail
 	// methods
 	class class_rep
 	{
-	friend struct class_base;
+	friend struct luabind::class_base;
 	friend int super_callback(lua_State*);
 //TODO: avoid the lua-prefix
 	friend int lua_class_gettable(lua_State*);
@@ -79,13 +81,14 @@ namespace luabind { namespace detail
 			lua_class = 1
 		};
 
-
-
 		// destructor is a lua callback function that is hooked as garbage collector event on every instance
 		// of this class (including those that is not owned by lua). It gets an object_rep as argument
 		// on the lua stack. It should delete the object pointed to by object_rep::ptr if object_pre::flags
 		// is object_rep::owner (which means that lua owns the object)
 
+		// EXPECTS THE TOP VALUE ON THE LUA STACK TO
+		// BE THE USER DATA WHERE THIS CLASS IS BEING
+		// INSTANTIATED!
 		class_rep(LUABIND_TYPE_INFO t, const char* name, lua_State* L, void(*destructor)(void*), LUABIND_TYPE_INFO held_t, void*(*extractor)(void*))
 			: m_type(t)
 			, m_held_type(held_t)
@@ -94,22 +97,16 @@ namespace luabind { namespace detail
 			, m_class_type(cpp_class)
 			, m_destructor(destructor)
 		{
+
+			// TODO: don't we need to copy the name?
 			class_registry* r = class_registry::get_registry(L);
 			assert((r->cpp_class() != LUA_NOREF) && "you must call luabind::open()"); // you must call luabind::open()
 
 			detail::getref(L, r->cpp_class());
 			lua_setmetatable(L, -2);
 
-			m_self_ref = detail::ref(L);
-
-			// make our class_rep public by putting it in the globals table
-#ifdef LUABIND_DONT_COPY_STRINGS
-			lua_pushstring(L, m_name);
-#else
-			lua_pushstring(L, m_name.c_str());
-#endif
-			detail::getref(L, m_self_ref);
-			lua_settable(L, LUA_GLOBALSINDEX);
+			lua_pushvalue(L, -1); // duplicate our user data
+			m_self_ref = detail::ref(L); // pop one of them
 
 			m_instance_metatable = r->cpp_instance();
 		}
@@ -125,6 +122,7 @@ namespace luabind { namespace detail
 			, m_name(name)
 			, m_class_type(lua_class)
 		{
+			// TODO: don't we need to copy the name?
 			lua_newtable(L);
 			m_table_ref = detail::ref(L);
 
@@ -133,16 +131,8 @@ namespace luabind { namespace detail
 
 			detail::getref(L, r->lua_class());
 			lua_setmetatable(L, -2);
-			m_self_ref = detail::ref(L);
-
-			// make our class_rep public by putting it in the globals table
-#ifdef LUABIND_DONT_COPY_STRINGS
-			lua_pushstring(L, m_name);
-#else
-			lua_pushstring(L, m_name.c_str());
-#endif
-			detail::getref(L, m_self_ref);
-			lua_settable(L, LUA_GLOBALSINDEX);
+			lua_pushvalue(L, -1); // duplicate our user data
+			m_self_ref = detail::ref(L); // pop one of them
 
 			m_instance_metatable = r->lua_instance();
 		}

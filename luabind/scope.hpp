@@ -44,8 +44,8 @@ namespace luabind
 
 			virtual ~scoped_object() {}
 
-			virtual void commit(lua_State*) const = 0;
-			virtual scoped_object* clone() const = 0;
+			virtual void commit(lua_State*) = 0;
+			virtual scoped_object* clone() = 0;
 
 			scoped_sequence operator,(const scoped_object& rhs) const;
 		};
@@ -74,18 +74,18 @@ namespace luabind
 
 			scoped_sequence& operator,(const scoped_object& rhs)
 			{
-				objects.push_back(rhs.clone());
+				objects.push_back(const_cast<scoped_object&>(rhs).clone());
 				return *this;
 			}
 
-			virtual scoped_object* clone() const
+			virtual scoped_object* clone()
 			{
 				scoped_sequence* copy = new scoped_sequence();
 				copy->objects.swap(this->objects);
 				return copy;
 			}
 
-			virtual void commit(lua_State* L) const
+			virtual void commit(lua_State* L)
 			{
 				for (std::vector<scoped_object*>
 							::const_iterator i = this->objects.begin()
@@ -102,7 +102,7 @@ namespace luabind
 
 		inline scoped_sequence scoped_object::operator,(const scoped_object& rhs) const
 		{
-			return scoped_sequence(this->clone(), rhs.clone());
+			return scoped_sequence(const_cast<scoped_object*>(this)->clone(), const_cast<scoped_object&>(rhs).clone());
 		}
 	}
 	
@@ -238,7 +238,7 @@ namespace luabind
 			}
 		}
 
-		scope& operator[](const detail::scoped_object& x)
+		scope& operator[](detail::scoped_object& x)
 		{
 			m_children.push_back(x.clone());
 
@@ -261,16 +261,16 @@ namespace luabind
 			return *this;
 		}
 
-		virtual detail::scoped_object* clone() const
+		virtual detail::scoped_object* clone()
 		{
 			std::vector<detail::scoped_object*> tmp;
 			tmp.swap(this->m_children);
-			scope* copy = new scope(*this);
+			scope* copy = new scope(m_name.c_str());
 			copy->m_children.swap(tmp);
 			return copy;
 		}
 
-		virtual void commit(lua_State* L) const
+		virtual void commit(lua_State* L)
 		{
 			init(L);
 
