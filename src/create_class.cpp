@@ -107,6 +107,7 @@ int luabind::detail::create_class::stage1(lua_State* L)
 
 #endif
 
+	// BUG: This will not work with strings with extra nulls in them
 	const char* name = lua_tostring(L, 1);
 
 	void* c = lua_newuserdata(L, sizeof(class_rep));

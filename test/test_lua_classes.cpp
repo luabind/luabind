@@ -47,7 +47,18 @@ namespace
 		}
 
 		void f(int, int) {}
-		void f(std::string) {}
+		void f(std::string a)
+		{
+			const char str[] = "foo\0bar";
+			if (a == std::string(str, sizeof(str)-1))
+				feedback = 15;
+		}
+
+		std::string g()
+		{
+			const char str[] = "foo\0bar";
+			return std::string(str, sizeof(str)-1);
+		}
 	};
 
 	struct no_copy
@@ -106,7 +117,8 @@ bool test_lua_classes()
 			.def(constructor<>())
 			.def("f", (f_overload1)&simple_class::f)
 			.def("f", (f_overload2)&simple_class::f)
-			.def("f", (f_overload3)&simple_class::f),
+			.def("f", (f_overload3)&simple_class::f)
+			.def("g", &simple_class::g),
 
 		def("set_feedback", &set_feedback)
 	];
@@ -126,10 +138,15 @@ bool test_lua_classes()
 	dostring(L, "a = simple_derative()");
 	dostring(L, "a:f()");
 	if (feedback != 3) return false;
+	dostring(L, "a:f('foo\\0bar')");
+	if (feedback != 15) return false;
 
 	if (!dostring2(L, "a:f('incorrect', 'parameters')")) return false;
 	std::cout << lua_tostring(L, -1) << "\n";
 	lua_pop(L, 1);
+
+	dostring(L, "if a:g() == \"foo\\0bar\" then a:f() end");
+	if (feedback != 3) return false;
 
 	dostring(L, "class 'simple_lua_class'\n");
 	dostring(L, "function simple_lua_class:__init()\n"

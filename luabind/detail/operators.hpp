@@ -397,7 +397,7 @@ namespace luabind
 					typedef typename find_conversion_policy<1, Policies>::type converter_policy_left;
 					typename converter_policy_left::template generate_converter<left_t, lua_to_cpp>::type converter_left;
 					std::stringstream s;
-					s << converter_left.apply(L, LUABIND_DECORATE_TYPE(left_t), 1) << std::ends;
+					s << converter_left.apply(L, LUABIND_DECORATE_TYPE(left_t), 1);
 					return convert_result(L, s.str(), static_cast<const Policies*>(0));
 				}
 				static inline int match(lua_State* L)

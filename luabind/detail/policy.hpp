@@ -335,7 +335,8 @@ namespace luabind { namespace detail
 		void apply(lua_State* L, double v) { lua_pushnumber(L, v); }
 		void apply(lua_State* L, long double v) { lua_pushnumber(L, v); }
 		void apply(lua_State* L, const char* v) { lua_pushstring(L, v); }
-		void apply(lua_State* L, const std::string& v) { lua_pushstring(L, v.c_str()); }
+		void apply(lua_State* L, const std::string& v)
+		{ lua_pushlstring(L, v.data(), v.size()); }
 		void apply(lua_State* L, bool b) { lua_pushboolean(L, b); }
 	};
 
@@ -385,7 +386,8 @@ namespace luabind { namespace detail
 		PRIMITIVE_CONVERTER(double) { return static_cast<double>(lua_tonumber(L, index)); }
 		PRIMITIVE_MATCHER(double) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
 
-		PRIMITIVE_CONVERTER(std::string) { return static_cast<const char*>(lua_tostring(L, index)); }
+		PRIMITIVE_CONVERTER(std::string)
+		{ return std::string(lua_tostring(L, index), lua_strlen(L, index)); }
 		PRIMITIVE_MATCHER(std::string) { if (lua_type(L, index) == LUA_TSTRING) return 0; else return -1; }
 
 		PRIMITIVE_CONVERTER(luabind::object)

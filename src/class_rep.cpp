@@ -176,6 +176,7 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 
 	// we have to ignore the first argument since this may point to
 	// a method that is not present in this class (but in a subclass)
+	// BUG: This might catch members called "__ok\0foobar"
 	const char* key = lua_tostring(L, 2);
 
 	// special case to see if this is a null-pointer
@@ -234,6 +235,8 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 
 	// we have to ignore the first argument since this may point to
 	// a method that is not present in this class (but in a subclass)
+
+	// BUG: This will not work with keys that have extra nulls in them!
 	const char* key = lua_tostring(L, 2);
 	std::map<const char*, callback, ltstr>::iterator j = m_setters.find(key);
 	if (j != m_setters.end())
@@ -1260,6 +1263,8 @@ int luabind::detail::class_rep::lua_class_gettable(lua_State* L)
 
 	// we have to ignore the first argument since this may point to
 	// a method that is not present in this class (but in a subclass)
+
+	// BUG: This might catch members called "__ok\0foobar"
 	const char* key = lua_tostring(L, 2);
 
 	if (key && !std::strcmp(key, "__ok"))
@@ -1349,6 +1354,7 @@ int luabind::detail::class_rep::lua_class_gettable(lua_State* L)
 
 	// we have to ignore the first argument since this may point to
 	// a method that is not present in this class (but in a subclass)
+	// BUG: This will not work with keys with extra nulls in them
 	const char* key = lua_tostring(L, 2);
 	std::map<const char*, class_rep::callback, ltstr>::iterator j = crep->m_setters.find(key);
 
@@ -1400,6 +1406,7 @@ int luabind::detail::class_rep::static_class_gettable(lua_State* L)
 		else lua_pop(L, 2);
 	}
 
+	// BUG: This will not work with keys with extra nulls in them
 	const char* key = lua_tostring(L, 2);
 
 	std::map<const char*, method_rep, ltstr>::iterator i = crep->m_methods.find(key);
