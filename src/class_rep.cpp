@@ -258,6 +258,22 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 		if (j != m_setters.end())
 		{
 			// the name is a data member
+#ifndef LUABIND_NO_ERROR_CHECKING
+			if (j->second.match(L, 3) < 0)
+			{
+				std::string msg("the attribute '");
+				msg += m_name;
+				msg += ".";
+				msg += key;
+				msg += "' is of type: ";
+				j->second.sig(L, msg);
+				msg += "\nand does not match: (";
+				msg += stack_content_by_name(L, 3);
+				msg += ")";
+				lua_pushstring(L, msg.c_str());
+				return false;
+			}
+#endif
 			j->second.func(L, j->second.pointer_offset);
 			return true;
 		}
@@ -267,6 +283,12 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 			// this means that we have a getter but no
 			// setter for an attribute. We will then fail
 			// because that attribute is read-only
+			std::string msg("the attribute '");
+			msg += m_name;
+			msg += ".";
+			msg += key;
+			msg += "' is read only";
+			lua_pushstring(L, msg.c_str());
 			return false;
 		}
 	}
@@ -297,14 +319,9 @@ int class_rep::gettable_dispatcher(lua_State* L)
 
 	if (!success)
 	{
-		{
-			std::string msg("cannot set attribute '");
-			msg += obj->crep()->m_name;
-			msg += ".";
-			msg += lua_tostring(L, -2);
-			msg += "'";
-			lua_pushstring(L, msg.c_str());
-		}
+		// class_rep::settable() will leave
+		// error message on the stack in case
+		// of failure
 		lua_error(L);
 	}
 

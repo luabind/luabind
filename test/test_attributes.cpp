@@ -153,10 +153,6 @@ bool test_attributes()
 	if (dostring(L, "a = test[3.6]")) return false;
 	if (glob["a"].type() != LUA_TNIL) return false;
 
-	if (dostring(L, "test.a = my_enum()\n")) return false;
-	std::cout << lua_tostring(L, -1) << "\n";
-	lua_pop(L, 1);
-
 	if (dostring(L, "temp = my_enum")) return false;
 	if (glob["temp"].type() != LUA_TUSERDATA) return false;
 	if (dostring(L, "temp = my_enum.my_value")) return false;
@@ -185,8 +181,13 @@ bool test_attributes()
 #endif
 
 #ifndef LUABIND_NO_ERROR_CHECKING
+	if (dostring2(L, "test.a = my_enum()\n") == 0) return false;
+	if (std::string("the attribute 'property.a' is of type: (number)\nand does not match: (my_enum)")
+		!= lua_tostring(L, -1)) return false;
+	lua_pop(L, 1);
+
 	if (dostring2(L, "test.o = 5") != 1) return false;
-	if (std::string("cannot set attribute 'property.o'") != lua_tostring(L, -1)) return false;
+	if (std::string("the attribute 'property.o' is read only") != lua_tostring(L, -1)) return false;
 	lua_pop(L, 1);
 #endif
 

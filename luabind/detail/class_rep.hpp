@@ -200,9 +200,16 @@ namespace luabind { namespace detail
 
 		bool has_operator_in_lua(lua_State*, int id);
 
+		// this is used to describe setters and getters
 		struct callback
 		{
 			boost::function2<int, lua_State*, int> func;
+#ifndef LUABIND_NO_ERROR_CHECKING
+			int (*match)(lua_State*, int);
+
+			typedef void(*get_sig_ptr)(lua_State*, std::string&);
+			get_sig_ptr sig;
+#endif
 			int pointer_offset;
 		};
 

@@ -222,12 +222,14 @@ namespace luabind
 		}
 	}
 
+	// deprecated
 	template<class F, class Policies>
 	void function(lua_State* L, const char* name, F f, const Policies& p)
 	{
 		module(L) [ def(name, f, p) ];
 	}
 
+	// deprecated
 	template<class F>
 	void function(lua_State* L, const char* name, F f)
 	{

@@ -113,6 +113,31 @@ namespace luabind { namespace detail
 		}
 	};
 
+	typedef int (*match_fun_ptr)(lua_State*, int);
+
+	template<class T, class Policies>
+	struct set_matcher
+	{
+		static int apply(lua_State* L, int index)
+		{
+			typedef typename find_conversion_policy<1, Policies>::type converter_policy;
+			typedef typename converter_policy::template generate_converter<T, lua_to_cpp>::type converter;
+			return converter::match(L, LUABIND_DECORATE_TYPE(T), index);
+		}
+	};
+
+	template<class Param, class Policy>
+	match_fun_ptr gen_set_matcher(void (*)(Param), Policy*)
+	{
+		return set_matcher<Param, Policy>::apply;
+	}
+
+	template<class T, class Param, class Policy>
+	match_fun_ptr gen_set_matcher(void (T::*)(Param), Policy*)
+	{
+		return set_matcher<Param, Policy>::apply;
+	}
+
 	// TODO: add support for policies
 	template<class T, class D, class Policies>
 	struct auto_set : Policies

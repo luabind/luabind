@@ -273,26 +273,44 @@ namespace luabind { namespace detail {
 		detail::class_rep::callback c;
 		c.func = g;
 		c.pointer_offset = 0;
+
 #ifndef LUABIND_DONT_COPY_STRINGS
-		m_registration->m_strings.push_back(detail::dup_string(name));
-		m_registration->m_getters[m_registration->m_strings.back()] = c;
+		char* key = detail::dup_string(name);
+		m_registration->m_strings.push_back(key);
 #else
-		m_registration->m_getters[name] = c;
+		const char* key = name;
 #endif
+		m_registration->m_getters[key] = c;
 	}
 
+#ifdef LUABIND_NO_ERROR_CHECKING
     void class_base::add_setter(
-        const char* name, const boost::function2<int, lua_State*, int>& s)
+        const char* name
+		, const boost::function2<int, lua_State*, int>& s)
+#else
+	void class_base::add_setter(
+		const char* name
+		, const boost::function2<int, lua_State*, int>& s
+		, int (*match)(lua_State*, int)
+		, void (*get_sig_ptr)(lua_State*, std::string&))
+#endif
     {
         detail::class_rep::callback c;
         c.func = s;
         c.pointer_offset = 0;
-#ifndef LUABIND_DONT_COPY_STRINGS
-        m_registration->m_strings.push_back(detail::dup_string(name));
-        m_registration->m_setters[m_registration->m_strings.back()] = c;
-#else
-        m_registration->m_setters[name] = c;
+
+#ifndef LUABIND_NO_ERROR_CHECKING
+		c.match = match;
+		c.sig = get_sig_ptr;
 #endif
+
+#ifndef LUABIND_DONT_COPY_STRINGS
+		char* key = detail::dup_string(name);
+		m_registration->m_strings.push_back(key);
+#else
+		const char* key = name;
+#endif
+        m_registration->m_setters[key] = c;
     }
 
     void class_base::add_base(const base_desc& b)

@@ -160,30 +160,6 @@ namespace luabind { namespace detail
 		}
 		lua_rawseti(L, t, ref);
 		return ref;
-
-		// from an older lua version
-#if 0
-		lua_rawgeti(L, LUA_REGISTRYINDEX, 0);  /* get first free element */
-		ref = (int)lua_tonumber(L, -1);  /* ref = t[0] */
-		lua_pop(L, 1);  /* remove it from stack */
-		if (ref != 0)
-		{  /* any free element? */
-			lua_rawgeti(L, LUA_REGISTRYINDEX, ref);  /* remove it from list */
-			lua_rawseti(L, LUA_REGISTRYINDEX, 0);  /* (that is, t[0] = t[ref]) */
-		}
-		else
-		{  /* no free elements */
-			lua_pushliteral(L, "n");
-			lua_pushvalue(L, -1);
-			lua_rawget(L, LUA_REGISTRYINDEX);  /* get t.n */
-			ref = (int)lua_tonumber(L, -1) + 1;  /* ref = t.n + 1 */
-			lua_pop(L, 1);  /* pop t.n */
-			lua_pushnumber(L, ref);
-			lua_rawset(L, LUA_REGISTRYINDEX);  /* t.n = t.n + 1 */
-		}
-		lua_rawseti(L, LUA_REGISTRYINDEX, ref);
-		return ref;
-#endif
 	}
 
 	inline void unref(lua_State *L, int ref)

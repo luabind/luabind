@@ -173,6 +173,17 @@ namespace luabind { namespace detail
 
 #undef LUABIND_ADD_LUA_TYPE_NAME
 
+	template<class T>
+	struct get_setter_signature
+	{
+		static void apply(lua_State* L, std::string& s)
+		{
+			s += "(";
+			s += name_of_type(LUABIND_DECORATE_TYPE(T), L, 0L);
+			s += ")";
+		}
+	};
+
 }}
 
 #endif // LUABIND_GET_SIGNATURE_HPP_INCLUDED

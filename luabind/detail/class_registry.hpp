@@ -31,13 +31,7 @@
 namespace luabind { namespace detail
 {
 	class class_rep;
-/*
-	LUABIND_API std::string stack_content_by_name(lua_State* L, int start_index);
-	LUABIND_API int create_cpp_class_metatable(lua_State* L);
-	LUABIND_API int create_cpp_instance_metatable(lua_State* L);
-	LUABIND_API int create_lua_class_metatable(lua_State* L);
-	LUABIND_API int create_lua_instance_metatable(lua_State* L);
-*/
+
 	struct class_registry
 	{
 		class_registry(lua_State* L)
