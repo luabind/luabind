@@ -34,6 +34,7 @@ Please report any grammatical corrections/spelling corrections.</p>
 		<li><a href="#class_operator">operators</a>
 		<li><a href="#class_derived">derived classes</a> 
 	</ul>
+	<li><a href="#scopes">Scopes</a> 
 	<li><a href="#object">Value wrapper</a>
 	<ul>
 		<li><a href="#wrap_fun">related functions</a>
@@ -43,6 +44,7 @@ Please report any grammatical corrections/spelling corrections.</p>
 	<ul>
 		<li><a href="#class_lua_derive">deriving in lua</a>
 		<li><a href="#class_lua_operators">overloading operators</a>
+		<li><a href="#class_lua_finalizers">finalizers</a>
 	</ul>
 	<li><a href="#exceptions">Exceptions</a>
 	<li><a href="#policies" >Parameter policies</a> 
@@ -331,15 +333,16 @@ private:
 (assuming you are <tt>using namespace luabind</tt>):</p>
 
 <pre>
-class_&lt;testclass&gt;(L, "testclass")
+class_&lt;testclass&gt;("testclass")
 	.def(constructor&lt;const std::string&amp;&gt;())
 	.def("print_string", &amp;testclass::print_string)
-	;
+	.commit(L);
 </pre>
 
 <p>This will register the class with the name <tt>testclass</tt> and constructor that takes a string as 
-argument and one member function with the name <tt>print_string</tt>. You can then use this class in lua like 
-this.</p>
+argument and one member function with the name <tt>print_string</tt>. The <tt>commit</tt> member function
+will do the actual registration of the class, therefore, <tt>commit</tt> has to be the last member function called (You cannot add any more attributes or member functions to your class after <tt>commit</tt>).
+You can use this class in lua like this:</p>
 
 <pre>
 -- instantiate the class
@@ -370,8 +373,9 @@ int plus(A* o, int v) { return o-&gt;a + v; }
 member function on <tt>A</tt> like this:</p>
 
 <pre>
-class_&lt;A&gt;(L, "A")
+class_&lt;A&gt;("A")
 	.def("plus", &amp;plus)
+	.commit(L)
 	;
 </pre>
 
@@ -395,16 +399,18 @@ struct A
 <p>This class is registered like this:</p>
 
 <pre>
-class_&lt;A&gt;(L, "A")
+class_&lt;A&gt;("A")
 	.def_readwrite("a", &amp;A::a)
+	.commit(L)
 	;
 </pre>
 
 <p>Then it's both readable and writable. You can 
 also register attributes as read-only.</p>
 
-<pre>class_&lt;A&gt;(L, "A")
+<pre>class_&lt;A&gt;("A")
 	.def_readonly("a", &amp;A::a)
+	.commit(L)
 	;
 </pre>
 
@@ -426,8 +432,9 @@ private:
 <tt>a</tt> like this:</p>
 
 <pre>
-class_&lt;A&gt;(L, "A")
+class_&lt;A&gt;("A")
 	.property("a", &amp;A::get_a, &amp;A::set_a)
+	.commit(L)
 	;
 </pre>
 
@@ -444,13 +451,15 @@ be type safe, all enums are integers in lua, and all functions that takes an
 enum, will accept any integer. You register them like this:</p>
 
 <pre>
-class_&lt;A&gt;(L, "A")
+class_&lt;A&gt;("A")
 	.enum_("constants")
 	[
 		value("my_enum", 4),
 		value("my_2nd_enum", 7),
 		value("another_enum", 6)
-	];
+	]
+	.commit(L)
+	;
 </pre>
 
 <p>In lua they are reached like any data member, except 
@@ -481,8 +490,9 @@ struct vec
 <p>Is registered like this:</p>
 
 <pre>
-class_&lt;vec&gt;(L, "vec")
+class_&lt;vec&gt;("vec")
 	.def(self + int())
+	.commit(L)
 	;
 </pre>
 
@@ -494,8 +504,9 @@ takes a const reference to the class itself) you have to use <tt>const_self</tt>
 instead of <tt>self</tt>. Like this:</p>
 
 <pre>
-class_&lt;vec&gt;(L, "vec")
+class_&lt;vec&gt;("vec")
 	.def(const_self + int())
+	.commit(L)
 	;
 </pre>
 
@@ -537,16 +548,18 @@ struct vec
 wrapper like this:</p>
 
 <pre>
-class_&lt;vec&gt;(L, "vec")
+class_&lt;vec&gt;("vec")
 	.def(self + other&lt;std::string&gt;())
+	.commit(L)
 	;
 </pre>
 
 <p>To register an application operator:</p>
 
 <pre>
-class_&lt;vec&gt;(L, "vec")
+class_&lt;vec&gt;("vec")
 	.def( self(int()) )
+	.commit(L)
 	;
 </pre>
 
@@ -566,8 +579,9 @@ std::ostream&amp; operator&lt;&lt;(ostream&amp;, number&amp;);
 </pre>
 
 <pre>
-class_&lt;number&gt;()
+class_&lt;number&gt;("number")
 	.def(tostring(self))
+	.commit(L)
 	;
 </pre>
 
@@ -586,8 +600,12 @@ struct B: A{};
 <p>Would be registered like this:</p>
 
 <pre>
-class_&lt;A&gt;(L, "A");
-class_&lt;B, A&gt;(L, "B");
+class_&lt;A&gt;("A")
+	.commit(L)
+	;
+class_&lt;B, A&gt;("B")
+	.commit(L)
+	;
 </pre>
 
 <p>If you have multiple inheritance you can specify more 
@@ -595,7 +613,9 @@ than one base. If <tt>B</tt> would also derive from a class
 <tt>C</tt>, it would be registered like this:</p>
 
 <pre>
-class_&lt;B, bases&lt;A, C&gt; &gt;(L, "B");
+class_&lt;B, bases&lt;A, C&gt; &gt;("B")
+	.commit(L)
+	;
 </pre>
 
 <p>Note that you can omit <tt>bases&lt;..&gt;</tt> when using single inheritance.</p>
@@ -618,6 +638,42 @@ f(b) -- error, no function 'f' matches the arguments (B)
 </pre>
 
 <p>Because luabind doesn't know that a <tt>B*</tt> can be cast to an <tt>A*</tt>.</p>
+
+<h1><a name="scopes"></a>Scopes</h1>
+
+<p>If you don't want to register your classes or functions in the global scope (as global variables),
+you can use the <tt>luabind::namespace_</tt> class. It will enable you to register your classes and
+function into tables. Its use is pretty straightforward:</p>
+
+<pre>
+	
+namespace_(L, "my_library")
+[
+	class_&lt;A&gt;("A")
+		.def("method", &amp;A::method)
+		,
+	
+	def("f", &amp;f),
+
+	namespace_("inner_namespace")
+	[
+		function("g", &amp;g)
+	]
+];
+</pre>
+
+<p>A word of caution though, if you are in really bad need for performance, putting your functions
+in tables will increase the lookup time.</p>
+
+<p>Note here that you do not commit the classes explicitly, you separate your classes and functions
+with commas, you do not supply a <tt>lua_State*</tt> when you register functions and you can nest
+namespaces.</p>
+
+<p>The code above will create a table called <tt>my_library</tt> as a global variable, within
+this table it will register the class <tt>A</tt> and the function <tt>f</tt>. It will also
+create another table inside it, and register the function <tt>g</tt> in there.</p>
+
+<p>TODO: finish this section</p>
 
 <h1><a name="object"></a>Value wrapper</h1>
 
@@ -968,19 +1024,6 @@ call <tt>super</tt> first in the constructor.</p>
 base class' member functions. You can find all member functions in the base class, 
 but you will have to give the this-pointer (<tt>self</tt>) as first argument.</p>
 
-<p>If an object needs to perform actions when it's collected we provide
-a <tt>__finalize</tt> function that can be overridden in lua-classes.
-The __finalize functions will be called on all classes in the inheritance
-chain, starting with the most derived type.</p>
-
-<pre>
-...
-
-function lua_testclass:__finalize()
-	-- called when the an object is collected
-end
-</pre>
-
 <h2><a name="class_lua_derive"></a>deriving in lua</h2>
 
 <p>It is also possible to derive lua classes from C++ 
@@ -1014,9 +1057,10 @@ struct baseclass_wrapper: baseclass
 };
 </pre>
 <pre>
-class_&lt;baseclass, baseclass_wrapper&gt;(L, "baseclass")
+class_&lt;baseclass, baseclass_wrapper&gt;("baseclass")
 	.def(constructor&lt;const char*&gt;())
 	.def("f", &amp;baseclass_wrapper::f_static)
+	.commit(L)
 	;
 </pre>
 
@@ -1064,7 +1108,7 @@ you can overload are:</p>
 library's <tt>tostring()</tt> function. There's one strange behavior regarding binary operators. You are not
 guaranteed that the self pointer you get actually refers to an instance of your class. This is because
 lua doesn't distinguish the two cases where you get the other operand as left hand value or right hand value.
-Consider the following example:</p>
+Consider the following examples:</p>
 
 <pre>
 class 'my_class'
@@ -1110,6 +1154,21 @@ self reference always refer to the actual class instance.</p>
 side type will be called. If the other operand is a C++ class with the same operator overloaded, it
 will be prioritized over the lua class' operator. If none of the C++ overloads matches, the lua
 class' operator will be called.</p>
+
+<h2><a name="class_lua_finalizers"></a>finalizers</h2>
+
+<p>If an object needs to perform actions when it's collected we provide
+a <tt>__finalize</tt> function that can be overridden in lua-classes.
+The __finalize functions will be called on all classes in the inheritance
+chain, starting with the most derived type.</p>
+
+<pre>
+...
+
+function lua_testclass:__finalize()
+	-- called when the an object is collected
+end
+</pre>
 
 <h1><a name="exceptions"></a>Exceptions</h1>
 <p>If any of the functions you register throws an exception when called, that exception will be caught
@@ -1282,9 +1341,10 @@ struct A
 <p>When wrapping this class, we would do something like:</p>
 
 <pre>
-class_&lt;A&gt;(L, "A")
+class_&lt;A&gt;("A")
 	.def(constructor&lt;&gt;())
 	.def("get_member", &amp;A::get_member)
+	.commit(L)
 	;
 </pre>
 
@@ -1303,9 +1363,10 @@ collectgarbage(0)  -- since there are no references left to a, it is removed
 object to another, like this:</p>
 
 <pre>
-class_&lt;A&gt;(L, "A")
+class_&lt;A&gt;("A")
 	.def(constructor&lt;&gt;())
 	.def("get_member", &amp;A::get_member, dependency(result, self))
+	.commit(L)
 	;
 </pre>
 
@@ -1344,9 +1405,10 @@ isn't a problem, but could be a bit inefficient. When using the return_reference
 luabind that the return-value is already on the lua stack.</p>
 
 <pre>
-class_&lt;A&gt;(L, "A")
+class_&lt;A&gt;("A")
 	.def(constructor&lt;&gt;())
 	.def("set", &amp;A::set, return_reference_to(self))
+	.commit(L)
 	;
 </pre>
 
@@ -1393,7 +1455,9 @@ void f(A** obj) { *obj = new A(); }
 <p>Here we need to make sure luabind takes control over object returned, for this we use the <tt>adopt</tt> policy</p>
 
 <pre>
-class_&lt;A&gt;(L, "A");
+class_&lt;A&gt;("A")
+	.commit(L)
+	;
 
 function(L, "f", &amp;f, out_value(_1, adopt(_2)));
 </pre>
@@ -1448,8 +1512,9 @@ struct simple
 	std::string name;
 };
 
-class_&lt;simple&gt;(L, "simple")
+class_&lt;simple&gt;("simple")
 	.def("set_name", &amp;simple::set_name, discard_result)
+	.commit(L)
 	;
 </pre>
 		
@@ -1467,8 +1532,9 @@ struct A
 	std::vector&lt;std::string&gt; names;
 };
 
-class_&lt;A&gt;(L, "A")
+class_&lt;A&gt;("A")
 	.def_readwrite("names", &amp;A::names, return_stl_iterator)
+	.commit(L)
 	;
 </pre>
 
@@ -1752,9 +1818,10 @@ This namespace contains non-public classes and are not supposed to be used direc
 	lua counterpart to C++ templates. For example, you can register an explicit instantiation of
 	<tt>std::vector</tt> like this:</p>
 	<pre>
-	class_&lt;std::vector&lt;int&gt;&nbsp;&gt;(L, "vector")
+	class_&lt;std::vector&lt;int&gt;&nbsp;&gt;("vector")
 		.def(constructor&lt;int&gt;)
 		.def("push_back", &amp;std::vector&lt;int&gt;::push_back)
+		.commit(L)
 		;
 	</pre>
 	<p>Note that the space between the two &gt; is required by C++.</p>
