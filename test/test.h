@@ -41,5 +41,6 @@ bool test_lua_classes();
 bool test_free_functions();
 bool test_object();
 bool test_held_type();
+bool test_iterator();
 
 #endif

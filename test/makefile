@@ -3,6 +3,7 @@ CXXFLAGS = -Wall -ftemplate-depth-50 -g
 
 sources =\
 	main.cpp\
+	test_iterator.cpp\
 	test_lua_classes.cpp\
 	test_typetraits.cpp\
 	test_construction.cpp\
