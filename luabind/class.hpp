@@ -1040,6 +1040,9 @@ namespace luabind
 				return self;
 			}
 
+		private:
+			template<class U> void operator,(U const&) const;
+			
 			T& self;
 		};
 
