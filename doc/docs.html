@@ -128,6 +128,7 @@ us know about your project.</p>
 <li>Visual Studio 7.1</li>
 <li>Visual Studio 7.0</li>
 <li>Visual Studio 6.0 (sp 5)</li>
+<li>Intel C++ 6.0 (Windows)</li>
 <li>GCC 2.95.3 (cygwin)</li>
 <li>GCC 3.2 (Debian-x86)</li>
 <li>GCC 3.3.1 (cygwin)</li>
@@ -138,7 +139,6 @@ us know about your project.</p>
 <ul class="simple">
 <li>GCC 2.95.2 (SunOS 5.8)</li>
 <li>GCC 3.0.4 (Debian-x86)</li>
-<li>Intel C++ 6.0 (Windows)</li>
 </ul>
 </blockquote>
 <p>Strange behaviors:</p>
@@ -146,11 +146,11 @@ us know about your project.</p>
 <ul class="simple">
 <li>GCC 2.95.4 (Debian-x86) luabind builds, but not testsuit</li>
 <li>GCC 3.1 (SunOS 5.8) luabind builds but testsuit gives segmentation fault</li>
+<li>Metrowerks 8.3 (Windows)
+compiles but fails the const-test. This means that const member
+functions are treated as non-const member functions.</li>
 </ul>
 </blockquote>
-<p>Metrowerks 8.3 (Windows) compiles but fails the const-test. This 
-means that const member functions are treated as non-const member 
-functions.</p>
 <p>If you have tried luabind with a compiler not listed here, let us know 
 your result with it.</p>
 </div>

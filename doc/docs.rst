@@ -67,6 +67,7 @@ Luabind has been tested to work on the following compilers:
  - Visual Studio 7.1 
  - Visual Studio 7.0 
  - Visual Studio 6.0 (sp 5) 
+ - Intel C++ 6.0 (Windows) 
  - GCC 2.95.3 (cygwin) 
  - GCC 3.2 (Debian-x86) 
  - GCC 3.3.1 (cygwin) 
@@ -75,16 +76,14 @@ It has been confirmed not to work with:
 
  - GCC 2.95.2 (SunOS 5.8)
  - GCC 3.0.4 (Debian-x86) 
- - Intel C++ 6.0 (Windows) 
 
 Strange behaviors:
 
  - GCC 2.95.4 (Debian-x86) luabind builds, but not testsuit
  - GCC 3.1 (SunOS 5.8) luabind builds but testsuit gives segmentation fault
-
-Metrowerks 8.3 (Windows) compiles but fails the const-test. This 
-means that const member functions are treated as non-const member 
-functions.
+ - Metrowerks 8.3 (Windows)
+   compiles but fails the const-test. This means that const member
+   functions are treated as non-const member functions.
 
 If you have tried luabind with a compiler not listed here, let us know 
 your result with it.
