@@ -35,7 +35,7 @@ namespace luabind { namespace detail {
 	struct copy_pointer_to
 	{
 		template<class T>
-		static void apply(lua_State* L, const T* ptr)
+		void apply(lua_State* L, const T* ptr)
 		{
 			if (ptr == 0) 
 			{
@@ -62,7 +62,7 @@ namespace luabind { namespace detail {
 	struct copy_reference_to
 	{
 		template<class T>
-		static void apply(lua_State* L, const T& ref)
+		void apply(lua_State* L, const T& ref)
 		{
 			class_registry* registry = class_registry::get_registry(L);
 
@@ -111,4 +111,3 @@ namespace luabind
 }
 
 #endif // LUABIND_COPY_POLICY_HPP_INCLUDED
-

@@ -80,8 +80,9 @@ namespace luabind { namespace detail
 
 
 #define LUABIND_DECL(z, n, text) typedef typename find_conversion_policy<n+1,Policies>::type BOOST_PP_CAT(converter_policy,n); \
+	typedef typename BOOST_PP_CAT(converter_policy,n)::template generate_converter<A##n, lua_to_cpp>::type BOOST_PP_CAT(c_t,n); \
 	typename BOOST_PP_CAT(converter_policy,n)::template generate_converter<A##n, lua_to_cpp>::type BOOST_PP_CAT(c,n);
-#define LUABIND_PARAM(z,n,text) BOOST_PP_CAT(c,n).apply(L, LUABIND_DECORATE_TYPE(A##n), n + 2)
+#define LUABIND_PARAM(z,n,text) BOOST_PP_CAT(c,n).BOOST_PP_CAT(c_t,n)::apply(L, LUABIND_DECORATE_TYPE(A##n), n + 2)
 
 	template<>
 	struct constructor_helper<BOOST_PP_ITERATION()>

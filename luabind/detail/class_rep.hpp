@@ -264,7 +264,7 @@ namespace luabind { namespace detail
 			for (int i = 0; i < 2; ++i)
 				if (operand[i]) overloads[i] = &operand[i]->crep()->m_operators[id]; else overloads[i] = 0;
 
-			int num_overloads[2];
+			std::size_t num_overloads[2];
 			for (int i = 0; i < 2; ++i)
 				if (overloads[i]) num_overloads[i] = overloads[i]->size(); else num_overloads[i] = 0;
 

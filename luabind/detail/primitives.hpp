@@ -62,7 +62,7 @@ namespace luabind { namespace detail
 
 	inline char* dup_string(const char* s)
 	{
-		int l = std::strlen(s);
+		std::size_t l = std::strlen(s);
 		char* c = new char[l+1];
 		std::copy(s, s+l+1, c);
 		return c;

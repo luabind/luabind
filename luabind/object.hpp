@@ -149,8 +149,15 @@ namespace luabind
 			~proxy_caller();
 			operator luabind::object();
 
+#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
+	#define SEMICOLON
+#else
+	#define SEMICOLON ;
+#endif
+
 			template<class Policies>
-			luabind::object operator[](const Policies& p)
+			luabind::object operator[](const Policies& p) SEMICOLON
+#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
 			{
 				m_called = true;
 				lua_State* L = m_obj->lua_state();
@@ -167,7 +174,10 @@ namespace luabind
 				int ref = detail::ref(L);
 				return luabind::object(m_obj->lua_state(), ref, true/*luabind::object::reference()*/);
 			}
+#endif
 
+
+#undef SEMICOLON
 		private:
 
 			luabind::object* m_obj;
@@ -206,7 +216,7 @@ namespace luabind
 		friend class luabind::object;
 		friend class luabind::detail::proxy_array_object;
 		friend class luabind::detail::proxy_raw_object;
-		template<class T> friend T object_cast(const proxy_object& obj);
+//		template<class T> friend T object_cast(const proxy_object& obj);
 		public:
 
 			template<class T>
@@ -251,7 +261,7 @@ namespace luabind
 		friend class luabind::object;
 		friend class luabind::detail::proxy_array_object;
 		friend class luabind::detail::proxy_object;
-		template<class T> friend T object_cast(const proxy_object& obj);
+//		template<class T> friend T luabind::object_cast(const proxy_object& obj);
 		public:
 
 			template<class T>
@@ -296,7 +306,7 @@ namespace luabind
 		friend class luabind::object;
 		friend class luabind::detail::proxy_object;
 		friend class luabind::detail::proxy_raw_object;
-		template<class T> friend T object_cast(const proxy_array_object& obj);
+//		template<class T> friend T object_cast(const proxy_array_object& obj);
 		public:
 
 			template<class T>
@@ -984,6 +994,28 @@ private:
 
 	namespace detail
 	{
+
+#if !defined(BOOST_MSVC) || (defined(BOOST_MSVC) && (BOOST_MSVC > 1300))
+		template<class Tuple>
+		template<class Policies>
+		luabind::object proxy_caller<Tuple>::operator[](const Policies& p)
+		{
+			m_called = true;
+			lua_State* L = m_obj->lua_state();
+			m_obj->pushvalue();
+			detail::push_args_from_tuple<1>::apply(L, m_args, p);
+			if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
+			{ 
+#ifndef LUABIND_NO_EXCEPTIONS
+				throw error();
+#else
+				assert(0);
+#endif
+			}
+			int ref = detail::ref(L);
+			return luabind::object(m_obj->lua_state(), ref, true/*luabind::object::reference()*/);
+		}
+#endif
 
 		// *************************************
 		// PROXY OBJECT

@@ -49,6 +49,12 @@ namespace luabind { namespace detail {
 
 	template<int N> struct execute_selector;
 
+	template<class T>
+	struct policies_with_storage : T
+	{
+		char storage;
+	};
+
 #if defined (BOOST_MSVC) && (BOOST_MSVC <= 1200)
 	#define LUABIND_MSVC6_NO_TYPENAME
 #else
@@ -395,10 +401,10 @@ namespace luabind
 
 				BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
 
-				return convert_result(L, LUABIND_CONVERT_PARAMETER
+				return convert_result(L, conv_self.apply(L, LUABIND_DECORATE_TYPE(Self&), 1)
 					(
 						BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
-					), static_cast<const Policies*>(0));
+					), static_cast<Policies*>(0));
 			}
 		};
 	};
