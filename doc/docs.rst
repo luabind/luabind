@@ -2008,8 +2008,8 @@ should not be removed or overwritten.
 In the global table, a variable called ``super`` is used every time a
 constructor in a lua-class is called. This is to make it easy for that
 constructor to call its base class' constructor. So, if you have a global
-variable named super it may very well be overwritten. This is probably not the
-best solution, and this restriction may very well be removed in the future.
+variable named super it may be overwritten. This is probably not the best
+solution, and this restriction may be removed in the future.
 
 Luabind uses two upvalues for functions that it registers. The first is a
 userdata containing a list of overloads for the function, the other is a light
