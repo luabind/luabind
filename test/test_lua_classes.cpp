@@ -39,8 +39,8 @@ struct base : counted_type<base>
 
 struct base_wrap : base
 {
-    object self;
-    base_wrap(object const& self_): self(self_) {}
+    weak_ref self;
+    base_wrap(weak_ref self_): self(self_) {}
 
     static std::string f_static(base* obj)
     {

@@ -25,7 +25,7 @@ with lua 4.
 
 It is implemented utilizing template meta programming. That means that you
 don't need an extra preprocess pass to compile your project (it is done by the
-compiler). It also means you don't (usually) have to know the exact signatureof
+compiler). It also means you don't (usually) have to know the exact signature of
 each function you register, since the library will generate code depending on
 the compile-time type of the function (which includes the signature). The main
 drawback of this approach is that the compilation time will increase for the
@@ -1893,14 +1893,6 @@ LUABIND_NO_ERROR_CHECKING
 
     If a functions throws an exception it will be caught by luabind and 
     propagated with ``lua_error()``.
-
-LUABIND_DONT_COPY_STRINGS
-    If this macro is defined, luabind will expect that all strings given to 
-    the ``def()`` functions are static constant strings (given as string 
-    constants for example). luabind will not copy the strings if you enable 
-    this setting, but just keep the char pointers. 
-    This may be especially useful for embedded systems or consoles where 
-    heap allocations should be minimized.
 
 LUABIND_NO_EXCEPTIONS
     This define will disable all usage of try, catch and throw in luabind. 

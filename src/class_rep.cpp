@@ -1070,11 +1070,16 @@ int luabind::detail::class_rep::super_callback(lua_State* L)
 			else
 			{
 				// get reference to lua object
-				lua_pushvalue(L, lua_upvalueindex(2));
+/*				lua_pushvalue(L, lua_upvalueindex(2));
 				detail::lua_reference ref;
 				ref.set(L);
+				void* instance = rep->overloads[match_index].construct_wrapped(L, ref);*/
+
+				lua_pushvalue(L, lua_upvalueindex(2));
+				weak_ref ref(L, -1);
+				lua_pop(L, 1);
 				void* instance = rep->overloads[match_index].construct_wrapped(L, ref);
-				
+
 				if (crep->has_holder())
 				{
 					crep->m_construct_holder(storage_ptr, instance);			

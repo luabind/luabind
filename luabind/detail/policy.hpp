@@ -52,6 +52,7 @@
 
 #include <luabind/detail/decorate_type.hpp>
 #include <luabind/object.hpp>
+#include <luabind/weak_ref.hpp>
 //#include <luabind/detail/make_instance.hpp>
 //#include <luabind/pointer_holder.hpp>
 
@@ -152,6 +153,7 @@ namespace luabind
 
 	 template<class T> class functor;
 	 class object;
+	 class weak_ref;
 }
 
 namespace luabind { namespace detail
@@ -271,6 +273,10 @@ namespace luabind { namespace detail
 	template<> struct is_primitive<const luabind::object>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<const luabind::object&>: boost::mpl::bool_<true> {};
 
+	template<> struct is_primitive<luabind::weak_ref>: boost::mpl::bool_<true> {};
+	template<> struct is_primitive<const luabind::weak_ref>: boost::mpl::bool_<true> {};
+	template<> struct is_primitive<const luabind::weak_ref&>: boost::mpl::bool_<true> {};
+	
 	template<> struct is_primitive<int>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<char>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<short>: boost::mpl::bool_<true> {};
@@ -417,6 +423,14 @@ namespace luabind { namespace detail
 
 		PRIMITIVE_MATCHER(luabind::object) { return std::numeric_limits<int>::max() - 1; }
 
+		PRIMITIVE_CONVERTER(luabind::weak_ref)
+		{
+			LUABIND_CHECK_STACK(L);
+			return luabind::weak_ref(L, index);
+		}
+
+		PRIMITIVE_MATCHER(luabind::weak_ref) { return std::numeric_limits<int>::max() - 1; }
+		
 		const char* apply(lua_State* L, detail::by_const_pointer<char>, int index) { return static_cast<const char*>(lua_tostring(L, index)); }
 		const char* apply(lua_State* L, detail::by_const_pointer<const char>, int index) { return static_cast<const char*>(lua_tostring(L, index)); }
 		static int match(lua_State* L, by_const_pointer<char>, int index) { if (lua_type(L, index) == LUA_TSTRING) return 0; else return -1;}

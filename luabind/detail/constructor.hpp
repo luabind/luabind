@@ -37,6 +37,7 @@
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/signature_match.hpp>
 #include <luabind/detail/call_member.hpp>
+#include <luabind/weak_ref.hpp>
 
 namespace luabind { namespace detail
 {
@@ -63,7 +64,7 @@ namespace luabind { namespace detail
 	template<class T, class Policies, class ConstructorSig>
 	struct construct_wrapped_class
 	{
-		inline static void* apply(lua_State* L, lua_reference const& ref)
+		inline static void* apply(lua_State* L, weak_ref const& ref)
 		{
 			typedef wrapped_constructor_helper<ConstructorSig::arity> ConstrHelp;
 			typedef typename ConstrHelp::apply<T> Caller;
@@ -108,10 +109,10 @@ namespace luabind { namespace detail
 		struct apply
 		{
 			template<class Policies, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
-			static T* call(lua_State* L, lua_reference const& ref, const constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY,A)>*, const Policies*)
+			static T* call(lua_State* L, weak_ref const& ref, const constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY,A)>*, const Policies*)
 			{
 				BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
-					return new T(luabind::object(L, ref, true/*luabind::object::reference()*/) BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
+					return new T(ref BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
 			}
 		};
 	};
