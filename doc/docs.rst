@@ -1305,7 +1305,7 @@ to allow luabind to use both dynamic and static dispatch when calling the functi
 
 .. Important::
     It is extremely important that the signatures of the static (default) function
-    is identical to the virtual function. The fact that onw of them is a free
+    is identical to the virtual function. The fact that one of them is a free
     function and the other a member function doesn't matter, but the parameters
     as seen from lua must match. It would not have worked if the static function
     took a ``base_wrapper*`` as its first argument, since the virtual function
