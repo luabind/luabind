@@ -35,18 +35,16 @@ bool test_construction()
 
 	open(L);
 
-	class_<A>("A")
+	class_<A>(L, "A")
 		.def("f", &f)
 		.def(constructor<int>())
 		.def(constructor<const A&>())
 		.def(constructor<>())
-		.commit(L)
 		;
 
-	class_<B>("B")
+	class_<B>(L, "B")
 		.def(constructor<int>())
 		.def(constructor<>())
-		.commit(L)
 		;
 
 	if (dostring(L, "a = A(4)")) return false;
@@ -65,11 +63,11 @@ bool test_construction()
 
 //	if (dostring(L, "a:f(a)")) return false;
 
+	if (top != lua_gettop(L)) return false;
+
 	c.release();
 	if (feedback != -1) return false;
 	if (feedback2 != -1) return false;
-
-	if (top != lua_gettop(L)) return false;
 
 	return true;
 }

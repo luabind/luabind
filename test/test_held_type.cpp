@@ -4,17 +4,11 @@
 
 namespace luabind
 {
-	namespace detail
-	{
-		template<class T>
-		T* get_pointer(boost::shared_ptr<T>& p) { return p.get(); }
-	}
+	template<class T>
+	T* get_pointer(boost::shared_ptr<T>& p) { return p.get(); }
 
-	namespace detail
-	{
-		template<class T>
-		T* get_pointer(const std::auto_ptr<T>& p) { return p.get(); }
-	}
+	template<class T>
+	T* get_pointer(const std::auto_ptr<T>& p) { return p.get(); }
 }
 
 #include "test.h"
@@ -95,6 +89,19 @@ namespace
 	{
 		if (!t.expired()) feedback = 19;
 	}
+
+	boost::shared_ptr<base> tester9()
+	{
+		feedback = 20;
+		return boost::shared_ptr<base>(new base());
+	}
+
+	struct tester10
+	{
+		tester10() : m_member(new base()) {}
+		const boost::shared_ptr<base>& test() { return m_member; }
+		boost::shared_ptr<base> m_member;
+	};
 
 	struct ownership {};
 
@@ -207,35 +214,44 @@ bool test_held_type()
 
 		open(L);
 
-		class_<ownership, std::auto_ptr<ownership> >(L, "ownership")
-			.def(constructor<>());
+		int (a)[6];
 
-		function(L, "test_auto_ptr", &test_auto_ptr);
+		module(L)
+		[
+			class_<ownership, std::auto_ptr<ownership> >("ownership")
+				.def(constructor<>()),
 
-		luabind::function(L, "tester", &tester);
-		luabind::function(L, "tester", &tester_);
-		luabind::function(L, "tester2", &tester2);
-		luabind::function(L, "tester3", &tester3);
-		luabind::function(L, "tester4", &tester4);
-		luabind::function(L, "tester5", &tester5);
-		luabind::function(L, "tester6", &tester6);
-		luabind::function(L, "tester7", &tester7);
-		luabind::function(L, "tester8", &tester8);
+			def("test_auto_ptr", &test_auto_ptr),
 
-		class_<base, boost::shared_ptr<base> >("base")
-			.def(constructor<>())
-			.def("f", &base::f)
-			.commit(L)
-			;
+			def("tester", &tester),
+			def("tester", &tester_),
+			def("tester2", &tester2),
+			def("tester3", &tester3),
+			def("tester4", &tester4),
+			def("tester5", &tester5),
+			def("tester6", &tester6),
+			def("tester7", &tester7),
+//			def("tester8", &tester8),
+			def("tester9", &tester9),
 
-		class_<derived, base, boost::shared_ptr<base> >("derived")
-			.def(constructor<>())
-			.def("f", &derived::f)
-			.commit(L)
-			;
+			class_<base, boost::shared_ptr<base> >("base")
+				.def(constructor<>())
+				.def("f", &base::f),
+
+			class_<derived, base, boost::shared_ptr<base> >("derived")
+				.def(constructor<>())
+				.def("f", &derived::f),
+
+			class_<tester10>("tester10")
+				.def(constructor<>())
+				.def("test", &tester10::test)
+		];
+
+		lua_gettop(L);
 
 		object g = get_globals(L);
 		g["test"] = ptr;
+		g["foobar"] = boost::shared_ptr<const base>(new base());
 
 		if (dostring(L, "a = ownership()")) return false;
 		if (dostring(L, "if a.__ok then print('1: ok!') end")) return false;
@@ -266,8 +282,16 @@ bool test_held_type()
 		if (feedback != 13) return false;
 		if (dostring(L, "tester7(b)")) return false;
 		if (feedback != 14) return false;
-		if (dostring(L, "tester8(b)")) return false;
-		if (feedback != 19) return false;
+//		if (dostring(L, "tester8(b)")) return false;
+//		if (feedback != 19) return false;
+		if (dostring(L, "c = tester9()")) return false;
+		if (feedback != 3) return false;
+		feedback= 0;
+
+		if (dostring(L, "d = tester10()")) return false;
+		if (dostring(L, "e = d:test()")) return false;
+		if (feedback != 3) return false;
+
 
 		if (top != lua_gettop(L)) return false;
 

@@ -90,7 +90,7 @@ bool test_operators()
 
 	if (feedback != 0) return false;
 
-	class_<operator_tester>("operator_tester")
+	class_<operator_tester>(L, "operator_tester")
 		.def(constructor<>())
 		.def(tostring(const_self))
 		.def(self + int())
@@ -99,18 +99,15 @@ bool test_operators()
 		.def(self())
 		.def(const_self(int()))
 		.def(self(int()))
-		.commit(L)
 		;
 
-	class_<operator_tester2>("operator_tester2")
+	class_<operator_tester2>(L, "operator_tester2")
 		.def(constructor<>())
 		.def(other<const operator_tester&>() + self)
-		.commit(L)
 		;
 
-	class_<operator_tester3, bases<operator_tester> >("operator_tester3")
+	class_<operator_tester3, bases<operator_tester> >(L, "operator_tester3")
 		.def(constructor<>())
-		.commit(L)
 		;
 
 	

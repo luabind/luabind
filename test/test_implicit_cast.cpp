@@ -25,23 +25,21 @@ bool test_implicit_cast()
 
 	open(L);
 
-	class_<A>("A")
+	class_<A>(L, "A")
 		.def(constructor<>())
-		.commit(L)
 		;
 
-	class_<B, A>("B")
+	class_<B, A>(L, "B")
 		.def(constructor<>())
-		.commit(L);
+		;
 
 	typedef void (test_implicit::*f1)(A*);
 	typedef void (test_implicit::*f2)(B*);
 
-	class_<test_implicit>("test")
+	class_<test_implicit>(L, "test")
 		.def(constructor<>())
 		.def("f", (f1) &test_implicit::f)
 		.def("f", (f2) &test_implicit::f)
-		.commit(L)
 		;
 
 	if (dostring(L, "a = A()")) return false;

@@ -91,9 +91,8 @@ bool test_object()
 		function(L, "test_fun", &test_fun);
 		function(L, "test_match", (void(*)(const luabind::object&))&test_match);
 		function(L, "test_match", (void(*)(int))&test_match);
-		class_<test_param>("test_param")
+		class_<test_param>(L, "test_param")
 			.def(constructor<>())
-			.commit(L)
 			;
 
 		dostring(L, "t = 2");

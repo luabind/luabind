@@ -30,12 +30,11 @@ bool test_const()
 	g1_t g1 = &A::g;
 	g2_t g2 = &A::g;
 
-	class_<A>("A")
+	class_<A>(L, "A")
 		.def(constructor<>())
 		.def("f", &A::f)
 		.def("g", /*(void(A::*)() const) &A::g*/ g1)
 		.def("g", /*(void(A::*)()) &A::g*/ g2)
-		.commit(L)
 		;
 
 	if (dostring(L, "a = A()")) return false;

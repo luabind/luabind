@@ -35,7 +35,7 @@ bool test_exceptions()
 
 		open(L);
 
-		class_<exception_thrower>("exception_thrower")
+		class_<exception_thrower>(L, "exception_thrower")
 			.def(constructor<>())
 			.def(constructor<int>())
 			.def(constructor<int, int>())
@@ -43,7 +43,6 @@ bool test_exceptions()
 			.def("f", &exception_thrower::f)
 			.def("g", &exception_thrower::g)
 			.def("h", &exception_thrower::h)
-			.commit(L)
 			;
 
 		if (dostring2(L, "a = exception_thrower(1)") != 1) throw 0;

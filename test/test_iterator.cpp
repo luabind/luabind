@@ -37,10 +37,9 @@ bool test_iterator()
 
 	open(L);
 
-	class_<IteratorTest>("A")
+	class_<IteratorTest>(L, "A")
 		.def(constructor<>())
 		.def_readonly("names", &IteratorTest::names, return_stl_iterator)
-		.commit(L)
 		;
 
 	dostring(L, "a = A()");

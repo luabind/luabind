@@ -73,12 +73,11 @@ bool test_attributes()
 	lua_pushcfunction(L, tester);
 	lua_settable(L, LUA_GLOBALSINDEX);
 
-	luabind::class_<internal>("internal")
+	luabind::class_<internal>(L, "internal")
 		.def_readonly("name", &internal::name_)
-		.commit(L)
 		;
 	
-	luabind::class_<property_test>("property")
+	luabind::class_<property_test>(L, "property")
 		.def(luabind::constructor<>())
 		.def("get", &property_test::get)
 		.def("get_name", &property_test::get_name)
@@ -88,7 +87,6 @@ bool test_attributes()
 //#ifndef BOOST_MSVC
 		.property("internal", &property_test::get_internal, luabind::dependency(luabind::result, luabind::self))
 //#endif
-		.commit(L)
 		;
 
 	if (dostring(L, "test = property()")) return false;

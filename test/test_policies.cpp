@@ -62,13 +62,12 @@ bool test_policies()
 
 		luabind::open(L);
 
-		class_<policies_test_class>("test")
+		class_<policies_test_class>(L, "test")
 			.def(constructor<>())
 			.def("f", &policies_test_class::f, adopt(_1))
 			.def("make", &policies_test_class::make, adopt(return_value))
 			.def("internal_ref", &policies_test_class::internal_ref, dependency(return_value, self))
 			.def("self_ref", &policies_test_class::self_ref, return_reference_to(self))
-			.commit(L)
 			;
 
 		function(L, "out_val", &out_val, pure_out_value(_1));

@@ -33,7 +33,7 @@ bool test_scope()
 
 		open(L);
 
-		namespace_(L, "test")
+		module(L, "test")
 		[
 			class_<test_class>("test_class")
 				.def(constructor<>())
