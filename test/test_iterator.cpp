@@ -13,9 +13,9 @@ namespace
 {
 	LUABIND_ANONYMOUS_FIX int feedback = 0;
 
-	struct A
+	struct IteratorTest
 	{
-		A()
+		IteratorTest()
 		{
 			names.push_back("first one");
 			names.push_back("foobar");
@@ -37,9 +37,9 @@ bool test_iterator()
 
 	open(L);
 
-	class_<A>(L, "A")
+	class_<IteratorTest>(L, "A")
 		.def(constructor<>())
-		.def_readonly("names", &A::names, return_stl_iterator)
+		.def_readonly("names", &IteratorTest::names, return_stl_iterator)
 		;
 
 	dostring(L, "a = A()");

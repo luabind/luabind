@@ -577,7 +577,7 @@ namespace luabind { namespace detail
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1;
 			int d;
-			return implicit_cast(obj->crep(), detail::type<T*>(), d);	
+			return implicit_cast(obj->crep(), detail::type<T>(), d);	
 		}
 
 		template<class T>

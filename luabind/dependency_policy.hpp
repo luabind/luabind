@@ -72,6 +72,11 @@ namespace luabind
 
 	template<class A, class B>
 	detail::policy_cons<detail::dependency_policy<detail::get_index_workaround<A>::value, detail::get_index_workaround<B>::value>, detail::null_type> 	dependency(A,B) { return detail::policy_cons<detail::dependency_policy<detail::get_index_workaround<A>::value, detail::get_index_workaround<B>::value>, detail::null_type>(); }
+
+	template<class A>
+	detail::policy_cons<detail::dependency_policy<0, detail::get_index_workaround<A>::value>, detail::null_type>
+	return_internal_reference(A)
+	{ return detail::policy_cons<detail::dependency_policy<0, detail::get_index_workaround<A>::value>, detail::null_type>(); }
 }
 
 #endif // LUABIND_DEPENDENCY_POLICY_HPP_INCLUDED
