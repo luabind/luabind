@@ -76,6 +76,7 @@
 	
 */
 
+#include <luabind/prefix.hpp>
 #include <luabind/config.hpp>
 
 #include <string>

@@ -1,4 +1,4 @@
-// Copyright (c) 2003 Daniel Wallin and Arvid Norberg
+// Copyright (c) 2004 Daniel Wallin
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,31 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
+#ifndef PREFIX_040218_HPP
+#define PREFIX_040218_HPP
 
-#ifndef LUABIND_CLASS_INFO_HPP_INCLUDED
-#define LUABIND_CLASS_INFO_HPP_INCLUDED
-
-#include <luabind/prefix.hpp>
-#include <luabind/lua_include.hpp>
-#include <luabind/luabind.hpp>
-
-namespace luabind
-{
-	struct class_info
-	{
-		class_info(lua_State* L)
-			: methods(L)
-		{}
-		
-		std::string name;
-		object methods;
-		object attributes;
-	};
-
-	class_info get_class_info(const object&);
-
-	void bind_class_info(lua_State*);
-}
-
+#ifdef LUABIND_PREFIX_INCLUDE
+#  include LUABIND_PREFIX_INCLUDE
 #endif
+
+#endif // PREFIX_040218_HPP
 

@@ -32,6 +32,7 @@
 #include <boost/type_traits/is_void.hpp>
 #include <boost/mpl/if.hpp>
 
+#include <luabind/prefix.hpp>
 #include <luabind/config.hpp>
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/convert_to_lua.hpp>

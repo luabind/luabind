@@ -26,6 +26,7 @@
 #ifndef LUABIND_FUNCTION_HPP_INCLUDED
 #define LUABIND_FUNCTION_HPP_INCLUDED
 
+#include <luabind/prefix.hpp>
 #include <luabind/config.hpp>
 
 #include <boost/config.hpp>

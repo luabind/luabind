@@ -23,6 +23,7 @@
 #ifndef NEW_SCOPE_040211_HPP
 #define NEW_SCOPE_040211_HPP
 
+#include <luabind/prefix.hpp>
 #include <luabind/lua_include.hpp>
 #include <memory>
 

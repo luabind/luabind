@@ -23,6 +23,7 @@
 #ifndef LUABIND_ERROR_HPP_INCLUDED
 #define LUABIND_ERROR_HPP_INCLUDED
 
+#include <luabind/prefix.hpp>
 #include <exception>
 #include <luabind/config.hpp>
 
