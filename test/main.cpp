@@ -115,6 +115,7 @@ void test_lua_classes();
 void test_attributes();
 void test_held_type();
 void test_separation();
+void test_scope();
 
 // --------------------------------------------------------------------------
 
@@ -136,6 +137,7 @@ test_suite* init_unit_test_suite( int argc, char* argv[] )
     test->add(BOOST_TEST_CASE(&test_attributes));
     test->add(BOOST_TEST_CASE(&test_held_type));
     test->add(BOOST_TEST_CASE(&test_separation));
+    test->add(BOOST_TEST_CASE(&test_scope));
     
     return test;
 }

@@ -130,7 +130,7 @@ namespace luabind { namespace detail
 
 
 	// based on luaL_ref
-	int ref(lua_State *L)
+	int LUABIND_API ref(lua_State *L)
 	{
 		int t = LUA_REGISTRYINDEX;
 
@@ -159,7 +159,7 @@ namespace luabind { namespace detail
 		return ref;
 	}
 
-	void unref(lua_State *L, int ref)
+	void LUABIND_API unref(lua_State *L, int ref)
 	{
 		int t = LUA_REGISTRYINDEX;
 		if (ref >= 0) {

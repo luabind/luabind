@@ -33,7 +33,11 @@
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/integral_c.hpp>
 #include <boost/mpl/equal_to.hpp>
+#include <boost/mpl/apply_if.hpp>
+#include <boost/mpl/or.hpp>
 #include <boost/type_traits/add_reference.hpp>
+#include <boost/type_traits/is_pointer.hpp>
+#include <boost/type_traits/is_base_and_derived.hpp>
 #include <boost/limits.hpp>
 
 #include <luabind/detail/class_registry.hpp>
