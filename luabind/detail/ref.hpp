@@ -80,3 +80,4 @@ namespace luabind { namespace detail
 }}
 
 #endif // LUABIND_REF_HPP_INCLUDED
+

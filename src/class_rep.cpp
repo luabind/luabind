@@ -49,11 +49,11 @@ using namespace luabind::detail;
 
 
 luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO t, 
-       		         const char* name, 
-			            lua_State* L, 
-			            void(*destructor)(void*), 
-			            LUABIND_TYPE_INFO held_t, 
-			            void*(*extractor)(void*))
+       				const char* name, 
+			        lua_State* L, 
+			        void(*destructor)(void*), 
+			        LUABIND_TYPE_INFO held_t, 
+			        void*(*extractor)(void*))
 	: m_type(t)
 	, m_held_type(held_t)
 	, m_extract_underlying_fun(extractor)
@@ -74,13 +74,19 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO t,
 }
 
 luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
-	: m_type(LUABIND_TYPEID(int))
+	: m_type(LUABIND_INVALID_TYPE_INFO)
 	, m_held_type(0)
 	, m_extract_underlying_fun(0)
-	, m_name(name)
 	, m_class_type(lua_class)
 {
 	// TODO: don't we need to copy the name?
+	// Since this is a lua-class, I think we have to copy it.
+#ifndef LUABIND_DONT_COPY_STRINGS
+	m_strings.push_back(detail::dup_string(name));
+	m_name = m_strings.back();
+#else
+	m_name = name;
+#endif
 	lua_newtable(L);
 	m_table_ref = detail::ref(L);
 
@@ -221,8 +227,10 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 	for (int i = 0; i < 2; ++i)
 		operand[i] = detail::is_class_object(L, i + 1);
 
+	// we cannot compare the types here, we have to compare the pointers of the class_reps
+	// since all lua-classes have the same type (LUABIND_INVALID_TYPE_INFO)
 	if (operand[0] && operand[1])
-		if (LUABIND_TYPE_INFO_EQUAL(operand[0]->crep()->type(), operand[1]->crep()->type())) operand[1] = 0;
+		if (operand[0]->crep() == operand[1]->crep()) operand[1] = 0;
 
 	std::vector<operator_callback>* overloads[2];
 	for (int i = 0; i < 2; ++i)
@@ -232,6 +240,20 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 	for (int i = 0; i < 2; ++i)
 		if (overloads[i]) num_overloads[i] = overloads[i]->size(); else num_overloads[i] = 0;
 
+	for (int i = 0; i < 2; ++i)
+		if (operand[i] && operand[i]->crep()->get_class_type() == class_rep::lua_class)
+		{
+			// if this is a lua class we have to
+			// look in its table to see if there's
+			// any overload of this operator
+			detail::getref(L, operand[i]->crep()->table_ref());
+			lua_pushstring(L, get_operator_name(id));
+			lua_rawget(L, -2);
+			// if we have tha operator, set num_overloads to 1
+			if (lua_isfunction(L, -1)) num_overloads[i] = 1;
+			lua_pop(L, 2);
+		}
+		
 	bool ambiguous = false;
 	int match_index = -1;
 	int min_match = std::numeric_limits<int>::max();
@@ -254,22 +276,42 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 #endif
 
 		int num_params = lua_gettop(L);
-		if (overloads[0])
-		{
-			if (find_best_match(L, &overloads[0]->front(), overloads[0]->size(), sizeof(operator_callback), ambiguous, min_match, match_index, num_params))
-				operand_id = 0;
-		}
 
 		// have look at the right operand.
 		// if the right operand is a class and
 		// not the same class as this, we have to
 		// try to match it's operators too	
-
-		if (overloads[1])
+		for (int i = 0; i < 2; ++i)
 		{
-			if(find_best_match(L, &overloads[1]->front(), overloads[1]->size(), sizeof(operator_callback), ambiguous, min_match, match_index, num_params))
-				operand_id = 1;
+			if (num_overloads[i])
+			{
+				if (operand[i]->crep()->get_class_type() == class_rep::lua_class)
+				{
+					// if this is a lua class
+					// and num_overloads is > 0
+					// it means that it has implemented
+					// this operator. Set match_index to
+					// 0 to signal that this operand has
+					// an overload, but leave the min_match
+					// at int-max to mark it as a last resort
+					operand_id = i;
+					if (match_index == -1) match_index = 0;
+				}
+				else if (find_best_match(
+					L
+					, &overloads[i]->front()
+					, overloads[i]->size()
+					, sizeof(operator_callback)
+					, ambiguous
+					, min_match
+					, match_index
+					, num_params))
+				{
+					operand_id = i;
+				}
+			}
 		}
+
 
 #ifdef LUABIND_NO_ERROR_CHECKING
 
@@ -288,12 +330,26 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 			msg += stack_content_by_name(L, 1);
 			msg += ")\ncandidates are:\n";
 
-			if (overloads[0])
-				msg += get_overload_signatures(L, overloads[0]->begin(), overloads[0]->end(), get_operator_symbol(id));
+			for (int i = 0; i < 2; ++i)
+			{
+				if (overloads[i])
+				{
+					msg += get_overload_signatures(
+							L
+							, overloads[i]->begin()
+							, overloads[i]->end()
+							, get_operator_symbol(id));
+				}
+				else
+				{
+					// if num_overloads is > 0 it would mean that this is
+					// a lua class with this operator overloaded. And if
+					// that's the case, it should always match (and if an
+					// operator matches, we never come here).
+					assert(num_overloads[i] == 0 && "internal error");
+				}
+			}
 
-			if (overloads[1])
-				msg += get_overload_signatures(L, overloads[1]->begin(), overloads[1]->end(), get_operator_symbol(id));
-					
 			lua_pushstring(L, msg.c_str());
 		}
 		lua_error(L);
@@ -325,7 +381,20 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 
 #endif
 
-	return (*overloads[operand_id])[match_index].call(L);
+	if (operand[operand_id]->crep()->get_class_type() == class_rep::lua_class)
+	{
+		detail::getref(L, operand[operand_id]->crep()->table_ref());
+		lua_pushstring(L, get_operator_name(id));
+		lua_rawget(L, -2);
+		lua_insert(L, -4); // move the function to the bottom
+		lua_pop(L, 1); // remove the table
+		lua_call(L, 2, 1);
+		return 1;
+	}
+	else
+	{
+		return (*overloads[operand_id])[match_index].call(L);
+	}
 }
 
 // this is called as metamethod __call on the class_rep.

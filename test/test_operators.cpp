@@ -147,6 +147,37 @@ bool test_operators()
 	if (dostring(L, "a = tostring(test)")) return false;
 	if (feedback != 63) return false;
 
+	const char* prog =
+		"class 'my_class'\n"
+		"function my_class:__add(lhs)\n"
+		"	return my_class(self.val + lhs.val)\n"
+		"end\n"
+		"function my_class:__init(a)\n"
+		"	self.val = a\n"
+		"end\n"
+		"function my_class:__sub(v)\n"
+		"	if (type(self) == 'number') then\n"
+		"		return my_class(self - v.val)\n"
+		"	elseif (type(v) == 'number') then\n"
+		"		return my_class(self.val - v)\n"
+		"	else\n"
+		"		return my_class(self.val - v.val)\n"
+		"	end\n"
+		"end\n"
+		"a = my_class(3)\n"
+		"b = my_class(7)\n"
+		"c = a + b\n"
+		"d = a - 2\n"
+		"d = 10 - d\n"
+		"d = d - b\n";
+
+	if (dostring(L, prog)) return false;
+	object var_c = get_globals(L)["c"];
+	if (object_cast<int>(var_c["val"]) != 10) return false;
+
+	object var_d = get_globals(L)["d"];
+	if (object_cast<int>(var_d["val"]) != 2) return false;
+	
 	if (top != lua_gettop(L)) return false;
 
 	return true;

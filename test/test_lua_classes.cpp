@@ -1,6 +1,7 @@
 #include <boost/tokenizer.hpp>
 
 #include "test.h"
+#include <iostream>
 
 namespace
 {
@@ -118,6 +119,8 @@ bool test_lua_classes()
 	if (top != lua_gettop(L)) return false;
 
 	dostring(L, "a = derived()");
+
+
 	}
 
 	if (feedback != -1) return false;

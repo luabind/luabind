@@ -42,6 +42,7 @@ Please report any grammatical corrections/spelling corrections.</p>
 	<li><a href="#class_lua" >Defining classes in lua</a> 
 	<ul>
 		<li><a href="#class_lua_derive">deriving in lua</a>
+		<li><a href="#class_lua_operators">overloading operators</a>
 	</ul>
 	<li><a href="#exceptions">Exceptions</a>
 	<li><a href="#policies" >Parameter policies</a> 
@@ -1038,6 +1039,77 @@ class wrapper.</p>
 but if it has virtual functions you may have silent errors. The rule of thumb is:
 If your class has virtual functions, create a wrapper type, if it doesn't don't create
 a wrapper type.</p>
+
+<h2><a name="class_lua_operators"></a>overloading operators</h2>
+
+<p>You can overload most operators in lua for your classes. You do this by simply declaring
+a member function with the same name as an operator (the name of the metamethods in lua). The operators
+you can overload are:</p>
+
+<ul>
+	<li><tt>__add</tt>
+	<li><tt>__sub</tt>
+	<li><tt>__mul</tt>
+	<li><tt>__div</tt>
+	<li><tt>__pow</tt>
+	<li><tt>__lt</tt>
+	<li><tt>__le</tt>
+	<li><tt>__eq</tt>
+	<li><tt>__call</tt>
+	<li><tt>__unm</tt>
+	<li><tt>__tostring</tt>
+</ul>
+
+<p><tt>__tostring</tt> isn't really an operator, but it's the metamethod that is called by the standard
+library's <tt>tostring()</tt> function. There's one strange behavior regarding binary operators. You are not
+guaranteed that the self pointer you get actually refers to an instance of your class. This is because
+lua doesn't distinguish the two cases where you get the other operand as left hand value or right hand value.
+Consider the following example:</p>
+
+<pre>
+class 'my_class'
+
+function my_class:__init(v)
+	self.val = v
+end
+	
+function my_class:__sub(v)
+	return my_class(self.val - v.val)
+end
+
+function my_class:__tostring()
+	return self.val
+end
+</pre>
+
+<p>This will work well as long as you only subtracts instances of <tt>my_class</tt> with each other. But
+If you want to be able to subtract ordinary numbers from your class too, you have to manually check the type
+of <b>both</b> operands, including the self object.</p>
+
+<pre>
+function my_class:__sub(v)
+	if (type(self) == 'number') then
+		return my_class(self - v.val)
+
+	elseif (type(v) == 'number') then
+		return my_class(self.val - v)
+	
+	else
+		-- assume both operands are instances of my_class
+		return my_class(self.val - v.val)
+
+	end
+end
+</pre>
+
+<p>The reason why <tt>__sub</tt> is used as an example is because subtraction is not commutative (the
+order of the operands matter). That's why luabind cannot change order of the operands to make the
+self reference always refer to the actual class instance.</p>
+
+<p>If you have two different lua classes with an overloaded operator, the operator of the right hand
+side type will be called. If the other operand is a C++ class with the same operator overloaded, it
+will be prioritized over the lua class' operator. If none of the C++ overloads matches, the lua
+class' operator will be called.</p>
 
 <h1><a name="exceptions"></a>Exceptions</h1>
 <p>If any of the functions you register throws an exception when called, that exception will be caught

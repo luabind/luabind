@@ -110,15 +110,14 @@
 
 	smart pointer support
 
+	chache operators and finalizers in the class_rep. For lua classes
+	we currently do a lookup each time we need to know if a lua class
+	has a finalizer or an operator.
+	
 	scopes
 
-	__finalize function on lua classes
-
-	make all proxy_callers one policy based class
-
-	make all proxy_objects one policy based class
-
-	static functions
+	static functions, this could be implemented by letting classes contain
+	other declarations (classes or functions)
 
 */
 
@@ -590,6 +589,7 @@ namespace luabind
 			m_constructor.swap(crep->m_constructor);
 
 			#ifndef LUABIND_DONT_COPY_STRINGS
+				assert(crep->m_strings.empty() && "Internal error");
 				std::swap(crep->m_strings, m_strings);
 			#endif
 

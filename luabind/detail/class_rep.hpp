@@ -138,28 +138,6 @@ namespace luabind { namespace detail
 		inline const std::vector<base_info>& bases() const throw() { return m_bases; }
 		inline LUABIND_TYPE_INFO type() const throw() { return m_type; }
 		inline void set_type(LUABIND_TYPE_INFO t) { m_type = t; }
-/*
-		void add_function(const char* name, const overload_rep& o);
-
-		inline void add_constructor(const detail::construct_rep::overload_t& o)
-		{
-			m_constructor.overloads.push_back(o);
-		}
-
-		inline void add_wrapped_constructor(const detail::construct_rep::overload_t& o)
-		{
-			m_wrapped_constructor.overloads.push_back(o);
-		}
-
-		void add_getter(const char* name, const boost::function2<int, lua_State*, int>& g);
-		void add_setter(const char* name, const boost::function2<int, lua_State*, int>& s);
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-		void add_operator(lua_State*, int op_id,  int(*func)(lua_State*), int(*matcher)(lua_State*), void(*sig)(lua_State*, std::string&), int arity);
-#else
-		void add_operator(lua_State*, int op_id,  int(*func)(lua_State*), int(*matcher)(lua_State*), int arity);
-#endif
-*/		
 
 		inline const char* name() const throw() { return m_name; }
 
@@ -180,7 +158,6 @@ namespace luabind { namespace detail
 		static int super_callback(lua_State* L);
 
 		static int lua_settable_dispatcher(lua_State* L);
-
 		static int construct_lua_class_callback(lua_State* L);
 
 		// called from the metamethod for __index
