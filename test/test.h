@@ -8,6 +8,7 @@ extern "C"
 }
 
 #define LUABIND_DONT_COPY_STRINGS
+//#define LUABIND_NO_EXCEPTIONS
 
 #include <luabind/luabind.hpp>
 #include <luabind/dependency_policy.hpp>

@@ -89,8 +89,12 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error();
 #else
+						error_callback_fun e = detail::error_callback::get().err;
+						if (e) e(L);
+
 						assert(0 && "the lua function threw an error and exceptions are disabled."
 									" If you want to handle the error you can use luabind::set_error_callback()");
+						std::terminate();
 
 #endif
 					}
@@ -114,8 +118,12 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error(); 
 #else
-							assert(0 && "the lua function threw an error and exceptions are disabled."
-									" If you want to handle the error you can use luabind::set_error_callback()");
+						error_callback_fun e = detail::error_callback::get().err;
+						if (e) e(L);
+	
+						assert(0 && "the lua function threw an error and exceptions are disabled."
+								" If you want to handle the error you can use luabind::set_error_callback()");
+						std::terminate();
 #endif
 					}
 
@@ -126,8 +134,12 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw cant_convert_return_value();
 #else
+						cast_failed_callback_fun e = detail::error_callback::get().cast;
+						if (e) e(L);
+
 						assert(0 && "the lua function's return value could not be converted."
 									" If you want to handle the error you can use luabind::set_error_callback()");
+						std::terminate();
 
 #endif
 					}
@@ -155,8 +167,12 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw error();
 #else
+						error_callback_fun e = detail::error_callback::get().err;
+						if (e) e(L);
+	
 						assert(0 && "the lua function threw an error and exceptions are disabled."
 								" If you want to handle the error you can use luabind::set_error_callback()");
+						std::terminate();
 #endif
 					}
 
@@ -167,8 +183,12 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw cant_convert_return_value();
 #else
+						cast_failed_callback_fun e = detail::error_callback::get().cast;
+						if (e) e(L);
+
 						assert(0 && "the lua function's return value could not be converted."
 									" If you want to handle the error you can use luabind::set_error_callback()");
+						std::terminate();
 
 #endif
 					}
@@ -226,8 +246,12 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error();
 #else
+						error_callback_fun e = detail::error_callback::get().err;
+						if (e) e(L);
+	
 						assert(0 && "the lua function threw an error and exceptions are disabled."
 								" If you want to handle the error you can use luabind::set_error_callback()");
+						std::terminate();
 #endif
 					}
 				}
@@ -248,8 +272,12 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw error();
 #else
+						error_callback_fun e = detail::error_callback::get().err;
+						if (e) e(L);
+	
 						assert(0 && "the lua function threw an error and exceptions are disabled."
 							" If you want to handle the error you can use luabind::set_error_callback()");
+						std::terminate();
 #endif
 					}
 				}

@@ -54,7 +54,11 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 				throw cast_failed();
 #else
+				cast_failed_callback_fun e = detail::error_callback::get().cast;
+				if (e) e(L);
+
 				assert(0 && "object_cast failed. If you want to handle this error use luabind::set_error_callback()");
+				std::terminate();
 #endif
 			}
 #endif

@@ -24,9 +24,13 @@
 #define LUABIND_ERROR_HPP_INCLUDED
 
 #include <exception>
+#include <luabind/config.hpp>
 
 namespace luabind
 {
+
+#ifndef LUABIND_NO_EXCEPTIONS
+
 	// this exception usually means that the lua function you called
 	// from C++ failed with an error code. You will have to
 	// read the error code from the top of the lua stack
@@ -65,6 +69,42 @@ namespace luabind
 		virtual const char* what() const throw() { return "unable to make cast"; }
 	};
 
+#else
+
+	typedef void(*error_callback_fun)(lua_State*);
+	typedef void(*cast_failed_callback_fun)(lua_State*);
+
+	namespace detail
+	{
+		// we use a singleton instead of a global variable
+		// because we want luabind to be headers only
+
+		struct error_callback
+		{
+			error_callback_fun err;
+			cast_failed_callback_fun cast;			
+			
+			error_callback(): err(0), cast(0) {}
+
+			static error_callback& get()
+			{
+				static error_callback instance;
+				return instance;
+			}
+		};
+	}
+
+	inline void set_error_callback(error_callback_fun e)
+	{
+		detail::error_callback::get().err = e;
+	}
+
+	inline void set_cast_failed_callback(cast_failed_callback_fun c)
+	{
+		detail::error_callback::get().cast = c;
+	}
+
+#endif
 
 }
 

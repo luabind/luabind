@@ -55,7 +55,11 @@ int main()
 	passed &= report_success(test_operators(), "operators");
 	passed &= report_success(test_implicit_cast(), "implicit cast");
 	passed &= report_success(test_const(), "const");
+#ifndef LUABIND_NO_EXCEPTIONS
 	passed &= report_success(test_exceptions(), "exceptions");
+#else
+	std::cout << "exceptions: skipped \n";
+#endif
 	passed &= report_success(test_null_pointer(), "null pointer");
 	passed &= report_success(test_policies(), "policies");
 	passed &= report_success(test_lua_classes(), "lua classes");
