@@ -517,9 +517,6 @@ namespace luabind
 
 	} // detail
 
-
-
-
 	class LUABIND_API object
 	{
 
@@ -840,7 +837,7 @@ namespace luabind
 		{
 		}
 
-		object(lua_State* L)
+		explicit object(lua_State* L)
 			: m_state(L)
 			, m_ref(LUA_NOREF)
 		{
@@ -985,11 +982,6 @@ namespace luabind
 		// *****************************
 		// OPERATOR =
 
-		object& operator=(const object& o) const;
-		object& operator=(const detail::proxy_object& o) const;
-		object& operator=(const detail::proxy_raw_object& o) const;
-		object& operator=(const detail::proxy_array_object& o) const;
-
 		template<class T>
 		object& operator=(const T& val) const
 		{
@@ -1000,6 +992,11 @@ namespace luabind
 			set();
 			return const_cast<luabind::object&>(*this);
 		}
+
+		object& operator=(const object& o) const;
+		object& operator=(const detail::proxy_object& o) const;
+		object& operator=(const detail::proxy_raw_object& o) const;
+		object& operator=(const detail::proxy_array_object& o) const;
 
 		template<class T, class Policies>
 		void assign(const T& val, const Policies& p) const

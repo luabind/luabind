@@ -10,8 +10,12 @@ namespace
 	LUABIND_ANONYMOUS_FIX int feedback4 = 0;
 	LUABIND_ANONYMOUS_FIX int feedback5 = 0;
 
+	object current_object;
+	
 	void test_object_param(const object& table)
 	{
+		current_object = table;
+		
 		if (table.type() == LUA_TTABLE)
 		{
 			feedback1 = 1;
