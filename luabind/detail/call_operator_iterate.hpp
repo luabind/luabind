@@ -47,7 +47,11 @@ struct BOOST_PP_CAT(call_operator, N)
         {
             detail::operator_result(
                 L
+#if BOOST_WORKAROUND(BOOST_MSVC, <= 1300)
+              , self(BOOST_PP_ENUM_PARAMS(N, _))
+#else
               , (self(BOOST_PP_ENUM_PARAMS(N, _)), detail::operator_void_return())
+#endif
               , (Policies*)0
             );
         } 

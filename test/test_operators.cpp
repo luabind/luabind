@@ -86,6 +86,11 @@ namespace
 		bool operator==(op_test2 const& rhs) const { return true; } 
 	};
 
+	class A {
+	  public:
+		 bool operator== ( const A &other ) const { return ( &other == this ); }
+	};
+
 } // anonymous namespace
 
 void test_operators()
@@ -100,6 +105,9 @@ void test_operators()
 
 	module(L)
 	[
+		luabind::class_< A >( "A" )  
+			.def( luabind::const_self == luabind::const_self ),
+
 		class_<operator_tester>("operator_tester")
 			.def(constructor<>())
 			.def(tostring(const_self))

@@ -23,7 +23,6 @@
 #include <luabind/lua_include.hpp>
 
 #include <luabind/luabind.hpp>
-#include <luabind/class_info.hpp>
 #include <luabind/function.hpp>
 
 namespace luabind {
@@ -63,8 +62,6 @@ namespace luabind {
         lua_pushstring(L, "class");
         lua_pushcclosure(L, detail::create_class::stage1, 0);
         lua_settable(L, LUA_GLOBALSINDEX);
-
-        bind_class_info(L);
     }
 
 } // namespace luabind
