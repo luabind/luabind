@@ -157,6 +157,12 @@ namespace luabind { namespace detail
 		// the object pointer is passed on the lua stack
 		int gettable(lua_State* L)
 		{
+			if (lua_isnil(L, 2))
+			{
+				lua_pushnil(L);
+				return 1;
+			}
+
 			// we have to ignore the first argument since this may point to
 			// a method that is not present in this class (but in a subclass)
 			const char* key = lua_tostring(L, 2);
@@ -184,6 +190,11 @@ namespace luabind { namespace detail
 		// the object pointer is passed on the lua stack
 		bool settable(lua_State* L)
 		{
+			if (lua_isnil(L, 2))
+			{
+				return false;
+			}
+
 			// we have to ignore the first argument since this may point to
 			// a method that is not present in this class (but in a subclass)
 			const char* key = lua_tostring(L, 2);
@@ -1163,6 +1174,13 @@ namespace luabind { namespace detail
 		if (!lua_isnil(L, -1)) return 1;
 
 		lua_pop(L, 2);
+
+
+		if (lua_isnil(L, 2))
+		{
+			lua_pushnil(L);
+			return 1;
+		}
 
 		// we have to ignore the first argument since this may point to
 		// a method that is not present in this class (but in a subclass)
