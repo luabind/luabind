@@ -48,27 +48,34 @@ using namespace luabind::detail;
 #endif
 
 
-luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO t
-					, const char* name
-					, lua_State* L
-					,  void(*destructor)(void*)
-					, LUABIND_TYPE_INFO held_t
-					, LUABIND_TYPE_INFO held_const_t
-					, void*(*extractor)(void*)
-					, void(*held_type_constructor)(void*,void*)
-					, int held_type_size
-					, int held_type_alignment)
-	: m_type(t)
-	, m_held_type(held_t)
-	, m_const_holder_type(held_const_t)
-	, m_extract_underlying_fun(extractor)
-	, m_held_type_constructor(held_type_constructor)
-	, m_userdata_size(sizeof(object_rep) + held_type_size)
-	, m_userdata_alignment(held_type_alignment)
+luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO type
+	, const char* name
+	, lua_State* L
+	,  void(*destructor)(void*)
+	,  void(*const_holder_destructor)(void*)
+	, LUABIND_TYPE_INFO holder_type
+	, LUABIND_TYPE_INFO const_holder_type
+	, void*(*extractor)(void*)
+	, const void*(*const_extractor)(void*)
+	, void(*construct_holder)(void*,void*)
+	, void(*construct_const_holder)(void*,void*)
+	, int holder_size
+	, int holder_alignment)
+
+	: m_type(type)
+	, m_holder_type(holder_type)
+	, m_const_holder_type(const_holder_type)
+	, m_extractor(extractor)
+	, m_const_extractor(const_extractor)
+	, m_construct_holder(construct_holder)
+	, m_construct_const_holder(construct_const_holder)
+	, m_holder_size(holder_size)
+	, m_holder_alignment(holder_alignment)
 	, m_name(name)
 	, m_table_ref(LUA_NOREF)
 	, m_class_type(cpp_class)
 	, m_destructor(destructor)
+	, m_const_holder_destructor(const_holder_destructor)
 {
 	class_registry* r = class_registry::get_registry(L);
 	assert((r->cpp_class() != LUA_NOREF) && "you must call luabind::open()");
@@ -84,14 +91,17 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO t
 
 luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	: m_type(LUABIND_INVALID_TYPE_INFO)
-	, m_held_type(LUABIND_INVALID_TYPE_INFO)
+	, m_holder_type(LUABIND_INVALID_TYPE_INFO)
 	, m_const_holder_type(LUABIND_INVALID_TYPE_INFO)
-	, m_extract_underlying_fun(0)
-	, m_held_type_constructor(0)
-	, m_userdata_size(sizeof(object_rep))
-	, m_userdata_alignment(0)
+	, m_extractor(0)
+	, m_const_extractor(0)
+	, m_construct_holder(0)
+	, m_construct_const_holder(0)
+	, m_holder_size(0)
+	, m_holder_alignment(0)
 	, m_class_type(lua_class)
 	, m_destructor(0)
+	, m_const_holder_destructor(0)
 {
 #ifndef LUABIND_DONT_COPY_STRINGS
 	m_strings.push_back(detail::dup_string(name));
@@ -127,9 +137,9 @@ luabind::detail::class_rep::~class_rep()
 std::pair<void*,void*> 
 luabind::detail::class_rep::allocate(lua_State* L) const
 {
-	const int overlap = sizeof(object_rep)&(m_userdata_alignment-1);
-	const int padding = (overlap==0)?0:m_userdata_alignment-overlap;
-	const int size = sizeof(object_rep) + padding + m_userdata_size;
+	const int overlap = sizeof(object_rep)&(m_holder_alignment-1);
+	const int padding = (m_holder_alignment<=1)? 0 : (overlap==0)?0:m_holder_alignment-overlap;
+	const int size = sizeof(object_rep) + padding + m_holder_size;
 
 	char* mem = static_cast<char*>(lua_newuserdata(L, size));
 	char* ptr = mem + sizeof(object_rep) + padding;
@@ -155,7 +165,7 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 	{
 		class_rep* crep = obj->crep();
 
-		void* p = crep->extract_ptr() ? crep->extract_ptr()(obj->ptr())
+		void* p = crep->extractor() ? crep->extractor()(obj->ptr())
 			: obj->ptr();
 
 		lua_pushboolean(L, p != 0);
@@ -521,7 +531,7 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 
 		if (crep->has_holder())
 		{
-			crep->m_held_type_constructor(held, object_ptr);
+			crep->m_construct_holder(held, object_ptr);
 			object_ptr = held;
 		}
 		new(obj_rep) object_rep(object_ptr, crep, object_rep::owner, crep->destructor());
@@ -1200,7 +1210,7 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 	{
 		class_rep* crep = obj->crep();
 
-		void* p = crep->extract_ptr() ? crep->extract_ptr()(obj->ptr())
+		void* p = crep->extractor() ? crep->extractor()(obj->ptr())
 			: obj->ptr();
 
 		lua_pushboolean(L, p != 0);
@@ -1442,11 +1452,11 @@ void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, cons
 
 	void* raw_pointer;
 
-	if (extract_ptr())
+	if (has_holder())
 	{
 		// this means that we have a holder type where the
 		// raw-pointer needs to be extracted
-		raw_pointer = extract_ptr()(obj->ptr());
+		raw_pointer = extractor()(obj->ptr());
 	}
 	else
 	{

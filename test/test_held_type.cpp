@@ -2,16 +2,29 @@
 #include <boost/weak_ptr.hpp>
 #include <memory>
 
+#include "test.h"
+
 namespace luabind
 {
 	template<class T>
 	T* get_pointer(boost::shared_ptr<T>& p) { return p.get(); }
 
+	template<class A>
+	type<boost::shared_ptr<const A> > get_const_holder(type<boost::shared_ptr<A> >)
+	{
+		return type<boost::shared_ptr<const A> >();
+	}
+
 	template<class T>
 	T* get_pointer(const std::auto_ptr<T>& p) { return p.get(); }
-}
 
-#include "test.h"
+	template<class A>
+	type<std::auto_ptr<const A> > get_const_holder(type<std::auto_ptr<A> >)
+	{
+		return type<std::auto_ptr<const A> >();
+	}
+
+}
 
 namespace
 {
@@ -110,19 +123,8 @@ namespace
 } // anonymous namespace
 
 
-namespace luabind
-{
-	template<class A>
-	type<boost::shared_ptr<const A> > get_const_holder(type<boost::shared_ptr<A> >)
-	{
-		return type<boost::shared_ptr<const A> >();
-	}
-}
-
 bool test_held_type()
 {
-	// This feature is not finished yet
-
 	using namespace luabind;
 
 	boost::shared_ptr<base> ptr(new base());

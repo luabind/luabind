@@ -90,16 +90,19 @@ namespace luabind { namespace detail
 		// EXPECTS THE TOP VALUE ON THE LUA STACK TO
 		// BE THE USER DATA WHERE THIS CLASS IS BEING
 		// INSTANTIATED!
-		class_rep(LUABIND_TYPE_INFO t
+		class_rep(LUABIND_TYPE_INFO type
 			, const char* name
 			, lua_State* L
 			, void(*destructor)(void*)
-			, LUABIND_TYPE_INFO held_t
-			, LUABIND_TYPE_INFO held_const_t
+			, void(*const_holder_destructor)(void*)
+			, LUABIND_TYPE_INFO holder_type
+			, LUABIND_TYPE_INFO const_holder_type
 			, void*(*extractor)(void*)
-			, void(*construct_held_type)(void*,void*)
-			, int held_type_size
-			, int held_type_alignment);
+			, const void*(*const_extractor)(void*)
+			, void(*construct_holder)(void*,void*)
+			, void(*construct_const_holder)(void*,void*)
+			, int holder_size
+			, int holder_alignment);
 
 		// used when creating a lua class
 		// EXPECTS THE TOP VALUE ON THE LUA STACK TO
@@ -150,9 +153,9 @@ namespace luabind { namespace detail
 
 		inline void set_type(LUABIND_TYPE_INFO t) { m_type = t; }
 		inline LUABIND_TYPE_INFO type() const throw() { return m_type; }
-		inline LUABIND_TYPE_INFO holder_type() const throw() { return m_held_type; }
+		inline LUABIND_TYPE_INFO holder_type() const throw() { return m_holder_type; }
 		inline LUABIND_TYPE_INFO const_holder_type() const throw() { return m_const_holder_type; }
-		inline bool has_holder() const throw() { return m_held_type_constructor != 0; }
+		inline bool has_holder() const throw() { return m_construct_holder != 0; }
 
 		inline const char* name() const throw() { return m_name; }
 
@@ -163,7 +166,9 @@ namespace luabind { namespace detail
 		inline int table_ref() const { return m_table_ref; }
 
 		inline void(*destructor() const)(void*) { return m_destructor; }
-		inline void*(*extract_ptr() const)(void*) { return m_extract_underlying_fun; }
+		inline void(*const_holder_destructor() const)(void*) { return m_const_holder_destructor; }
+		inline void*(*extractor() const)(void*) { return m_extractor; }
+		inline const void*(*const_extractor() const)(void*) { return m_const_extractor; }
 
 		inline class_type get_class_type() const { return m_class_type; }
 
@@ -194,15 +199,15 @@ namespace luabind { namespace detail
 		// typeid() may actually return different pointers for the same
 		// type.
 		LUABIND_TYPE_INFO m_type;
-		LUABIND_TYPE_INFO m_held_type;
+		LUABIND_TYPE_INFO m_holder_type;
 		LUABIND_TYPE_INFO m_const_holder_type;
 
 		// this function pointer is used if the type is held by
 		// a smart pointer. This function takes the type we are holding
 		// (the held_type, the smart pointer) and extracts the actual
 		// pointer.
-		typedef void*(*extract_ptr_t)(void*);
-		extract_ptr_t m_extract_underlying_fun;
+		void*(*m_extractor)(void*);
+		const void*(*m_const_extractor)(void*);
 
 		// this function is used to construct the held_type
 		// (the smart pointer). The arguments are the memory
@@ -210,14 +215,15 @@ namespace luabind { namespace detail
 		// and the raw pointer that should be wrapped in the
 		// smart pointer
 		typedef void(*construct_held_type_t)(void*,void*);
-		construct_held_type_t m_held_type_constructor;
+		construct_held_type_t m_construct_holder;
+		construct_held_type_t m_construct_const_holder;
 
 		// this is the size of the userdata chunk
 		// for each object_rep of this class. We
 		// need this since held_types are constructed
 		// in the same memory (to avoid fragmentation)
-		int m_userdata_size;
-		int m_userdata_alignment;
+		int m_holder_size;
+		int m_holder_alignment;
 
 		// a list of info for every class this class derives from
 		// the information stored here is sufficient to do
@@ -288,6 +294,7 @@ namespace luabind { namespace detail
 		std::vector<operator_callback> m_operators[number_of_operators]; // the operators in lua
 
 		void(*m_destructor)(void*);
+		void(*m_const_holder_destructor)(void*);
 
 		std::map<const char*, int, ltstr> m_static_constants;
 	};
