@@ -137,8 +137,8 @@ bool test_lua_classes()
 		function(L, "set_feedback", &set_feedback);
 
 		dostring(L, "class 'simple'");
-		dostring(L, "function simple:__init() set_feedback(321) end");
-		dostring(L, "function simple:__finalize() set_feedback(123) end");
+		dostring(L, "function simple:__init() self.test = 42 set_feedback(321) end");
+		dostring(L, "function simple:__finalize() if self.test == 42 then set_feedback(123) end end");
 
 		dostring(L, "a = simple()");
 

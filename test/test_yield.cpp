@@ -48,7 +48,7 @@ bool test_yield()
 		[
 			class_<test_class>("test")
 				.def(constructor<>())
-				.def("f", &test_class::f, yield)
+				.def("f", &test_class::f, luabind::yield)
 		];
 /*
 		dostring(L, "function g() a = test() for i = 1, 10 do print(a:f()) end end");
