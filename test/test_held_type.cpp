@@ -34,8 +34,9 @@ namespace
 bool test_held_type()
 {
 	// This feature is not finished yet
-/*
+
 	using namespace luabind;
+
 	{
 		lua_State* L = lua_open();
 		lua_closer c(L);
@@ -58,7 +59,7 @@ bool test_held_type()
 
 	}
 	if (feedback != 1) return false;
-*/
+
 	return true;
 }
 

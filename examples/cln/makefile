@@ -1,5 +1,5 @@
 include ../../config
 
 cln_test: cln_test.cpp
-	g++ cln_test.cpp -o cln_test $(LUA_PATH) -I- $(BOOST_PATH) -I../../ $(LUA_LIB_PATH) -L../../lib -lluabind -llua -llualib -lcln
+	$(CXX) cln_test.cpp -o cln_test $(LUA_PATH) -I- $(BOOST_PATH) -I../../ $(LUA_LIB_PATH) -L../../lib -lluabind -llua -llualib -lcln
 

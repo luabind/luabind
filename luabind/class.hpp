@@ -536,6 +536,12 @@ namespace luabind
 
 			// register this new type in the class registry
 			r->add_class(m_type, crep);
+			if (!(LUABIND_TYPE_INFO_EQUAL(m_held_type, LUABIND_INVALID_TYPE_INFO)))
+			{
+				// if we have a held type
+				// we have to register it in the class-table
+				r->add_class(m_held_type, crep);
+			}
 
 			// add methods
 			for (std::map<const char*, detail::method_rep, detail::ltstr>::iterator i = m_methods.begin();
@@ -582,6 +588,7 @@ namespace luabind
 			lua_pop(L, 1);
 		}
 
+
 		// destructive copy
 		virtual luabind::detail::scoped_object* clone()
 		{
@@ -601,10 +608,14 @@ namespace luabind
 	
 			std::swap(ret->m_static_constants, m_static_constants);
 			ret->m_destructor = m_destructor;
+			ret->m_extractor = m_extractor;
 
 			std::swap(ret->m_bases, m_bases);
 			std::swap(ret->m_methods, m_methods);
 			m_constructor.swap(ret->m_constructor);
+
+			ret->m_type = m_type;
+			ret->m_held_type = m_held_type;
 
 #ifndef LUABIND_DONT_COPY_STRINGS
 			std::swap(ret->m_strings, m_strings);
