@@ -64,10 +64,10 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO t
 	, m_extract_underlying_fun(extractor)
 	, m_name(name)
 	, m_class_type(cpp_class)
-	, m_destructor(destructor)
 	, m_held_type_constructor(held_type_constructor)
 	, m_userdata_size(sizeof(object_rep) + held_type_size)
 	, m_userdata_alignment(held_type_alignment)
+	, m_destructor(destructor)
 {
 	class_registry* r = class_registry::get_registry(L);
 	assert((r->cpp_class() != LUA_NOREF) && "you must call luabind::open()");
@@ -87,8 +87,8 @@ luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	, m_const_holder_type(LUABIND_INVALID_TYPE_INFO)
 	, m_extract_underlying_fun(0)
 	, m_class_type(lua_class)
-	, m_destructor(0)
 	, m_held_type_constructor(0)
+	, m_destructor(0)
 {
 	// TODO: don't we need to copy the name?
 	// Since this is a lua-class, I think we have to copy it.

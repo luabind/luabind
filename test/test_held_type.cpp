@@ -97,11 +97,11 @@ bool test_held_type()
 
 		open(L);
 
-		function(L, "tester", &tester);
-		function(L, "tester", &tester_);
-		function(L, "tester2", &tester2);
-		function(L, "tester3", &tester3);
-		function(L, "tester4", &tester4);
+		luabind::function(L, "tester", &tester);
+		luabind::function(L, "tester", &tester_);
+		luabind::function(L, "tester2", &tester2);
+		luabind::function(L, "tester3", &tester3);
+		luabind::function(L, "tester4", &tester4);
 
 		class_<base, boost::shared_ptr<base> >("base")
 			.def(constructor<>())
