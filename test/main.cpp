@@ -148,7 +148,7 @@ test_suite* init_unit_test_suite( int argc, char* argv[] )
 
 //    register_exception_translator<luabind::error>(
   //      &translate_luabind_error);
-/*
+
     test->add(BOOST_TEST_CASE(&test_exceptions));
     test->add(BOOST_TEST_CASE(&test_lua_classes));
     test->add(BOOST_TEST_CASE(&test_attributes));
@@ -164,7 +164,7 @@ test_suite* init_unit_test_suite( int argc, char* argv[] )
     test->add(BOOST_TEST_CASE(&test_policies));
     test->add(BOOST_TEST_CASE(&test_free_functions));
     test->add(BOOST_TEST_CASE(&test_iterator));
-*/
+
     return test;
 }
 
