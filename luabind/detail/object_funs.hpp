@@ -29,6 +29,7 @@
 #include <luabind/detail/policy.hpp>
 #include <luabind/error.hpp>
 #include <luabind/detail/convert_to_lua.hpp>
+#include <luabind/detail/debug.hpp>
 
 namespace luabind
 {
@@ -39,6 +40,8 @@ namespace luabind
 		template<class T, class Obj, class Policies>
 		inline T object_cast_impl(const Obj& obj, const Policies&)
 		{
+			LUABIND_CHECK_STACK(obj.lua_state());
+
 			typedef typename detail::find_conversion_policy<0, Policies>::type converter_policy;
 			typename converter_policy::template generate_converter<T, lua_to_cpp>::type converter;
 

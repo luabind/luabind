@@ -369,7 +369,7 @@ static int call(T(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State*
 //	typedef typename find_converter_policy<policy_list_ret>::type converter_policy_ret;
 	typedef typename find_conversion_policy<0, Policies>::type converter_policy_ret;
 	typename converter_policy_ret::template generate_converter<T, cpp_to_lua>::type converter_ret;
-	
+
 	BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
 		converter_ret.apply(L, f
 				(

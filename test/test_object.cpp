@@ -23,6 +23,7 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 #include <luabind/adopt_policy.hpp>
+#include <luabind/detail/debug.hpp>
 
 namespace
 {
@@ -30,13 +31,15 @@ namespace
 
 	int test_object_param(const object& table)
 	{
+		LUABIND_CHECK_STACK(table.lua_state());
 
 		object current_object;
 		current_object = table;
 		
 		if (table.type() == LUA_TTABLE)
 		{
-			int sum = object_cast<int>(table["oh"]);;
+
+			int sum = object_cast<int>(table["oh"]);
 			for (object::array_iterator i = table.abegin(); i != table.aend(); ++i)
 			{
 				sum += object_cast<int>(*i);

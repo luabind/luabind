@@ -45,6 +45,7 @@
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/typetraits.hpp>
 #include <luabind/detail/class_cache.hpp>
+#include <luabind/detail/debug.hpp>
 
 #include <boost/type_traits/add_reference.hpp>
 
@@ -405,6 +406,8 @@ namespace luabind { namespace detail
 
 		PRIMITIVE_CONVERTER(luabind::object)
 		{
+			LUABIND_CHECK_STACK(L);
+
 			lua_pushvalue(L, index);
 			detail::lua_reference ref;
 			ref.set(L);

@@ -584,6 +584,8 @@ namespace luabind
 
 			inline array_iterator& operator++()
 			{
+				LUABIND_CHECK_STACK(m_obj->lua_state());
+
 				m_key++;
 
 				// invalidate the iterator if we hit a nil element
@@ -591,13 +593,15 @@ namespace luabind
 				m_obj->pushvalue();
 				lua_rawgeti(L, -1, m_key);
 				if (lua_isnil(L, -1)) m_key = -1;
-				lua_pop(L, 1);
+				lua_pop(L, 2);
 
 				return *this;
 			}
 
 			inline array_iterator operator++(int)
 			{
+				LUABIND_CHECK_STACK(m_obj->lua_state());
+
 				int old_key = m_key;
 				m_key++;
 
@@ -606,7 +610,7 @@ namespace luabind
 				m_obj->pushvalue();
 				lua_rawgeti(L, -1, m_key);
 				if (lua_isnil(L, -1)) m_key = -1;
-				lua_pop(L, 1);
+				lua_pop(L, 2);
 
 				return array_iterator(m_obj, old_key);
 			}
@@ -954,6 +958,8 @@ namespace luabind
 		template<class T>
 		inline object at(const T& key)
 		{
+			LUABIND_CHECK_STACK(m_state);
+
 			lua_State* L = lua_state();
 			pushvalue();
 			detail::convert_to_lua(L, key);
@@ -967,6 +973,8 @@ namespace luabind
 		template<class T>
 		inline detail::proxy_object operator[](const T& key) const
 		{
+			LUABIND_CHECK_STACK(m_state);
+
 			detail::convert_to_lua(m_state, key);
 			detail::lua_reference ref;
 			ref.set(m_state);

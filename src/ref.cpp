@@ -24,6 +24,7 @@
 #include <luabind/config.hpp>
 #include <luabind/detail/ref.hpp>
 #include <luabind/lua_include.hpp>
+#include <luabind/detail/debug.hpp>
 
 namespace luabind { namespace detail
 {
@@ -161,6 +162,8 @@ namespace luabind { namespace detail
 
 	void LUABIND_API unref(lua_State *L, int ref)
 	{
+		LUABIND_CHECK_STACK(L);
+
 		int t = LUA_REGISTRYINDEX;
 		if (ref >= 0) {
 			lua_rawgeti(L, t, FREELIST_REF);
