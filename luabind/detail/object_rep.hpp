@@ -31,6 +31,8 @@ namespace luabind { namespace detail
 {
 	class class_rep;
 
+	void finalize(lua_State* L, class_rep* crep);
+
 	// this class is allocated inside lua for each pointer.
 	// it contains the actual c++ object-pointer.
 	// it also tells if it is const or not.
@@ -123,6 +125,9 @@ namespace luabind { namespace detail
 		static int garbage_collector(lua_State* L)
 		{
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, -1));
+
+			finalize(L, obj->crep());
+
 			obj->release_refs(L);
 			obj->~object_rep();
 			return 0;
@@ -174,3 +179,4 @@ namespace luabind { namespace detail
 }}
 
 #endif // LUABIND_OBJECT_REP_HPP_INCLUDED
+

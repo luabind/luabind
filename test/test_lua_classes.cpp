@@ -53,6 +53,9 @@ namespace
 		no_copy(const no_copy&) {}
 	};
 
+	void set_feedback(int n)
+	{ feedback = n; }
+
 } // anonymous namespace
 
 
@@ -80,6 +83,8 @@ bool test_lua_classes()
 		.def("f", &simple_class::f)
 		;
 
+	function(L, "set_feedback", &set_feedback);
+
 	dostring(L, "class 'derived' (base)\n"
 					"function derived:__init() super() end\n"
 					"function derived:f() return 'derived -> ' .. base.f(self) end\n");
@@ -92,8 +97,8 @@ bool test_lua_classes()
 
 	dostring(L, "class 'simple_derative' (simple_class)");
 	dostring(L, "function simple_derative:__init() super() end\n");
-	dostring(L, 	"a = simple_derative()");
-	dostring(L,  "a:f()");
+	dostring(L, "a = simple_derative()");
+	dostring(L, "a:f()");
 	if (feedback != 3) return false;
 
 	dostring(L, "class 'simple_lua_class'\n");
@@ -116,6 +121,27 @@ bool test_lua_classes()
 	}
 
 	if (feedback != -1) return false;
+
+
+	{
+		lua_State* L = lua_open();
+		lua_baselibopen(L);
+		lua_closer c(L);
+
+		open(L);
+
+		function(L, "set_feedback", &set_feedback);
+
+		dostring(L, "class 'simple'");
+		dostring(L, "function simple:__init() set_feedback(321) end");
+		dostring(L, "function simple:__finalize() set_feedback(123) end");
+
+		dostring(L, "a = simple()");
+
+		if (feedback != 321) return false;
+	}
+
+	if (feedback != 123) return false;
 	
 	return true;
 }

@@ -1247,3 +1247,30 @@ bool luabind::detail::is_class_rep(lua_State* L, int index)
 	return false;
 }
 
+#include <iostream>
+
+void luabind::detail::finalize(lua_State* L, class_rep* crep)
+{
+	if (crep->get_class_type() != class_rep::lua_class) return;
+
+	detail::getref(L, crep->table_ref());
+	lua_pushstring(L, "__finalize");
+	lua_gettable(L, -2);
+
+	if (lua_isnil(L, -1))
+	{
+		lua_pop(L, 1);
+	}
+	else
+	{
+		lua_pushvalue(L, -2);
+		lua_call(L, 1, 0);
+	}
+
+	for (std::vector<class_rep::base_info>::const_iterator 
+			i = crep->bases().begin(); i != crep->bases().end(); ++i)
+	{
+		if (i->base) finalize(L, i->base);
+	}
+}
+

@@ -347,13 +347,27 @@ namespace luabind
 				if (base->get_class_type() == class_rep::lua_class)
 				{
 					// copy base class members
-					
+
 					detail::getref(L, crep->table_ref());
 					detail::getref(L, base->table_ref());
 					lua_pushnil(L);
 
 					while (lua_next(L, -2))
-					{	
+					{
+						lua_pushstring(L, "__init");
+						if (lua_equal(L, -1, -3))
+						{
+							lua_pop(L, 2);
+							continue;
+						}
+
+						lua_pushstring(L, "__finalize");
+						if (lua_equal(L, -1, -3))
+						{
+							lua_pop(L, 2);
+							continue;
+						}
+
 						lua_pushvalue(L, -2); // copy key
 						lua_insert(L, -2);
 						lua_settable(L, -5);
