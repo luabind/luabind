@@ -35,9 +35,10 @@ Please report any grammatical corrections/spelling corrections.</p>
 		<li><a href="#class_derived">derived classes</a> 
 	</ul>
 	<li><a href="#scopes">Scopes</a> 
-	<li><a href="#object">Value wrapper</a>
+	<li><a href="#object">Object</a>
 	<ul>
-		<li><a href="#wrap_fun">related functions</a>
+		<li><a href="#object_iterators">iterators</a>
+		<li><a href="#object_functions">related functions</a>
 		<li><a href="#functor">functor</a>
 	</ul>
 	<li><a href="#class_lua" >Defining classes in lua</a> 
@@ -675,7 +676,7 @@ create another table inside it, and register the function <tt>g</tt> in there.</
 
 <p>TODO: finish this section</p>
 
-<h1><a name="object"></a>Value wrapper</h1>
+<h1><a name="object"></a>Object</h1>
 
 <p>Since functions have to be able to take lua values (of variable type) we need a wrapper
 around them. This wrapper is called <tt>luabind::object</tt>. If the function you register
@@ -724,12 +725,18 @@ public:
 	object&amp; operator=(const T&amp;);
 	object&amp; operator=(const object&amp;);
 
-	void swap(object&amp;);
-	int type() const;
-
 	template&lt;class T&gt;
 	bool operator==(const T&amp;) const;
 	bool operator==(const object&amp;) const;
+
+	bool operator&lt;(const object&amp;) const;
+	bool operator&lt;=(const object&amp;) const;
+	bool operator&gt;(const object&amp;) const;
+	bool operator&gt;=(const object&amp;) const;
+	bool operator!=(const object&amp;) const;
+
+	void swap(object&amp;);
+	int type() const;
 
 	<i>&lt;implementation-defined&gt;</i> operator()();
 	
@@ -750,15 +757,15 @@ If your <tt>luabind::object</tt> is a table you can access its members through t
 the iterators. The value returned from the operator[] is a proxy object that can be used both
 for reading and writing values into the table (using operator=). Note that it is impossible
 to know if a lua value is indexable or not (lua_gettable doesn't fail, it succeeds or crashes).
-This means that if you're trying to index something that can be indexed, you're on your own. Lua
+This means that if you're trying to index something that cannot be indexed, you're on your own. Lua
 will call its <tt>panic()</tt> function (you can define your own panic function using
 <tt>lua_setpanicf</tt>). The <tt>at()</tt> and <tt>raw_at()</tt> functions returns the value
-at the given table position (like operator[] but only for reading). The first uses <tt>lua_gettable</tt>
-and the latter uses <tt>lua_rawget</tt>.</p>
+at the given table position (like operator[] but only for reading).<p>
 
-<p>The iterators are (almost) models of the <a href="http://www.sgi.com/tech/stl/ForwardIterator.html">
-ForwardIterator</a> concept. The exceptions are that operator-&gt; and post increment doesn't exist on
-them.</p>
+<p>The ordinary <tt>object::iterator</tt> uses <tt>lua_gettable</tt> to extract the values from
+the table, the standard way that will invoke metamethods if any. The <tt>object::raw_iterator</tt>
+uses <tt>lua_rawget</tt> and <tt>object::array_iterator</tt> uses <tt>lua_rawgeti</tt>. The latter
+will only iterate over numberical keys starting at 1 and continue until the first nil value.</p>
 
 <p>The <tt>lua_state()</tt> function returns the lua state where this object is stored. If you want
 to manipulate the object with lua functions directly you can push it onto the lua stack by calling
@@ -836,7 +843,38 @@ void my_function(const object&amp; table)
 <p>If you take a <tt>luabind::object</tt> as a parameter to a function, any lua value will match that parameter.
 That's why we have to make sure it's a table before we index into it.</p>
 
-<h2><a name="wrap_fun"></a>related functions</h2>
+<h2><a name="object_iterators"></a>iterators</h2>
+
+<p>The iterators, that are returned by the <tt>begin()</tt> and <tt>end()</tt> (and their variants) are (almost)
+models of the <a href="http://www.sgi.com/tech/stl/ForwardIterator.html">
+ForwardIterator</a> concept. The exceptions are that operator-&gt; and post increment doesn't exist on
+them.</p>
+
+<p>They look like this:</p>
+
+<pre>
+class object::iterator
+{
+	iterator();
+	iterator(const iterator&amp;);
+	
+	iterator&amp; operator++();
+	bool operator!=(const iterator&amp;) const;
+	iterator&amp; operator=(const iterator&amp;);
+
+	<i>implementation-defined</i> operator*();
+};
+</pre>
+
+<p>The implementation defined return value from the dereference operator is a proxy object that can be used as if it was
+an <tt>object</tt>, it can also be used to assign the specific table entry with a new value. If you want to assign a
+value to an entry pointed to by an iterator, just use the assignment operator on the dereferenced iterator:</p>
+
+<pre>
+*iter = 5;
+</pre>
+
+<h2><a name="object_functions"></a>related functions</h2>
 
 <p>
 There are a couple of functions related to objects and tables.
@@ -980,7 +1018,7 @@ It will then call the real <tt>set_callback</tt> with the <tt>callback_wrapper</
 <tt>callback_wrapper</tt> will be called whenever the callback should be called, and it will simply
 call the lua function that we registered.</p>
 
-<p>You can also use <a href="#wrap_fun"><tt>object_cast</tt></a> to cast an object to a <a href="#functor"><tt>functor</tt></a>.</p>
+<p>You can also use <a href="#object_functions"><tt>object_cast</tt></a> to cast an object to a <a href="#functor"><tt>functor</tt></a>.</p>
 
 <h1><a name="class_lua"></a>Defining classes in lua</h1>
 
@@ -1234,7 +1272,7 @@ int main()
 <p>There's another exception that luabind may throw. <tt>luabind::cast_failed</tt>, this exception
 is thrown from <a href="#lua_fun"><tt>call_function</tt></a>, <a href="#lua_fun"><tt>call_member</tt></a> or when <a href="#functor"><tt>functor</tt></a> is invoked.
 It means that the return value from the lua function couldn't be converted to a C++ value. It is
-also thrown from <a href="#wrap_fun"><tt>object_cast</tt></a> if the cast cannot be made.</p>
+also thrown from <a href="#object_functions"><tt>object_cast</tt></a> if the cast cannot be made.</p>
 
 <p>The synopsis for <tt>luabind::cast_failed</tt> is:</p>
 
@@ -1319,6 +1357,9 @@ base* set_and_get_new(base* ptr)
 <pre>
 function(L, "set_and_get_new", &amp;set_and_get_new, adopt(return_value) + adopt(_1));
 </pre>
+
+<p>When lua adopts a pointer, it will call <tt>delete</tt> on it. This means that it cannot adopt pointers allocated with
+another allocator than <tt>new</tt> (no <tt>malloc</tt> for example).</p>
 
 <p>To use this policy you need to include <tt>&lt;luabind/adopt_policy.hpp&gt;</tt>.</p>
 
