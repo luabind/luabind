@@ -330,7 +330,7 @@ two functions, <tt>int&nbsp;f(const&nbsp;char*)</tt> and <tt>void&nbsp;f(int)</t
 module(L)
 [
 	def("f", (int(*)(const char*)) &amp;f),
-	def(L, "f", (void(*)(int)) &amp;f)
+	def("f", (void(*)(int)) &amp;f)
 ];
 </pre>
 
