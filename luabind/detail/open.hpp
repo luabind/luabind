@@ -25,8 +25,6 @@
 #define LUABIND_OPEN_HPP_INCLUDED
 
 #include <luabind/config.hpp>
-#include <luabind/detail/class_rep.hpp>
-#include <luabind/detail/class_registry.hpp>
 
 namespace luabind
 {
@@ -37,6 +35,7 @@ namespace luabind
 		LUABIND_API int create_cpp_instance_metatable(lua_State* L);
 		LUABIND_API int create_lua_class_metatable(lua_State* L);
 		LUABIND_API int create_lua_instance_metatable(lua_State* L);
+		LUABIND_API int create_lua_function_metatable(lua_State* L);
 	}
 
 	LUABIND_API void open(lua_State* L);

@@ -26,6 +26,7 @@
 
 #include <luabind/luabind.hpp>
 #include <luabind/class_info.hpp>
+#include <luabind/function.hpp>
 
 using namespace luabind::detail;
 
@@ -144,13 +145,24 @@ int luabind::detail::create_lua_instance_metatable(lua_State* L)
 	lua_rawset(L, -3);
 
 	lua_pushstring(L, "__gc");
-	//lua_pushcclosure(L, detail::garbage_collector_s<detail::object_rep>::apply, 0);
 	lua_pushcclosure(L, detail::object_rep::garbage_collector, 0);
 	lua_rawset(L, -3);
 
 	for (int i = 0; i < number_of_operators; ++i) add_operator_to_metatable(L, i);
 
 	// store a reference to the instance-metatable in our class_rep
+	return detail::ref(L);
+}
+
+int luabind::detail::create_lua_function_metatable(lua_State* L)
+{
+	lua_newtable(L);
+
+	lua_pushstring(L, "__gc");
+	lua_pushcclosure(L, detail::garbage_collector_s<detail::free_functions::function_rep>::apply, 0);
+
+	lua_rawset(L, -3);
+
 	return detail::ref(L);
 }
 

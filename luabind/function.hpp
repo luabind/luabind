@@ -117,6 +117,7 @@ namespace luabind
 #else
 				const char* name() const { return m_name.c_str(); }
 #endif
+
 			private:
 
 #ifdef LUABIND_DONT_COPY_STRINGS
@@ -289,6 +290,12 @@ namespace luabind
 					// create a new function_rep
 					rep = static_cast<detail::free_functions::function_rep*>(lua_newuserdata(L, sizeof(detail::free_functions::function_rep)));
 					new(rep) detail::free_functions::function_rep(m_name.c_str());
+
+					detail::class_registry* r = detail::class_registry::get_registry(L);
+					assert(r && "you must call luabind::open() prior to any function registrations");
+					detail::getref(L, r->lua_function());
+					int ret = lua_setmetatable(L, -2);
+					assert(ret != 0);
 
 					// this is just a magic number to identify functions that luabind created
 					lua_pushlightuserdata(L, (void*)0x1337);

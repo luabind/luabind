@@ -25,18 +25,19 @@
 #define LUABIND_CLASS_REGISTRY_HPP_INCLUDED
 
 #include <luabind/config.hpp>
+#include <luabind/detail/open.hpp>
 #include <string>
 
 namespace luabind { namespace detail
 {
 	class class_rep;
-
+/*
 	LUABIND_API std::string stack_content_by_name(lua_State* L, int start_index);
 	LUABIND_API int create_cpp_class_metatable(lua_State* L);
 	LUABIND_API int create_cpp_instance_metatable(lua_State* L);
 	LUABIND_API int create_lua_class_metatable(lua_State* L);
 	LUABIND_API int create_lua_instance_metatable(lua_State* L);
-
+*/
 	struct class_registry
 	{
 		class_registry(lua_State* L)
@@ -44,6 +45,7 @@ namespace luabind { namespace detail
 			, m_cpp_class_metatable(create_cpp_class_metatable(L))
 			, m_lua_instance_metatable(create_lua_instance_metatable(L))
 			, m_lua_class_metatable(create_lua_class_metatable(L))
+			, m_lua_function_metatable(create_lua_function_metatable(L))
 		{}
 
 		static inline class_registry* get_registry(lua_State* L)
@@ -80,6 +82,7 @@ namespace luabind { namespace detail
 
 		int lua_instance() const { return m_lua_instance_metatable; }
 		int lua_class() const { return m_lua_class_metatable; }
+		int lua_function() const { return m_lua_function_metatable; }
 
 		void add_class(LUABIND_TYPE_INFO info, class_rep* crep)
 		{
@@ -130,6 +133,10 @@ namespace luabind { namespace detail
 		// this is a lua reference to the metatable to be used
 		// for all classes defined in lua
 		int m_lua_class_metatable;
+
+		// this metatable only contains a destructor
+		// for luabind::Detail::free_functions::function_rep
+		int m_lua_function_metatable;
 
 	};
 
