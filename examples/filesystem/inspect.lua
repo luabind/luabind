@@ -17,11 +17,11 @@ class 'inspector'
     local output = function(_,x)
         local name = x[1]:string()
         print(name .. ": " .. x[2])
-      end
+    end
 
     local cmp = function(a,b)
         return a[1]:string() < b[1]:string()
-      end
+    end
 
     local violations
 
