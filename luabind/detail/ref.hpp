@@ -34,8 +34,8 @@ struct lua_State;
 namespace luabind { namespace detail
 {
 
-	int ref(lua_State *L);
-	void unref(lua_State *L, int ref);
+	int LUABIND_API ref(lua_State *L);
+	void LUABIND_API unref(lua_State *L, int ref);
 
 	inline void getref(lua_State* L, int r)
 	{

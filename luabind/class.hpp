@@ -1045,7 +1045,7 @@ namespace luabind
 
 		struct class_registration;
 
-		struct class_base : scope
+		struct LUABIND_API class_base : scope
 		{
 		public:
 			class_base(char const* name);		

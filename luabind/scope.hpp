@@ -24,6 +24,7 @@
 #define NEW_SCOPE_040211_HPP
 
 #include <luabind/prefix.hpp>
+#include <luabind/config.hpp>
 #include <luabind/lua_include.hpp>
 #include <memory>
 
@@ -35,7 +36,7 @@ namespace luabind {
 
 namespace luabind { namespace detail {
 
-    struct registration
+    struct LUABIND_API registration
     {
         registration();
         virtual ~registration();
@@ -52,7 +53,7 @@ namespace luabind { namespace detail {
 
 namespace luabind {
 
-    struct scope
+    struct LUABIND_API scope
     {
         scope();
         explicit scope(std::auto_ptr<detail::registration> reg);
@@ -67,7 +68,7 @@ namespace luabind {
         detail::registration* m_chain;
     };
 
-    class namespace_ : public scope
+    class LUABIND_API namespace_ : public scope
     {
     public:
         explicit namespace_(char const* name);
@@ -78,7 +79,7 @@ namespace luabind {
         registration_* m_registration;
     };
 
-    class module_
+    class LUABIND_API module_
     {
     public:
         module_(lua_State* L_, char const* name);
