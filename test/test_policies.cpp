@@ -33,10 +33,14 @@
 namespace
 {
 
-	struct policies_test_class: counted_type<policies_test_class>
+	struct policies_test_class
 	{
-		policies_test_class(const char* name): name_(name) {}
-		policies_test_class() {}
+		policies_test_class(const char* name): name_(name)
+		{ ++count; }
+		policies_test_class() { ++count; }
+		~policies_test_class()
+		{ --count; }
+
 		std::string name_;
 
 		policies_test_class* make(const char* name) const
@@ -49,9 +53,14 @@ namespace
 		policies_test_class* self_ref()
 		{ return this; }
 
+		static int count;
+
 //	private:
-		policies_test_class(const policies_test_class&) {}
+		policies_test_class(policies_test_class const& c): name_(c.name_)
+		{ ++count; }
 	};
+
+	int policies_test_class::count = 0;
 
 	policies_test_class global;
 

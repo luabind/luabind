@@ -65,7 +65,10 @@ struct counted_type
 
 template<class T>
 int counted_type<T>::count = 0;
-/*
+
+#ifdef _MSC_VER
+#define COUNTER_GUARD(x)
+#else
 #define COUNTER_GUARD(type) \
     struct BOOST_PP_CAT(type, _counter_guard) \
     { \
@@ -75,9 +78,7 @@ int counted_type<T>::count = 0;
         } \
     }; \
     type##_counter_guard BOOST_PP_CAT(type, _guard)
-*/
-
-#define COUNTER_GUARD(x)
+#endif
 
 #define DOSTRING_EXPECTED(state, str, expected) \
 {                                               \

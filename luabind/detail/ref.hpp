@@ -45,7 +45,10 @@ namespace luabind { namespace detail
 
 	struct lua_reference
 	{
-		lua_reference(lua_State* L_ = 0): L(L_), m_ref(LUA_NOREF) {}
+		lua_reference(lua_State* L_ = 0)
+			: L(L_)
+			, m_ref(LUA_NOREF)
+		{}
 		lua_reference(lua_reference const& r)
 			: L(r.L)
 			, m_ref(LUA_NOREF)
