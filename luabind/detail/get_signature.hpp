@@ -43,37 +43,7 @@ namespace luabind { namespace detail
 {
 
 	// TODO: move to its own transation unit
-	static std::string get_class_name(lua_State* L, LUABIND_TYPE_INFO i)
-	{
-		std::string ret;
-		class_registry* r = class_registry::get_registry(L);
-		class_rep* crep = r->find_class(i);
-
-		if (crep == 0)
-		{
-			ret = "custom";
-		}
-		else
-		{
-			if (LUABIND_TYPE_INFO_EQUAL(i, crep->holder_type()))
-			{
-				ret += "smart_ptr<";
-				ret += crep->name();
-				ret += ">";
-			}
-			else if (LUABIND_TYPE_INFO_EQUAL(i, crep->const_holder_type()))
-			{
-				ret += "smart_ptr<const ";
-				ret += crep->name();
-				ret += ">";
-			}
-			else
-			{
-				ret += crep->name();
-			}
-		}
-		return ret;
-	};
+	std::string get_class_name(lua_State* L, LUABIND_TYPE_INFO i);
 
 	template<class T>
 	std::string name_of_type(by_value<T>, lua_State* L, int) { return luabind::detail::get_class_name(L, LUABIND_TYPEID(T)); };

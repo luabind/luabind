@@ -121,7 +121,7 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 					throw error(L);
 #else
-					error_callback_fun e = detail::error_callback::get().err;
+					error_callback_fun e = get_error_callback();
 					if (e) e(L);
 	
 					assert(0 && "the lua function threw an error and exceptions are disabled."
@@ -1178,7 +1178,7 @@ private:
 #ifndef LUABIND_NO_EXCEPTIONS
 				throw error(L);
 #else
-				error_callback_fun e = detail::error_callback::get().err;
+				error_callback_fun e = get_error_callback();
 				if (e) e(L);
 	
 				assert(0 && "the lua function threw an error and exceptions are disabled."
@@ -1300,7 +1300,7 @@ private:
 #ifndef LUABIND_NO_EXCEPTIONS
 				throw luabind::error(L);
 #else
-				error_callback_fun e = detail::error_callback::get().err;
+				error_callback_fun e = get_error_callback();
 				if (e) e(L);
 	
 				assert(0 && "the lua function threw an error and exceptions are disabled."
@@ -1323,7 +1323,7 @@ private:
 #ifndef LUABIND_NO_EXCEPTIONS
 				throw luabind::error(L);
 #else
-				error_callback_fun e = detail::error_callback::get().err;
+				error_callback_fun e = get_error_callback();
 				if (e) e(L);
 	
 				assert(0 && "the lua function threw an error and exceptions are disabled."

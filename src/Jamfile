@@ -1,7 +1,9 @@
 project luabind/luabind ;
 
-lib lib
-    : scope.cpp
+lib luabind
+    : pcall.cpp
+      error.cpp
+      scope.cpp
       class.cpp
       class_rep.cpp
       function.cpp
@@ -14,5 +16,6 @@ lib lib
       class_info.cpp
       ref.cpp
       class_registry.cpp
+    : <define>LUABIND_BUILDING
     ;
 

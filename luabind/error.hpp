@@ -27,6 +27,8 @@
 #include <exception>
 #include <luabind/config.hpp>
 
+struct lua_State;
+
 namespace luabind
 {
 
@@ -73,37 +75,16 @@ namespace luabind
 	typedef void(*error_callback_fun)(lua_State*);
 	typedef void(*cast_failed_callback_fun)(lua_State*, LUABIND_TYPE_INFO);
 
-	namespace detail
-	{
-		// we use a singleton instead of a global variable
-		// because we want luabind to be headers only
-
-		struct error_callback
-		{
-			error_callback_fun err;
-			cast_failed_callback_fun cast;
-			
-			error_callback(): err(0), cast(0) {}
-
-			static error_callback& get()
-			{
-				static error_callback instance;
-				return instance;
-			}
-		};
-	}
-
-	inline void set_error_callback(error_callback_fun e)
-	{
-		detail::error_callback::get().err = e;
-	}
-
-	inline void set_cast_failed_callback(cast_failed_callback_fun c)
-	{
-		detail::error_callback::get().cast = c;
-	}
+	void set_error_callback(error_callback_fun e);
+	void set_cast_failed_callback(cast_failed_callback_fun c);
+	error_callback_fun get_error_callback();
+	cast_failed_callback_fun get_cast_failed_callback();
 
 #endif
+
+	typedef int(*pcall_callback_fun)(lua_State*);
+	void set_pcall_callback(pcall_callback_fun e);
+	pcall_callback_fun get_pcall_callback();
 
 }
 

@@ -116,6 +116,7 @@ namespace std
 	#define LUABIND_TYPEID(t) &typeid(t)
 	#define LUABIND_TYPE_INFO_EQUAL(i1, i2) *i1 == *i2
 	#define LUABIND_INVALID_TYPE_INFO &typeid(detail::null_type)
+#include <typeinfo>
 #endif
 
 #define BOOST_LANGBINDING_TYPE_INFO LUABIND_TYPE_INFO

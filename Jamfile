@@ -21,11 +21,14 @@ project luabind
     : requirements
         <include>./ <include>$(BOOST_ROOT) <include>$(LUA_PATH)/include/
         <library>/luabind//lua <library>/luabind//lualib
+        <toolset>msvc,<link>shared:<define>LUABIND_IMPORT=__declspec(dllimport)
+        <toolset>msvc,<link>shared:<define>LUABIND_EXPORT=__declspec(dllexport)
     ;
 
-alias luabind : /luabind/luabind//lib ;
+alias luabind : /luabind/luabind//luabind ;
 
 #use-project /luabind/luabind : src ;
 
 build-project src ;
-build-project test/new ;
+build-project test ;
+

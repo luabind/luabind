@@ -35,46 +35,46 @@ namespace luabind { namespace detail {
 
         void register_(lua_State* L) const;
 
-    	const char* m_name;
+        const char* m_name;
 
-		mutable std::map<const char*, detail::method_rep, detail::ltstr> m_methods;
+        mutable std::map<const char*, detail::method_rep, detail::ltstr> m_methods;
 
-		// datamembers, some members may be readonly, and
-		// only have a getter function
-		mutable std::map<const char*, detail::class_rep::callback, detail::ltstr> m_getters;
-		mutable std::map<const char*, detail::class_rep::callback, detail::ltstr> m_setters;
+        // datamembers, some members may be readonly, and
+        // only have a getter function
+        mutable std::map<const char*, detail::class_rep::callback, detail::ltstr> m_getters;
+        mutable std::map<const char*, detail::class_rep::callback, detail::ltstr> m_setters;
 
-		// the operators in lua
-		mutable std::vector<detail::class_rep::operator_callback> m_operators[detail::number_of_operators]; 
-		mutable std::map<const char*, int, detail::ltstr> m_static_constants;
+        // the operators in lua
+        mutable std::vector<detail::class_rep::operator_callback> m_operators[detail::number_of_operators]; 
+        mutable std::map<const char*, int, detail::ltstr> m_static_constants;
 
-		mutable std::vector<class_base::base_desc> m_bases;
-		mutable detail::construct_rep m_constructor;
+        mutable std::vector<class_base::base_desc> m_bases;
+        mutable detail::construct_rep m_constructor;
 
-		void(*m_destructor)(void*);
-		void(*m_const_holder_destructor)(void*);
+        void(*m_destructor)(void*);
+        void(*m_const_holder_destructor)(void*);
 
-		void*(*m_extractor)(void*);
-		const void*(*m_const_extractor)(void*);
+        void*(*m_extractor)(void*);
+        const void*(*m_const_extractor)(void*);
 
-		void(*m_const_converter)(void*,void*);
+        void(*m_const_converter)(void*,void*);
 
-		void(*m_construct_holder)(void*, void*);
-		void(*m_construct_const_holder)(void*, void*);
+        void(*m_construct_holder)(void*, void*);
+        void(*m_construct_const_holder)(void*, void*);
 
-		int m_holder_size;
-		int m_holder_alignment;
+        int m_holder_size;
+        int m_holder_alignment;
 
-		LUABIND_TYPE_INFO m_type;
-		LUABIND_TYPE_INFO m_holder_type;
-		LUABIND_TYPE_INFO m_const_holder_type;
+        LUABIND_TYPE_INFO m_type;
+        LUABIND_TYPE_INFO m_holder_type;
+        LUABIND_TYPE_INFO m_const_holder_type;
 
 #ifndef LUABIND_DONT_COPY_STRINGS
-		// the maps that contains char pointers points into
-		// this vector of strings. 
-		mutable std::vector<char*> m_strings;
+        // the maps that contains char pointers points into
+        // this vector of strings. 
+        mutable std::vector<char*> m_strings;
 #endif
-		scope m_scope;
+        scope m_scope;
     };
 
     class_registration::class_registration(char const* name)
@@ -153,7 +153,7 @@ namespace luabind { namespace detail {
         crep->m_static_constants.swap(m_static_constants);
 
         // here!
-        //			crep->m_methods = m_methods;
+        //            crep->m_methods = m_methods;
 
         for (std::vector<class_base::base_desc>::iterator i = m_bases.begin();
             i != m_bases.end(); 
@@ -232,8 +232,8 @@ namespace luabind { namespace detail {
         m_methods.clear();
 
         detail::getref(L, crep->table_ref());
-		m_scope.register_(L);
-		lua_pop(L, 1);
+        m_scope.register_(L);
+        lua_pop(L, 1);
 
         lua_settable(L, -3);
     }
@@ -277,30 +277,30 @@ namespace luabind { namespace detail {
 
     void class_base::add_getter(
         const char* name, const boost::function2<int, lua_State*, int>& g)
-	{
-		detail::class_rep::callback c;
-		c.func = g;
-		c.pointer_offset = 0;
+    {
+        detail::class_rep::callback c;
+        c.func = g;
+        c.pointer_offset = 0;
 
 #ifndef LUABIND_DONT_COPY_STRINGS
-		char* key = detail::dup_string(name);
-		m_registration->m_strings.push_back(key);
+        char* key = detail::dup_string(name);
+        m_registration->m_strings.push_back(key);
 #else
-		const char* key = name;
+        const char* key = name;
 #endif
-		m_registration->m_getters[key] = c;
-	}
+        m_registration->m_getters[key] = c;
+    }
 
 #ifdef LUABIND_NO_ERROR_CHECKING
     void class_base::add_setter(
         const char* name
-		, const boost::function2<int, lua_State*, int>& s)
+        , const boost::function2<int, lua_State*, int>& s)
 #else
-	void class_base::add_setter(
-		const char* name
-		, const boost::function2<int, lua_State*, int>& s
-		, int (*match)(lua_State*, int)
-		, void (*get_sig_ptr)(lua_State*, std::string&))
+    void class_base::add_setter(
+        const char* name
+        , const boost::function2<int, lua_State*, int>& s
+        , int (*match)(lua_State*, int)
+        , void (*get_sig_ptr)(lua_State*, std::string&))
 #endif
     {
         detail::class_rep::callback c;
@@ -308,15 +308,15 @@ namespace luabind { namespace detail {
         c.pointer_offset = 0;
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-		c.match = match;
-		c.sig = get_sig_ptr;
+        c.match = match;
+        c.sig = get_sig_ptr;
 #endif
 
 #ifndef LUABIND_DONT_COPY_STRINGS
-		char* key = detail::dup_string(name);
-		m_registration->m_strings.push_back(key);
+        char* key = detail::dup_string(name);
+        m_registration->m_strings.push_back(key);
 #else
-		const char* key = name;
+        const char* key = name;
 #endif
         m_registration->m_setters[key] = c;
     }
@@ -374,15 +374,47 @@ namespace luabind { namespace detail {
         return m_registration->m_name; 
     }
 
-	void class_base::add_static_constant(const char* name, int val)
-	{
-		m_registration->m_static_constants[name] = val;
-	}
+    void class_base::add_static_constant(const char* name, int val)
+    {
+        m_registration->m_static_constants[name] = val;
+    }
 
-	void class_base::add_inner_scope(scope& s)
-	{
-		m_registration->m_scope.operator,(s);
-	}
-	
+    void class_base::add_inner_scope(scope& s)
+    {
+        m_registration->m_scope.operator,(s);
+    }
+
+    std::string get_class_name(lua_State* L, LUABIND_TYPE_INFO i)
+    {
+        std::string ret;
+        class_registry* r = class_registry::get_registry(L);
+        class_rep* crep = r->find_class(i);
+
+        if (crep == 0)
+        {
+            ret = "custom";
+        }
+        else
+        {
+            if (LUABIND_TYPE_INFO_EQUAL(i, crep->holder_type()))
+            {
+                ret += "smart_ptr<";
+                ret += crep->name();
+                ret += ">";
+            }
+            else if (LUABIND_TYPE_INFO_EQUAL(i, crep->const_holder_type()))
+            {
+                ret += "smart_ptr<const ";
+                ret += crep->name();
+                ret += ">";
+            }
+            else
+            {
+                ret += crep->name();
+            }
+        }
+        return ret;
+    };
+
 }} // namespace luabind::detail
 
