@@ -64,6 +64,10 @@ Please report any grammatical corrections/spelling corrections.</p>
 		<li><a href="#policies_custom">custom</a>
 		<li><a href="#policies_user_converter">user defined converter</a>
 	</ul>
+	<li><a href="#examples">Examples</a>
+	<ul>
+		<li><a href="#examples_cln">Class Library for Numbers</a>
+	</ul>
 	<li><a href="#config">Configuration</a>
 	<li><a href="#implementation_notes">Implementation notes</a>
 	<li><a href="#error_messages">Error messages</a> 
@@ -1840,6 +1844,170 @@ module(L)
 
 <p>The policies don't have a stable API yet. See the examples directory.</p>
 
+<h1><a name="examples"></a>Examples</h1>
+
+<p>This section contains examples of how a class and function bind could look
+like in C++ and how they can be used from lua. Most of these examples requires
+some external libraries that they bind to lua.</p>
+
+<p>These examples will also be found in the distribution along with makefiles.</p>
+
+<h2><a name="examples_cln"></a>Class Library for Numbers</h2>
+
+<p>Class Library for Numbers (CLN) is a library that implements large values and arithmetic operations
+on them, see its <a href="http://www.ginac.de/CLN/">homepage</a> for more details.</p>
+
+<p>This example bind a very small part of the library.</p>
+
+<pre>
+#include &lt;cln/cln.h&gt;
+
+extern "C"
+{
+	#include "lua.h"
+	#include "lualib.h"
+	#include "lauxlib.h"
+}
+
+#include &lt;luabind/luabind.hpp&gt;
+
+void bind_cln(lua_State* L)
+{
+	using namespace luabind;
+	using namespace cln;
+
+	module(L)
+	[
+		// real numbers
+		class_&lt;cl_R&gt;("cl_R")
+			.def(constructor&lt;&gt;())
+			.def(constructor&lt;const cl_I&amp;&gt;())
+			.def(constructor&lt;float&gt;())
+			.def(constructor&lt;const char*&gt;())
+			.def(tostring(const_self))
+			.def(-self)
+			.def(const_self + const_self)
+			.def(const_self - const_self)
+			.def(const_self * const_self)
+			.def(const_self / const_self)
+			.def(const_self &lt;= const_self)
+			.def(const_self &lt; const_self)
+			.def(const_self == const_self)
+			.def(other&lt;int&gt;() + const_self)
+			.def(other&lt;int&gt;() - const_self)
+			.def(other&lt;int&gt;() * const_self)
+			.def(other&lt;int&gt;() / const_self)
+			.def(other&lt;int&gt;() &lt;= const_self)
+			.def(other&lt;int&gt;() &lt; const_self)
+			.def(const_self + other&lt;int&gt;())
+			.def(const_self - other&lt;int&gt;())
+			.def(const_self * other&lt;int&gt;())
+			.def(const_self / other&lt;int&gt;())
+			.def(const_self &lt;= other&lt;int&gt;())
+			.def(const_self &lt; other&lt;int&gt;())
+			,
+		
+		// rational numbers
+		class_&lt;cl_RA, cl_R&gt;("cl_RA")
+			.def(constructor&lt;&gt;())
+			.def(constructor&lt;const cl_I&amp;&gt;())
+			.def(constructor&lt;int&gt;())
+			.def(constructor&lt;const char*&gt;())
+			.def(tostring(const_self))
+			.def(-self)
+			.def(const_self + const_self)
+			.def(const_self - const_self)
+			.def(const_self * const_self)
+			.def(const_self / const_self)
+			.def(const_self &lt;= const_self)
+			.def(const_self &lt; const_self)
+			.def(const_self == const_self)
+			.def(other&lt;int&gt;() + const_self)
+			.def(other&lt;int&gt;() - const_self)
+			.def(other&lt;int&gt;() * const_self)
+			.def(other&lt;int&gt;() / const_self)
+			.def(other&lt;int&gt;() &lt;= const_self)
+			.def(other&lt;int&gt;() &lt; const_self)
+			.def(const_self + other&lt;int&gt;())
+			.def(const_self - other&lt;int&gt;())
+			.def(const_self * other&lt;int&gt;())
+			.def(const_self / other&lt;int&gt;())
+			.def(const_self &lt;= other&lt;int&gt;())
+			.def(const_self &lt; other&lt;int&gt;())
+			,
+
+		// integers
+		class_&lt;cl_I, cl_RA&gt;("cl_I")
+			.def(constructor&lt;&gt;())
+			.def(constructor&lt;const cl_I&amp;&gt;())
+			.def(constructor&lt;int&gt;())
+			.def(constructor&lt;const char*&gt;())
+			.def(tostring(const_self))
+			.def(-self)
+			.def(const_self + const_self)
+			.def(const_self - const_self)
+			.def(const_self * const_self)
+			.def(const_self &lt;= const_self)
+			.def(const_self &lt; const_self)
+			.def(const_self == const_self)
+			.def(other&lt;int&gt;() + const_self)
+			.def(other&lt;int&gt;() - const_self)
+			.def(other&lt;int&gt;() * const_self)
+			.def(other&lt;int&gt;() &lt;= const_self)
+			.def(other&lt;int&gt;() &lt; const_self)
+			.def(const_self + other&lt;int&gt;())
+			.def(const_self - other&lt;int&gt;())
+			.def(const_self * other&lt;int&gt;())
+			.def(const_self &lt;= other&lt;int&gt;())
+			.def(const_self &lt; other&lt;int&gt;())
+			,
+			
+		def("factorial", &amp;cln::factorial),
+		def("sqrt", (const cl_R(*)(const cl_R&amp;))&amp;cln::sqrt)
+	];
+}
+
+int main()
+{
+	lua_State* L = lua_open();
+	lua_baselibopen(L);
+	lua_mathlibopen(L);
+	luabind::open(L);
+
+	bind_cln(L);
+
+	lua_dofile(L, "cln_test.lua");
+
+	lua_close(L);
+	return 0;
+}
+</pre>
+
+cln_test.lua may look like this:
+
+<pre>
+a = factorial(41)
+b = factorial(42)
+
+print('a = fac(41) = ' .. tostring(a))
+print('b = fac(42) = ' .. tostring(b))
+print('b / a = ' .. tostring(b / a))
+
+c = a * 42
+
+d = sqrt(cl_R(10))
+
+print('d = sqrt(10) = ' .. tostring(d))
+</pre>
+
+As you might have figured out, the factorial of 41 will be a really large number. The output from this script will be:
+
+<pre>
+a = fac(41) = 33452526613163807108170062053440751665152000000000
+b = fac(42) = 1405006117752879898543142606244511569936384000000000
+b / a = 42
+d = sqrt(10) = 3.1622777
+</pre>
 <h1><a name="config"></a>Configuration</h1>
 
 <p>There are a number of configuration options available when building luabind. It is very important
@@ -1876,7 +2044,7 @@ by all make-files. You can change paths to lua and boost in there as well.</p>
 			impossible to know which one was called. Functions will still be able
 			to throw exceptions when error checking is disabled.</p>
 
-			<p>Functions will still be able to throw exceptions, they will be
+			<p>If a functions throws an exception it will be
 			caught by luabind and propagated with <tt>lua_error()</tt>.</p>
 
 			
@@ -1902,6 +2070,12 @@ by all make-files. You can change paths to lua and boost in there as well.</p>
 			luabind, they will be replaced with calls to the callback
 			functions set byt <a href="#set_error_callback"><tt>set_error_callback()</tt></a>
 			and <a href="#set_cast_failed_callback"><tt>set_cast_failed_callback()</tt></a>.</p>
+
+
+<a name="lua_api"></a><h3><tt>LUA_API</tt></h3>
+			<p>If you want to link dynamically against lua, you can set this define
+			to the import-keyword on your compiler and platform. On windows in devstudio
+			this should be <tt>__declspec(dllimport)</tt> if you want to link against lua as a dll.
 			
 <a name="luabind_type_info"></a><h3><tt>LUABIND_TYPE_INFO</tt><br>
 <tt>LUABIND_TYPE_INFO_EQUAL(i1,i2)</tt><br>
@@ -1975,8 +2149,8 @@ is expected to be an instantiation of a luabind class.</p>
 <p>This means that if you make your own user data and tags its metatable with the
 exact same names, you can very easily fool luabind and crash the application.</p>
 
-<p>In the lua registry, luabind keeps an entry called "<tt>__luabind_classes</tt>"
-and "<tt>__luabind_free_functions</tt>". These should not be removed or overwritten.</p>
+<p>In the lua registry, luabind keeps an entry called "<tt>__luabind_classes</tt>".
+It should not be removed or overwritten.</p>
 
 <p>In the global table, a variable called <tt>super</tt> is used every time a constructor
 in a lua-class is called. This is to make it easy for that constructor to call its base
