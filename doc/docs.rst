@@ -1967,9 +1967,9 @@ userdata with the value 0x1337, this last value is used to identify functions
 registered by luabind. It should be virtually impossible to have such a pointer
 as secondary upvalue by pure chance. This means, if you are trying to replace
 an existing function with a luabind function, luabind will see that the
-secondary upvalue isn't the magical id number and replace it. If it can
-identify the function to be a luabind function, it won't replace it, but rather
-add another overload to it.
+secondary upvalue isn't the magic id number and replace it. If it can identify
+the function to be a luabind function, it won't replace it, but rather add
+another overload to it.
 
 Inside the luabind namespace, there's another namespace called detail. This
 namespace contains non-public classes and are not supposed to be used directly.

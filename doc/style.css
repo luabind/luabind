@@ -28,11 +28,18 @@ div.abstract {
 div.abstract p.topic-title {
   font-weight: bold ;
   text-align: center }
-
+/*
 div.attention, div.caution, div.danger, div.error, div.hint,
 div.important, div.note, div.tip, div.warning, div.admonition {
   margin: 2em ;
   border: medium outset ;
+  padding: 1em }
+*/
+
+div.attention, div.caution, div.danger, div.error, div.hint,
+div.important, div.note, div.tip, div.warning, div.admonition {
+  margin: 2em ;
+  border: 2pt dashed #800000 ;
   padding: 1em }
 
 div.attention p.admonition-title, div.caution p.admonition-title,
@@ -64,7 +71,7 @@ div.footer, div.header {
   font-size: smaller }
 
 div.sidebar {
-  border: gray 3pt solid;
+  border: #800000 2pt dashed;
   padding: 10pt;
 
 /*  margin-left: 1em ;*/
