@@ -649,11 +649,7 @@ namespace luabind
 			lua_newuserdata(L, sizeof(detail::class_rep));
 			crep = reinterpret_cast<detail::class_rep*>(lua_touserdata(L, -1));
 			
-			const char* n = lua_typename(L, lua_type(L, -1));
-
 			new(crep) detail::class_rep(m_type, m_name, L, m_destructor, m_held_type, m_extractor);
-
-			const char* b = lua_typename(L, lua_type(L, -1));
 
 			// register this new type in the class registry
 			r->add_class(m_type, crep);
@@ -899,7 +895,6 @@ namespace luabind
 			{
 				lua_pushstring(m_L, name());
 				commit(m_L);
-				const char* n = lua_typename(m_L, lua_type(m_L, -1));
 				lua_settable(m_L, LUA_GLOBALSINDEX);
 			}
 		}

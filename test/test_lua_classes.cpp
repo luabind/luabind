@@ -47,6 +47,7 @@ namespace
 
 	struct no_copy
 	{
+		no_copy() {}
 		virtual void f() = 0;	
 	private:
 		no_copy(const no_copy&) {}

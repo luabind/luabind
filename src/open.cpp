@@ -28,7 +28,6 @@ extern "C"
 }
 
 #define LUABIND_NO_HEADERS_ONLY
-#define LUABIND_NO_ERROR_CHECKING
 
 #include <luabind/luabind.hpp>
 

@@ -42,30 +42,25 @@
 namespace luabind { namespace detail
 {
 
-	template<class T>
-	struct get_class_name
+	static std::string get_class_name(lua_State* L, LUABIND_TYPE_INFO i)
 	{
-		static std::string name(lua_State* L)
+		std::string ret;
+		class_registry* r = class_registry::get_registry(L);
+		class_rep* crep = r->find_class(i);
+
+		if (crep == 0)
 		{
-			std::string ret;
-			class_registry* r = class_registry::get_registry(L);
-
-			class_rep* crep = r->find_class(LUABIND_TYPEID(T));
-
-			if (crep == 0)
-			{
-				ret = "custom";
-			}
-			else
-			{
-				ret += crep->name();
-			}
-			return ret;
+			ret = "custom";
 		}
+		else
+		{
+			ret += crep->name();
+		}
+		return ret;
 	};
 
 	template<class T>
-	std::string name_of_type(by_value<T>, lua_State* L) { return get_class_name<T>::name(L); };
+	std::string name_of_type(by_value<T>, lua_State* L) { return get_class_name(L, LUABIND_TYPEID(T)); };
 	template<class T>
 	std::string name_of_type(by_reference<T>, lua_State* L) { return name_of_type(LUABIND_DECORATE_TYPE(T), L) + "&"; };
 	template<class T>

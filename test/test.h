@@ -7,7 +7,7 @@ extern "C"
 	#include "lualib.h"
 }
 
-#define LUABIND_NO_ERROR_CHECKING
+//#define LUABIND_NO_ERROR_CHECKING
 //#define LUABIND_DONT_COPY_STRINGS
 //#define LUABIND_NO_EXCEPTIONS
 #define LUABIND_NO_HEADERS_ONLY

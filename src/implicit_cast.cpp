@@ -27,7 +27,6 @@ extern "C"
 	#include "lualib.h"
 }
 
-#define LUABIND_NO_ERROR_CHECKING
 #define LUABIND_NO_HEADERS_ONLY
 
 #include <luabind/luabind.hpp>
@@ -51,8 +50,8 @@ using namespace luabind::detail;
 namespace luabind { namespace detail
 {
 	int implicit_cast(const class_rep* crep, 
-		                                LUABIND_TYPE_INFO const& type_id, 
-                                      int& pointer_offset)
+								LUABIND_TYPE_INFO const& type_id, 
+								 int& pointer_offset)
 	{
 		int offset = 0;
 		if (LUABIND_TYPE_INFO_EQUAL(crep->type(), type_id)) return 0;

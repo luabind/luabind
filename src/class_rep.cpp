@@ -27,13 +27,30 @@ extern "C"
 	#include "lualib.h"
 }
 
-#define LUABIND_NO_ERROR_CHECKING
 #define LUABIND_NO_HEADERS_ONLY
 
 #include <luabind/luabind.hpp>
 //#include <luabind/detail/class_rep.hpp>
 
 using namespace luabind::detail;
+
+
+#ifndef LUABIND_NO_ERROR_CHECKING
+
+	std::string luabind::detail::get_overload_signatures_candidates(lua_State* L, std::vector<const overload_rep_base*>::iterator start, std::vector<const overload_rep_base*>::iterator end, std::string name)
+	{
+		std::string s;
+		for (; start != end; ++start)
+		{
+			s += name;
+			(*start)->get_signature(L, s);
+			s += "\n";
+		}
+		return s;
+	}
+
+#endif
+
 
 luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO t, 
        		         const char* name, 

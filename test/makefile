@@ -20,8 +20,8 @@ sources =\
 
 target = test_luabind
 
-#libs = -llua -llualib -L/scratch/lua-5.0/lib -L.
-libs = -llua -llualib -lluabind -L/usr/local/lib -L../src
+#libs = -lluabind -llua -llualib -L/scratch/lua-5.0/lib -L../lib
+libs = -lluabind -llua -llualib -L/usr/local/lib -L../lib
 
 #inc = -I./ -I/scratch/lua-5.0/include -I- -I.. -I/scratch/boost_1_30_0
 inc = -I./ -I/usr/local/include -I- -I..
