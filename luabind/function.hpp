@@ -267,9 +267,19 @@ namespace luabind
 				detail::free_functions::function_rep* rep = 0;
 				if (lua_iscfunction(L, -1))
 				{
-					lua_getupvalue(L, -1, 1);
-					rep = static_cast<detail::free_functions::function_rep*>(lua_touserdata(L, -1));
-					lua_pop(L, 1);
+					if (lua_getupvalue(L, -1, 2) != 0)
+					{
+						// check the magic number that identifies luabind's functions
+						if (lua_touserdata(L, -1) == (void*)0x1337)
+						{
+							if (lua_getupvalue(L, -2, 1) != 0)
+							{
+								rep = static_cast<detail::free_functions::function_rep*>(lua_touserdata(L, -1));
+								lua_pop(L, 1);
+							}
+						}
+						lua_pop(L, 1);
+					}
 				}
 				lua_pop(L, 1);
 
@@ -279,7 +289,11 @@ namespace luabind
 					// create a new function_rep
 					rep = static_cast<detail::free_functions::function_rep*>(lua_newuserdata(L, sizeof(detail::free_functions::function_rep)));
 					new(rep) detail::free_functions::function_rep(m_name.c_str());
-					lua_pushcclosure(L, &free_functions::function_dispatcher, 1);
+
+					// this is just a magic number to identify functions that luabind created
+					lua_pushlightuserdata(L, (void*)0x1337);
+
+					lua_pushcclosure(L, &free_functions::function_dispatcher, 2);
 					lua_settable(L, -3);
 				}
 

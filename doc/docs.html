@@ -1984,6 +1984,13 @@ class' constructor. So, if you have a global variable named <tt>super</tt> it ma
 well be overwritten. This is probably not the best solution, and this restriction may very
 well be removed in the future.</p>
 
+<p>Luabind uses two upvalues for functions that it registers. The first is a userdata containing
+a list of overloads for the function, the other is a light userdata with the value <tt>0x1337</tt>,
+this last value is used to identify functions registered by luabind. It should be virtually impossible
+to have such a pointer as secondary upvalue by pure chance. This means, if you are trying to replace
+an existing function with a luabind function, luabind will see that the secondary upvalue isn't
+the magical id number and replaces it.</p>
+
 <p>Inside the <tt>luabind</tt> namespace, there's another namespace called <tt>detail</tt>.
 This namespace contains non-public classes and are not supposed to be used directly.</p>
 
@@ -2041,6 +2048,7 @@ This namespace contains non-public classes and are not supposed to be used direc
 </ul>
 
 <h1><a name="faq"></a>FAQ</h1>
+						// check the magic number that identifies luabind's functions
 <ul>
 	<li><h3>What's up with __cdecl and __stdcall?</h3>
 	
@@ -2079,6 +2087,7 @@ This namespace contains non-public classes and are not supposed to be used direc
 	<tt>strip</tt> on your executable to remove export-symbols, this will trim down the size.</p>
 	<p>Our tests suggests that cygwin's gcc produces much bigger executables compared to gcc on other 
 	platforms and other compilers.</p>
+						// check the magic number that identifies luabind's functions
 
 	<li><h3>Can I register template classes with luabind?</h3>
 	<p>Yes you can, but you can only register explicit instantiations of the class. Because there's no
@@ -2118,6 +2127,7 @@ module(L)
 	there's currently no error. The last registered function will be the one that's used.
 	<li>In vc7, classes can not be called <tt>test</tt>.
 	<li>Visual studio have problems selecting the correct overload of <tt>std::swap()</tt> for <tt>luabind::object</tt>.
+	<li>If you register a function and later renames it, error messages will use the original function name
 </ul>
 
 <h1><a name="acknowledgments"></a>Acknowledgments</h1>

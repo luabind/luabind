@@ -23,6 +23,8 @@ namespace
 		~B() { feedback2 = -1; }
 	};
 
+	struct C {};
+
 } // anonymous namespace
 
 bool test_construction()
@@ -45,9 +47,14 @@ bool test_construction()
 
 		class_<B>("B")
 			.def(constructor<int>())
-			.def(constructor<>())
+			.def(constructor<>()),
+
+		class_<C>("C")
+
 	];
 
+	if (dostring2(L, "a = C()") == 0) return false;
+	lua_pop(L, 1); // pop error message
 
 	if (dostring(L, "a = A(4)")) return false;
 	if (feedback != 4) return false;

@@ -56,6 +56,12 @@ namespace
 	{
 	}
 
+	int function_should_never_be_called(lua_State*)
+	{
+		feedback = -1;
+		return 0;
+	}
+
 } // anonymous namespace
 
 namespace luabind { namespace converters
@@ -88,6 +94,13 @@ bool test_free_functions()
 		int top = lua_gettop(L);
 
 		open(L);
+
+		lua_pushstring(L, "f");
+		lua_pushcclosure(L, &function_should_never_be_called, 0);
+		lua_settable(L, LUA_GLOBALSINDEX);
+
+		if (dostring(L, "f()")) return false;
+		if (feedback != -1) return false;
 
 		module(L)
 		[
