@@ -1275,7 +1275,7 @@ when we instantiate a Lua class.
             call<void>("f", a); 
         }
 
-        static void default_f(base_wraper* ptr, int a)
+        static void default_f(base* ptr, int a)
         {
             return ptr->base::f(a);
         }
@@ -1308,8 +1308,8 @@ to allow luabind to use both dynamic and static dispatch when calling the functi
     is identical to the virtual function. The fact that onw of them is a free
     function and the other a member function doesn't matter, but the parameters
     as seen from lua must match. It would not have worked if the static function
-    took a ``base*`` as its first argument, since the virtual function takes a
-    ``base_wrapper*`` as its first argument (its this pointer). There's currently
+    took a ``base_wrapper*`` as its first argument, since the virtual function
+    takes a ``base*`` as its first argument (its this pointer). There's currently
     no check in luabind to make sure the signatures match.
 
 If we didn't have a class wrapper, it would not be possible to pass a Lua class
