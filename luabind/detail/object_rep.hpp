@@ -84,7 +84,7 @@ namespace luabind { namespace detail
 		int flags() const throw() { return m_flags; }
 		void set_flags(int flags) { m_flags = flags; }
 
-		void get_lua_table(lua_State* L) const { return m_lua_table_ref.get(L); }
+		void get_lua_table(lua_State* L) const { m_lua_table_ref.get(L); }
 
 		void remove_ownership()
 		{
