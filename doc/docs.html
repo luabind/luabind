@@ -1790,7 +1790,7 @@ module(L)
 ];
 </pre>
 		
-<p>To use this policy you need to include <tt>&lt;luabind/discard_result.hpp&gt;</tt>.</p>
+<p>To use this policy you need to include <tt>&lt;luabind/discard_result_policy.hpp&gt;</tt>.</p>
 
 <h2><a name="policies_return_stl_iterator"></a>return_stl_iterator</h2>
 
@@ -2229,7 +2229,6 @@ This namespace contains non-public classes and are not supposed to be used direc
 </ul>
 
 <h1><a name="faq"></a>FAQ</h1>
-						// check the magic number that identifies luabind's functions
 <ul>
 	<li><h3>What's up with __cdecl and __stdcall?</h3>
 	
@@ -2298,6 +2297,10 @@ module(L)
 	<li><h3>Crashes when linking against luabind as a dll in windows</h3>
 	<p>When you build luabind, lua and you project, make sure you link against the runtime dynamically
 	(as a dll).</p>
+
+	<li><h3>I cannot register a function with a non-const parameter</h3>
+	<p>This is because there is no way to get a reference to a lua value. Have a look at
+	<a href="#policies_out">out_value</a> and <a href="#policies_pure_out">pure_out_value</a> policies.</p>
 
 </ul>
 
