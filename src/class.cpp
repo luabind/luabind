@@ -74,6 +74,7 @@ namespace luabind { namespace detail {
 		// this vector of strings. 
 		mutable std::vector<char*> m_strings;
 #endif
+		scope m_scope;
     };
 
     class_registration::class_registration(char const* name)
@@ -230,6 +231,10 @@ namespace luabind { namespace detail {
 
         m_methods.clear();
 
+        detail::getref(L, crep->table_ref());
+		m_scope.register_(L);
+		lua_pop(L, 1);
+
         lua_settable(L, -3);
     }
     
@@ -372,6 +377,11 @@ namespace luabind { namespace detail {
 	void class_base::add_static_constant(const char* name, int val)
 	{
 		m_registration->m_static_constants[name] = val;
+	}
+
+	void class_base::add_inner_scope(scope& s)
+	{
+		m_registration->m_scope.operator,(s);
 	}
 	
 }} // namespace luabind::detail

@@ -126,8 +126,8 @@ namespace luabind { namespace detail
 		}
 	};
 
-	template<class Param, class Policy>
-	match_fun_ptr gen_set_matcher(void (*)(Param), Policy*)
+	template<class T, class Param, class Policy>
+	match_fun_ptr gen_set_matcher(void (*)(T, Param), Policy*)
 	{
 		return set_matcher<Param, Policy>::apply;
 	}

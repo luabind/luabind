@@ -80,7 +80,7 @@ namespace luabind
 		struct error_callback
 		{
 			error_callback_fun err;
-			cast_failed_callback_fun cast;			
+			cast_failed_callback_fun cast;
 			
 			error_callback(): err(0), cast(0) {}
 

@@ -74,9 +74,9 @@ module(L)
 		[
 			class_<test_class>("test_class")
 				.def(constructor<>())
-/*				[
+				[
 					def("inner_fun", &f)
-				]*/
+				]
 				.enum_("vals")
 				[
 					value("val1", 1),
@@ -112,6 +112,10 @@ module(L)
 		if (feedback != 123) return false;
 		if (dostring(L, "test.f(3)")) return false;
 		if (feedback != 124) return false;
+
+		if (dostring(L, "test.test_class.inner_fun()")) return false;
+		if (feedback != 123) return false;
+
 		if (dostring(L, "a = test.test_class()")) return false;
 		if (feedback != 321) return false;
 		if (dostring(L, "b = test.test_class.val2")) return false;

@@ -39,7 +39,7 @@
 #include <luabind/detail/class_registry.hpp>
 #include <luabind/detail/find_best_match.hpp>
 #include <luabind/detail/get_overload_signature.hpp>
-#include <luabind/detail/error.hpp>
+#include <luabind/error.hpp>
 
 namespace luabind
 {

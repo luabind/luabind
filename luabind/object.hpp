@@ -28,7 +28,7 @@
 #include <iterator>
 
 #include <luabind/config.hpp>
-#include <luabind/detail/error.hpp>
+#include <luabind/error.hpp>
 
 #include <boost/preprocessor/repeat.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>

@@ -39,7 +39,7 @@
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 
 #include <luabind/detail/convert_to_lua.hpp>
-#include <luabind/detail/error.hpp>
+#include <luabind/error.hpp>
 
 namespace luabind
 {

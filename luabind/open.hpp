@@ -21,13 +21,16 @@
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-#ifndef LUABIND_BIND_HPP_INCLUDED
-#define LUABIND_BIND_HPP_INCLUDED
+#ifndef LUABIND_OPEN_HPP_INCLUDED
+#define LUABIND_OPEN_HPP_INCLUDED
 
 #include <luabind/config.hpp>
-#include <luabind/class.hpp>
-#include <luabind/function.hpp>
-#include <luabind/functor.hpp>
-#include <luabind/open.hpp>
 
-#endif // LUABIND_BIND_HPP_INCLUDED
+namespace luabind {
+
+	LUABIND_API void open(lua_State* L);
+
+}
+
+#endif // LUABIND_OPEN_HPP_INCLUDED
+

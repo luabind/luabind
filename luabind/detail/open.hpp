@@ -42,3 +42,4 @@ namespace luabind
 }
 
 #endif // LUABIND_OPEN_HPP_INCLUDED
+

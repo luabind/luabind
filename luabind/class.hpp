@@ -1092,7 +1092,8 @@ namespace luabind
 			const char* name() const;
 
 			void add_static_constant(const char* name, int val);
-			
+			void add_inner_scope(scope& s);
+
 		private:
 			class_registration* m_registration;
 		};
@@ -1104,8 +1105,6 @@ namespace luabind
 	struct class_: detail::class_base 
 	{
 		typedef class_<T, X1, X2, X3> self_t;
-
-		lua_State* m_L;
 
 	private:
 
@@ -1258,20 +1257,7 @@ namespace luabind
 			}
 		};
 
-		class_(lua_State* L, const char* name): class_base(name), m_L(L) { init(); }
-		class_(const char* name): class_base(name), m_L(0) { init(); }
-
-		~class_()
-		{
-	/*		if (m_L != 0)
-			{
-				scope::init(m_L);
-				lua_pushvalue(m_L, LUA_GLOBALSINDEX);
-				scope_stack::push(m_L);
-				commit(m_L);
-				scope_stack::pop(m_L);
-			}*/
-		}
+		class_(const char* name): class_base(name) { init(); }
 
 		template<class F>
 		class_& def(const char* name, F f)
@@ -1487,6 +1473,12 @@ namespace luabind
 		detail::enum_maker<self_t> enum_(const char*)
 		{
 			return detail::enum_maker<self_t>(*this);
+		}
+
+		class_& operator[](detail::scope s)
+		{
+			this->add_inner_scope(s);			
+			return *this;
 		}
 
 	private:

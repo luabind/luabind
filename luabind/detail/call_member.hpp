@@ -28,7 +28,7 @@
 
 #include <luabind/config.hpp>
 #include <luabind/detail/convert_to_lua.hpp>
-#include <luabind/detail/error.hpp>
+#include <luabind/error.hpp>
 
 namespace luabind
 {

@@ -25,7 +25,7 @@
 #define LUABIND_CLASS_REGISTRY_HPP_INCLUDED
 
 #include <luabind/config.hpp>
-#include <luabind/detail/open.hpp>
+#include <luabind/open.hpp>
 #include <string>
 
 namespace luabind { namespace detail
