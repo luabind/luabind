@@ -1,4 +1,5 @@
 #include "test.h"
+#include <iostream>
 
 namespace
 {
@@ -27,6 +28,7 @@ namespace
 			for (object::iterator j = table.begin(); j != table.end(); ++j)
 			{
 				feedback4 += object_cast<int>(*j);
+			//	std::cout << object_cast<const char*>(j.key()) << '\n';
 			}
 
 			feedback5 = 0;

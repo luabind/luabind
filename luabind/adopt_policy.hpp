@@ -86,9 +86,16 @@ namespace luabind { namespace detail
 			class_registry* registry = class_registry::get_registry(L);
 			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
-			// create the struct to hold the object
+/*			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));
 			// we send 0 as destructor since we know it will never be called
+			new(obj) object_rep(ptr, crep, object_rep::owner, delete_s<T>::apply);*/
+
+			void* obj;
+			void* held;
+
+			boost::tie(obj,held) = crep->allocate(L);
+
 			new(obj) object_rep(ptr, crep, object_rep::owner, delete_s<T>::apply);
 
 			// set the meta table

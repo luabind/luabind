@@ -53,17 +53,21 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO t
 					, lua_State* L
 					,  void(*destructor)(void*)
 					, LUABIND_TYPE_INFO held_t
+					, LUABIND_TYPE_INFO held_const_t
 					, void*(*extractor)(void*)
 					, void(*held_type_constructor)(void*,void*)
-					, int held_type_size)
+					, int held_type_size
+					, int held_type_alignment)
 	: m_type(t)
 	, m_held_type(held_t)
+	, m_const_holder_type(held_const_t)
 	, m_extract_underlying_fun(extractor)
 	, m_name(name)
 	, m_class_type(cpp_class)
 	, m_destructor(destructor)
 	, m_held_type_constructor(held_type_constructor)
 	, m_userdata_size(sizeof(object_rep) + held_type_size)
+	, m_userdata_alignment(held_type_alignment)
 {
 	class_registry* r = class_registry::get_registry(L);
 	assert((r->cpp_class() != LUA_NOREF) && "you must call luabind::open()");
@@ -116,6 +120,19 @@ luabind::detail::class_rep::~class_rep()
 			delete[] *i;
 	}
 #endif
+}
+
+boost::tuples::tuple<void*,void*> 
+luabind::detail::class_rep::allocate(lua_State* L) const
+{
+	const int size = sizeof(object_rep) 
+		+ m_userdata_size + m_userdata_alignment;
+
+	char* mem = static_cast<char*>(lua_newuserdata(L, size));
+	char* ptr = mem + (sizeof(object_rep) & ~(m_userdata_alignment - 1))
+			+ m_userdata_alignment;;
+
+	return boost::tuple<void*,void*>(mem,ptr);
 }
 
 int luabind::detail::class_rep::gettable(lua_State* L)

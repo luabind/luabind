@@ -131,7 +131,7 @@
 #include <luabind/detail/operator_id.hpp>
 
 namespace luabind
-{
+{	
 	namespace detail
 	{
 		struct unspecified {};
@@ -139,6 +139,11 @@ namespace luabind
 
 	template<class T, class X1 = detail::unspecified, class X2 = detail::unspecified, class X3 = detail::unspecified>
 	struct class_;
+
+	inline LUABIND_TYPE_INFO get_const_holder(...)
+	{
+		return LUABIND_INVALID_TYPE_INFO;
+	}
 
 	namespace detail
 	{
@@ -200,17 +205,14 @@ namespace luabind
 		// get_pointer(*static_cast<SmartPointer*>(obj_ptr))
 		// to extract the held pointer.
 		template<class HeldType, class T, class F, class Policies>
-		struct function_callback_non_null
+		struct function_callback_non_null : Policies
 		{
 			function_callback_non_null(F f_): f(f_) {}
 			inline int operator()(lua_State* L, void* obj_ptr)
 			{
 				HeldType& held_obj = *static_cast<HeldType*>(obj_ptr);
 
-				T* ptr = get_pointer(held_obj);
-//				BOOST_STATIC_ASSERT((boost::is_same<HeldType, detail::null_type>::value == false));
-
-//				std::cout << "HeldType: " << typeid(HeldType).name() << "\n";
+				T* ptr = static_cast<T*>(get_pointer(held_obj));
 
 				return call(f, ptr, L, static_cast<Policies*>(this));
 			}
@@ -291,7 +293,7 @@ namespace luabind
 			static void* extract(void* ptr)
 			{
 				HeldT& held_obj = *reinterpret_cast<HeldT*>(ptr);
-				UnderlyingT* underlying_ptr = get_pointer(held_obj);
+				UnderlyingT* underlying_ptr = static_cast<UnderlyingT*>(get_pointer(held_obj));
 				return underlying_ptr;
 			}
 		};
@@ -421,6 +423,24 @@ namespace luabind
 			}
 		};
 
+		template<class T>
+		struct get_holder_alignment
+		{
+			static int apply()
+			{
+				return boost::alignment_of<T>::value;
+			}
+		};
+
+		template<>
+		struct get_holder_alignment<detail::null_type>
+		{
+			static int apply()
+			{
+				return 0;
+			}
+		};
+
 
 	} // detail
 
@@ -473,9 +493,11 @@ namespace luabind
 		void*(*m_extractor)(void*);
 		void(*m_construct_held_type)(void*, void*);
 		int m_held_type_size;
+		int m_held_type_alignment;
 
 		LUABIND_TYPE_INFO m_type;
 		LUABIND_TYPE_INFO m_held_type;
+		LUABIND_TYPE_INFO m_const_holder_type;
 
 #ifndef LUABIND_DONT_COPY_STRINGS
 		// the maps that contains char pointers points into
@@ -495,11 +517,17 @@ namespace luabind
 
 		void set_type(LUABIND_TYPE_INFO t) { m_type = t; }
 		void set_held_type(LUABIND_TYPE_INFO t) { m_held_type = t; }
+
+		void set_const_holder_type(LUABIND_TYPE_INFO t)
+		{
+			m_const_holder_type = t;	
+		}
+
 		void set_extractor(void*(*f)(void*)) { m_extractor = f; }
 		void set_held_type_constructor(void(*f)(void*,void*)) { m_construct_held_type = f; }
 		void set_destructor(void(*f)(void*)) { m_destructor = f; }
 		void set_held_type_size(int s) { m_held_type_size = s; }
-
+		void set_held_type_alignment(int n) { m_held_type_alignment = n; }
 
 		inline void add_getter(const char* name, const boost::function2<int, lua_State*, int>& g)
 		{
@@ -626,7 +654,7 @@ namespace luabind
 			lua_newuserdata(L, sizeof(detail::class_rep));
 			crep = reinterpret_cast<detail::class_rep*>(lua_touserdata(L, -1));
 			
-			new(crep) detail::class_rep(m_type, m_name, L, m_destructor, m_held_type, m_extractor, m_construct_held_type, m_held_type_size);
+			new(crep) detail::class_rep(m_type, m_name, L, m_destructor, m_held_type, m_const_holder_type, m_extractor, m_construct_held_type, m_held_type_size, m_held_type_alignment);
 
 			// register this new type in the class registry
 			r->add_class(m_type, crep);
@@ -1084,10 +1112,13 @@ namespace luabind
 	
 			set_type(LUABIND_TYPEID(T));
 			set_held_type(detail::internal_held_type<HeldType>::apply());
+			set_const_holder_type(get_const_holder(detail::type<HeldType>()));
 			set_extractor(detail::internal_held_type_extractor<HeldType>::apply(detail::type<T>()));
 			set_held_type_constructor(detail::internal_held_type_constructor<HeldType>::apply(detail::type<T>()));
 			set_held_type_size(detail::internal_held_type_size<HeldType>::apply());
 			set_destructor(detail::internal_held_type_destructor<HeldType>::apply(detail::type<T>()));
+
+			set_held_type_alignment(detail::get_holder_alignment<HeldType>::apply());
 
 			generate_baseclass_list(detail::type<Base>());
 		}

@@ -1,5 +1,6 @@
 #include "test.h"
 #include <luabind/yield_policy.hpp>
+#include <stdio.h>
 
 namespace
 {
@@ -8,7 +9,7 @@ namespace
 	struct test_class
 	{
 		test_class(): n(0) {}
-		
+
 		int f() const
 		{
 			return const_cast<int&>(n)++;
@@ -16,6 +17,11 @@ namespace
 
 		int n;
 	};
+
+	int f(int a)
+	{
+		return 9;
+	}
 
 	int j(lua_State* L)
 	{
@@ -28,6 +34,17 @@ namespace
 
 #include <iostream>
 
+struct ns_test
+{
+	template<class T>
+	ns_test(const T&) {}
+
+	ns_test(const char*) {}
+
+	template<class T>
+	void operator=(const T&) {}
+};
+
 bool test_yield()
 {
 	using namespace luabind;
@@ -37,27 +54,19 @@ bool test_yield()
 		lua_closer c(L);
 
 		open(L);
-/*
-		namespace_(L, "namespace")
-		[
-			namespace_("inner")
-			[
-			]
-		];
-*/
-				class_<test_class>("test")
-					.def(constructor<>())
-					.def("f", &test_class::f, yield)
-					.commit(L)
-					;
-		
-		
+
+		class_<test_class>("test")
+				.def(constructor<>())
+				.def("f", &test_class::f, yield)
+				.commit(L)
+				;
+
 		dostring(L, "function g() a = test() for i = 1, 10 do print(a:f()) end end");
 
 		lua_pushstring(L, "j");
 		lua_pushcclosure(L, j, 0);
 		lua_settable(L, LUA_GLOBALSINDEX);
-		
+
 		lua_State* thread = lua_newthread(L);
 		lua_pushstring(thread, "g");
 		lua_gettable(thread, LUA_GLOBALSINDEX);
@@ -70,7 +79,7 @@ bool test_yield()
 		for (int i = 0; i < 10; ++i)
 		{
 			std::cout << "iteration: " << i << ", top: " << lua_gettop(thread) << '\n';
-			
+
 			lua_resume(thread, lua_gettop(thread));
 		}
 	}

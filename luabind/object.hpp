@@ -723,6 +723,8 @@ namespace luabind
 				return m_obj != rhs.m_obj || m_key != rhs.m_key;
 			}
 
+			object key() const;
+
 		private:
 
 			iterator(object* obj, int key)
@@ -1068,6 +1070,13 @@ private:
 		std::swap(m_ref, rhs.m_ref);
 	}
 
+	inline object object::iterator::key() const
+	{
+		lua_State* L = m_obj->lua_state();
+		detail::getref(L, m_key);
+		return object(L, detail::ref(L), true);
+	}
+	
 	namespace detail
 	{
 

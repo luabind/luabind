@@ -34,6 +34,31 @@ int dostring2(lua_State* L, const char* str)
 	return 0;
 }
 
+#include <boost/shared_ptr.hpp>
+
+template<class T>
+struct type {};
+
+template<class T>
+type<boost::shared_ptr<const T> >
+constify_ptr(type<boost::shared_ptr<T> >)
+{
+	return type<boost::shared_ptr<const T> >();
+}
+
+template<class T>
+LUABIND_TYPE_INFO get_typeid(type<T>)
+{
+	return LUABIND_TYPEID(T);
+}
+
+void test_cptr()
+{
+	typedef boost::shared_ptr<int> ptr_t;
+
+	std::cout << get_typeid(constify_ptr(type<ptr_t>()))->name() << '\n';
+}
+
 bool report_success(bool result, const char* name)
 {
 	std::cout << name;
@@ -49,6 +74,8 @@ bool report_success(bool result, const char* name)
 
 int main()
 {
+	test_cptr();
+	
 	bool passed = true;
 
 	passed &= report_success(test_construction(), "construction");

@@ -27,6 +27,7 @@
 //#include <cstdlib>
 
 #include <boost/limits.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
 
 #include <luabind/config.hpp>
@@ -95,9 +96,11 @@ namespace luabind { namespace detail
 			, lua_State* L
 			, void(*destructor)(void*)
 			, LUABIND_TYPE_INFO held_t
+			, LUABIND_TYPE_INFO held_const_t
 			, void*(*extractor)(void*)
 			, void(*construct_held_type)(void*,void*)
-			, int held_type_size);
+			, int held_type_size
+			, int held_type_alignment);
 
 		// used when creating a lua class
 		// EXPECTS THE TOP VALUE ON THE LUA STACK TO
@@ -106,6 +109,8 @@ namespace luabind { namespace detail
 		class_rep(lua_State* L, const char* name);
 
 		~class_rep();
+
+		boost::tuples::tuple<void*,void*> allocate(lua_State* L) const;
 
 		// called from the metamethod for __index
 		// the object pointer is passed on the lua stack
@@ -189,6 +194,7 @@ namespace luabind { namespace detail
 		// type.
 		LUABIND_TYPE_INFO m_type;
 		LUABIND_TYPE_INFO m_held_type;
+		LUABIND_TYPE_INFO m_const_holder_type;
 
 		// this function pointer is used if the type is held by
 		// a smart pointer. This function takes the type we are holding
@@ -210,6 +216,7 @@ namespace luabind { namespace detail
 		// need this since held_types are constructed
 		// in the same memory (to avoid fragmentation)
 		int m_userdata_size;
+		int m_userdata_alignment;
 
 		// a list of info for every class this class derives from
 		// the information stored here is sufficient to do
