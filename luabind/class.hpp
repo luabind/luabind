@@ -65,9 +65,9 @@
 		
 	document the new yield-policy
 
-	chache operators and finalizers in the class_rep. For lua classes
+	cache finalizers in the class_rep. For lua classes
 	we currently do a lookup each time we need to know if a lua class
-	has a finalizer or an operator.
+	has a finalizer.
 
 	static functions, this could be implemented by letting classes contain
 	other declarations (classes or functions)

@@ -78,6 +78,7 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO type
 	, m_class_type(cpp_class)
 	, m_destructor(destructor)
 	, m_const_holder_destructor(const_holder_destructor)
+	, m_operator_cache(0)
 {
 	class_registry* r = class_registry::get_registry(L);
 	assert((r->cpp_class() != LUA_NOREF) && "you must call luabind::open()");
@@ -105,6 +106,7 @@ luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	, m_class_type(lua_class)
 	, m_destructor(0)
 	, m_const_holder_destructor(0)
+	, m_operator_cache(0)
 {
 #ifndef LUABIND_DONT_COPY_STRINGS
 	m_strings.push_back(detail::dup_string(name));
@@ -295,7 +297,7 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 	for (int i = 0; i < 2; ++i)
 		if (operand[i] && operand[i]->crep()->get_class_type() == class_rep::lua_class)
 		{
-			// if this is a lua class we have to
+/*			// if this is a lua class we have to
 			// look in its table to see if there's
 			// any overload of this operator
 			detail::getref(L, operand[i]->crep()->table_ref());
@@ -303,9 +305,12 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 			lua_rawget(L, -2);
 			// if we have tha operator, set num_overloads to 1
 			if (lua_isfunction(L, -1)) num_overloads[i] = 1;
-			lua_pop(L, 2);
+			lua_pop(L, 2);*/
+			
+			if (operand[i]->crep()->has_operator_in_lua(L, id))
+				num_overloads[i] = 1;
 		}
-		
+
 	bool ambiguous = false;
 	int match_index = -1;
 	int min_match = std::numeric_limits<int>::max();
@@ -1087,6 +1092,9 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 	detail::getref(L, crep->m_table_ref);
 	lua_replace(L, 1);
 	lua_rawset(L, -3);
+
+	crep->m_operator_cache = 0; // invalidate cache
+	
 	return 0;
 }
 
@@ -1480,3 +1488,30 @@ void* luabind::detail::class_rep::convert_to(LUABIND_TYPE_INFO target_type, cons
 
 	return static_cast<char*>(raw_pointer) + offset;
 }
+
+void class_rep::cache_operators(lua_State* L)
+{
+	m_operator_cache = 0x1;
+
+	for (int i = 0; i < number_of_operators; ++i)
+	{
+		getref(L, table_ref());
+		lua_pushstring(L, get_operator_name(i));
+		lua_rawget(L, -2);
+
+		if (lua_isfunction(L, -1)) m_operator_cache |= 1 << (i + 1);
+
+		lua_pop(L, 2);
+	}
+}
+
+bool class_rep::has_operator_in_lua(lua_State* L, int id)
+{
+	if ((m_operator_cache & 0x1) == 0)
+		cache_operators(L);
+
+	const int mask = 1 << (id + 1);
+
+	return m_operator_cache & mask;
+}
+
