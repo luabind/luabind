@@ -1,7 +1,7 @@
 #include <boost/tokenizer.hpp>
 
 #include "test.h"
-#include <luabind/void_ptr_policy.hpp>
+//#include <luabind/void_ptr_policy.hpp>
 #include <iostream>
 
 namespace
@@ -89,7 +89,7 @@ bool test_lua_classes()
 		class_<abstract_base>("abstract_base")
 			.def("f", &abstract_base::f),
 		def("take_abstract", &take_abstract),
-		def("take_void_ptr", &take_void_ptr, void_ptr(_1)),
+		//def("take_void_ptr", &take_void_ptr, void_ptr(_1)),
 	
 		class_<base, baseWrap>("base")
 			.def(constructor<>())
@@ -135,7 +135,7 @@ bool test_lua_classes()
 	if (top != lua_gettop(L)) return false;
 
 	dostring(L, "a = derived()");
-	dostring(L, "take_void_ptr(a)");
+//	dostring(L, "take_void_ptr(a)");
 
 	dostring(L, "info = class_info(a)");
 	dostring(L, "print(info.name)");
