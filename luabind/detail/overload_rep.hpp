@@ -35,6 +35,7 @@
 #include <luabind/detail/overload_rep_base.hpp>
 
 #include <luabind/detail/class_rep.hpp>
+#include <luabind/detail/is_indirect_const.hpp>
 
 namespace luabind { namespace detail
 {
@@ -117,7 +118,7 @@ namespace luabind { namespace detail
 		}
 
 		// non-member functions
-
+/*
 		template<class R, class T BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A), class Policies>
 		overload_rep(R(*)(T* BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), Policies*)
 			: m_pointer_offset(0)
@@ -156,6 +157,18 @@ namespace luabind { namespace detail
 			: m_pointer_offset(0)
 			, m_num_args(BOOST_PP_ITERATION())
 			, m_const(true)
+		{
+			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
+			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
+			m_arity = 0 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
+		}
+*/
+
+		template<class R, class T BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A), class Policies>
+		overload_rep(R(*)(T BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), Policies*)
+			: m_pointer_offset(0)
+			, m_num_args(BOOST_PP_ITERATION())
+			, m_const(is_indirect_const<T>::value)
 		{
 			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
 			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)

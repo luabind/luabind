@@ -27,6 +27,7 @@
 #include <algorithm>
 
 #include <luabind/config.hpp>
+#include <luabind/detail/yes_no.hpp>
 
 namespace luabind { namespace detail
 {
@@ -40,9 +41,6 @@ namespace luabind { namespace detail
 	struct type {};
 
 	struct null_type {};
-
-	struct yes_t { char x; };
-	struct no_t { double x; };
 
 /*	typedef char yes_t;
 	typedef double no_t;*/

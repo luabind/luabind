@@ -77,7 +77,19 @@ namespace luabind { namespace detail
 			return nret;
 		}
 	};
-	
+
+	template<class T, class U>
+	U& dereference(T* p, U&(*)())
+	{
+		return *p;
+	}
+
+	template<class T, class U>
+	U* dereference(T* p, U*(*)())
+	{
+		return p;
+	}
+
 	template<class T>
 	struct returns
 	{
@@ -166,8 +178,8 @@ namespace luabind { namespace detail
 		return maybe_yield<Policies>::apply(L, nret);
 	}
 
-	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-	static int call(T(*f)(C* obj BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), C* obj, lua_State* L, const Policies*)
+	template<class C, class CL, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+	static int call(T(*f)(CL BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), C* obj, lua_State* L, const Policies*)
 	{
 		int nargs = lua_gettop(L);
 		typedef typename find_conversion_policy<0, Policies>::type converter_policy_ret;
@@ -175,7 +187,8 @@ namespace luabind { namespace detail
 		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
 		converter_ret.apply(L, f
 		(
-			obj BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAMS, _)
+			dereference(obj, (CL(*)())0)
+			BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAMS, _)
 		));
 		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POSTCALL, _)
 	
@@ -183,8 +196,8 @@ namespace luabind { namespace detail
 
 		const int indices[] =
 		{
-			1 		/* self */,
-			nargs + nret /* result */
+			1 		, // self 
+			nargs + nret // result
 			BOOST_PP_ENUM_TRAILING(BOOST_PP_ITERATION(), LUABIND_INDEX_MAP, _)
 		};
 
@@ -193,7 +206,7 @@ namespace luabind { namespace detail
 	//	return nret;
 		return maybe_yield<Policies>::apply(L, nret);
 	}
-
+/*
 	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 	static int call(T(*f)(const C* obj BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), C* obj, lua_State* L, const Policies*)
 	{
@@ -211,8 +224,8 @@ namespace luabind { namespace detail
 
 		const int indices[] =
 		{
-			1 		/* self */,
-			nargs + nret /* result */
+			1 		, // self
+			nargs + nret // result
 			BOOST_PP_ENUM_TRAILING(BOOST_PP_ITERATION(), LUABIND_INDEX_MAP, _)
 		};
 
@@ -240,8 +253,8 @@ namespace luabind { namespace detail
 
 		const int indices[] =
 		{
-			1 		/* self */,
-			nargs + nret /* result */
+			1 		,// self
+			nargs + nret // result
 			BOOST_PP_ENUM_TRAILING(BOOST_PP_ITERATION(), LUABIND_INDEX_MAP, _)
 		};
 
@@ -268,8 +281,8 @@ namespace luabind { namespace detail
 
 		const int indices[] =
 		{
-			1 		/* self */,
-			nargs + nret /* result */
+			1 		, // self
+			nargs + nret // result
 			BOOST_PP_ENUM_TRAILING(BOOST_PP_ITERATION(), LUABIND_INDEX_MAP, _)
 		};
 
@@ -278,7 +291,7 @@ namespace luabind { namespace detail
 	//	return nret;
 		return maybe_yield<Policies>::apply(L, nret);
 	}
-
+*/
 #elif BOOST_PP_ITERATION_FLAGS() == 2
 
 	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -335,14 +348,15 @@ namespace luabind { namespace detail
 		return maybe_yield<Policies>::apply(L, nret);
 	}
 
-	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-	static int call(void(*f)(C* obj BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), C* obj, lua_State* L, const Policies*)
+	template<class C, class CL, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+	static int call(void(*f)(CL BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), C* obj, lua_State* L, const Policies*)
 	{
 		int nargs = lua_gettop(L);
 		L = L; // L is used, but metrowerks compiler seem to warn about it before expanding the macros
 		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
 		f(
-			obj BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAMS, _)
+			dereference(obj, (CL(*)())0)
+			BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAMS, _)
 		);
 
 		int nret = lua_gettop(L) - nargs;
@@ -360,7 +374,7 @@ namespace luabind { namespace detail
 	//	return nret;
 		return maybe_yield<Policies>::apply(L, nret);
 	}
-
+/*
 	template<class C, class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 	static int call(void(*f)(C& obj BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), C* obj, lua_State* L, const Policies*)
 	{
@@ -375,8 +389,8 @@ namespace luabind { namespace detail
 
 		const int indices[] =
 		{
-			1 		/* self */,
-			nargs + nret /* result */
+			1 		, // self
+			nargs + nret // result
 			BOOST_PP_ENUM_TRAILING(BOOST_PP_ITERATION(), LUABIND_INDEX_MAP, _)
 		};
 		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POSTCALL, _)
@@ -402,8 +416,8 @@ namespace luabind { namespace detail
 
 		const int indices[] =
 		{
-			1 		/* self */,
-			nargs + nret /* result */
+			1 		, // self
+			nargs + nret // result //
 			BOOST_PP_ENUM_TRAILING(BOOST_PP_ITERATION(), LUABIND_INDEX_MAP, _)
 		};
 
@@ -412,9 +426,9 @@ namespace luabind { namespace detail
 	//	return nret;
 		return maybe_yield<Policies>::apply(L, nret);
 	}
-
+*/
 #elif BOOST_PP_ITERATION_FLAGS() == 3
-
+/*
 	template<class T, class Policies, class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 	int call(R(*f)(T& BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), T* obj, lua_State* L, const Policies* policies)
 	{
@@ -435,6 +449,12 @@ namespace luabind { namespace detail
 
 	template<class T, class Policies, class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 	int call(R(*f)(const T* BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), T* obj, lua_State* L, const Policies* policies)
+	{
+		return returns<R>::call(f, obj, L, policies);
+	}
+*/
+	template<class CL, class T, class Policies, class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
+	int call(R(*f)(CL BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), T* obj, lua_State* L, const Policies* policies)
 	{
 		return returns<R>::call(f, obj, L, policies);
 	}

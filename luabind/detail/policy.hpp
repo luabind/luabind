@@ -90,8 +90,8 @@ namespace luabind
 
 		no_t is_user_defined(...);
 
-		template<bool B = true> struct yes_no : yes_t { typedef yes_t type; };
-		template<> struct yes_no<false> : no_t { typedef no_t type; };
+//		template<bool B = true> struct yes_no : yes_t { typedef yes_t type; };
+//		template<> struct yes_no<false> : no_t { typedef no_t type; };
 /*
 		template<int N, class T>
 		struct TO
