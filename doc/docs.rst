@@ -397,7 +397,10 @@ brackets, like this::
 ::
  
     template<class Ret>
-    Ret call_member(object&, const char* name, ...)
+    Ret call_member(object const&, const char* name, ...)
+
+    template<class Ret>
+    Ret call_member(weak_ref, const char* name, ...)
 
 This treats the given object as an instance of a class. The given name is the
 name of a member function to call. The ... represents a variable number of
