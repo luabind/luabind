@@ -1,4 +1,4 @@
-CXX	 = g++
+CXX	 = g++-2
 CXXFLAGS = -Wall -ftemplate-depth-50 -g
 
 sources =\

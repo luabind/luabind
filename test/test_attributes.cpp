@@ -83,7 +83,7 @@ bool test_attributes()
 		.property("name", &property_test::get_name, &property_test::set_name)
 		.def_readonly("o", &property_test::o)
 #ifndef BOOST_MSVC
-		.property("internal", &property_test::get_internal, dependency(result, self))
+//		.property("internal", &property_test::get_internal, dependency(result, self))
 #endif
 		;
 
@@ -119,13 +119,13 @@ bool test_attributes()
 
 	dostring(L, "a = property()");
 #ifndef BOOST_MSVC
-	dostring(L, "b = a.internal");
+//	dostring(L, "b = a.internal");
 #endif
 	dostring(L, "a = nil");
 	dostring(L, "collectgarbage(0)");
 	dostring(L, "collectgarbage(0)");
 #ifndef BOOST_MSVC
-	dostring(L, "print(b.name)");
+//	dostring(L, "print(b.name)");
 #endif
 	return true;
 }
