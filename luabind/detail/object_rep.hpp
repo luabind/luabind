@@ -50,10 +50,10 @@ namespace luabind { namespace detail
 			m_dependency_ref(LUA_NOREF)
 		{
 			// if the object is owned by lua, a valid destructor must be given
-			assert(((m_flags & owner) && dest) || !(m_flags & owner));
+			assert((((m_flags & owner) && dest) || !(m_flags & owner)) && "internal error, please report");
 
 			// an object can't be collected if it's const
-			assert(!((m_flags & constant) && (m_flags & owner)));
+			assert((!((m_flags & constant) && (m_flags & owner))) && "internal error, please report");
 		}
 
 		object_rep(class_rep* crep, int flags, int table_ref)
@@ -88,7 +88,7 @@ namespace luabind { namespace detail
 
 		void remove_ownership()
 		{
-			assert(m_flags & owner);
+			assert((m_flags & owner) && "cannot remove ownership of object that's not owned");
 			m_flags &= ~owner;
 		}
 

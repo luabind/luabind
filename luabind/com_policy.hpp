@@ -57,6 +57,10 @@ namespace luabind { namespace detail
 			class_registry* registry = class_registry::get_registry(L);
 			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
+			// if you get caught in this assert you are trying
+			// to use an unregistered type
+			assert(crep && "you are trying to use an unregistered type");
+
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));
 			new(obj) object_rep(ptr, crep, object_rep::owner, COM_release<T>::release);

@@ -266,7 +266,7 @@ namespace luabind { namespace detail
 		void apply(lua_State* L, const luabind::object& v)
 		{
 			// if you hit this assert you are trying to return a value from one state into another lua state
-			assert(v.lua_state() == L);
+			assert((v.lua_state() == L) && "you cannot return a value from one lua state into another");
 			v.pushvalue();
 		}
 		void apply(lua_State* L, int v) { lua_pushnumber(L, v); }
@@ -452,6 +452,10 @@ namespace luabind { namespace detail
 			class_registry* registry = class_registry::get_registry(L);
 			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
+			// if you get caught in this assert you are
+			// trying to use an unregistered type
+			assert(crep && "you are trying to use an unregistered type");
+
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));
 			//new(obj) object_rep(ptr, crep, object_rep::owner, destructor_s<T>::apply);
@@ -479,13 +483,13 @@ namespace luabind { namespace detail
 			
 			int offset = 0;
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
-			assert(obj != 0); // internal error
+			assert((obj != 0) && "internal error, please report"); // internal error
 			const class_rep* crep = obj->crep();
 
 			int steps = implicit_cast(crep, detail::type<T>(), offset);
 
 			// should never be called with a type that can't be cast
-			assert(steps >= 0);
+			assert((steps >= 0) && "internal error, please report");
 
 			T* ptr = reinterpret_cast<T*>(obj->ptr(offset));
 //			std::cerr << "pointer_converter<lua_to_cpp>: " << ptr << " " << offset << "\n";
@@ -522,7 +526,9 @@ namespace luabind { namespace detail
 			class_registry* registry = class_registry::get_registry(L);
 			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
-			assert(crep != 0);
+			// if you get caught in this assert you are
+			// trying to use an unregistered type
+			assert(crep && "you are trying to use an unregistered type");
 
 			T* copied_obj = new T(ref);
 
@@ -553,17 +559,17 @@ namespace luabind { namespace detail
 			// getmetatable().__lua_class is true
 			// object_rep->flags() & object_rep::constant == 0
 
-			assert(lua_isnil(L, index) == false);
+			assert((lua_isnil(L, index) == false) && "internal error, please report");
 
 			int offset = 0;
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
-			assert(obj != 0); // internal error
+			assert((obj != 0) && "internal error, please report"); // internal error
 			const class_rep* crep = obj->crep();
 
 			int steps = implicit_cast(crep, detail::type<T>(), offset);
 
 			// should never be called with a type that can't be cast
-			assert(steps >= 0);
+			assert((steps >= 0) && "internal error, please report");
 
 			T* ptr = reinterpret_cast<T*>(obj->ptr(offset));
 
@@ -603,8 +609,13 @@ namespace luabind { namespace detail
 			class_registry* registry = class_registry::get_registry(L);
 			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
+			// if you get caught in this assert you are
+			// trying to use an unregistered type
+			assert(crep && "you are trying to use an unregistered type");
+
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));
+			assert(obj && "internal error, please report");
 			// we send 0 as destructor since we know it will never be called
 			new(obj) object_rep(const_cast<T*>(ptr), crep, object_rep::constant, 0);
 
@@ -653,10 +664,15 @@ namespace luabind { namespace detail
 			class_registry* registry = class_registry::get_registry(L);
 			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
+			// if you get caught in this assert you are
+			// trying to use an unregistered type
+			assert(crep && "you are trying to use an unregistered type");
+
 			T* ptr = &ref;
 
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));
+			assert(obj && "internal error, please report");
 			new(obj) object_rep(ptr, crep, 0, 0);
 
 			// set the meta table
@@ -699,12 +715,17 @@ namespace luabind { namespace detail
 			class_registry* registry = class_registry::get_registry(L);
 			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
+			// if you get caught in this assert you are
+			// trying to use an unregistered type
+			assert(crep && "you are trying to use an unregistered type");
+
 			T* ptr = const_cast<T*>(&ref);
 
 //			std::cerr << "const_ref_converter<cpp_to_lua>: " << ptr << "\n";
 
 			// create the table to hold the object
 			object_rep* obj = static_cast<object_rep*>(lua_newuserdata(L, sizeof(object_rep)));
+			assert(obj && "internal error, please report");
 			new(obj) object_rep(ptr, crep, object_rep::constant, 0);
 
 			// set the meta table

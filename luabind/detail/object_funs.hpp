@@ -48,13 +48,15 @@ namespace luabind
 			detail::stack_pop p(L, 1);
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-#ifndef LUABIND_NO_EXCEPTIONS
 
 			if (converter.match(L, LUABIND_DECORATE_TYPE(T), -1) < 0)
+			{
+#ifndef LUABIND_NO_EXCEPTIONS
 				throw cast_failed();
 #else
-			assert(converter.match(L, LUABIND_DECORATE_TYPE(T), -1) >= 0);
+				assert(0 && "object_cast failed. If you want to handle this error use luabind::set_error_callback()");
 #endif
+			}
 #endif
 
 			return converter.apply(L, LUABIND_DECORATE_TYPE(T), -1);

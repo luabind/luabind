@@ -94,7 +94,7 @@ namespace luabind { namespace detail
 			, m_destructor(destructor)
 		{
 			class_registry* r = class_registry::get_registry(L);
-			assert(r->cpp_class() != LUA_NOREF); // you must call luabind::open()
+			assert((r->cpp_class() != LUA_NOREF) && "you must call luabind::open()"); // you must call luabind::open()
 
 			detail::getref(L, r->cpp_class());
 			lua_setmetatable(L, -2);
@@ -125,7 +125,7 @@ namespace luabind { namespace detail
 			m_table_ref = detail::ref(L);
 
 			class_registry* r = class_registry::get_registry(L);
-			assert(r->cpp_class() != LUA_NOREF); // you must call luabind::open()
+			assert((r->cpp_class() != LUA_NOREF) && "you must call luabind::open()"); // you must call luabind::open()
 
 			detail::getref(L, r->lua_class());
 			lua_setmetatable(L, -2);
@@ -1260,8 +1260,6 @@ namespace luabind { namespace detail
 			detail::getref(L, obj->lua_table_ref());
 			lua_replace(L, 1);
 			lua_settable(L, 1);
-
-//			assert(lua_gettop(L) == 1);
 		}
 		else
 		{

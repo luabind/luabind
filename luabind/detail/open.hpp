@@ -97,7 +97,7 @@ namespace luabind
 			for (int i = 0; i < number_of_operators; ++i) add_operator_to_metatable(L, i);
 
 			// store a reference to the instance-metatable in our class_rep
-			assert(lua_type(L, -1) == LUA_TTABLE);
+			assert((lua_type(L, -1) == LUA_TTABLE) && "internal error, please report");
 
 			return detail::ref(L);
 		}
@@ -168,7 +168,7 @@ namespace luabind
 
 		// If you hit this assert it's because you have called luabind::open() twice on
 		// the same lua_State.
-		assert(detail::class_registry::get_registry(L) == 0);
+		assert((detail::class_registry::get_registry(L) == 0) && "you cannot call luabind::open() twice");
 
 		lua_pushstring(L, "__luabind_classes");
 		r = static_cast<detail::class_registry*>(lua_newuserdata(L, sizeof(detail::class_registry)));

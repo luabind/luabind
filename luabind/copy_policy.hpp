@@ -46,6 +46,11 @@ namespace luabind { namespace detail {
 			class_registry* registry = class_registry::get_registry(L);
 
 			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+
+			// if you get caught in this assert you are trying
+			// to use an unregistered type
+			assert(crep && "you are trying to use an unregistered type");
+
 			T* copied_obj = new T(*ptr);
 
 			// create the struct to hold the object
@@ -65,8 +70,12 @@ namespace luabind { namespace detail {
 		void apply(lua_State* L, const T& ref)
 		{
 			class_registry* registry = class_registry::get_registry(L);
-
 			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+
+			// if you get caught in this assert you are trying
+			// to use an unregistered type
+			assert(crep && "you are trying to use an unregistered type");
+
 			T* copied_obj = new T(ref);
 
 			// create the struct to hold the object

@@ -43,13 +43,12 @@ namespace luabind { namespace detail
 
 			int offset = 0;
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
-			assert(obj != 0); // internal error
+			assert((obj != 0) && "internal error, please report");
 			const class_rep* crep = obj->crep();
 
 			int steps = implicit_cast(crep, detail::type<T>(), offset);
 
-			// from_lua() should never be called with a type that can't be cast
-			assert(steps >= 0);
+			assert((steps >= 0) && "adopt_pointer used with type that cannot be converted");
 			obj->remove_ownership();
 			T* ptr = reinterpret_cast<T*>(obj->ptr(offset));
 

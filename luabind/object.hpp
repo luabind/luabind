@@ -171,7 +171,8 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 					throw error();
 #else
-					assert(0);
+					assert(0 && "the lua function threw an error and exceptions are disabled."
+						"if you want to handle this error use luabind::set_error_callback()");
 #endif
 				}
 				int ref = detail::ref(L);
@@ -905,7 +906,7 @@ namespace luabind
 		inline void set() const
 		{
 			// you are trying to access an invalid object
-			assert(m_state != 0);
+			assert((m_state != 0) && "you are trying to access an invalid (uninitialized) object");
 
 			allocate_slot();
 			lua_rawseti(m_state, LUA_REGISTRYINDEX, m_ref);
@@ -914,8 +915,8 @@ namespace luabind
 		inline void pushvalue() const
 		{
 			// you are trying to dereference an invalid object
-			assert(m_ref != LUA_NOREF);
-			assert(m_state != 0);
+			assert((m_ref != LUA_NOREF) && "you are trying to access an invalid (uninitialized) object");
+			assert((m_state != 0) && "internal error, please report");
 
 			lua_getref(m_state, m_ref);
 		}
@@ -1000,7 +1001,8 @@ namespace luabind
 		template<class T>
 		object& operator=(const T& val) const
 		{
-			assert(m_state != 0); // you cannot assign a non-lua value to an uninitialized object
+			assert((m_state != 0) && "you cannot assign a non-lua value to an uninitialized object");
+			// you cannot assign a non-lua value to an uninitialized object
 
 			allocate_slot();
 			detail::convert_to_lua(m_state, val);
@@ -1136,7 +1138,7 @@ private:
 	inline void object::swap(object& rhs)
 	{
 		// you cannot swap objects from different lua states
-		assert(lua_state() == rhs.lua_state());
+		assert((lua_state() == rhs.lua_state()) && "you cannot swap objects from different lua states");
 		std::swap(m_ref, rhs.m_ref);
 	}
 
@@ -1160,7 +1162,8 @@ private:
 #ifndef LUABIND_NO_EXCEPTIONS
 				throw error();
 #else
-				assert(0);
+				assert(0 && "the lua function threw an error and exceptions are disabled."
+					"if you want to handle this error use luabind::set_error_callback()");
 #endif
 			}
 			int ref = detail::ref(L);
@@ -1172,7 +1175,7 @@ private:
 
 		inline proxy_object& proxy_object::operator=(const object& p)
 		{
-			assert(lua_state() == p.lua_state());
+			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
 			
 			lua_State* L = lua_state();
 
@@ -1191,7 +1194,7 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(lua_state() == p.lua_state());
+			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
 
 			lua_State* L = lua_state();
 
@@ -1211,7 +1214,7 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(lua_state() == p.lua_state());
+			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
 
 			lua_State* L = lua_state();
 
@@ -1231,7 +1234,7 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(lua_state() == p.lua_state());
+			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
 
 			lua_State* L = lua_state();
 
@@ -1249,7 +1252,7 @@ private:
 
 		inline void proxy_object::pushvalue() const
 		{
-			assert(m_key_ref != LUA_NOREF);
+			assert((m_key_ref != LUA_NOREF) && "you cannot call pushvalue() on an uninitialized object");
 
 			lua_State* L = m_obj->lua_state();
 			m_obj->pushvalue();
@@ -1291,7 +1294,7 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values
 			// from one lua state to another without first going through C++
-			assert(lua_state() == p.lua_state());
+			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
 			lua_State* L = lua_state();
 			m_obj->pushvalue();
 			// retrieve the rhs value
@@ -1306,7 +1309,7 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(lua_state() == p.lua_state());
+			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
 
 			lua_State* L = lua_state();
 
@@ -1325,7 +1328,7 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(lua_state() == p.lua_state());
+			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
 
 			lua_State* L = lua_state();
 
@@ -1341,7 +1344,7 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(lua_state() == p.lua_state());
+			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
 
 			lua_State* L = lua_state();
 
@@ -1361,7 +1364,7 @@ private:
 		inline void proxy_array_object::pushvalue() const
 		{
 			// you are trying to dereference an invalid object
-			assert(m_key != LUA_NOREF);
+			assert((m_key != LUA_NOREF) && "you cannot call pushvalue() on an uninitialized object");
 
 			lua_State* L = m_obj->lua_state();
 			m_obj->pushvalue();
@@ -1395,7 +1398,7 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(lua_state() == p.lua_state());
+			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
 			lua_State* L = lua_state();
 
 			m_obj->pushvalue();
@@ -1414,7 +1417,7 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(lua_state() == p.lua_state());
+			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
 
 			lua_State* L = lua_state();
 
@@ -1434,7 +1437,7 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(lua_state() == p.lua_state());
+			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
 
 			lua_State* L = lua_state();
 
@@ -1454,7 +1457,7 @@ private:
 		{
 			// if you hit this assert you are trying to transfer values from one lua state to another
 			// without first going through C++
-			assert(lua_state() == p.lua_state());
+			assert((lua_state() == p.lua_state()) && "you cannot assign a value from a different lua state");
 
 			lua_State* L = lua_state();
 
@@ -1473,7 +1476,7 @@ private:
 
 		inline void proxy_raw_object::pushvalue() const
 		{
-			assert(m_key_ref != LUA_NOREF);
+			assert((m_key_ref != LUA_NOREF) && "you cannot call pushvalue() on an uninitiallized object");
 
 			lua_State* L = lua_state();
 			m_obj->pushvalue();
@@ -1527,7 +1530,8 @@ private:
 #ifndef LUABIND_NO_EXCEPTIONS
 				throw luabind::error();
 #else
-				assert(0);
+				assert(0 && "the lua function threw an error and exceptions are disabled."
+					"if you want to handle this error use luabind::set_error_callback()");
 #endif
 			}
 		}
@@ -1545,7 +1549,8 @@ private:
 #ifndef LUABIND_NO_EXCEPTIONS
 				throw luabind::error();
 #else
-				assert(0);
+			assert(0 && "the lua function threw an error and exceptions are disabled."
+				"if you want to handle this error use luabind::set_error_callback()");
 #endif
 			}
 			int ref = detail::ref(L);
@@ -1562,7 +1567,7 @@ namespace std
 #define LUABIND_DEFINE_SWAP(t1,t2)\
 	inline void swap(t1 lhs, t2 rhs)\
 	{\
-			assert(lhs.lua_state() == rhs.lua_state());\
+			assert((lhs.lua_state() == rhs.lua_state()) && "you cannot swap objects from different lua states");\
 			rhs.pushvalue();\
 			lhs.pushvalue();\
 			rhs.set();\

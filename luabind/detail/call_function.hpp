@@ -89,7 +89,9 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error();
 #else
-						assert(0);
+						assert(0 && "the lua function threw an error and exceptions are disabled."
+									" If you want to handle the error you can use luabind::set_error_callback()");
+
 #endif
 					}
 				}
@@ -112,20 +114,23 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error(); 
 #else
-						assert(0);
+							assert(0 && "the lua function threw an error and exceptions are disabled."
+									" If you want to handle the error you can use luabind::set_error_callback()");
 #endif
 					}
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-#ifndef LUABIND_NO_EXCEPTIONS
 
 					if (converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) < 0)
 					{
+#ifndef LUABIND_NO_EXCEPTIONS
 						throw cant_convert_return_value();
-					}
 #else
-					assert(converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) >= 0);
+						assert(0 && "the lua function's return value could not be converted."
+									" If you want to handle the error you can use luabind::set_error_callback()");
+
 #endif
+					}
 #endif
 					return converter.apply(L, LUABIND_DECORATE_TYPE(Ret), -1);
 				}
@@ -150,20 +155,23 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw error();
 #else
-						assert(0);
+						assert(0 && "the lua function threw an error and exceptions are disabled."
+								" If you want to handle the error you can use luabind::set_error_callback()");
 #endif
 					}
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-#ifndef LUABIND_NO_EXCEPTIONS
 
 					if (converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) < 0)
 					{
+#ifndef LUABIND_NO_EXCEPTIONS
 						throw cant_convert_return_value();
-					}
 #else
-					assert(converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) >= 0);
+						assert(0 && "the lua function's return value could not be converted."
+									" If you want to handle the error you can use luabind::set_error_callback()");
+
 #endif
+					}
 #endif
 					return converter.apply(L, LUABIND_DECORATE_TYPE(Ret), -1);
 				}
@@ -218,7 +226,8 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error();
 #else
-						assert(0);
+						assert(0 && "the lua function threw an error and exceptions are disabled."
+								" If you want to handle the error you can use luabind::set_error_callback()");
 #endif
 					}
 				}
@@ -239,7 +248,8 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw error();
 #else
-						assert(0);
+						assert(0 && "the lua function threw an error and exceptions are disabled."
+							" If you want to handle the error you can use luabind::set_error_callback()");
 #endif
 					}
 				}
@@ -253,121 +263,6 @@ namespace luabind
 
 			};
 
-
-
-
-
-
-
-/*
-		// expects function on stack
-		template<class R>
-		struct function_caller_returning
-		{
-			template<class Tuple>
-			static R call(lua_State* L, const Tuple& args)
-			{
-				typename default_policy::template generate_converter<R, lua_to_cpp>::type conv;
-
-				push_args_from_tuple<1>::apply(L, args);
-				if (lua_pcall(L, boost::tuples::length<Tuple>::value, 1, 0))
-				{ 
-#ifndef LUABIND_NO_EXCEPTIONS
-					throw error();
-#else
-					assert(0); // the lua script invoked a run-time error
-#endif
-				}
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-
-				// if the return value policy can't convert the returned value
-				// throw an exception
-				if (conv.match(L, LUABIND_DECORATE_TYPE(R), -1) < 0)
-				{
-#ifndef LUABIND_NO_EXCEPTIONS
-					throw cant_convert_return_value();
-#else
-					// TODO: What should we do now?! We cannot return a default constructed
-					// type, since it may not be default constructable. panic?
-					assert(0);
-#endif
-				}
-
-#endif
-				return conv.apply(L, LUABIND_DECORATE_TYPE(R), -1);
-			}
-		};
-
-		// expects function on stack
-		template<>
-		struct function_caller_returning<void>
-		{
-			template<class Tuple>
-			static void call(lua_State* L, const Tuple& args)
-			{
-				push_args_from_tuple<1>::apply(L, args);
-				if (lua_pcall(L, boost::tuples::length<Tuple>::value, 0, 0))
-				{ 
-#ifndef LUABIND_NO_EXCEPTIONS
-					throw error();
-#else
-					assert(0);
-#endif
-				}
-			}
-		};
-
-		struct temporary_no_policy {};
-
-		template<class Tuple, class Ret, class Policies = detail::null_type>
-		class function_caller
-		{
-//		template<class T, class R> friend class function_caller;
-		public:
-
-			function_caller(lua_State* L, const char* name, const Tuple* args)
-				: m_L(L)
-				, m_name(name)
-				, m_args(args)
-				, m_called(false)
-			{
-			}
-
-			template<class U, class R>
-			function_caller(function_caller<U,R>& rhs)
-				: m_L(rhs.m_L)
-				, m_name(rhs.m_name)
-				, m_args(rhs.m_args)
-				, m_called(rhs.m_called)
-			{
-				rhs.m_called = true;
-			}
-
-			~function_caller()
-			{
-				if (m_called) return;
-				lua_pushstring(m_L, m_name);
-				lua_gettable(m_L, LUA_GLOBALSINDEX);
-				function_caller_returning<void>::call(m_L, *m_args);
-			}
-
-			//template<class U>
-			operator Ret()
-			{
-				m_called = true;
-				lua_pushstring(m_L, m_name);
-				lua_gettable(m_L, LUA_GLOBALSINDEX);
-				return function_caller_returning<Ret>::call(m_L, *m_args);
-			}
-
-		private:
-			lua_State* m_L;
-			const char* m_name;
-			const Tuple* m_args;
-			bool m_called;
-		};
-*/
 	}
 
 	#define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/detail/call_function.hpp>, 1))

@@ -40,7 +40,7 @@ namespace luabind { namespace detail
 			int patient = indices[B];
 
 			object_rep* nurse = static_cast<object_rep*>(lua_touserdata(L, nurse_index));
-			assert(nurse != 0); // internal error
+			assert((nurse != 0) && "internal error, please report"); // internal error
 
 			nurse->add_dependency(L, patient);
 		}

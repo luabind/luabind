@@ -319,8 +319,8 @@ namespace luabind
 			{
 
 				class_rep* crep = static_cast<class_rep*>(lua_touserdata(L, lua_upvalueindex(1)));
-				assert(crep != 0);
-				assert(is_class_rep(L, lua_upvalueindex(1)));
+				assert((crep != 0) && "internal error, please report");
+				assert((is_class_rep(L, lua_upvalueindex(1))) && "internal error, please report");
 
 #ifndef LUABIND_NO_ERROR_CHECKING
 
@@ -516,7 +516,7 @@ namespace luabind
 			// Please note that if you don't need to have access to the base class or the
 			// conversion from the derived class to the base class, you don't need
 			// to tell luabind that it derives.
-			assert(registry->find_class(LUABIND_TYPEID(To)));
+			assert(registry->find_class(LUABIND_TYPEID(To)) && "You cannot derive from an unregistered type");
 
 			// try to cast this type to the base type and remember
 			// the pointer offset. For multiple inheritance the pointer

@@ -84,7 +84,8 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error();
 #else
-						assert(0);
+						assert(0 && "the lua function threw an error and exceptions are disabled."
+								"If you want to handle this error use luabind::set_error_callback()");
 #endif
 					}
 				}
@@ -111,20 +112,22 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error(); 
 #else
-						assert(0);
+						assert(0 && "the lua function threw an error and exceptions are disabled."
+							"If you want to handle this error use luabind::set_error_callback()");
 #endif
 					}
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-#ifndef LUABIND_NO_EXCEPTIONS
 
 					if (converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) < 0)
 					{
+#ifndef LUABIND_NO_EXCEPTIONS
 						throw cant_convert_return_value();
-					}
 #else
-					assert(converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) >= 0);
+						assert(0 && "the lua function's return value could not be converted."
+							"If you want to handle this error use luabind::set_error_callback()");
 #endif
+					}
 #endif
 					return converter.apply(L, LUABIND_DECORATE_TYPE(Ret), -1);
 				}
@@ -153,20 +156,22 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw error();
 #else
-						assert(0);
+						assert(0 && "the lua function threw an error and exceptions are disabled."
+						"If you want to handle this error use luabind::set_error_callback()");
 #endif
 					}
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-#ifndef LUABIND_NO_EXCEPTIONS
 
 					if (converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) < 0)
 					{
+#ifndef LUABIND_NO_EXCEPTIONS
 						throw cant_convert_return_value();
-					}
 #else
-					assert(converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) >= 0);
+						assert(0 && "the lua function's return value could not be converted."
+							"If you want to handle this error use luabind::set_error_callback()");
 #endif
+					}
 #endif
 					return converter.apply(L, LUABIND_DECORATE_TYPE(Ret), -1);
 				}
@@ -226,7 +231,8 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw luabind::error();
 #else
-						assert(0);
+						assert(0 && "the lua function threw an error and exceptions are disabled."
+							"If you want to handle this error use luabind::set_error_callback()");
 #endif
 					}
 				}
@@ -253,7 +259,8 @@ namespace luabind
 #ifndef LUABIND_NO_EXCEPTIONS
 						throw error();
 #else
-						assert(0);
+						assert(0 && "the lua function threw an error and exceptions are disabled."
+							"If you want to handle this error use luabind::set_error_callback()");
 #endif
 					}
 				}
