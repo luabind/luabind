@@ -460,13 +460,6 @@ namespace luabind
 			static LUABIND_TYPE_INFO apply()
 			{
 				return LUABIND_TYPEID(HeldType);
-											detail::extract_underlying_type<
-											T, HeldType>::extract);
-
-				if (r->classes.find(LUABIND_TYPEID(HeldType)) == r->classes.end())
-				{
-					r->classes[LUABIND_TYPEID(HeldType)] = crep;
-				}
 			}
 		};
 
@@ -897,7 +890,7 @@ namespace luabind
 
 
 		class_(lua_State* L_, const char* name): class_base(name), m_L(L_) { init(); }
-		class_(const char* name): class_bae(name), m_L(0) { init(); }
+		class_(const char* name): class_base(name), m_L(0) { init(); }
 
 		// TODO: we sould probably commit the object someplace else
 		~class_()

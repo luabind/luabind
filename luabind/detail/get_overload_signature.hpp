@@ -42,6 +42,8 @@ namespace luabind { namespace detail
 	}
 
 
+#ifndef LUABIND_NO_ERROR_CHECKING
+
 	static std::string get_overload_signatures_candidates(lua_State* L, std::vector<const overload_rep_base*>::iterator start, std::vector<const overload_rep_base*>::iterator end, std::string name)
 	{
 		std::string s;
@@ -53,6 +55,8 @@ namespace luabind { namespace detail
 		}
 		return s;
 	}
+
+#endif
 
 }}
 
