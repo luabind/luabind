@@ -158,6 +158,16 @@ void test_lua_classes()
     DOSTRING(L, "a:f('foo\\0bar')");
     BOOST_CHECK(simple_class::feedback == 2);
 
+	DOSTRING(L,
+		"b = simple_derived()\n"
+		"a.foo = 'yo'\n"
+		"assert(b.foo == nil)");
+
+	DOSTRING(L,
+		"simple_derived.foobar = 'yi'\n"
+		"assert(b.foobar == 'yi')\n"
+		"assert(a.foobar == 'yi')\n");
+
     simple_class::feedback = 0;
 
     DOSTRING_EXPECTED(L, "a:f('incorrect', 'parameters')",
