@@ -823,7 +823,7 @@ namespace luabind { namespace detail
 			// special case if we get nil in, try to convert the holder type
 			if (lua_isnil(L, index))
 			{
-				crep = get_class_rep<T>(L);;
+				crep = get_class_rep<T>(L);
 				assert(crep);
 			}
 			else
@@ -981,26 +981,15 @@ namespace luabind { namespace detail
 		template<class T>
 		typename make_reference<T>::type apply(lua_State* L, by_reference<T>, int index)
 		{
-//			std::cerr << "ref_converter<lua_to_cpp>\n";
+			assert(!lua_isnil(L, index));
 			return *pointer_converter<lua_to_cpp>().apply(L, by_pointer<T>(), index);
 		}
 
 		template<class T>
 		static int match(lua_State* L, by_reference<T>, int index)
 		{
-			object_rep* obj = is_class_object(L, index);
-			if (obj == 0) return -1;
-			// cannot cast a constant object to nonconst
-			if (obj->flags() & object_rep::constant) return -1;
-
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
-				return (obj->flags() & object_rep::constant)?-1:0;
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
-				return (obj->flags() & object_rep::constant)?0:-1;
-
-
-			int d;
-			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
+			if (lua_isnil(L, index)) return -1;
+			return pointer_converter<lua_to_cpp>::match(L, by_pointer<T>(), index);
 		}
 
 		template<class T>
@@ -1100,7 +1089,7 @@ namespace luabind { namespace detail
 			// special case if we get nil in, try to match the holder type
 			if (lua_isnil(L, index))
 			{
-				class_rep* crep = get_class_rep<T>(L);;
+				class_rep* crep = get_class_rep<T>(L);
 				if (crep == 0) return -1;
 				if ((LUABIND_TYPE_INFO_EQUAL(crep->holder_type(), LUABIND_TYPEID(T))))
 					return 0;
