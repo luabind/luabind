@@ -34,11 +34,6 @@ identity(const boost::filesystem::path& x)
 	return x;
 }
 
-struct A { virtual void f() {} };
-struct B : A { void g() { std::cout << "g()"; } };
-
-A* factory() { return new B(); }
-
 void bind_filesystem(lua_State* L)
 {
 	using namespace luabind;
@@ -48,11 +43,6 @@ void bind_filesystem(lua_State* L)
 	
 	module(L, "filesystem")
 	[
-		class_<A>("A"), 
-		class_<B>("B")
-		  .def("g", &B::g),
-		def("factory", &factory, return_rtti_adopt),
-	
 		class_<fs::path>("path")
 			.def(constructor<>())
 			.def(constructor<const char*>())
