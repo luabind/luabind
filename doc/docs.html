@@ -1686,6 +1686,13 @@ This namespace contains non-public classes and are not supposed to be used direc
 		;
 	</pre>
 	<p>Note that the space between the two &gt; is required by C++.</p>
+
+	<li><h3>Do I have to register destructors for my classes?</h3>
+	<p>No, the destructor of a class is always called by luabind when an object is collected. Note that
+	lua has to own the object to collect it. If you pass it to C++ and gives up ownership (with
+	<a href="#policy_adopt">adopt</a> policy) it will no longer be owned by lua, and not collected.</p>
+	<p>If you have a class hierarchy, you should make the destructor <tt>virtual</tt> if you want to
+	be sure that the correct destructor is called (this apply to C++ in general).</p>
 </ul>
 
 <h1><a name="future"></a>Future additions</h1>
