@@ -1,199 +1,164 @@
-#include "test.h"
-#include <iostream>
+// Copyright (c) 2003 Daniel Wallin and Arvid Norberg
+
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+// OR OTHER DEALINGS IN THE SOFTWARE.
+
+#include "test.hpp"
+#include <luabind/luabind.hpp>
+#include <luabind/adopt_policy.hpp>
 
 namespace
 {
 	using namespace luabind;
-	LUABIND_ANONYMOUS_FIX int feedback1 = 0;
-	LUABIND_ANONYMOUS_FIX int feedback2 = 0;
-	LUABIND_ANONYMOUS_FIX int feedback3 = 0;
-	LUABIND_ANONYMOUS_FIX int feedback4 = 0;
-	LUABIND_ANONYMOUS_FIX int feedback5 = 0;
 
-	void test_object_param(const object& table)
+	int test_object_param(const object& table)
 	{
+
 		object current_object;
 		current_object = table;
 		
 		if (table.type() == LUA_TTABLE)
 		{
-			feedback1 = 1;
-
-			feedback2 = object_cast<int>(table["oh"]);
-
-			feedback3 = 0;
+			int sum = object_cast<int>(table["oh"]);;
 			for (object::array_iterator i = table.abegin(); i != table.aend(); ++i)
 			{
-				feedback3 += object_cast<int>(*i);
+				sum += object_cast<int>(*i);
 			}
 
-			feedback4 = 0;
+			int sum2 = 0;
 			for (object::iterator j = table.begin(); j != table.end(); ++j)
 			{
-				feedback4 += object_cast<int>(*j);
+				sum2 += object_cast<int>(*j);
 			}
 
-			feedback5 = 0;
+			int sum3 = 0;
 			for (object::raw_iterator j = table.raw_begin(); j != table.raw_end(); ++j)
 			{
-				feedback5 += object_cast<int>(*j);
+				sum3 += object_cast<int>(*j);
 			}
 
+			table["sum"] = sum;
+			table["sum2"] = sum2;
+			table["sum3"] = sum3;
 			table["blurp"] = 5;
-
+			return 0;
 		}
 		else
 		{
-			feedback1 = 2;
-
 			if (table.type() != LUA_TNIL)
 			{
-				feedback2 = 1;
+				return 1;
 			}
 			else
 			{
-				feedback2 = 2;
+				return 2;
 			}
 		}
 	}
 
 	int test_fun()
 	{
-		feedback1 = 3;
 		return 42;
 	}
 
-	struct test_param
+	struct test_param : counted_type<test_param>
 	{
-		~test_param()
-		{ feedback1 = 30; }
 		luabind::object obj;
 		luabind::object obj2;
 	};
 
-	void test_match(const luabind::object& o)
+	int test_match(const luabind::object& o)
 	{
-		feedback1 = 28;
+		return 0;
 	}
 
-	void test_match(int i)
+	int test_match(int i)
 	{
-		feedback1 = 27;
+		return 1;
 	}
-/*
-	function_ multiret(object a, object b)
-	{
-		object c(a);
 
-		c = 30;
-
-		return b, a, c;
-	}
-*/
 } // anonymous namespace
 
-bool test_object()
+void test_object()
 {
+    COUNTER_GUARD(test_param);
+
+	lua_state L;
+
 	using namespace luabind;
 
-	lua_State* L = lua_open();
-	int top = lua_gettop(L);
-	{
-		open(L);
-/*
-		{
-			object a(L);
-			object b(L);
-			object c;
+	module(L)
+	[
+		def("test_object_param", &test_object_param),
+		def("test_fun", &test_fun),
+		def("test_match", (int(*)(const luabind::object&))&test_match),
+		def("test_match", (int(*)(int))&test_match),
+	
+		class_<test_param>("test_param")
+			.def(constructor<>())
+			.def_readwrite("obj", &test_param::obj)
+			.def_readonly("obj2", &test_param::obj2)
+	];
 
-			a = 10;
-			b = 25;
+	DOSTRING(L,
+		"t = 2\n"
+		"assert(test_object_param(t) == 1)");
 
-			std::cout << object_cast<int>(a) << ", " << object_cast<int>(b) << "\n";
+	DOSTRING(L, "assert(test_object_param(nil) == 2)");
+	DOSTRING(L, "t = { ['oh'] = 4, 3, 5, 7, 13 }");
+	DOSTRING(L, "assert(test_object_param(t) == 0)");
+	DOSTRING(L, "assert(t.sum == 4 + 3 + 5 + 7 + 13)");
+	DOSTRING(L, "assert(t.sum2 == 4 + 3 + 5 + 7 + 13)");
+	DOSTRING(L, "assert(t.sum3 == 4 + 3 + 5 + 7 + 13)");
+	DOSTRING(L, "assert(t.blurp == 5)");
 
-			(a, b, c) = multiret(a, b);
+	object g = get_globals(L);
+	object fun = g["test_fun"];
+	object ret = fun();
+	BOOST_CHECK(object_cast<int>(ret) == 42);
 
-			std::cout << object_cast<int>(a) << ", " << object_cast<int>(b)  << ", " << object_cast<int>(c) << "\n";
-		}
-*/
-		module(L)
-		[
-			def("test_object_param", &test_object_param),
-			def("test_fun", &test_fun),
-			def("test_match", (void(*)(const luabind::object&))&test_match),
-			def("test_match", (void(*)(int))&test_match),
-		
-			class_<test_param>("test_param")
-				.def(constructor<>())
-				.def_readwrite("obj", &test_param::obj)
-				.def_readonly("obj2", &test_param::obj2)
-		];
+	DOSTRING(L, "function test_param_policies(x, y) end");
+	object test_param_policies = g["test_param_policies"];
+	int a = test_param_policies.type();
+	BOOST_CHECK(a == LUA_TFUNCTION);
 
-		dostring(L, "t = 2");
-		dostring(L, "test_object_param(t)");
-		if (feedback1 != 2) return false;
-		if (feedback2 != 1) return false;
+	// call the function and tell lua to adopt the pointer passed as first argument
+	test_param_policies(5, new test_param())[adopt(_2)];
 
-		dostring(L, "test_object_param(nil)");
-		if (feedback1 != 2) return false;
-		if (feedback2 != 2) return false;
+	DOSTRING(L, "assert(test_match(7) == 1)");
+	DOSTRING(L, "assert(test_match('oo') == 0)");
 
-		dostring(L, "t = { ['oh'] = 4, 3, 5, 7, 13 }");
-		dostring(L, "test_object_param(t)");
-		if (feedback1 != 1) return false;
-		if (feedback2 != 4) return false;
-		if (feedback3 != 28) return false;
-		if (feedback4 != 32) return false;
-		if (feedback5 != 32) return false;
+	DOSTRING(L,
+		"t = test_param()\n"
+		"t.obj = 'foo'\n"
+		"assert(t.obj == 'foo')\n"
+		"assert(t.obj2 == nil)");
 
-		object g = get_globals(L);
-
-		object t = g["t"];
-		if (t.type() != LUA_TTABLE) return false;
-
-		object blurp = t["blurp"];
-		if (object_cast<int>(blurp) != 5) return false;
-
-		object fun = g["test_fun"];
-		object ret = fun();
-		if (object_cast<int>(ret) != 42) return false;
-		if (feedback1 != 3) return false;
-
-		dostring(L, "function test_param_policies(x, y) end");
-		object test_param_policies = g["test_param_policies"];
-		int a = test_param_policies.type();
-		if (a != LUA_TFUNCTION) return false;
-		// call the function and tell lua to adopt the pointer passed as first argument
-		test_param_policies(5, new test_param())[adopt(_2)];
-
-		dostring(L, "test_match(7)");
-		if (feedback1 != 27) return false;
-		dostring(L, "test_match('oo')");
-		if (feedback1 != 28) return false;
-
-		dostring(L, "t = test_param()\n"
-			"t.obj = 'foo'\n"
-			"if t.obj == 'foo' then test_fun() end\n");
-		if (feedback1 != 3) return false;
-		feedback1 = 0;
-		dostring(L, "if t.obj2 == nil then test_fun() end\n");
-		if (feedback1 != 3) return false;
-
-		dostring(L, "function test_object_policies(a) glob = a\nreturn 6\nend");
-		object test_object_policies = g["test_object_policies"];
-		object ret_val = test_object_policies("teststring")[detail::null_type()];
-		if (object_cast<int>(ret_val) != 6) return false;
-		if (object_cast<std::string>(g["glob"]) != "teststring") return false;
-		if (object_cast<std::string>(g.at("glob")) != "teststring") return false;
-		if (object_cast<std::string>(g.raw_at("glob")) != "teststring") return false;
-	}
-
-	if (top != lua_gettop(L)) return false;
-
-	lua_close(L);
-
-	// make sure lua adopted the pointer by checking that it has been deleted
-	if (feedback1 != 30) return false;
-
-	return true;
+	DOSTRING(L,
+		"function test_object_policies(a) glob = a\n"
+		"return 6\n"
+		"end");
+	object test_object_policies = g["test_object_policies"];
+	object ret_val = test_object_policies("teststring")[detail::null_type()];
+	BOOST_CHECK(object_cast<int>(ret_val) == 6);
+	BOOST_CHECK(object_cast<std::string>(g["glob"]) == "teststring");
+	BOOST_CHECK(object_cast<std::string>(g.at("glob")) == "teststring");
+	BOOST_CHECK(object_cast<std::string>(g.raw_at("glob")) == "teststring");
 }
