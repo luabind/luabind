@@ -1287,7 +1287,7 @@ when we instantiate a Lua class.
     [
         class_<base, base_wrapper>("base")
             .def(constructor<const char*>())
-            .def("f", &base_wrapper::f, &base_wrapper::default_f)
+            .def("f", &base::f, &base_wrapper::default_f)
     ];
 
 .. Important::

@@ -1,11 +1,28 @@
 import modules ;
 import path ;
+import errors ;
 
 BOOST_ROOT = [ modules.peek : BOOST_ROOT ] ;
 LUA_PATH = [ modules.peek : LUA_PATH ] ;
 
-ECHO "BOOST_ROOT =" $(BOOST_ROOT) ;
-ECHO "LUA_PATH =" $(LUA_PATH) ;
+if ! $(LUA_PATH)
+{
+    errors.user-error
+        "LUA_PATH needs to be set to point to your Lua5.x directory." ;
+}
+
+if ! [ GLOB $(LUA_PATH)/include : lua.h ]
+{
+    errors.user-error
+        "LUA_PATH seems to point to a broken Lua5.x installation." :
+        "Currently set to $(LUA_PATH)" ;
+}
+
+if ! $(BOOST_ROOT)
+{
+    errors.user-error
+        "BOOST_ROOT must be set to your boost installation path." ;
+}
 
 lib lua
     :
