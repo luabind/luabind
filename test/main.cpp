@@ -47,60 +47,8 @@ bool report_success(bool result, const char* name)
 	return result;
 }
 
-template<class R, class T>
-void test_constness(R(T::*)())
-{
-	std::cout << "non const\n";
-}
-
-template<class R, class T>
-void test_constness(R(T::*)() const)
-{
-	std::cout << "const\n";
-}
-
-struct TestConst
-{
-	void f() const {}
-	void g() {}
-};
-
-void f(int) {}
-
 int main()
 {
-	{
-		using namespace luabind;
-
-		lua_State* L = lua_open();
-
-		open(L);
-
-		namespace_(L, "dwarf")
-		[
-			def("f", &f),
-			
-			namespace_("inner")
-			[
-				def("test", &f)
-			]
-		];
-
-		namespace_(L, "dwarf")
-		[
-			def("g", &f)
-		];
-
-		dostring(L, "dwarf.f(4)");
-		dostring(L, "dwarf.g(10)");
-		dostring(L, "dwarf.inner.test(2)");
-
-		lua_close(L);
-	}
-
-	test_constness(&TestConst::f);
-	test_constness(&TestConst::g);
-
 	bool passed = true;
 
 	passed &= report_success(test_construction(), "construction");

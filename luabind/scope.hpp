@@ -153,7 +153,7 @@ namespace luabind
 
 			lua_pop(L, 1);
 
-			return scopes->scopes.push(detail::ref(L));
+			scopes->scopes.push(detail::ref(L));
 		}
 
 		static void pop(lua_State* L)
@@ -228,12 +228,12 @@ namespace luabind
 
 		virtual ~scope()
 		{
-			for (std::vector<scoped_object*>
+			for (std::vector<detail::scoped_object*>
 					::const_iterator i = m_children.begin()
 										; i != m_children.end()
 										; ++i)
 			{
-				scoped_object* ptr = *i;
+				detail::scoped_object* ptr = *i;
 				delete ptr;
 			}
 		}
@@ -246,12 +246,12 @@ namespace luabind
 			{
 				this->commit(m_state);
 
-				for (std::vector<scoped_object*>
+				for (std::vector<detail::scoped_object*>
 						::const_iterator i = m_children.begin()
 											; i != m_children.end()
 											; ++i)
 				{
-					scoped_object* ptr = *i;
+					detail::scoped_object* ptr = *i;
 					delete ptr;
 				}
 
@@ -298,7 +298,7 @@ namespace luabind
 	 										; i != m_children.end()
 											; ++i)
 			{
-				scoped_object* ptr = *i;
+				detail::scoped_object* ptr = *i;
 				ptr->commit(L);
 			}
 
@@ -307,7 +307,7 @@ namespace luabind
 
 	private:
 
-		mutable std::vector<scoped_object*> m_children;
+		mutable std::vector<detail::scoped_object*> m_children;
 		lua_State* m_state;
 		std::string m_name;
 	};

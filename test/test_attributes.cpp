@@ -127,14 +127,15 @@ bool test_attributes()
 	
 	glob["test_string"] = std::string("barfoo");
 
-//	this fucks up on vc6
+//	swap overloads doesn't work on vc6
+#if !defined(BOOST_MSVC) || (defined(BOOST_MSVC) && (BOOST_MSVC >= 1300))	
+	std::swap(glob["test_string"], glob["a"]);
+	if (object_cast<std::string>(glob["a"]) != "barfoo") return false;
+	int type = glob["test_string"].type();
+	if (type != LUA_TNIL) return false;
 
-//	std::swap(glob["test_string"], glob["a"]); <- 
-//	if (object_cast<std::string>(glob["a"]) != "barfoo") return false;
-//	int type = glob["test_string"].type();
-//	if (type != LUA_TNIL) return false;
-
-//	if (glob["test_string"].type() != LUA_TNIL) return false;
+	if (glob["test_string"].type() != LUA_TNIL) return false;
+#endif
 
 	if (dostring2(L, "test.o = 5") != 1) return false;
 	if (std::string("cannot set attribute 'property.o'") != lua_tostring(L, -1)) return false;
