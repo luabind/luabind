@@ -77,7 +77,8 @@ int counted_type<T>::count = 0;
             BOOST_CHECK(counted_type<type>::count == 0); \
         } \
     }; \
-    type##_counter_guard BOOST_PP_CAT(type, _guard)
+    type##_counter_guard BOOST_PP_CAT(type, _guard); \
+	(void)BOOST_PP_CAT(type, _guard)
 #endif
 
 #define DOSTRING_EXPECTED(state, str, expected) \

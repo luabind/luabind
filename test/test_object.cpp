@@ -175,6 +175,7 @@ void test_object()
 	{
 		object not_initialized;
 		int i = object_cast<int>(not_initialized);
+		(void)i;
 		BOOST_ERROR("invalid cast succeeded");
 	}
 	catch(luabind::cast_failed&) {}

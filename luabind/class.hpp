@@ -122,7 +122,12 @@
 #include <luabind/detail/pointee_typeid.hpp>
 #include <luabind/detail/link_compatibility.hpp>
 
-//#include <boost/langbinding/inheritance.hpp>
+// to remove the 'this' used in initialization list-warning
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4355)
+#endif
+
 
 namespace luabind
 {	
@@ -1228,6 +1233,10 @@ namespace luabind
 
 	};
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif // LUABIND_CLASS_HPP_INCLUDED
 

@@ -101,6 +101,7 @@ namespace luabind { namespace detail
 		{
 #ifndef NDEBUG
 			int completeness_check[sizeof(T)];
+			(void)completeness_check;
 #endif
 			static_cast<T*>(ptr)->~T();
 		}

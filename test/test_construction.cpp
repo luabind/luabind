@@ -49,6 +49,7 @@ namespace
 	struct base1 : counted_type<base1>
 	{
 		virtual void doSomething() = 0;
+		virtual ~base1() {}
 	};
 
 	struct deriv_1 : base1, counted_type<deriv_1>
