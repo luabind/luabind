@@ -235,6 +235,15 @@ namespace luabind
 #endif
 		}
 
+		~scope()
+		{
+			for (std::vector<detail::scoped_object*>::iterator 
+					i = m_children.begin(); i != m_children.end(); ++i)
+			{
+				delete *i;
+			}		
+		}
+
 		scope& operator[](const detail::scoped_object& x)
 		{
 			detail::scoped_object* ptr = &const_cast<detail::scoped_object&>(x);

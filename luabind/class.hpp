@@ -679,6 +679,7 @@ namespace luabind
 		std::vector<char*> m_strings;
 #endif
 
+
 	public:
 
 		// public 'cause of enum_maker, FIX
@@ -688,6 +689,8 @@ namespace luabind
 		}
 
 	protected:
+
+		mutable std::vector<detail::scoped_object*> m_children;
 
 		void init(LUABIND_TYPE_INFO type
 			, LUABIND_TYPE_INFO holder_type
@@ -815,6 +818,10 @@ namespace luabind
 
 		virtual ~class_base()
 		{
+			for (std::vector<detail::scoped_object*>::iterator 
+					i = m_children.begin(); i != m_children.end(); ++i)
+				delete *i;
+
 // if we are copying strings, we have to destroy them too
 #ifndef LUABIND_DONT_COPY_STRINGS
 			for (std::vector<char*>::iterator i = m_strings.begin(); i != m_strings.end(); ++i)
@@ -963,9 +970,10 @@ namespace luabind
 			std::swap(ret->m_strings, m_strings);
 #endif
 
+			m_children.swap(ret->m_children);
+
 			return ret;
 		}
-
 	};
 
 
@@ -1311,6 +1319,13 @@ namespace luabind
 		detail::enum_maker<self_t> enum_(const char*)
 		{
 			return detail::enum_maker<self_t>(*this);
+		}
+
+		class_& operator[](const detail::scoped_object& x)
+		{
+			detail::scoped_object* ptr = &const_cast<detail::scoped_object&>(x);
+			m_children.push_back(ptr->clone());
+			return *this;
 		}
 
 	private:
