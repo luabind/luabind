@@ -70,7 +70,7 @@ void test_scope()
 		class_<test_class>("test_class")
 			.def(constructor<>())
 			.def_readonly("test", &test_class::test)
-			.static_
+			.scope
 			[
 				def("inner_fun", &f)
 			]

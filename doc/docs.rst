@@ -684,7 +684,7 @@ to wrap a nested class, or a static function. ::
     class_<foo>("foo")
         .def(constructor<>()
         ...
-        .static_ 
+        .scope
         [
             class_<inner>("nested"),
             def("f", &f)
@@ -1209,7 +1209,7 @@ class for our C++ base class. This is the class that will hold the lua object
 when we instantiate a lua class.
 
 The wrapper class has to provide the same constructors as the base class, with
-the addition of one extra parameter: ``luabind::object``. This is the reference
+the addition of one extra parameter: ``luabind::weak_ref``. This is the reference
 to the lua object that should be held by the wrapper, and should be stored in a
 member variable as done in the sample below. ::
 
@@ -1225,8 +1225,8 @@ member variable as done in the sample below. ::
 
     struct base_wrapper : base
     {
-        object self;
-        base_wrapper(object self_, const char* s)
+        weak_ref self;
+        base_wrapper(weak_ref self_, const char* s)
             : base(s), self(self_) 
         {}
 
@@ -1858,6 +1858,22 @@ module_ab.cpp::
 
 Configuration
 =============
+
+As mentioned in ``the Lua documentation``_, it is possible to pass an
+error handler function to ``lua_pcall()``. Luabind makes use of 
+``lua_pcall()`` internally when calling methods and functions. It is
+possible to set the error handler function that Luabind will use 
+globally::
+
+    typedef void(*pcall_callback_fun)(lua_State*);
+    void set_pcall_callback(pcall_callback_fun fn);
+
+This is primarily useful for adding more information to the error message
+returned by a failed protected call.
+
+
+Build options
+-------------
 
 There are a number of configuration options available when building luabind.
 It is very important that your project has the exact same conmfiguration 

@@ -1156,7 +1156,7 @@ namespace luabind
 			return detail::enum_maker<self_t>(*this);
 		}
 		
-		detail::static_scope<self_t> static_;
+		detail::static_scope<self_t> scope;
 		
 	private:
 
