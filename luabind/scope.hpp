@@ -54,11 +54,19 @@ namespace luabind
 		{
 			scoped_sequence(scoped_object* a, scoped_object* b)
 			{
+#ifndef NDEBUG
+				m_cloned = false;
+#endif
 				this->objects.push_back(a);
 				this->objects.push_back(b);
 			}
 
-			scoped_sequence() {}
+			scoped_sequence()
+			{
+#ifndef NDEBUG
+				m_cloned = false;
+#endif
+			}
 
 			virtual ~scoped_sequence()
 			{
@@ -82,11 +90,18 @@ namespace luabind
 			{
 				scoped_sequence* copy = new scoped_sequence();
 				copy->objects.swap(this->objects);
+
+				assert(!m_cloned && "You cannot register the scoped_object twice");
+#ifndef NDEBUG
+				m_cloned = true;
+#endif
 				return copy;
 			}
 
 			virtual void commit(lua_State* L)
 			{
+				assert(!m_cloned && "You cannot register the scoped_object twice");
+
 				for (std::vector<scoped_object*>
 							::const_iterator i = this->objects.begin()
 												; i != this->objects.end()
@@ -95,15 +110,25 @@ namespace luabind
 					scoped_object* ptr = *i;
 					ptr->commit(L);
 				}
+#ifndef NDEBUG
+				m_cloned = false;
+#endif
+
 			}
 
+		private:
+#ifndef NDEBUG
+			bool m_cloned;
+#endif
 			mutable std::vector<scoped_object*> objects;
+
 		};
 
 		inline scoped_sequence scoped_object::operator,(const scoped_object& rhs) const
 		{
 			return scoped_sequence(const_cast<scoped_object*>(this)->clone(), const_cast<scoped_object&>(rhs).clone());
 		}
+
 	}
 	
 	struct scope_stack
@@ -217,6 +242,9 @@ namespace luabind
 			: m_state(L)
 			, m_name(name)
 		{
+#ifndef NDEBUG
+			m_cloned = false;
+#endif
 			init(L);
 		}
 
@@ -224,6 +252,9 @@ namespace luabind
 			: m_state(0)
 			, m_name(name)
 		{
+#ifndef NDEBUG
+			m_cloned = false;
+#endif
 		}
 
 		virtual ~scope()
@@ -263,6 +294,10 @@ namespace luabind
 
 		virtual detail::scoped_object* clone()
 		{
+			assert(!m_cloned && "cannot register the same namespace twice");
+#ifndef NDEBUG
+			m_cloned = true;
+#endif
 			std::vector<detail::scoped_object*> tmp;
 			tmp.swap(this->m_children);
 			scope* copy = new scope(m_name.c_str());
@@ -272,6 +307,10 @@ namespace luabind
 
 		virtual void commit(lua_State* L)
 		{
+			assert(!m_cloned && "cannot register the same namespace twice");
+#ifndef NDEBUG
+			m_cloned = true;
+#endif
 			init(L);
 
 			detail::getref(L, scope_stack::top(L)); // get current scope
@@ -306,7 +345,9 @@ namespace luabind
 		}
 
 	private:
-
+#ifndef NDEBUG
+		bool m_cloned;
+#endif
 		mutable std::vector<detail::scoped_object*> m_children;
 		lua_State* m_state;
 		std::string m_name;

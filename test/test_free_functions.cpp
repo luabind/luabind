@@ -89,12 +89,14 @@ bool test_free_functions()
 
 		open(L);
 
-		class_<copy_me>(L, "copy_me")
+		class_<copy_me>("copy_me")
 			.def(constructor<>())
+			.commit(L)
 			;
 		
-		class_<base>(L, "base")
+		class_<base>("base")
 			.def("f", &base::f)
+			.commit(L)
 			;
 
 

@@ -29,7 +29,7 @@ OBJECTS = $(SOURCES:.cpp=.o)
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CXX) -O3 $? $(LUA_LIB_PATH) -L../lib -lluabind -llua -llualib -o $@
+	$(CXX) -O3 $(OBJECTS) $(LUA_LIB_PATH) -L../lib -lluabind -llua -llualib -o $@
 
 %.o:%.cpp
 	$(CXX) -Wall -ftemplate-depth-50 -O3 $(CONFIG) $(LUA_PATH) -I. -I- -I../ $(BOOST_PATH) -c $? -o $@

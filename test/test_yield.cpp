@@ -22,6 +22,8 @@ namespace
 		lua_pushnumber(L, 9);
 		return lua_yield(L, 1);
 	}
+
+	void f() {}
 }
 
 #include <iostream>
@@ -35,12 +37,22 @@ bool test_yield()
 		lua_closer c(L);
 
 		open(L);
-
-		class_<test_class>(L, "test")
-			.def(constructor<>())
-			.property("f", &test_class::f, yield);
-
-		dostring(L, "function g() a = test() for i = 1, 10 do print(a.f) end end");
+/*
+		namespace_(L, "namespace")
+		[
+			namespace_("inner")
+			[
+			]
+		];
+*/
+				class_<test_class>("test")
+					.def(constructor<>())
+					.def("f", &test_class::f, yield)
+					.commit(L)
+					;
+		
+		
+		dostring(L, "function g() a = test() for i = 1, 10 do print(a:f()) end end");
 
 		lua_pushstring(L, "j");
 		lua_pushcclosure(L, j, 0);

@@ -4,8 +4,8 @@
 #CONFIG = \
 #	-DLUABIND_DONT_COPY_STRINGS \
 #	-DLUABIND_NO_EXCEPTIONS \
-#	-DLUABIND_NO_ERROR_CHECKING
-
+#	-DLUABIND_NO_ERROR_CHECKING \
+#	-DNDEBUG
 
 # if boost and lua are installed in system
 # include paths, you don't have to set these
@@ -13,8 +13,10 @@
 
 #BOOST_PATH = -I/scratch/boost_1_30_0
 #LUA_PATH = -I/scratch/lua-5.0/include
-#LUA_LIB_PATH = -L/scratch/lua-5.0/lib
 
+#lua lib path is used for the test program
+
+#LUA_LIB_PATH = -L/scratch/lua-5.0/lib
 LUA_LIB_PATH = -L/usr/local/lib
 
 CXX = g++

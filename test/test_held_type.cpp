@@ -45,8 +45,9 @@ bool test_held_type()
 
 		function(L, "tester", &tester);
 
-		class_<held_type_test, boost::shared_ptr<held_type_test> >(L, "held_type_test")
+		class_<held_type_test, boost::shared_ptr<held_type_test> >("held_type_test")
 			.def(constructor<>())
+			.commit(L)
 			;
 
 		object g = get_globals(L);

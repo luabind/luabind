@@ -2,13 +2,11 @@
 
 #include <cln/cln.h>
 
-#define LUABIND_DONT_COPY_STRINGS
-//#define LUABIND_NO_ERROR_CHECKING
-
 extern "C"
 {
-#include "lua.h"
-#include "lualib.h"
+	#include "lua.h"
+	#include "lualib.h"
+	#include "lauxlib.h"
 }
 
 #include <luabind/luabind.hpp>

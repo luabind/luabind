@@ -10,6 +10,11 @@ namespace
 		feedback = 123;
 	}
 
+	void g()
+	{
+		feedback = 2;
+	}
+
 	struct test_class
 	{
 		test_class()
@@ -17,8 +22,6 @@ namespace
 			feedback = 321;
 		}
 	};
-
-	void g(test_class) {};
 }
 
 bool test_scope()
@@ -40,8 +43,13 @@ bool test_scope()
 					value("val2", 2)
 				],
 
-			def("f", &f)
-//			def("g", &g, adopt(_1))
+			def("f", &f),
+
+			namespace_("inner")
+			[
+				def("g", &g)
+			]
+
 		];
 
 		if (dostring(L, "test.f()")) return false;
@@ -49,6 +57,8 @@ bool test_scope()
 		if (dostring(L, "a = test.test_class()")) return false;
 		if (feedback != 321) return false;
 		if (dostring(L, "b = test.test_class.val2")) return false;
+		if (dostring(L, "test.inner.g()")) return false;
+		if (feedback != 2) return false;
 	}
 
 	return true;

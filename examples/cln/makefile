@@ -1,3 +1,5 @@
+include ../../config
+
 cln_test: cln_test.cpp
-	g++ -g cln_test.cpp -o cln_test -I- -I../../ -ftemplate-depth-50 -llua -llualib -lcln -L/usr/local/lib 
+	g++ cln_test.cpp -o cln_test $(LUA_PATH) -I- $(BOOST_PATH) -I../../ $(LUA_LIB_PATH) -L../../lib -lluabind -llua -llualib -lcln
 

@@ -72,16 +72,20 @@ bool test_lua_classes()
 
 	open(L);
 
-	class_<no_copy>(L, "no copy");
+	class_<no_copy>("no copy")
+		.commit(L)
+		;
 	
-	class_<base, baseWrap>(L, "base")
+	class_<base, baseWrap>("base")
 		.def(constructor<>())
 		.def("f", &baseWrap::fS)
+		.commit(L)
 		;
 
-	class_<simple_class>(L, "simple_class")
+	class_<simple_class>("simple_class")
 		.def(constructor<>())
 		.def("f", &simple_class::f)
+		.commit(L)
 		;
 
 	function(L, "set_feedback", &set_feedback);

@@ -25,14 +25,8 @@
 #define LUABIND_CLASS_HPP_INCLUDED
 
 /*
-	Issues:
-	-------
-	* done *
-	move all exceptions to the exception.hpp header
-
-	* done *
-	Since functions can be overridden, the constness of the member functions
-	must be taken into account.
+	ISSUES:
+	------------------------------------------------------
 
 	* solved for member functions, not application operator *
 	if we have a base class that defines a function a derived class must be able to
@@ -53,52 +47,28 @@
 	defined by the base class, it is a legal operation, to override it.
 	we cannot look at the pointer offset, since it always will be zero for one of the bases.
 
-	* done *
-	We do not currently run unwrap_other<> on the parameters given to the application
-	operators when we register them.
 
-	* done *
-	if the first matched binary operator does not match the parameters we have to manually
-	check if the right parameter has a matching operator.
 
-	* I think this is resolved *
-	There is currently a restriction that operators must take their parameters as const references
-	or as copies. This could be solved by specifying special wrapper types for const references and
-	non-const references. Binary operators shouldn't implicitly convert it's parameters to const&.
+	TODO:
+	------------------------------------------------------
 
-	* done *
-	The application operator do not currently work on const objects. Again, to solve this we need
-	some kind of wrapper to say that the self object is const.
-	
-	Make sure we don't have any memory leaks when we use lua_error()
+	add access to the keys on iterators
 
-	We should avoid names that begins with lua_ (in our own scopes) since the lua distribution
-	have plenty of defines with that prefix.
+	finish scopes
 
-	Optimize by calling lua_rawset/get instead of lua_settable/gettable
+	finish smart pointer support
 
-	* done *
-	use ordinary function pointers instead of boost::function.
-	the boost::function is only used on member functions now, We have to use it in order
-	to support free functions as member functions.
+	chache operators and finalizers in the class_rep. For lua classes
+	we currently do a lookup each time we need to know if a lua class
+	has a finalizer or an operator.
 
-	* solved *
-	when we register classes we should import all methods and properties
-	from the base classes into the class. We will then need to offset the object pointer
-	on a per method/property basis. This will allow methods from the base class to be
-	overloaded without shadowing the base class. The method lookup will also be
-	more efficient.
+	instead of registering the name of free functions and make a lookup in
+	the register to see if we are overloading, look in the actual namespace
+	where we are registering the function to see if there already is a function
+	with the same name there, and in that case, add an overload to it.
 
-	remove methods from methodtable of classrep when overloading them in lua
-
-	* done *
-	we currently set uninitialized references to -1, they should be set to LUA_NOREF!
-
-	* done *
-	the error exception class should avoid heap allocations
-
-	Todo:
-	-----
+	static functions, this could be implemented by letting classes contain
+	other declarations (classes or functions)
 
 	document custom policies, custom converters
 
@@ -107,18 +77,7 @@
 	support the __concat metamethod. This is a bit tricky, since it cannot be
 	treated as a normal operator. It is a binary operator but we want to use the
 	__tostring implementation for both arguments.
-
-	smart pointer support
-
-	chache operators and finalizers in the class_rep. For lua classes
-	we currently do a lookup each time we need to know if a lua class
-	has a finalizer or an operator.
 	
-	scopes
-
-	static functions, this could be implemented by letting classes contain
-	other declarations (classes or functions)
-
 */
 
 #include <luabind/config.hpp>
@@ -553,6 +512,8 @@ namespace luabind
 		// pushes the class_rep on the lua stack
 		virtual void commit(lua_State* L)
 		{
+			assert(!m_cloned && "class already commited");
+				  
 			scope::init(L);
 
 			detail::getref(L, scope_stack::top(L));
@@ -670,9 +631,9 @@ namespace luabind
 	{
 		typedef class_<T, X1, X2, X3> self_t;
 
-	private:
-
 		lua_State* m_L;
+
+	private:
 
 		template<class A, class B, class C, class D>
 		class_(const class_<A,B,C,D>&);
@@ -810,18 +771,14 @@ namespace luabind
 			}
 		};
 
-
-		class_(lua_State* L_, const char* name): class_base(name), m_L(L_) { init(); }
+		class_(lua_State* L, const char* name): class_base(name), m_L(L) { init(); }
 		class_(const char* name): class_base(name), m_L(0) { init(); }
 
-		// TODO: we sould probably commit the object someplace else
 		~class_()
 		{
-			if (m_L)
+			if (m_L != 0)
 			{
-		//		lua_pushstring(m_L, name());
 				commit(m_L);
-		//		lua_settable(m_L, LUA_GLOBALSINDEX);
 			}
 		}
 

@@ -1,12 +1,14 @@
 #include <boost/cregex.hpp> 
 
-#include <luabind/luabind.hpp>
-
 extern "C"
 {
+	#include "lua.h"
 	#include "lauxlib.h"
 	#include "lualib.h"
 }
+
+#include <luabind/luabind.hpp>
+
 
 void wrap_regex(lua_State* L)
 {

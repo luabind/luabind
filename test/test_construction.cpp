@@ -35,15 +35,19 @@ bool test_construction()
 
 	open(L);
 
-	class_<A>(L, "A")
+	class_<A>("A")
 		.def("f", &f)
 		.def(constructor<int>())
 		.def(constructor<const A&>())
-		.def(constructor<>());
+		.def(constructor<>())
+		.commit(L)
+		;
 
-	class_<B>(L, "B")
+	class_<B>("B")
 		.def(constructor<int>())
-		.def(constructor<>());
+		.def(constructor<>())
+		.commit(L)
+		;
 
 	if (dostring(L, "a = A(4)")) return false;
 	if (feedback != 4) return false;

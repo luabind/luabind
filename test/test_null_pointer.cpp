@@ -26,9 +26,11 @@ bool test_null_pointer()
 
 	open(L);
 
-	class_<A>(L, "A")
+	class_<A>("A")
 		.def(constructor<>())
-		.def("f", &A::f);
+		.def("f", &A::f)
+		.commit(L)
+		;
 
 	function(L, "get_pointer", get_pointer);
 	if (dostring(L, "e = get_pointer()")) return false;

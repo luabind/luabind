@@ -58,7 +58,9 @@ namespace luabind
 			intrusive_ptr_add_ref(raw_ptr);
 
 			detail::class_registry* registry = luabind::detail::class_registry::get_registry(L);
-			detail::class_rep* crep = registry->classes[LUABIND_TYPEID(T)];
+			detail::class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+
+			assert(crep != 0 && "You are trying to convert an unregistered type");
 
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(detail::object_rep));
