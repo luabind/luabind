@@ -9,7 +9,9 @@ SOURCES =
     test_scope.cpp
     test_typetraits.cpp
     test_construction.cpp
+    test_null_pointer.cpp
     test_operators.cpp
+    test_policies.cpp
     test_yield.cpp
     test_exceptions.cpp
     test_lua_classes.cpp

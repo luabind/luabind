@@ -38,6 +38,7 @@
 #include <boost/type_traits/add_reference.hpp>
 #include <boost/type_traits/is_pointer.hpp>
 #include <boost/type_traits/is_base_and_derived.hpp>
+#include <boost/bind/arg.hpp>
 #include <boost/limits.hpp>
 
 #include <luabind/detail/class_registry.hpp>

@@ -9,8 +9,10 @@ SOURCES = \
 	test_held_type.cpp \
 	test_implicit_cast.cpp \
 	test_lua_classes.cpp \
+	test_null_pointer.cpp \
 	test_object.cpp \
 	test_operators.cpp \
+	test_policies.cpp \
 	test_scope.cpp \
 	test_separate_registration.cpp \
 	test_separation.cpp \
