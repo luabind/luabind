@@ -157,9 +157,10 @@ luabind::detail::class_rep::allocate(lua_State* L) const
 }
 
 //#include <iostream>
-
+// lua stack: userdata, key
 int luabind::detail::class_rep::gettable(lua_State* L)
 {
+	// if key is nil, return nil
 	if (lua_isnil(L, 2))
 	{
 		lua_pushnil(L);
@@ -172,6 +173,7 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 	// a method that is not present in this class (but in a subclass)
 	const char* key = lua_tostring(L, 2);
 
+	// special case to see if this is a null-pointer
 	if (key && !strcmp(key, "__ok"))
 	{
 		class_rep* crep = obj->crep();
@@ -219,12 +221,11 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 
 // called from the metamethod for __newindex
 // the object pointer is passed on the lua stack
+// lua stack: userdata, key, value
 bool luabind::detail::class_rep::settable(lua_State* L)
 {
-	if (lua_isnil(L, 2))
-	{
-		return false;
-	}
+	// if the key is 'nil' fail
+	if (lua_isnil(L, 2)) return false;
 
 	// we have to ignore the first argument since this may point to
 	// a method that is not present in this class (but in a subclass)
@@ -237,7 +238,21 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 		return true;
 	}
 
-	return false; // false means that we don't have a member with the given name
+	if (m_getters.find(key) != m_getters.end())
+	{
+		// this means that we have a getter but no
+		// setter for an attribute. We will then fail
+		// because that attribute is read-only
+		return false;
+	}
+
+	// set the attribute to the object's table
+	getref(L, table_ref());
+	lua_pushvalue(L, 2);
+	lua_pushvalue(L, 3);
+	lua_settable(L, 4);
+	lua_pop(L, 3);
+	return true;
 }
 
  int class_rep::gettable_dispatcher(lua_State* L)

@@ -123,6 +123,14 @@ bool test_attributes()
 	if (feedback != 0) return false;
 	if (str != "Dew") return false;
 
+	if (dostring(L, "test.foo = 5")) return false;
+	if (dostring(L, "if (test.foo == 5) then feedback = 3 end")) return false;
+
+	object glob = get_globals(L);
+	if (object_cast<float>(glob["feedback"]) != 3) return false;
+	object test = glob["test"];
+	if (object_cast<float>(test["foo"]) != 5) return false;
+	
 	if (dostring(L, "function d(x) end d(test.a)")) return false;
 	if (feedback != 5) return false;
 
@@ -132,8 +140,6 @@ bool test_attributes()
 
 	if (dostring(L, "tester(test.o)")) return false;
 	if (feedback != 6) return false;
-
-	object glob = get_globals(L);
 
 	if (dostring(L, "a = 4")) return false;
 	if (glob["a"].type() != LUA_TNUMBER) return false;
