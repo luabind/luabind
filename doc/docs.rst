@@ -2204,3 +2204,5 @@ found in the boost_ library.
 Evan Wies has contributed with thorough testing and countless bug reports and
 feature ideas.
 
+Thanks to Umeå university for providing development and testing hardware.
+
