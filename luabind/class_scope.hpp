@@ -342,7 +342,7 @@ namespace luabind
 
 				binfo.pointer_offset = 0;
 				binfo.base = base;
-				crep->add_base(binfo);
+				crep->add_base_class(binfo);
 
 				if (base->get_class_type() == class_rep::lua_class)
 				{
@@ -384,8 +384,8 @@ namespace luabind
 				new(c) class_rep(L, name);
 
 				// make the class globally available
-				lua_pushvalue(L, -1);
 				lua_pushstring(L, name);
+				lua_pushvalue(L, -2);
 				lua_settable(L, LUA_GLOBALSINDEX);
 
 				// also add it to the closure as return value
@@ -693,7 +693,16 @@ namespace luabind
 							i != m_bases.end(); 
 							++i)
 			{
-				crep->add_base_class(L, i->type, i->ptr_offset);
+				detail::class_registry* r = detail::class_registry::get_registry(L);
+
+				// the baseclass' class_rep structure
+				detail::class_rep* bcrep = r->find_class(i->type);
+
+				detail::class_rep::base_info base;
+				base.pointer_offset = i->ptr_offset;
+				base.base = bcrep;
+
+				crep->add_base_class(base);
 			}
 		}
 
