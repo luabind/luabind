@@ -1,5 +1,6 @@
 #include <boost/shared_ptr.hpp>
-
+#include <boost/weak_ptr.hpp>
+#include <memory>
 
 namespace luabind
 {
@@ -7,6 +8,12 @@ namespace luabind
 	{
 		template<class T>
 		T* get_pointer(boost::shared_ptr<T>& p) { return p.get(); }
+	}
+
+	namespace detail
+	{
+		template<class T>
+		T* get_pointer(const std::auto_ptr<T>& p) { return p.get(); }
 	}
 }
 
@@ -84,6 +91,14 @@ namespace
 		if ((*t)->n == 4) feedback = 14;
 	}
 
+	void tester8(boost::weak_ptr<base> t)
+	{
+		if (!t.expired()) feedback = 19;
+	}
+
+	struct ownership {};
+
+	void test_auto_ptr(std::auto_ptr<ownership>) {}
 
 } // anonymous namespace
 
@@ -97,6 +112,31 @@ namespace luabind
 	}
 }
 
+#define LUABIND_IMPLICIT_CONVERSION(from, to, to_stripped)				\
+	namespace luabind { namespace converters {								\
+		yes_t is_user_defined(to);													\
+		int match_lua_to_cpp(lua_State* L, to, int index)					\
+		{																					\
+			luabind::detail::default_policy										\
+				::generate_converter<from, detail::lua_to_cpp>::type c;	\
+			return c.match(L, LUABIND_DECORATE_TYPE(from), index);		\
+		}																					\
+																							\
+		to_stripped convert_lua_to_cpp(lua_State* L, to, int index)		\
+		{																					\
+			luabind::detail::default_policy										\
+				::generate_converter<from, detail::lua_to_cpp>::type c;	\
+			return static_cast<to_stripped>(c.apply(L, 						\
+						LUABIND_DECORATE_TYPE(from), index));					\
+		}																					\
+		}}
+
+typedef boost::shared_ptr<base> t1;
+typedef luabind::converters::by_value<boost::weak_ptr<base> > t2;
+typedef boost::weak_ptr<base> t3;
+
+LUABIND_IMPLICIT_CONVERSION(t1,t2,t3)
+
 bool test_held_type()
 {
 	// This feature is not finished yet
@@ -107,10 +147,16 @@ bool test_held_type()
 
 	{
 		lua_State* L = lua_open();
+		lua_baselibopen(L);
 		lua_closer c(L);
 		int top = lua_gettop(L);
 
 		open(L);
+
+		class_<ownership, std::auto_ptr<ownership> >(L, "ownership")
+			.def(constructor<>());
+
+		function(L, "test_auto_ptr", &test_auto_ptr);
 
 		luabind::function(L, "tester", &tester);
 		luabind::function(L, "tester", &tester_);
@@ -120,6 +166,7 @@ bool test_held_type()
 		luabind::function(L, "tester5", &tester5);
 		luabind::function(L, "tester6", &tester6);
 		luabind::function(L, "tester7", &tester7);
+		luabind::function(L, "tester8", &tester8);
 
 		class_<base, boost::shared_ptr<base> >("base")
 			.def(constructor<>())
@@ -135,6 +182,14 @@ bool test_held_type()
 
 		object g = get_globals(L);
 		g["test"] = ptr;
+
+		if (dostring(L, "a = ownership()")) return false;
+		if (dostring(L, "if a.__ok then print('1: ok!') end")) return false;
+		if (dostring(L, "test_auto_ptr(a)")) return false;
+		if (dostring(L, "if a.__ok then print('2: ok!') end")) return false;
+		
+		if (dostring(L, "if test.__ok then print('ok!') end")) return false;
+
 		if (dostring(L, "tester(test)")) return false;
 		if (feedback != 2) return false;
 		if (dostring(L, "a = base()")) return false;
@@ -157,6 +212,8 @@ bool test_held_type()
 		if (feedback != 13) return false;
 		if (dostring(L, "tester7(b)")) return false;
 		if (feedback != 14) return false;
+		if (dostring(L, "tester8(b)")) return false;
+		if (feedback != 19) return false;
 
 		if (top != lua_gettop(L)) return false;
 

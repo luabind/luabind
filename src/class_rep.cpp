@@ -144,9 +144,22 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 		return 1;
 	}
 
+	object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
+
 	// we have to ignore the first argument since this may point to
 	// a method that is not present in this class (but in a subclass)
 	const char* key = lua_tostring(L, 2);
+
+	if (key && !strcmp(key, "__ok"))
+	{
+		class_rep* crep = obj->crep();
+
+		void* p = crep->extract_ptr()(obj->ptr());
+
+		lua_pushboolean(L, p != 0);
+		return 1;
+	}
+
 	std::map<const char*, method_rep, ltstr>::iterator i = m_methods.find(key);
 
 	if (i != m_methods.end())
@@ -1183,6 +1196,20 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 
 #endif
 
+	// we have to ignore the first argument since this may point to
+	// a method that is not present in this class (but in a subclass)
+	const char* key = lua_tostring(L, 2);
+
+	if (key && !strcmp(key, "__ok"))
+	{
+		class_rep* crep = obj->crep();
+
+		void* p = crep->extract_ptr()(obj->ptr());
+
+		lua_pushboolean(L, p != 0);
+		return 1;
+	}
+	
 	detail::getref(L, obj->lua_table_ref());
 	lua_pushvalue(L, 2);
 	lua_gettable(L, -2);
@@ -1204,10 +1231,6 @@ void luabind::detail::class_rep::add_static_constant(const char* name, int val)
 		lua_pushnil(L);
 		return 1;
 	}
-
-	// we have to ignore the first argument since this may point to
-	// a method that is not present in this class (but in a subclass)
-	const char* key = lua_tostring(L, 2);
 
 	std::map<const char*, method_rep, ltstr>::iterator i = crep->m_methods.find(key);
 	if (i != crep->m_methods.end())

@@ -551,7 +551,7 @@ namespace luabind { namespace detail
 	struct value_converter<lua_to_cpp>
 	{
 		template<class T>
-		typename make_const_reference<T>::type apply(lua_State* L, by_value<T>, int index)
+		/*typename make_const_reference<T>::type*/T apply(lua_State* L, by_value<T>, int index)
 		{
 			// preconditions:
 			//	lua_isuserdata(L, index);
