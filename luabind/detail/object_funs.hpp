@@ -40,7 +40,19 @@ namespace luabind
 		template<class T, class Obj, class Policies>
 		inline T object_cast_impl(const Obj& obj, const Policies&)
 		{
-			if (obj.lua_state() == 0) throw cast_failed(0, LUABIND_TYPEID(T));
+			if (obj.lua_state() == 0) 
+			{
+#ifndef LUABIND_NO_EXCEPTIONS
+				throw cast_failed(0, LUABIND_TYPEID(T));
+#else
+				cast_failed_callback_fun e = get_cast_failed_callback();
+				if (e) e(L, LUABIND_TYPEID(T));
+
+				assert(0 && "object_cast failed. If you want to handle this error use luabind::set_error_callback()");
+				std::terminate();
+#endif
+			}
+
 			LUABIND_CHECK_STACK(obj.lua_state());
 
 			typedef typename detail::find_conversion_policy<0, Policies>::type converter_policy;
