@@ -1247,8 +1247,6 @@ bool luabind::detail::is_class_rep(lua_State* L, int index)
 	return false;
 }
 
-#include <iostream>
-
 void luabind::detail::finalize(lua_State* L, class_rep* crep)
 {
 	if (crep->get_class_type() != class_rep::lua_class) return;
