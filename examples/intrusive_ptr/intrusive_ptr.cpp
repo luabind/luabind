@@ -147,11 +147,14 @@ int main()
 	
 	using namespace luabind;
 
-	class_<A>(L, "A")
-		.def_readonly("cnt", &A::cnt);
+	module(L)
+	[
+		class_<A>("A")
+			.def_readonly("cnt", &A::cnt),
 
-	luabind::function(L, "factory", &factory);
-	luabind::function(L, "f", &f);
+		def("factory", &factory),
+		def("f", &f)
+	];
 
 	dostring(L, "a = factory()");
 	dostring(L, "print('lua count: ' .. a.cnt)");

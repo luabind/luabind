@@ -75,12 +75,16 @@ int main()
 	lua_State* L = lua_open();
 	lua_baselibopen(L);
 
-	luabind::open(L);
-	luabind::function(L, "f", &f);
+	using namespace luabind;
+	
+	open(L);
+	module(L)
+	[
+		def("f", &f)
+	];
 
 	dostring(L, "print( f(true) )");
 	dostring(L, "print( f(false) )");
-
 	dostring(L, "function update(p) print(p) end");
 
 	boost::any param = std::string("foo");

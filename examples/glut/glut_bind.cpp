@@ -91,73 +91,76 @@ void bind_glut(lua_State* L)
 	using namespace glut_bindings;
 
 	open(L);
-	
-	function(L, "glutInitWindowSize", &glutInitWindowSize);
-	function(L, "glutInitWindowPosition", &glutInitWindowPosition);
-	function(L, "glutInitDisplayMode", &glutInitDisplayMode);
 
-	class_<glut_constants>(L, "glut")
-		.enum_("constants")
-		[
-			value("RGB", GLUT_RGB),
-			value("RGBA", GLUT_RGBA),
-			value("INDEX", GLUT_INDEX),
-			value("SINGLE", GLUT_SINGLE),
-			value("DOUBLE", GLUT_DOUBLE),
-			value("DEPTH", GLUT_DEPTH),
-			value("STENCIL", GLUT_STENCIL),
-			value("LEFT_BUTTON", GLUT_LEFT_BUTTON),
-			value("MIDDLE_BUTTON", GLUT_MIDDLE_BUTTON),
-			value("RIGHT_BUTTON", GLUT_RIGHT_BUTTON),
-			value("UP", GLUT_UP),
-			value("DOWN", GLUT_DOWN),
-			value("ELAPSED_TIME", GLUT_ELAPSED_TIME)
-		];
+	module(L)
+	[	
+		def("glutInitWindowSize", &glutInitWindowSize),
+		def("glutInitWindowPosition", &glutInitWindowPosition),
+		def("glutInitDisplayMode", &glutInitDisplayMode),
 
-	function(L, "glutCreateWindow", &glutCreateWindow);
-	function(L, "glutDestroyWindow", &glutDestroyWindow);
-	function(L, "glutFullScreen", &glutFullScreen);
-	function(L, "glutDisplayFunc", &set_displayfunc);
-	function(L, "glutKeyboardFunc", &set_keyboardfunc);
-	function(L, "glutReshapeFunc", &set_reshapefunc);
-	function(L, "glutIdleFunc", &set_idlefunc);
-	function(L, "glutMainLoop", &glutMainLoop);
-	function(L, "glutSwapBuffers", &glutSwapBuffers);
-	function(L, "glutGet", &glutGet);
-	function(L, "glutSolidSphere", &glutSolidSphere);
-	function(L, "glutWireSphere", &glutWireSphere);
-	function(L, "glutWireTeapot", &glutWireTeapot);
-	function(L, "glutSolidTeapot", &glutSolidTeapot);
+		class_<glut_constants>("glut")
+			.enum_("constants")
+			[
+				value("RGB", GLUT_RGB),
+				value("RGBA", GLUT_RGBA),
+				value("INDEX", GLUT_INDEX),
+				value("SINGLE", GLUT_SINGLE),
+				value("DOUBLE", GLUT_DOUBLE),
+				value("DEPTH", GLUT_DEPTH),
+				value("STENCIL", GLUT_STENCIL),
+				value("LEFT_BUTTON", GLUT_LEFT_BUTTON),
+				value("MIDDLE_BUTTON", GLUT_MIDDLE_BUTTON),
+				value("RIGHT_BUTTON", GLUT_RIGHT_BUTTON),
+				value("UP", GLUT_UP),
+				value("DOWN", GLUT_DOWN),
+				value("ELAPSED_TIME", GLUT_ELAPSED_TIME)
+			],
 
-	// -- opengl
+		def("glutCreateWindow", &glutCreateWindow),
+		def("glutDestroyWindow", &glutDestroyWindow),
+		def("glutFullScreen", &glutFullScreen),
+		def("glutDisplayFunc", &set_displayfunc),
+		def("glutKeyboardFunc", &set_keyboardfunc),
+		def("glutReshapeFunc", &set_reshapefunc),
+		def("glutIdleFunc", &set_idlefunc),
+		def("glutMainLoop", &glutMainLoop),
+		def("glutSwapBuffers", &glutSwapBuffers),
+		def("glutGet", &glutGet),
+		def("glutSolidSphere", &glutSolidSphere),
+		def("glutWireSphere", &glutWireSphere),
+		def("glutWireTeapot", &glutWireTeapot),
+		def("glutSolidTeapot", &glutSolidTeapot),
 
-	class_<gl_constants>(L, "gl")
-		.enum_("constants")
-		[
-			value("COLOR_BUFFER_BIT", GL_COLOR_BUFFER_BIT),
-			value("DEPTH_BUFFER_BIT", GL_DEPTH_BUFFER_BIT),
-			value("TRIANGLES", GL_TRIANGLES),
-			value("MODELVIEW", GL_MODELVIEW),
-			value("PROJECTION", GL_PROJECTION)
-		];
+		// -- opengl
 
-	function(L, "glBegin", &glBegin);
-	function(L, "glVertex3", &glVertex3f);
-	function(L, "glEnd", &glEnd);
-	function(L, "glClear", &glClear);
-	function(L, "glPushMatrix", &glPushMatrix);
-	function(L, "glPopMatrix", &glPopMatrix);
-	function(L, "glRotate", &glRotatef);
-	function(L, "glColor3", &glColor3f);
-	function(L, "glColor4", &glColor4f);
-	function(L, "glMatrixMode", &glMatrixMode);
-	function(L, "glLoadIdentity", &glLoadIdentity);
-	function(L, "glViewport", &glViewport);
-	function(L, "glTranslate", &glTranslatef);
+		class_<gl_constants>("gl")
+			.enum_("constants")
+			[
+				value("COLOR_BUFFER_BIT", GL_COLOR_BUFFER_BIT),
+					value("DEPTH_BUFFER_BIT", GL_DEPTH_BUFFER_BIT),
+				value("TRIANGLES", GL_TRIANGLES),
+				value("MODELVIEW", GL_MODELVIEW),
+				value("PROJECTION", GL_PROJECTION)
+			],
 
-	// -- glu
+		def("glBegin", &glBegin),
+		def("glVertex3", &glVertex3f),
+		def("glEnd", &glEnd),
+		def("glClear", &glClear),
+		def("glPushMatrix", &glPushMatrix),
+		def( "glPopMatrix", &glPopMatrix),
+		def("glRotate", &glRotatef),
+		def("glColor3", &glColor3f),
+		def("glColor4", &glColor4f),
+		def("glMatrixMode", &glMatrixMode),
+		def("glLoadIdentity", &glLoadIdentity),
+		def("glViewport", &glViewport),
+		def("glTranslate", &glTranslatef),
 
-	function(L, "gluPerspective", &gluPerspective);
+		// -- glu
+
+		def("gluPerspective", &gluPerspective)
+	];
 }
 
 int main()

@@ -9,28 +9,37 @@ extern "C"
 
 #include <luabind/luabind.hpp>
 
+namespace
+{
+	bool match(boost::RegEx& r, const char* s)
+	{
+		return r.Match(s);
+	}
+
+	bool search(boost::RegEx& r, const char* s)
+	{
+		return r.Search(s);
+	}
+} // namespace unnamed
+
 
 void wrap_regex(lua_State* L)
 {
 	using boost::RegEx;
 	using namespace luabind;
 
-	class_<RegEx>(L, "regex")
-		.def(constructor<const char*>())
-		.def(constructor<const char*, bool>())
-		.def("match", (bool(RegEx::*)(const char*, unsigned int))&RegEx::Match)
-		.def("search", (bool(RegEx::*)(const char*, unsigned int))&RegEx::Search)
-		.def("what", &RegEx::What)
-		.def("matched", &RegEx::Matched)
-		.def("length", &RegEx::Length)
-		.def("position", &RegEx::Position)
-		.enum_("flags")
-		[
-			value("match_default", boost::match_default),
-			value("match_prev_avail", boost::match_prev_avail),
-			value("match_not_bob", boost::match_not_bob)
-		]
-		;
+	module(L)
+	[
+		class_<RegEx>("regex")
+			.def(constructor<const char*>())
+			.def(constructor<const char*, bool>())
+			.def("match", match)
+			.def("search", search)
+			.def("what", &RegEx::What)
+			.def("matched", &RegEx::Matched)
+			.def("length", &RegEx::Length)
+			.def("position", &RegEx::Position)
+	];
 }
 
 void test_wrap_regex()
