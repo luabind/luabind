@@ -25,7 +25,6 @@ Please report any grammatic corrections/spelling corrections.</p>
 	<ul>
 		<li><a href="#fun_overload">overloaded functions</a> 
 		<li><a href="#fun_sigmatch">signature matching</a>
-		<li><a href="#fun_exception">exceptions</a>
 		<li><a href="#lua_fun">calling lua functions</a> 
 	</ul>
 	<li><a href="#bind_classes">Binding classes to lua</a> 
@@ -44,6 +43,7 @@ Please report any grammatic corrections/spelling corrections.</p>
 	<ul>
 		<li><a href="#class_lua_derive">deriving in lua</a>
 	</ul>
+	<li><a href="#exceptions">Exceptions</a>
 	<li><a href="#policies" >Parameter policies</a> 
 	<ul>
 		<li><a href="#policies_copy">copy</a> 
@@ -268,23 +268,6 @@ g(a) -- calls g(A*)
 g(b) -- calls g(B*)
 g(c) -- calls g(B*)
 </pre>
-
-<h2><a name="fun_exception"></a>exceptions</h2>
-<p>If any of the functions you register throws an exception when called, that exception will be caught
-by luabind and converted to an error string and <tt>lua_error</tt> will be invoked. If the exception
-is a <tt>std::exception</tt> or a <tt>const&nbsp;char*</tt> the string that is pushed on the lua stack,
-as error message, will be the <tt>what()</tt> or the string itself respectively. If the exception
-is unkown, a generic string saying that the function threw an exception will be pushed.</p>
-
-<p>Exceptions thrown from user defined functions have to be caught by luabind. If they weren't they
-would be thrown through lua itself, which is usually compiled as C code and doesn't support the
-stack-unwinding that exceptions imply.</p>
-
-<p>Any function that invokes lua code may throw <tt>luabind::error</tt>. This exception means that a lua
-run-time error occured. The error message is found on top of the lua stack. The reason why the
-exception doesn't contain the error string itself is because it would the require heap allocation
-which may fail. If an exception class throws an exception while it is being thrown itself, the
-application will be terminated.</p>
 
 <h2><a name="lua_fun"></a>calling lua functions</h2>
 
@@ -1029,6 +1012,105 @@ but if it has virtual functions you may have silent errors. The rule of thumb is
 If your class has virtual functions, create a wrapper type, if it doesn't don't create
 a wrapper type.</p>
 
+<h1><a name="exceptions"></a>Exceptions</h1>
+<p>If any of the functions you register throws an exception when called, that exception will be caught
+by luabind and converted to an error string and <tt>lua_error</tt> will be invoked. If the exception
+is a <tt>std::exception</tt> or a <tt>const&nbsp;char*</tt> the string that is pushed on the lua stack,
+as error message, will be the <tt>what()</tt> or the string itself respectively. If the exception
+is unkown, a generic string saying that the function threw an exception will be pushed.</p>
+
+<p>Exceptions thrown from user defined functions have to be caught by luabind. If they weren't they
+would be thrown through lua itself, which is usually compiled as C code and doesn't support the
+stack-unwinding that exceptions imply.</p>
+
+<p>Any function that invokes lua code may throw <tt>luabind::error</tt>. This exception means that a lua
+run-time error occured. The error message is found on top of the lua stack. The reason why the
+exception doesn't contain the error string itself is because it would then require heap allocation
+which may fail. If an exception class throws an exception while it is being thrown itself, the
+application will be terminated.</p>
+
+<p>Error's synopsis is:</p>
+
+<pre>
+class error: std::exception
+{
+public:
+	error(lua_State*);
+	lua_State* state() const throw();
+	virtual const char* what() const throw();
+};
+</pre>
+
+<p>The state function returns a pointer to the lua state in which the error was thrown. This pointer
+may be invalid if you catch this exception after the lua state is destructed. If the lua state is
+valid you can use it to retrieve the error message from the top of the lua stack.</p>
+
+<p>An example of where the lua state pointer may point to an invalid state follows:</p>
+
+<pre>
+struct lua_state
+{
+	lua_state(lua_State* L): m_L(L) {}
+	~lua_state() { lua_close(m_L); }
+	operator lua_State*() { return m_L; }
+	lua_State* m_L;
+};
+
+int main()
+{
+	try
+	{
+		lua_state L = lua_open();
+		/* ... */
+	}
+	catch(luabind::error&amp; e)
+	{
+		lua_State* L = e.state();
+		// L will now point to the destructed
+		// lua state and be invalid
+		/* ... */
+	}
+}
+</pre>
+
+<p>There's another exception that luabind may throw. <tt>luabind::cast_failed</tt>, this exception
+is thrown from <tt>call_function</tt>, <tt>call_member</tt> or when <tt>functor</tt> is invoked.
+It means that the return value from the lua function couldn't be converted to a C++ value. It is
+also thrown from <tt>object_cast</tt> if the cast cannot be made.</p>
+
+<p>The synopsis for <tt>luabind::cast_failed</tt> is:</p>
+
+<pre>
+class cast_failed: std::exception
+{
+public:
+	cast_failed(lua_State*);
+	lua_State* state() const throw();
+	LUABIND_TYPE_INFO info() const throw();
+	virtual const char* what() const throw();
+};
+</pre>
+
+<p>Again, the <tt>state</tt> member function returns a pointer to the lua state where the error occured.
+See the example above to see where this pointer may be invalid.</p>
+
+<p>The <tt>info</tt> member function returns the user defined <tt>LUABIND_TYPE_INFO</tt>, which
+defaults to a <tt>const&nbsp;std::type_info*</tt>. This type info describes the type that we tried
+to cast a lua value to.</p>
+
+<p>If you have defined <tt>LUABIND_NO_EXCEPTIONS</tt> none of these exceptions will be thrown,
+instead you can set two callback functions that are called instead. These two functions are only defined if <tt>LUABIND_NO_EXCEPTIONS</tt> are defined.</p>
+
+<h3><tt>luabind::set_error_callback(void(*)(lua_State*))</tt></h3>
+<p>The function you set will be called when a runtime-error occur in lua code. You can find an
+error message on top of the lua stack. This function is not expected to return, if it does
+luabind will call <tt>std::terminate()</tt>.</p>
+
+<h3><tt>luabind::set_cast_failed_callback(void(*)(lua_State*, LUABIND_TYPE_INFO))</tt></h3>
+
+<p>The function you set is called instead of throwing <tt>cast_failed</tt>. This function is not expected to return, if it does luabind will call <tt>std::terminate()</tt>.</p>
+
+
 <h1><a name="policies"></a>Parameter policies</h1>
 
 <p>Sometimes it is necessary to control how luabind passes 
@@ -1454,7 +1536,7 @@ This namespace contains non-public classes and are not supposed to be used direc
 	<li><i>&lt;class-name&gt;</i>() threw an exception
 	<li><i>&lt;class-name&gt;</i>:<i>&lt;function-name&gt;</i>() threw an exception
 	<p>The class' constructor or member function threw an unknown exception. Known exceptions are <tt>const&nbsp;char*</tt>,
-	<tt>std::exception</tt>. See the <a href="#fun_exception">exceptions</a> section.</p>
+	<tt>std::exception</tt>. See the <a href="#exceptions">exceptions</a> section.</p>
 
 	<li>no overload of '<i>&lt;class-name&gt;</I>:<i>&lt;function-name&gt;</i>' matched the arguments (&lt;<i>parameter-types&gt;)</i>
 	<li>no match for function call '<i>&lt;function-name&gt;</i>' with the parameters (<i>&lt;parameter-types&gt;</i>)
