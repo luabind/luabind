@@ -12,7 +12,8 @@ SOURCES = \
 	create_class.cpp \
 	stack_content_by_name.cpp \
 	object.cpp \
-	class_info.cpp
+	class_info.cpp \
+    class_registry
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
