@@ -10,7 +10,7 @@
 <body>
 
 <p>This library is currently in public beta phase. This documentation should be considered beta as well.
-Please report any grammatic corrections/spelling corrections.</p>
+Please report any grammatical corrections/spelling corrections.</p>
 
 <h1>Table of contents</h1>
 
@@ -73,7 +73,7 @@ between C++ and <a href="http://www.lua.org">lua</a>. It
 has the ability to expose functions and classes, written in C++, to lua. It will 
 also supply the functionality to define classes in lua and let them derive from 
 other lua classes or C++ classes. Lua classes can override virtual functions 
-from their C++ baseclasses. It is written towards lua 5.0, and does not work 
+from their C++ base classes. It is written towards lua 5.0, and does not work 
 with lua 4.</p>
 
 <p>It is implemented utilizing template meta programming. 
@@ -224,7 +224,7 @@ luabind::function(L, "f", (void(*)(int)) &amp;f);
 
 <h2><a name="fun_sigmatch"></a>signature matching</h2>
 
-<p>Luabind will generate code that checks the lua stack to 
+<p>luabind will generate code that checks the lua stack to 
 see if the values there can match your functions' signatures. It will handle 
 implicit typecasts between derived classes, and it will prefer matches with the 
 least number of implicit casts. In a function call, if the function is 
@@ -284,8 +284,8 @@ g(c) -- calls g(B*)
 
 <h3><tt>template&lt;class Ret&gt;<br>
 Ret call_function(lua_State* L, const char* name, ...)</tt></h3>
-<p>Calls the global function called <tt>name</tt>. This function can only call global lua functions. The
-... represents variable number of parameters that's sent to the lua function. This function call may
+<p>This calls the global function called <tt>name</tt>. This function can only call global lua functions. The
+... represents a variable number of parameters that are sent to the lua function. This function call may
 throw <tt>luabind::error</tt> if the function call fails.</p>
 
 <p>The return value isn't actually <tt>Ret</tt> (the template parameter), but a proxy object that will do
@@ -299,18 +299,18 @@ int ret = call_function&lt;int&gt;(L, "a_lua_function", new complex_class())[ ad
 <h3><tt>template&lt;class Ret&gt;<br>
 Ret call_member(object&amp;, const char* name, ...)</tt></h3>
 <p>This treats the given <tt>object</tt> as an instance of a class. The given name is the name of a member
-function to call. The ... represents variable number of parameters given to the function. This function may
+function to call. The ... represents a variable number of parameters given to the function. This function may
 throw <tt>luabind::error</tt> if the function call fails.</p>
 
 <p>You can give policies to a member function call the same way as you do with <tt>call_function</tt>.</p>
 
 <h1><a name="bind_classes"></a>Binding classes to lua</h1>
 
-<p>To register classes you use a class called <tt>class_</tt>. It's name is supposed to resemble the C++ 
+<p>To register classes you use a class called <tt>class_</tt>. Its name is supposed to resemble the C++ 
 keyword, to make it look more intuitive. It has an overloaded member function 
 <tt>def()</tt> that is used to register member functions, 
-operators, constructors, enums and properties on the class. It will return a 
-this pointer, to let you register more members directly.</p>
+operators, constructors, enums and properties on the class. It will return its 
+this-pointer, to let you register more members directly.</p>
 
 <p>Let's start with a simple example. Consider the 
 following C++ class:</p>
@@ -399,7 +399,7 @@ class_&lt;A&gt;(L, "A")
 	;
 </pre>
 
-<p>If it's supposed to be readable and writable. You can 
+<p>Then it's both readable and writable. You can 
 also register attributes as read-only.</p>
 
 <pre>class_&lt;A&gt;(L, "A")
@@ -700,7 +700,7 @@ at the given table position (like operator[] but only for reading). The first us
 and the latter uses <tt>lua_rawget</tt>.</p>
 
 <p>The iterators are (almost) models of the <a href="http://www.sgi.com/tech/stl/ForwardIterator.html">
-ForwardIterator</a> concept. The exceptions are that operator-&gt; and postincrement doesn't exist on
+ForwardIterator</a> concept. The exceptions are that operator-&gt; and post increment doesn't exist on
 them.</p>
 
 <p>The <tt>lua_state()</tt> function returns the lua state where this object is stored. If you want
@@ -714,7 +714,7 @@ on the operands and return its result.</p>
 <p>The <tt>int type()</tt> member function will return the lua type of the object. It will return
 the same values as <tt>lua_type()</tt>.</p>
 
-<p>The <tt>is_valid</tt> function tells you wether the object has been initialized or not. When created
+<p>The <tt>is_valid</tt> function tells you whether the object has been initialized or not. When created
 with its default constructor, objects are invalid. To make an object valid, you can assign it a value. If
 you want to invalidate an object you can simply assign it an invalid object.</p>
 
@@ -757,7 +757,7 @@ my_function_object(2, 8, new my_complex_structure(6)) [ adopt(_3) ];
 <p>This tells luabind to make lua adopt the ownership and responsibility for the pointer passed in
 to the lua-function.</p>
 
-<p>It's important that all instances of <tt>object</tt> has been destructed by the time the lua state
+<p>It's important that all instances of <tt>object</tt> have been destructed by the time the lua state
 is closed. The object will keep a pointer to the lua state and release its lua object in its
 destructor.</p>
 
@@ -798,10 +798,10 @@ object, to indicate that the cast could not be performed.</p>
 
 <h3><tt>object get_globals(lua_State*);</tt><br>
 <tt>object get_registry(lua_State*);</tt></h3>
-<p>These functions returns the global environment table and the registry table respectively.</p>
+<p>These functions return the global environment table and the registry table respectively.</p>
 
 <h3><tt>object newtable(lua_State*);</tt></h3>
-<p>This function creates a new table and return an object to it.</p>
+<p>This function creates a new table and returns an object to it.</p>
 
 <h2><a name="functor"></a>functor</h2>
 
@@ -815,7 +815,7 @@ only be used to store functions. If you take it as a parameter, it will only mat
 </pre>
 
 <p>It takes one template parameter, the return value of the lua function it represents.
-Currently the functor can have at most one return value (unlike lua funcions). It has the
+Currently the functor can have at most one return value (unlike lua functions). It has the
 following synopsis:</p>
 
 <pre>
@@ -875,7 +875,7 @@ functor&lt;int&gt; f(L, "f");
 std::cout &lt;&lt; f(3, 5) &lt;&lt; "\n";
 </pre>
 
-<p>Which will print out the sum of 3 and 5. Note that you can pass any parameters to the
+<p>This will print out the sum of 3 and 5. Note that you can pass any parameters to the
 application operator of <a href="#functor"><tt>luabind::functor</tt></a>, this is because lua doesn't have 
 signatures for its functions. All lua functions take any number of parameters 
 of any type.</p>
@@ -918,8 +918,8 @@ void set_callback_wrapper(const functor&lt;void&gt;&amp; f)
 
 <p>And then register <tt>set_callback_wrapper</tt> instead of registering <tt>set_callback</tt>.
 This will have the effect that when one tries to register the callback from lua, your
-<tt>set_callback_wrapper</tt> will be called instead and first set the lua fuctor to the given function.
-It will the call the real <tt>set_callback</tt> with the <tt>callback_wrapper</tt>. The
+<tt>set_callback_wrapper</tt> will be called instead and first set the lua functor to the given function.
+It will then call the real <tt>set_callback</tt> with the <tt>callback_wrapper</tt>. The
 <tt>callback_wrapper</tt> will be called whenever the callback should be called, and it will simply
 call the lua function that we registered.</p>
 
@@ -960,27 +960,27 @@ end
 </pre>
 
 <p>Here the <tt>super</tt> keyword is 
-used in the constructor to initialize the baseclass. The user is required to 
+used in the constructor to initialize the base class. The user is required to 
 call <tt>super</tt> first in the constructor.</p>
 
 <p>As you can see in this example, you can call the 
-baseclass' member functions. You can find all member functions in the baseclass, 
-but you will have to give the this-pointer as first argument (<tt>self</tt> that is).</p>
+base class' member functions. You can find all member functions in the base class, 
+but you will have to give the this-pointer (<tt>self</tt>) as first argument.</p>
 
 <h2><a name="class_lua_derive"></a>deriving in lua</h2>
 
 <p>It is also possible to derive lua classes from C++ 
 classes, and override virtual functions with lua functions. To do this we have 
-to create a wrapper class for our C++ baseclass. This is the class that will 
+to create a wrapper class for our C++ base class. This is the class that will 
 hold the lua object when we instantiate a lua class.</p>
 
 <p>The wrapper class has to provide the same constructors 
-as the baseclass, with the addition of one extra parameter: <tt>luabind::object</tt>.
+as the base class, with the addition of one extra parameter: <tt>luabind::object</tt>.
 This is the reference to the lua object that should be held by the wrapper, and should
 be stored in a member variable as done in the sample below.</p>
 
 <pre>
-class baseclass
+class base class
 {
 public:
 	baseclass(const char* s)	{ std::cout &lt;&lt; s &lt;&lt; "\n"; }
@@ -1006,16 +1006,16 @@ class_&lt;baseclass, baseclass_wrapper&gt;(L, "baseclass")
 	;
 </pre>
 
-<p>Note that if you have both baseclasses and a baseclass 
+<p>Note that if you have both base classes and a base class 
 wrapper, you must give both <tt>bases</tt> and the 
-baseclass wrapper type as template parameter to <tt>class_</tt>. The order
+base class wrapper type as template parameter to <tt>class_</tt>. The order
 in which you specify them is not important.</p>
 
 <p>If we didn't have a class wrapper, it would not be possible to pass a lua class
-back to C++. Since the entrypoints of the virtual functions would still point to
-the C++ baseclass, and not to the functions defined in lua. That's why we need
-one function that calls the baseclass' real functon (used if the lua class
-doesn't redefine it) and one virtual function that dispatches the call into lubind,
+back to C++. Since the entry points of the virtual functions would still point to
+the C++ base class, and not to the functions defined in lua. That's why we need
+one function that calls the base class' real function (used if the lua class
+doesn't redefine it) and one virtual function that dispatches the call into luabind,
 to allow it to select if a lua function should be called, or if the original
 function should be called. If you don't intend to derive from a C++ class, or if
 it doesn't have any virtual member functions, you can register it without a
@@ -1031,14 +1031,14 @@ a wrapper type.</p>
 by luabind and converted to an error string and <tt>lua_error</tt> will be invoked. If the exception
 is a <tt>std::exception</tt> or a <tt>const&nbsp;char*</tt> the string that is pushed on the lua stack,
 as error message, will be the <tt>what()</tt> or the string itself respectively. If the exception
-is unkown, a generic string saying that the function threw an exception will be pushed.</p>
+is unknown, a generic string saying that the function threw an exception will be pushed.</p>
 
 <p>Exceptions thrown from user defined functions have to be caught by luabind. If they weren't they
 would be thrown through lua itself, which is usually compiled as C code and doesn't support the
 stack-unwinding that exceptions imply.</p>
 
 <p>Any function that invokes lua code may throw <tt>luabind::error</tt>. This exception means that a lua
-run-time error occured. The error message is found on top of the lua stack. The reason why the
+run-time error occurred. The error message is found on top of the lua stack. The reason why the
 exception doesn't contain the error string itself is because it would then require heap allocation
 which may fail. If an exception class throws an exception while it is being thrown itself, the
 application will be terminated.</p>
@@ -1105,7 +1105,7 @@ public:
 };
 </pre>
 
-<p>Again, the <tt>state</tt> member function returns a pointer to the lua state where the error occured.
+<p>Again, the <tt>state</tt> member function returns a pointer to the lua state where the error occurred.
 See the example above to see where this pointer may be invalid.</p>
 
 <p>The <tt>info</tt> member function returns the user defined <a href="#luabind_type_info"><tt>LUABIND_TYPE_INFO</tt></a>, which
@@ -1115,12 +1115,12 @@ to cast a lua value to.</p>
 <p>If you have defined <a href="#luabind_no_exceptions"><tt>LUABIND_NO_EXCEPTIONS</tt></a> none of these exceptions will be thrown,
 instead you can set two callback functions that are called instead. These two functions are only defined if <a href="#luabind_no_exceptions"><tt>LUABIND_NO_EXCEPTIONS</tt></a> are defined.</p>
 
-<h3><tt>luabind::set_error_callback(void(*)(lua_State*))</tt></h3>
+<h3><a name="set_error_callback"></a><tt>luabind::set_error_callback(void(*)(lua_State*))</tt></h3>
 <p>The function you set will be called when a runtime-error occur in lua code. You can find an
 error message on top of the lua stack. This function is not expected to return, if it does
 luabind will call <tt>std::terminate()</tt>.</p>
 
-<h3><tt>luabind::set_cast_failed_callback(void(*)(lua_State*, LUABIND_TYPE_INFO))</tt></h3>
+<h3><a name="set_cast_failed_callback"></a><tt>luabind::set_cast_failed_callback(void(*)(lua_State*, LUABIND_TYPE_INFO))</tt></h3>
 
 <p>The function you set is called instead of throwing <tt>cast_failed</tt>. This function is not expected to return, if it does luabind will call <tt>std::terminate()</tt>.</p>
 
@@ -1178,7 +1178,7 @@ function(L, "set_and_get_new", &amp;set_and_get_new, adopt(return_value) + adopt
 
 <p>To use this policy you need to include <tt>&lt;luabind/adopt_policy.hpp&gt;</tt>.</p>
 
-<h2><a name="policies_dependency"></a>depedency</h2>
+<h2><a name="policies_dependency"></a>dependency</h2>
 
 <p>The dependency policy is used to create life-time dependencies between values. Consider the following example:</p>
 
@@ -1273,7 +1273,7 @@ is a perfect match to the return-type (such as in the example).</p>
 
 <h2><a name="policies_out"></a>out_value</h2>
 
-<p>This policy makes it possible to wrap functions that take non const references as its parameters with the intention to write returnvalues to them.</p>
+<p>This policy makes it possible to wrap functions that take non const references as its parameters with the intention to write return values to them.</p>
 
 <pre>
 void f(float&amp; val) { val = val + 10.f; }
@@ -1437,7 +1437,7 @@ The available configuration options follows:</p>
 		<td valign="top"><tt>LUABIND_NO_ERROR_CHECKING</tt></td>
 		<td>
 			<p>If this macro is defined, all the lua code is expected only to make
-			legal calls. If illegal function calls are made (eg. giving parameters
+			legal calls. If illegal function calls are made (e.g. giving parameters
 			that doesn't match the function signature) they will not be detected
 			by luabind and the application will probably crash. Error checking
 			could be disabled when shipping a release build (given that no end-user
@@ -1472,8 +1472,10 @@ The available configuration options follows:</p>
 			by luabind throws an exception (throwing exceptions through
 			lua has undefined behavior).</p>
 
-			<p>Where exceptions are the onlyway to get an error report from
-			luabind, they will be replaced with an assert.</p>
+			<p>Where exceptions are the only way to get an error report from
+			luabind, they will be replaced with calls to the callback
+			functions set byt <a href="#set_error_callback"><tt>set_error_callback()</tt></a>
+			and <a href="#set_cast_failed_callback"><tt>set_cast_failed_callback()</tt></a>.</p>
 		</td>
 	</tr>
 	<tr>
@@ -1484,7 +1486,7 @@ The available configuration options follows:</p>
 			<tt>LUABIND_INVALID_TYPE_INFO</tt></p>
 		</td>
 		<td>
-			<p>If you don't want to use the rtti supplied by C++
+			<p>If you don't want to use the RTTI supplied by C++
 			you can supply your own type-info structure with the
 			LUABIND_TYPE_INFO define. Your type-info structure must
 			be copyable and must be able to compare itself against
@@ -1498,7 +1500,7 @@ The available configuration options follows:</p>
 			structure and it takes a type as its parameter. That is,
 			a compile time parameter. LUABIND_INVALID_TYPE_INFO macro
 			should be defined to an invalid type. No other type should
-			be able tp produce this type info. To use it you probably
+			be able to produce this type info. To use it you probably
 			have to make a traits class with specializations for all
 			classes that you have type-info for. Like this:</p>
 			
@@ -1514,7 +1516,7 @@ template&lt;&gt; struct typeinfo_trait&lt;B&gt; { enum { type_id = 1 }; };
 template&lt;&gt; struct typeinfo_trait&lt;C&gt; { enum { type_id = 2 }; };
 			</pre>
 			
-			<p>If you have set up your own rtti system like this (by using integers to identify types)
+			<p>If you have set up your own RTTI system like this (by using integers to identify types)
 			you can have luabind use it with the following defines</p>
 			
 			<pre>
@@ -1524,8 +1526,8 @@ template&lt;&gt; struct typeinfo_trait&lt;C&gt; { enum { type_id = 2 }; };
 #define LUABIND_INVALID_TYPE_INFO -1
 			</pre>
 			
-			<p>The default behaviour, if you don't define any of these three, is to use the builtin
-			rtti support in C++.</p>
+			<p>The default behavior, if you don't define any of these three, is to use the built-in
+			RTTI support in C++.</p>
 			
 			<pre>
 #define LUABIND_TYPE_INFO const std::type_info*
@@ -1547,14 +1549,14 @@ template&lt;&gt; struct typeinfo_trait&lt;C&gt; { enum { type_id = 2 }; };
 
 <h1><a name="implementation_notes"></a>Implementation notes</h1>
 
-<p>The classes and objects are implemented as userdata in lua. To make sure that
+<p>The classes and objects are implemented as user data in lua. To make sure that
 the user data really is the internal structure it is supposed to be, we tag their
-metatables. A userdata who's metatable contains a boolean member named
+metatables. A user data who's metatable contains a boolean member named
 <tt>"__luabind_classrep"</tt> is expected to be a class exported by luabind.
-A userdata who's metatable contains a boolean member named <tt>"__luabind_class"</tt>
+A user data who's metatable contains a boolean member named <tt>"__luabind_class"</tt>
 is expected to be an instantiation of a luabind class.</p>
 
-<p>This means that if you make your own userdata and tags its metatable with the
+<p>This means that if you make your own user data and tags its metatable with the
 exact same names, you can very easily fool luabind and crash the application.</p>
 
 <p>In the lua registry, luabind keeps an entry called "<tt>__luabind_classes</tt>"
@@ -1632,8 +1634,8 @@ This namespace contains non-public classes and are not supposed to be used direc
 	<tt>__cdecl</tt> calling conventions. This is a problem in developer studio.</p>
 
 	<li><h3>What's wrong with functions taking variable number of arguments?</h3>
-	<p>You cannot register a function with ellipses in its signature. Since ellipses doesn't preserve
-	typesafety, those should be avoided anyway.</p>
+	<p>You cannot register a function with ellipses in its signature. Since ellipses don't preserve
+	type safety, those should be avoided anyway.</p>
 
 	<li><h3>Internal structure overflow in VC</h3>
 	<p>If you, in visual studio,  get <tt>fatal error C1204: compiler limit : internal
@@ -1650,13 +1652,13 @@ This namespace contains non-public classes and are not supposed to be used direc
 	heap then that.</p>
 
 	<li><h3>error C1055: compiler limit : out of keys in VC</h3>
-	<p>It seems that this error occurs when too many <tt>assert()</tt> are used in a program. Or more
+	<p>It seems that this error occurs when too many <tt>assert()</tt> are used in a program, or more
 	specifically, the <tt>__LINE__</tt> macro. It seems to be fixed by changing /ZI (Program database
 	for edit and continue) to /Zi (Program database).</p>
 	
 	<li><h3>How come my executable is huge?</h3>
-	<p>If you're compiling in debug mode, you will probably have alot of debug-info and symbols (luabind
-	consists of alot of functions). Also, if built in debug mode, no optimizations were applied, luabind
+	<p>If you're compiling in debug mode, you will probably have a lot of debug-info and symbols (luabind
+	consists of a lot of functions). Also, if built in debug mode, no optimizations were applied, luabind
 	relies on that the compiler is able to inline functions. If you built in release mode, try running
 	<tt>strip</tt> on your executable to remove export-symbols, this will trim down the size.</p>
 
@@ -1665,7 +1667,7 @@ This namespace contains non-public classes and are not supposed to be used direc
 <h1><a name="future"></a>Future additions</h1>
 <ul>
 	<li>Smart pointer wrappers. wraps smart pointers by just 
-		keeping one copy of it and let lua garbage collect it when there's no more 
+		keeping one copy of it and let lua garbage collect it when there are no more 
 		references to it.
 	<li>Scopes and namespaces. Add the ability to register classes and 
 		functions within lua tables.
