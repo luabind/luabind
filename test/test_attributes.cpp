@@ -1,4 +1,4 @@
-// Copyright (c) 2004 Daniel Wallin
+// Copyright (c) 2004 Daniel Wallin and Arvid Norberg
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),

@@ -126,6 +126,7 @@ void test_implicit_cast();
 void test_const();
 void test_object();
 void test_policies();
+void test_free_functions();
 
 // --------------------------------------------------------------------------
 
@@ -155,6 +156,7 @@ test_suite* init_unit_test_suite( int argc, char* argv[] )
     test->add(BOOST_TEST_CASE(&test_const));
     test->add(BOOST_TEST_CASE(&test_object));
     test->add(BOOST_TEST_CASE(&test_policies));
+    test->add(BOOST_TEST_CASE(&test_free_functions));
 
     return test;
 }

@@ -3,6 +3,7 @@ import testing ;
 use-project /luabind : ../ ;
 
 SOURCES = 
+    test_free_functions.cpp
     test_const.cpp
     test_object.cpp
     test_implicit_cast.cpp

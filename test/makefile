@@ -6,6 +6,7 @@ SOURCES = \
 	test_const.cpp \
 	test_construction.cpp \
 	test_exceptions.cpp \
+	test_free_functions.cpp \
 	test_held_type.cpp \
 	test_implicit_cast.cpp \
 	test_lua_classes.cpp \

@@ -1,10 +1,32 @@
-#include "test.h"
+// Copyright (c) 2004 Daniel Wallin and Arvid Norberg
+
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+// OR OTHER DEALINGS IN THE SOFTWARE.
+
+#include "test.hpp"
+
+#include <luabind/luabind.hpp>
 #include <luabind/functor.hpp>
-#include <iostream>
+#include <luabind/adopt_policy.hpp>
 
 namespace {
-
-    LUABIND_ANONYMOUS_FIX int feedback = 0;
 
     luabind::functor<int> functor_test;
     
@@ -13,46 +35,37 @@ namespace {
         functor_test = f;
     }
     
-    struct base 
+	struct base: counted_type<base>
     {
-        ~base() { feedback = 99; }
-
-        void f()
+        int f()
         {
-            feedback = 5;
+			return 5;
         }
     };
 
-    void f(int x)
+    int f(int x)
     {
-        feedback = x;
+        return x + 1;
     }
 
-    void f(int x, int y)
+    int f(int x, int y)
     {
-        feedback = x + y;
+        return x + y;
     }
     
-    int g() { feedback = 3; return 4; }
-
     base* create_base()
     {
         return new base();
     }
 
-    void test_functor(const luabind::functor<int>& fun)
-    {
-        feedback = fun(5);
-    }
-
     void test_value_converter(const std::string str)
     {
-        feedback = 9;
+		BOOST_TEST(str == "converted string");
     }
 
     void test_pointer_converter(const char* const str)
     {
-        feedback = 6;
+		BOOST_TEST(std::strcmp(str, "converted string") == 0);
     }
 
     struct copy_me
@@ -63,10 +76,10 @@ namespace {
     {
     }
 
-    int function_should_never_be_called(lua_State*)
+    int function_should_never_be_called(lua_State* L)
     {
-        feedback = -1;
-        return 0;
+		lua_pushnumber(L, 10);
+        return 1;
     }
 
 } // anonymous namespace
@@ -92,109 +105,84 @@ namespace luabind { namespace converters
 
 }}
 
-bool test_free_functions()
+void test_free_functions()
 {
+    COUNTER_GUARD(base);
+
+	lua_state L;
+
     using namespace luabind;
-    {
-        lua_State* L = lua_open();
-        lua_closer c(L);
-        int top = lua_gettop(L);
 
-        open(L);
+    lua_pushstring(L, "f");
+    lua_pushcclosure(L, &function_should_never_be_called, 0);
+    lua_settable(L, LUA_GLOBALSINDEX);
 
-        lua_pushstring(L, "f");
-        lua_pushcclosure(L, &function_should_never_be_called, 0);
-        lua_settable(L, LUA_GLOBALSINDEX);
+    DOSTRING(L, "assert(f() == 10)");
 
-        if (dostring(L, "f()")) return false;
-        if (feedback != -1) return false;
-
-        module(L)
-        [
-            class_<copy_me>("copy_me")
-                .def(constructor<>()),
-        
-            class_<base>("base")
-                .def("f", &base::f),
-
-
-            def("by_value", &take_by_value),
+    module(L)
+    [
+        class_<copy_me>("copy_me")
+            .def(constructor<>()),
     
-            def("f", (void(*)(int)) &f),
-            def("f", (void(*)(int, int)) &f),
-            def("g", &g),
-            def("create", &create_base, adopt(return_value)),
-            def("test_functor", &test_functor),
-            def("set_functor", &set_functor)
-                
+        class_<base>("base")
+            .def("f", &base::f),
+
+
+        def("by_value", &take_by_value),
+
+        def("f", (int(*)(int)) &f),
+        def("f", (int(*)(int, int)) &f),
+        def("create", &create_base, adopt(return_value)),
+        def("set_functor", &set_functor)
+            
+#if !(BOOST_MSVC < 1300)
+        ,
+        def("test_value_converter", &test_value_converter),
+        def("test_pointer_converter", &test_pointer_converter)
+#endif
+            
+    ];
+
+	DOSTRING(L,
+		"e = create()\n"
+		"assert(e:f() == 5)");
+
+	DOSTRING(L, "assert(f(7) == 8)");
+
+	DOSTRING(L, "assert(f(3, 9) == 12)");
+
+	DOSTRING(L, "set_functor(function(x) return x * 10 end)");
+
+	BOOST_CHECK(functor_test(20) == 200);
+
+    DOSTRING(L, "set_functor(nil)");
+
+    DOSTRING(L, "function lua_create() return create() end");
+	base* ptr = call_function<base*>(L, "lua_create") [ adopt(result) ];
+    delete ptr;
 
 #if !(BOOST_MSVC < 1300)
-            ,
-            def("test_value_converter", &test_value_converter),
-            def("test_pointer_converter", &test_pointer_converter)
-#endif
-                
-        ];
-
-        if (dostring(L, "e = create()")) return false;
-        if (dostring(L, "e:f()")) return false;
-        if (feedback != 5) return false;
-
-        if (dostring(L, "f(7)")) return false;
-        if (feedback != 7) return false;
-
-        if (dostring(L, "f(3, 9)")) return false;
-        if (feedback != 12) return false;
-
-        if (dostring(L, "a = g()")) return false;
-        if (feedback != 3) return false;
-        lua_pushstring(L, "a");
-        lua_gettable(L, LUA_GLOBALSINDEX);
-        if (lua_tonumber(L, -1) != 4) return false;
-        lua_pop(L, 1);
-
-        if (dostring(L, "test_functor(function(x) return x * 10 end)")) return false;
-        if (feedback != 50) return false;
-
-        functor<int> test_f(L, "g");
-        int a = test_f();
-        if (a != 4) return false;
-        if (feedback != 3) return false;
-        if (dostring(L, "set_functor(nil)")) return false;
-
-        if (top != lua_gettop(L)) return false;
-
-        if (dostring(L, "function lua_create() return create() end")) return false;
-
-        base* ptr = call_function<base*>(L, "lua_create") [ adopt(result) ];
-
-        delete ptr;
-
-#if !(BOOST_MSVC < 1300)
-        dostring(L, "test_value_converter('foobar')");
-        if (feedback != 9) return false;
-        dostring(L, "test_pointer_converter('foobar')");
-        if (feedback != 6) return false;
+    DOSTRING(L, "test_value_converter('converted string')");
+    DOSTRING(L, "test_pointer_converter('converted string')");
 #endif
 
-        if (!dostring2(L, "f('incorrect', 'parameters')")) return false;
-        std::cout << lua_tostring(L, -1) << "\n";
-        lua_pop(L, 1);
+    DOSTRING_EXPECTED(L, "f('incorrect', 'parameters')",
+		"no match for function call 'f' with the parameters (string, string)\n"
+		"candidates are:\n"
+		"f(number)\n"
+		"f(number, number)\n");
 
-        dostring(L, "function functor_test(a) glob = a\n return 'foobar'\nend");
-        functor<std::string> functor_test = object_cast<functor<std::string> >(get_globals(L)["functor_test"]);
-        
-        std::string str = functor_test(6)[detail::null_type()];
-        if (str != "foobar") return false;
-        if (object_cast<int>(get_globals(L)["glob"]) != 6) return false;
+    DOSTRING(L,
+		"function functor_test(a) glob = a\n"
+		" return 'foobar'\n"
+		"end");
+    functor<std::string> functor_test = object_cast<functor<std::string> >(get_globals(L)["functor_test"]);
+    
+	BOOST_CHECK(functor_test(6)[detail::null_type()] == "foobar");
+    BOOST_CHECK(object_cast<int>(get_globals(L)["glob"]) == 6);
 
-        functor<std::string> functor_test2 = object_cast<functor<std::string> >(get_globals(L)["functor_test"]);
+    functor<std::string> functor_test2 = object_cast<functor<std::string> >(get_globals(L)["functor_test"]);
 
-        if (functor_test != functor_test2) return false;        
-    }
-
-    if (feedback != 99) return false;
-
-    return true;
+	BOOST_CHECK(functor_test == functor_test2);
 }
 
