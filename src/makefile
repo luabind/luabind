@@ -35,7 +35,7 @@ $(TARGET):	$(OBJECTS)
 	ranlib $@
 
 %.o:%.cpp
-	$(CXX) -g -Wall -DLUABIND_BUILDING -c $? -o $@ -I$(LUA_PATH)/include -I- -I.. -I$(BOOST_ROOT) $(CONFIG)
+	$(CXX) -g -ftemplate-depth-100 -Wall -DLUABIND_BUILDING -c $? -o $@ -I$(LUA_PATH)/include -I- -I.. -I$(BOOST_ROOT) $(CONFIG)
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)

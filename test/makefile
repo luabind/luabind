@@ -42,7 +42,7 @@ $(TARGET): $(OBJECTS)
 	$(CXX) -g $(OBJECTS) -L$(LUA_PATH)/lib -L../lib -lluabind -llua -llualib -o $@
 
 %.o:%.cpp
-	$(CXX) -Wall -ftemplate-depth-50 -g $(CONFIG) -I$(LUA_PATH)/include -I. -I- -I../ -I$(BOOST_ROOT) -c $? -o $@
+	$(CXX) -Wall -ftemplate-depth-100 -g $(CONFIG) -I$(LUA_PATH)/include -I. -I- -I../ -I$(BOOST_ROOT) -c $? -o $@
 
 relink:
 	rm -f $(TARGET)
