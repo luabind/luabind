@@ -181,20 +181,5 @@ void luabind::open(lua_State* L)
 	lua_pushstring(L, "class");
 	lua_pushcclosure(L, detail::create_class::stage1, 0);
 	lua_settable(L, LUA_GLOBALSINDEX);
-
-	detail::free_functions::function_registry* fun_registry = 0;
-	lua_pushstring(L, "__lua_free_functions");
-	fun_registry = static_cast<detail::free_functions::function_registry*>(lua_newuserdata(L, sizeof(detail::free_functions::function_registry)));
-
-	new(fun_registry) detail::free_functions::function_registry();
-
-	lua_newtable(L);
-	lua_pushstring(L, "__gc");
-	lua_pushcclosure(L, detail::garbage_collector_s<detail::free_functions::function_registry>::apply, 0);
-	lua_settable(L, -3);
-	lua_setmetatable(L, -2);
-
-	lua_settable(L, LUA_REGISTRYINDEX);
-
 }
 

@@ -53,25 +53,21 @@
 	------------------------------------------------------
 
 	scopes
-		functions will overload even though they are in different scopes
-		classes with the same name in different scopes will be treated as the same type
+		classes with the same name in different scopes will have the same name.
 
-	finish smart pointer support
+    finish smart pointer support
+		* holder_type<const A> should be constructed as it's correct class, not constructed
+		   as holder_type<A> and then reinterpret_casted. We will need another constructor
+		   function and another extractor function.
 		* the adopt policy should not be able to adopt pointers to held_types. This
 		must be prohibited.
 		* name_of_type must recognize holder_types and not return "custom"
-		* maybe it's better to avoid LUABIND_TYPEID() etc. in user code. get_const_holder
 
 	document the new yield-policy
 
 	chache operators and finalizers in the class_rep. For lua classes
 	we currently do a lookup each time we need to know if a lua class
 	has a finalizer or an operator.
-
-	instead of registering the name of free functions and make a lookup in
-	the register to see if we are overloading, look in the actual namespace
-	where we are registering the function to see if there already is a function
-	with the same name there, and in that case, add an overload to it.
 
 	static functions, this could be implemented by letting classes contain
 	other declarations (classes or functions)

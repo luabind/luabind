@@ -90,6 +90,11 @@ namespace luabind
 
 			struct function_rep
 			{
+#ifdef LUABIND_DONT_COPY_STRINGS
+				function_rep(const char* name): m_name(name) {}
+#else
+				function_rep(const std::string& name): m_name(name) {}
+#endif
 				void add_overload(const free_functions::overload_rep& o)
 				{
 					std::vector<free_functions::overload_rep>::iterator i = std::find(m_overloads.begin(), m_overloads.end(), o);
@@ -108,12 +113,18 @@ namespace luabind
 				const std::vector<overload_rep>& overloads() const throw() { return m_overloads; }
 
 #ifdef LUABIND_DONT_COPY_STRINGS
-				const char* name;
+				const char* name() const { return m_name; }
 #else
-				std::string name;
+				const char* name() const { return m_name.c_str(); }
+#endif
+			private:
+
+#ifdef LUABIND_DONT_COPY_STRINGS
+				const char* m_name;
+#else
+				std::string m_name;
 #endif
 
-			private:
 				// this have to be write protected, since each time an overload is
 				// added it has to be checked for existence. add_overload() should
 				// be used.
@@ -123,13 +134,6 @@ namespace luabind
 
 
 		// returns generates functions that calls function pointers
-/*
-#define LUABIND_DECL(z, n, text) typedef typename detail::get_policy<n+1,Policies>::type BOOST_PP_CAT(a##n,_policy); \
-		typedef typename BOOST_PP_CAT(a##n,_policy)::head BOOST_PP_CAT(a##n,_param_converter_intermediate); \
-		typedef typename BOOST_PP_CAT(a##n,_param_converter_intermediate)::template generate_converter<A##n, lua_to_cpp>::type BOOST_PP_CAT(p##n,_conv);
-
-#define LUABIND_PARAMS(z,n,text) BOOST_PP_CAT(p##n,_conv)::apply(L, LUABIND_DECORATE_TYPE(A##n), n + 1)
-*/
 
 #define LUABIND_DECL(z, n, text) typedef typename find_conversion_policy<n + 1, Policies>::type BOOST_PP_CAT(converter_policy,n); \
 		typename BOOST_PP_CAT(converter_policy,n)::template generate_converter<A##n, lua_to_cpp>::type BOOST_PP_CAT(c,n);
@@ -188,25 +192,6 @@ namespace luabind
 			#include BOOST_PP_ITERATE()
 
 
-			
-
-			// TODO: instead of registering all functions here, maybe we should
-			// check the scope where we are registering a new function to see if there's one with
-			// the same name, and in that case, put the new overload in there.
-			struct function_registry
-			{
-				std::map<const char*, free_functions::function_rep, ltstr> m_functions;
-#ifndef LUABIND_DONT_COPY_STRINGS
-				std::vector<char*> m_strings;
-
-				~function_registry()
-				{
-					for (std::vector<char*>::iterator i = m_strings.begin(); i != m_strings.end(); ++i)
-						delete[] *i;
-				}
-#endif
-			};
-
 			template<class F, class Policies>
 			struct function_callback_s
 			{
@@ -237,42 +222,9 @@ namespace luabind
 	}
 	
 	template<class F, class Policies>
-	void function(lua_State* L, const char* name, F f, const Policies&)
+	void function(lua_State* L, const char* name, F f, const Policies& p)
 	{
-		detail::free_functions::function_registry* registry = 0;
-		lua_pushstring(L, "__lua_free_functions");
-		lua_gettable(L, LUA_REGISTRYINDEX);
-
-		registry = static_cast<detail::free_functions::function_registry*>(lua_touserdata(L, -1));
-		lua_pop(L, 1);
-
-		// if you hit this assert you have not called luabind::open() for
-		// this lua_State. See the documentation for more information.
-		assert(registry != 0);
-
-#ifdef LUABIND_DONT_COPY_STRINGS
-		detail::free_functions::function_rep& rep = registry->m_functions[name];
-#else
-		registry->m_strings.push_back(detail::dup_string(name));
-		detail::free_functions::function_rep& rep = registry->m_functions[registry->m_strings.back()];
-#endif
-
-		detail::free_functions::overload_rep o(f, static_cast<Policies*>(0));
-
-		o.set_match_fun(&detail::free_functions::match_function_callback_s<F, Policies>::apply);
-		o.set_fun(&detail::free_functions::function_callback_s<F, Policies>::apply);
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-		o.set_sig_fun(&detail::get_free_function_signature<F>::apply);
-#endif
-
-		rep.add_overload(o);
-		rep.name = name;
-
-		lua_pushstring(L, name);
-		lua_pushlightuserdata(L, &rep);
-		lua_pushcclosure(L, detail::free_functions::function_dispatcher, 1);
-		lua_settable(L, LUA_GLOBALSINDEX);
+		module(L) [ def(name, f, p) ];
 	}
 
 	template<class F>
@@ -287,7 +239,7 @@ namespace luabind
 		struct function_commiter : detail::scoped_object
 		{
 			function_commiter(const char* n, F f, const Policies& p)
-				: name(n)
+				: m_name(n)
 				, fun(f)
 				, policies(p)
 			{}
@@ -299,24 +251,6 @@ namespace luabind
 
 			virtual void commit(lua_State* L)
 			{
-				detail::free_functions::function_registry* registry = 0;
-				lua_pushstring(L, "__lua_free_functions");
-				lua_gettable(L, LUA_REGISTRYINDEX);
-
-				registry = static_cast<detail::free_functions::function_registry*>(lua_touserdata(L, -1));
-				lua_pop(L, 1);
-
-				// if you hit this assert you have not called luabind::open() for
-				// this lua_State. See the documentation for more information.
-				assert(registry != 0);
-
-#ifdef LUABIND_DONT_COPY_STRINGS
-				detail::free_functions::function_rep& rep = registry->m_functions[name.c_str()];
-#else
-				registry->m_strings.push_back(detail::dup_string(name.c_str()));
-				detail::free_functions::function_rep& rep = registry->m_functions[registry->m_strings.back()];
-#endif
-
 				detail::free_functions::overload_rep o(fun, static_cast<Policies*>(0));
 
 				o.set_match_fun(&detail::free_functions::match_function_callback_s<F, Policies>::apply);
@@ -326,18 +260,35 @@ namespace luabind
 				o.set_sig_fun(&detail::get_free_function_signature<F>::apply);
 #endif
 
-				rep.add_overload(o);
-				rep.name = name.c_str();
-
 				detail::getref(L, scope_stack::top(L));
-				lua_pushstring(L, name.c_str());
-				lua_pushlightuserdata(L, &rep);
-				lua_pushcclosure(L, free_functions::function_dispatcher, 1);
-				lua_settable(L, -3);
+				lua_pushstring(L, m_name.c_str());
+				lua_gettable(L, -2);
+
+				detail::free_functions::function_rep* rep = 0;
+				if (lua_iscfunction(L, -1))
+				{
+					lua_getupvalue(L, -1, 1);
+					rep = static_cast<detail::free_functions::function_rep*>(lua_touserdata(L, -1));
+					lua_pop(L, 1);
+				}
 				lua_pop(L, 1);
+
+				if (rep == 0)
+				{
+					lua_pushstring(L, m_name.c_str());
+					// create a new function_rep
+					rep = static_cast<detail::free_functions::function_rep*>(lua_newuserdata(L, sizeof(detail::free_functions::function_rep)));
+					new(rep) detail::free_functions::function_rep(m_name.c_str());
+					lua_pushcclosure(L, &free_functions::function_dispatcher, 1);
+					lua_settable(L, -3);
+				}
+
+				rep->add_overload(o);
+
+				lua_pop(L, 1); // pop scope
 			}
 
-			std::string name;
+			std::string m_name;
 			F fun;
 			Policies policies;
 		};

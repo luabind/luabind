@@ -59,12 +59,12 @@ int luabind::detail::free_functions::function_dispatcher(lua_State* L)
 		// this bock is needed to make sure the std::string is destructed
 		{
 			std::string msg = "no match for function call '";
-			msg += rep->name;
+			msg += rep->name();
 			msg += "' with the parameters (";
 			msg += stack_content_by_name(L, 1);
 			msg += ")\ncandidates are:\n";
 
-			msg += get_overload_signatures(L, rep->overloads().begin(), rep->overloads().end(), rep->name);
+			msg += get_overload_signatures(L, rep->overloads().begin(), rep->overloads().end(), rep->name());
 
 			lua_pushstring(L, msg.c_str());
 		}
@@ -77,7 +77,7 @@ int luabind::detail::free_functions::function_dispatcher(lua_State* L)
 		// this bock is needed to make sure the std::string is destructed
 		{
 			std::string msg = "call of overloaded function '";
-			msg += rep->name;
+			msg += rep->name();
 			msg += "(";
 			msg += stack_content_by_name(L, 1);
 			msg += ") is ambiguous\nnone of the overloads have a best conversion:";
@@ -85,7 +85,7 @@ int luabind::detail::free_functions::function_dispatcher(lua_State* L)
 			std::vector<const overload_rep_base*> candidates;
 			find_exact_match(L, &rep->overloads().front(), rep->overloads().size(), sizeof(free_functions::overload_rep), min_match, num_params, candidates);
 
-			msg += get_overload_signatures_candidates(L, candidates.begin(), candidates.end(), rep->name);
+			msg += get_overload_signatures_candidates(L, candidates.begin(), candidates.end(), rep->name());
 
 			lua_pushstring(L, msg.c_str());
 		}
