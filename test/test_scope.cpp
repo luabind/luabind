@@ -44,6 +44,16 @@ namespace
 	};
 }
 
+class test_class2
+{
+public:
+        test_class2(){};
+        void string_string( const std::string& s1, const std::string& s2)
+        {
+//                std::cerr<<s1<<" "<<s2<<std::endl;
+        };
+};
+
 bool test_scope()
 {
 	using namespace luabind;
@@ -52,6 +62,13 @@ bool test_scope()
 		lua_closer c(L);
 
 		open(L);
+
+module(L)
+[
+        class_<test_class2>("test_class2")
+                .def(constructor<>())
+                .def("string_string",&test_class2::string_string)
+];
 
 		module(L, "test")
 		[

@@ -943,10 +943,10 @@ namespace luabind
 		// *****************************
 		// OPERATOR =
 
-		LUABIND_API object& operator=(const object& o) const;
-		LUABIND_API object& operator=(const detail::proxy_object& o) const;
-		LUABIND_API object& operator=(const detail::proxy_raw_object& o) const;
-		LUABIND_API object& operator=(const detail::proxy_array_object& o) const;
+		object& operator=(const object& o) const;
+		object& operator=(const detail::proxy_object& o) const;
+		object& operator=(const detail::proxy_raw_object& o) const;
+		object& operator=(const detail::proxy_array_object& o) const;
 
 		template<class T>
 		object& operator=(const T& val) const

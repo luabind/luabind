@@ -141,7 +141,7 @@ namespace luabind { namespace detail
 		// there is one upvalue that points to the method_rep that this dispatcher is to call
 		// the first parameter on the lua stack is an object_rep that points to the object the
 		// call is being made on
-		LUABIND_API static int function_dispatcher(lua_State* L);
+		static int function_dispatcher(lua_State* L);
 
 		struct base_info
 		{

@@ -137,7 +137,7 @@ namespace luabind
 					sizeof(luabind::converters::is_implicit_conversion(LUABIND_DECORATE_TYPE(T))) == sizeof(yes_t));
 		};
 */
-		int implicit_cast(const class_rep* crep, LUABIND_TYPE_INFO const&, int& pointer_offset);
+		LUABIND_API int implicit_cast(const class_rep* crep, LUABIND_TYPE_INFO const&, int& pointer_offset);
 	}
 
 	 template<class T> class functor;

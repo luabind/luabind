@@ -2077,11 +2077,18 @@ by all make-files. You can change paths to lua and boost in there as well.</p>
 			to the import-keyword on your compiler and platform. On windows in devstudio
 			this should be <tt>__declspec(dllimport)</tt> if you want to link against lua as a dll.
 			
+<a name="luabind_dll"></a><h3><tt>LUABIND_EXPORT</tt><br>
+<tt>LUABIND_IMPORT</tt></h3>
+			<p>If you want to link against luabind as a dll (in devstudio), you can define
+			<tt>LUABIND_EXPORT</tt> to <tt>__declspec(dllexport)</tt> and <tt>LUABIND_IMPORT</tt>
+			to <tt>__declspec(dllimport)</tt>. Note that you have o link against lua as a dll
+			aswell, to make it work.</p>
+
+
 <a name="luabind_type_info"></a><h3><tt>LUABIND_TYPE_INFO</tt><br>
 <tt>LUABIND_TYPE_INFO_EQUAL(i1,i2)</tt><br>
 <tt>LUABIND_TYPEID(t)</tt><br>
 <tt>LUABIND_INVALID_TYPE_INFO</tt></h3>
-
 			<p>If you don't want to use the RTTI supplied by C++
 			you can supply your own type-info structure with the
 			LUABIND_TYPE_INFO define. Your type-info structure must
@@ -2287,6 +2294,10 @@ module(L)
 	<li><h3>Fatal Error C1063 compiler limit : compiler stack overflow in VC</h3>
 	<p>VC6.5 chokes on warnings, if you are getting alot of warnings from your code try suppressing them
 	with a pragma directive, this should solve the problem.</p>
+
+	<li><h3>Crashes when linking against luabind as a dll in windows</h3>
+	<p>When you build luabind, lua and you project, make sure you link against the runtime dynamically
+	(as a dll).</p>
 
 </ul>
 

@@ -39,7 +39,7 @@ namespace luabind
 		LUABIND_API int create_lua_instance_metatable(lua_State* L);
 	}
 
-	void open(lua_State* L);
+	LUABIND_API void open(lua_State* L);
 }
 
 #endif // LUABIND_OPEN_HPP_INCLUDED
