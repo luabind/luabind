@@ -62,6 +62,9 @@
 		* holder_type<const A> must be supported by the converters
 		* the adopt policy should not be able to adopt pointers to held_types. This
 		must be prohibited.
+		* name_of_type must recognize holder_types and not return "custom"
+		* maybe it's better to avoid LUABIND_TYPEID() etc. in user code. get_const_holder
+		* document it
 
 	document the new yield-policy
 

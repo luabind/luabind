@@ -67,6 +67,15 @@ namespace
 } // anonymous namespace
 
 
+namespace luabind
+{
+	template<class A>
+	LUABIND_TYPE_INFO get_const_holder(luabind::detail::type<boost::shared_ptr<A> >)
+	{
+		return LUABIND_TYPEID(boost::shared_ptr<const A>);
+	}
+}
+
 bool test_held_type()
 {
 	// This feature is not finished yet

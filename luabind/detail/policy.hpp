@@ -566,7 +566,12 @@ namespace luabind { namespace detail
 			assert((obj != 0) && "internal error, please report"); // internal error
 			const class_rep* crep = obj->crep();
 
-			int steps = implicit_cast(crep, LUABIND_TYPEID(T), offset);
+			int steps = 0;
+			if (!(LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T)))
+				&& !(LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
+			{
+				steps = implicit_cast(crep, LUABIND_TYPEID(T), offset);
+			}
 
 			// should never be called with a type that can't be cast
 			assert((steps >= 0) && "internal error, please report");
@@ -583,6 +588,13 @@ namespace luabind { namespace detail
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1;
 			int d;
+
+			if (LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T)))
+				return 0;
+
+			if (LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T)))
+				return 0;
+
 			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
 		}
 
