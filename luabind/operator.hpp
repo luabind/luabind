@@ -56,7 +56,7 @@ namespace luabind { namespace operators {
 
 #include <boost/preprocessor/iteration/local.hpp>
 
-namespace luabind { namespace detail {
+namespace luabind {
 
     template<class Derived>
     struct self_base
@@ -91,6 +91,8 @@ namespace luabind { namespace detail {
     struct const_self_type : self_base<const_self_type>
     {
     };
+
+namespace detail {
 
     template<class W, class T>
     struct unwrap_parameter_type
@@ -207,7 +209,7 @@ namespace luabind {
       , U \
       , T \
     > \
-    inline operator op(detail::self_base<U>, T const&) \
+    inline operator op(self_base<U>, T const&) \
     { \
         return 0; \
     } \
@@ -218,47 +220,47 @@ namespace luabind {
       , T \
       , U \
     > \
-    inline operator op(T const&, detail::self_base<U>) \
+    inline operator op(T const&, self_base<U>) \
     { \
         return 0; \
     } \
     \
     detail::binary_operator< \
         operators::name_ \
-      , detail::self_type \
-      , detail::self_type \
+      , self_type \
+      , self_type \
     > \
-    inline operator op(detail::self_type, detail::self_type) \
+    inline operator op(self_type, self_type) \
     { \
         return 0; \
     } \
     \
     detail::binary_operator< \
         operators::name_ \
-      , detail::self_type \
-      , detail::const_self_type \
+      , self_type \
+      , const_self_type \
     > \
-    inline operator op(detail::self_type, detail::const_self_type) \
+    inline operator op(self_type, const_self_type) \
     { \
         return 0; \
     } \
     \
     detail::binary_operator< \
         operators::name_ \
-      , detail::const_self_type \
-      , detail::self_type \
+      , const_self_type \
+      , self_type \
     > \
-    inline operator op(detail::const_self_type, detail::self_type) \
+    inline operator op(const_self_type, self_type) \
     { \
         return 0; \
     } \
     \
     detail::binary_operator< \
         operators::name_ \
-      , detail::const_self_type \
-      , detail::const_self_type \
+      , const_self_type \
+      , const_self_type \
     > \
-    inline operator op(detail::const_self_type, detail::const_self_type) \
+    inline operator op(const_self_type, const_self_type) \
     { \
         return 0; \
     }
@@ -301,7 +303,7 @@ namespace luabind {
         operators::name_ \
       , T \
     > \
-    inline fn(detail::self_base<T>) \
+    inline fn(self_base<T>) \
     { \
         return 0; \
     }
@@ -319,8 +321,8 @@ namespace luabind {
 
     namespace {
 
-        LUABIND_ANONYMOUS_FIX detail::self_type self;
-        LUABIND_ANONYMOUS_FIX detail::const_self_type const_self;
+        LUABIND_ANONYMOUS_FIX self_type self;
+        LUABIND_ANONYMOUS_FIX const_self_type const_self;
 
     } // namespace unnamed
     
