@@ -65,7 +65,20 @@ namespace
 
 	struct test_param
 	{
-		~test_param() { feedback1 = 30; }
+		virtual ~test_param() { feedback1 = 30; }
+		virtual void foo()
+		{
+			feedback1 = 1;
+		}
+	};
+
+	struct test_param2 : public test_param
+	{
+		virtual ~test_param2() { feedback1 = 20; }
+		virtual void foo()
+		{
+			feedback1 = 2;
+		}
 	};
 
 	void test_match(const luabind::object& o)
@@ -98,7 +111,20 @@ bool test_object()
 		
 			class_<test_param>("test_param")
 				.def(constructor<>())
+				.def("foo",&test_param::foo ),
+			class_<test_param2, test_param>("test_param2")
+				.def(constructor<>())
 		];
+
+		dostring(L, "print('-- base')");
+		dostring(L, "t = test_param();");
+		dostring(L, "t:foo();");
+		if (feedback1 != 1) return false;
+
+		dostring(L, "print('-- derived')");
+		dostring(L, "t = test_param2();");
+		dostring(L, "t:foo();");
+		if (feedback1 != 2) return false;
 
 		dostring(L, "t = 2");
 		dostring(L, "test_object_param(t)");

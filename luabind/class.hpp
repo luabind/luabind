@@ -882,16 +882,6 @@ namespace luabind
 				}
 			}
 
-			// add methods
-			for (std::map<const char*, detail::method_rep, detail::ltstr>::iterator i = m_methods.begin();
-				i != m_methods.end(); 
-				++i)
-			{
-				crep->add_method(L, i->first, i->second);
-				i->second.crep = crep;
-			}
-			crep->m_methods.swap(m_methods);
-
 			// constructors
 			m_constructor.swap(crep->m_constructor);
 
@@ -922,7 +912,31 @@ namespace luabind
 				base.base = bcrep;
 
 				crep->add_base_class(base);
+
+				// copy base class table
+				detail::getref(L, crep->table_ref());
+				detail::getref(L, bcrep->table_ref());
+				lua_pushnil(L);
+
+				while (lua_next(L, -2))
+				{
+					lua_pushvalue(L, -2); // copy key
+					lua_insert(L, -2);
+					lua_settable(L, -5);
+				}
+
+				lua_pop(L, 2);
 			}
+
+			// add methods
+			for (std::map<const char*, detail::method_rep, detail::ltstr>::iterator i = m_methods.begin();
+				i != m_methods.end(); 
+				++i)
+			{
+				crep->add_method(L, i->first, i->second);
+				i->second.crep = crep;
+			}
+			crep->m_methods.swap(m_methods);
 
 			lua_settable(L, -3);
 			lua_pop(L, 1);
