@@ -44,7 +44,7 @@
 
 #include <luabind/detail/decorate_type.hpp>
 #include <luabind/object.hpp>
-#include <luabind/detail/make_instance.hpp>
+//#include <luabind/detail/make_instance.hpp>
 //#include <luabind/pointer_holder.hpp>
 
 namespace luabind
