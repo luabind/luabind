@@ -180,18 +180,13 @@ namespace luabind
 		lua_settable(L, -3);
 		lua_setmetatable(L, -2);
 
-		new(r) detail::class_registry;
+		new(r) detail::class_registry(L);
 		lua_settable(L, LUA_REGISTRYINDEX);
 
 		// add functions (class, cast etc...)
 		lua_pushstring(L, "class");
 		lua_pushcclosure(L, detail::create_class::stage1, 0);
 		lua_settable(L, LUA_GLOBALSINDEX);
-
-		r->m_cpp_class_metatable = detail::create_cpp_class_metatable(L);
-		r->m_cpp_instance_metatable = detail::create_cpp_instance_metatable(L);
-		r->m_lua_class_metatable = detail::create_lua_class_metatable(L);
-		r->m_lua_instance_metatable = detail::create_lua_instance_metatable(L);
 
 		detail::free_functions::function_registry* fun_registry = 0;
 		lua_pushstring(L, "__lua_free_functions");

@@ -94,9 +94,9 @@ namespace luabind { namespace detail
 			, m_destructor(destructor)
 		{
 			class_registry* r = class_registry::get_registry(L);
-			assert(r->m_cpp_class_metatable != LUA_NOREF); // you must call luabind::open()
+			assert(r->cpp_class() != LUA_NOREF); // you must call luabind::open()
 
-			detail::getref(L, r->m_cpp_class_metatable);
+			detail::getref(L, r->cpp_class());
 			lua_setmetatable(L, -2);
 
 			m_self_ref = detail::ref(L);
@@ -110,7 +110,7 @@ namespace luabind { namespace detail
 			detail::getref(L, m_self_ref);
 			lua_settable(L, LUA_GLOBALSINDEX);
 
-			m_instance_metatable = r->m_cpp_instance_metatable;
+			m_instance_metatable = r->cpp_instance();
 		}
 
 		// used when creating a lua class
@@ -125,9 +125,9 @@ namespace luabind { namespace detail
 			m_table_ref = detail::ref(L);
 
 			class_registry* r = class_registry::get_registry(L);
-			assert(r->m_cpp_class_metatable != LUA_NOREF); // you must call luabind::open()
+			assert(r->cpp_class() != LUA_NOREF); // you must call luabind::open()
 
-			detail::getref(L, r->m_lua_class_metatable);
+			detail::getref(L, r->lua_class());
 			lua_setmetatable(L, -2);
 			m_self_ref = detail::ref(L);
 
@@ -140,7 +140,7 @@ namespace luabind { namespace detail
 			detail::getref(L, m_self_ref);
 			lua_settable(L, LUA_GLOBALSINDEX);
 
-			m_instance_metatable = r->m_lua_instance_metatable;
+			m_instance_metatable = r->lua_instance();
 		}
 
 		~class_rep()

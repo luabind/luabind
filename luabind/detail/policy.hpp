@@ -450,7 +450,7 @@ namespace luabind { namespace detail
 			}
 
 			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->classes[LUABIND_TYPEID(T)];
+			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));
@@ -520,7 +520,7 @@ namespace luabind { namespace detail
 		void apply(lua_State* L, const T& ref)
 		{
 			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->classes[LUABIND_TYPEID(T)];
+			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
 			assert(crep != 0);
 
@@ -601,7 +601,7 @@ namespace luabind { namespace detail
 			}
 
 			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->classes[LUABIND_TYPEID(T)];
+			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));
@@ -651,7 +651,7 @@ namespace luabind { namespace detail
 		void apply(lua_State* L, T& ref)
 		{
 			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->classes[LUABIND_TYPEID(T)];
+			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
 			T* ptr = &ref;
 
@@ -697,7 +697,7 @@ namespace luabind { namespace detail
 		void apply(lua_State* L, const T& ref)
 		{
 			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->classes[LUABIND_TYPEID(T)];
+			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
 			T* ptr = const_cast<T*>(&ref);
 

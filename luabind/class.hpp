@@ -516,7 +516,7 @@ namespace luabind
 			// Please note that if you don't need to have access to the base class or the
 			// conversion from the derived class to the base class, you don't need
 			// to tell luabind that it derives.
-			assert(registry->classes.find(LUABIND_TYPEID(To)) != registry->classes.end());
+			assert(registry->find_class(LUABIND_TYPEID(To)));
 
 			// try to cast this type to the base type and remember
 			// the pointer offset. For multiple inheritance the pointer
@@ -524,7 +524,7 @@ namespace luabind
 			// cast we need this pointer offset.
 			// store the information in this class' base class-vector
 			detail::class_rep::base_info base;
-			base.base = registry->classes[LUABIND_TYPEID(To)];
+			base.base = registry->find_class(LUABIND_TYPEID(To));
 			T* null_pointer = reinterpret_cast<T*>(1); // this wont work if the pointer is 0!
 			base.pointer_offset = static_cast<int>((reinterpret_cast<char*>(static_cast<To*>(null_pointer)) - reinterpret_cast<char*>(null_pointer)));
 			crep->add_base(base);
@@ -652,7 +652,7 @@ namespace luabind
 			generate_baseclass_list(m_crep, r, detail::type<Base>());
 
 			// register this new type in the class registry
-			r->classes[LUABIND_TYPEID(T)] = m_crep;
+			r->add_class(LUABIND_TYPEID(T), m_crep);
 
 //			std::cout << "held type: " << typeid(HeldType).name() << '\n';
 		}

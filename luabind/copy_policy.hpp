@@ -45,7 +45,7 @@ namespace luabind { namespace detail {
 
 			class_registry* registry = class_registry::get_registry(L);
 
-			class_rep* crep = registry->classes[LUABIND_TYPEID(T)];
+			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 			T* copied_obj = new T(*ptr);
 
 			// create the struct to hold the object
@@ -66,7 +66,7 @@ namespace luabind { namespace detail {
 		{
 			class_registry* registry = class_registry::get_registry(L);
 
-			class_rep* crep = registry->classes[LUABIND_TYPEID(T)];
+			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 			T* copied_obj = new T(ref);
 
 			// create the struct to hold the object

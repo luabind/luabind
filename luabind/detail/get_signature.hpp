@@ -49,14 +49,16 @@ namespace luabind { namespace detail
 		{
 			std::string ret;
 			class_registry* r = class_registry::get_registry(L);
-			std::map<LUABIND_TYPE_INFO, class_rep*>::iterator i = r->classes.find(LUABIND_TYPEID(T));
-			if (i == r->classes.end())
+
+			class_rep* crep = r->find_class(LUABIND_TYPEID(T));
+
+			if (crep == 0)
 			{
 				ret = "custom";
 			}
 			else
 			{
-				ret += i->second->name();
+				ret += crep->name();
 			}
 			return ret;
 		}

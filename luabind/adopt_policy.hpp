@@ -85,7 +85,7 @@ namespace luabind { namespace detail
 			}
 
 			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->classes[LUABIND_TYPEID(T)];
+			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
 
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));

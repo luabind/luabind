@@ -32,14 +32,18 @@ namespace luabind { namespace detail
 	class class_rep;
 
 	std::string stack_content_by_name(lua_State* L, int start_index);
+	int create_cpp_class_metatable(lua_State* L);
+	int create_cpp_instance_metatable(lua_State* L);
+	int create_lua_class_metatable(lua_State* L);
+	int create_lua_instance_metatable(lua_State* L);
 
 	struct class_registry
 	{
-		class_registry()
-			: m_cpp_instance_metatable(LUA_NOREF)
-			, m_cpp_class_metatable(LUA_NOREF)
-			, m_lua_instance_metatable(LUA_NOREF)
-			, m_lua_class_metatable(LUA_NOREF)
+		class_registry(lua_State* L)
+			: m_cpp_instance_metatable(create_cpp_instance_metatable(L))
+			, m_cpp_class_metatable(create_cpp_class_metatable(L))
+			, m_lua_instance_metatable(create_lua_instance_metatable(L))
+			, m_lua_class_metatable(create_lua_class_metatable(L))
 		{}
 
 		static inline class_registry* get_registry(lua_State* L)
@@ -68,13 +72,32 @@ namespace luabind { namespace detail
 
 #endif
 
-			// luabind::open() is required
-			//assert(p);
-
 			return p;
 		}
 
-		std::map<LUABIND_TYPE_INFO, class_rep*> classes;
+		int cpp_instance() const { return m_cpp_instance_metatable; }
+		int cpp_class() const { return m_cpp_class_metatable; }
+
+		int lua_instance() const { return m_lua_instance_metatable; }
+		int lua_class() const { return m_lua_class_metatable; }
+
+		void add_class(LUABIND_TYPE_INFO info, class_rep* crep)
+		{
+			// class is already registered
+			assert(m_classes.find(info) == m_classes.end());
+			m_classes[info] = crep;
+		}
+
+		class_rep* find_class(LUABIND_TYPE_INFO info)
+		{
+			std::map<LUABIND_TYPE_INFO, class_rep*>::iterator i = m_classes.find(info);
+			if (i == m_classes.end()) return 0; // the type is not registered
+			return i->second;
+		}
+
+	private:
+
+		std::map<LUABIND_TYPE_INFO, class_rep*> m_classes;
 
 		// this is a lua reference that points to the lua table
 		// that is to be used as meta table for all C++ class 
