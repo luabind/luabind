@@ -59,7 +59,16 @@ namespace luabind { namespace detail
 			// 2. key (property name)
 
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
-			return get(f, reinterpret_cast<T*>(static_cast<char*>(obj->ptr()) + pointer_offset), L, static_cast<Policies*>(this));
+			class_rep* crep = obj->crep();
+			
+			void* ptr;
+
+			if (crep->has_holder())
+				ptr = crep->extractor()(obj->ptr());
+			else
+				ptr = obj->ptr();
+
+			return get(f, reinterpret_cast<T*>(static_cast<char*>(ptr) + pointer_offset), L, static_cast<Policies*>(this));
 		}
 	};
 
@@ -90,8 +99,17 @@ namespace luabind { namespace detail
 			// parameter on index 2 we need to
 			// remove the key-parameter (parameter 2).
 			object_rep* obj = reinterpret_cast<object_rep*>(lua_touserdata(L, 1));
+			class_rep* crep = obj->crep();
+			
+			void* ptr;
+
+			if (crep->has_holder())
+				ptr = crep->extractor()(obj->ptr());
+			else
+				ptr = obj->ptr();
+			
 			lua_remove(L, 2);
-			return set(f, reinterpret_cast<T*>(static_cast<char*>(obj->ptr()) + pointer_offset), L, static_cast<Policies*>(this));
+			return set(f, reinterpret_cast<T*>(static_cast<char*>(ptr) + pointer_offset), L, static_cast<Policies*>(this));
 		}
 	};
 
