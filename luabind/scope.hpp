@@ -238,9 +238,9 @@ namespace luabind
 			}
 		}
 
-		scope& operator[](detail::scoped_object& x)
+		scope& operator[](const detail::scoped_object& x)
 		{
-			m_children.push_back(x.clone());
+			m_children.push_back(const_cast<scoped_object&>(x).clone());
 
 			if (m_state)
 			{

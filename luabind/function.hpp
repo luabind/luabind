@@ -339,12 +339,12 @@ namespace luabind
 				, policies(p)
 			{}
 
-			virtual detail::scoped_object* clone() const
+			virtual detail::scoped_object* clone()
 			{
 				return new function_commiter(*this);
 			}
 
-			virtual void commit(lua_State* L) const
+			virtual void commit(lua_State* L)
 			{
 				detail::free_functions::function_registry* registry = 0;
 				lua_pushstring(L, "__lua_free_functions");
