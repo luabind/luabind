@@ -65,7 +65,10 @@ namespace
 
 	struct test_param
 	{
-		~test_param() { feedback1 = 30; }
+		~test_param()
+		{ feedback1 = 30; }
+		luabind::object obj;
+		luabind::object obj2;
 	};
 
 	void test_match(const luabind::object& o)
@@ -122,6 +125,8 @@ bool test_object()
 		
 			class_<test_param>("test_param")
 				.def(constructor<>())
+				.def_readwrite("obj", &test_param::obj)
+				.def_readonly("obj2", &test_param::obj2)
 		];
 
 		dostring(L, "t = 2");
@@ -165,6 +170,14 @@ bool test_object()
 		if (feedback1 != 27) return false;
 		dostring(L, "test_match('oo')");
 		if (feedback1 != 28) return false;
+
+		dostring(L, "t = test_param()\n"
+			"t.obj = 'foo'\n"
+			"if t.obj == 'foo' then test_fun() end\n");
+		if (feedback1 != 3) return false;
+		feedback1 = 0;
+		dostring(L, "if t.obj2 == nil then test_fun() end\n");
+		if (feedback1 != 3) return false;
 
 		dostring(L, "function test_object_policies(a) glob = a\nreturn 6\nend");
 		object test_object_policies = g["test_object_policies"];

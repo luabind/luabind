@@ -105,9 +105,14 @@ int luabind::detail::create_class::stage1(lua_State* L)
 		lua_error(L);
 	}
 
+	if (std::strlen(lua_tostring(L, 1)) != lua_strlen(L, 1))
+	{
+		lua_pushstring(L, "luabind does not support class names with extra nulls");
+		lua_error(L);
+	}
+
 #endif
 
-	// BUG: This will not work with strings with extra nulls in them
 	const char* name = lua_tostring(L, 1);
 
 	void* c = lua_newuserdata(L, sizeof(class_rep));

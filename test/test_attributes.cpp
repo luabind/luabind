@@ -1,3 +1,4 @@
+#include <iostream>
 #include "test.h"
 
 extern "C"
@@ -151,6 +152,10 @@ bool test_attributes()
 	if (glob["a"].type() != LUA_TNIL) return false;
 	if (dostring(L, "a = test[3.6]")) return false;
 	if (glob["a"].type() != LUA_TNIL) return false;
+
+	if (dostring(L, "test.a = my_enum()\n")) return false;
+	std::cout << lua_tostring(L, -1) << "\n";
+	lua_pop(L, 1);
 
 	if (dostring(L, "temp = my_enum")) return false;
 	if (glob["temp"].type() != LUA_TUSERDATA) return false;

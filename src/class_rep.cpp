@@ -176,8 +176,22 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 
 	// we have to ignore the first argument since this may point to
 	// a method that is not present in this class (but in a subclass)
-	// BUG: This might catch members called "__ok\0foobar"
 	const char* key = lua_tostring(L, 2);
+
+#ifndef LUABIND_NO_ERROR_CHECKING
+
+	if (std::strlen(key) != lua_strlen(L, 2))
+	{
+		{
+			std::string msg("luabind does not support "
+				"member names with extra nulls:\n");
+			msg += std::string(lua_tostring(L, 2), lua_strlen(L, 2));
+			lua_pushstring(L, msg.c_str());
+		}
+		lua_error(L);
+	}
+
+#endif
 
 	// special case to see if this is a null-pointer
 	if (key && !std::strcmp(key, "__ok"))
@@ -236,22 +250,25 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 	// we have to ignore the first argument since this may point to
 	// a method that is not present in this class (but in a subclass)
 
-	// BUG: This will not work with keys that have extra nulls in them!
 	const char* key = lua_tostring(L, 2);
-	std::map<const char*, callback, ltstr>::iterator j = m_setters.find(key);
-	if (j != m_setters.end())
-	{
-		// the name is a data member
-		j->second.func(L, j->second.pointer_offset);
-		return true;
-	}
 
-	if (m_getters.find(key) != m_getters.end())
+	if (std::strlen(key) == lua_strlen(L, 2))
 	{
-		// this means that we have a getter but no
-		// setter for an attribute. We will then fail
-		// because that attribute is read-only
-		return false;
+		std::map<const char*, callback, ltstr>::iterator j = m_setters.find(key);
+		if (j != m_setters.end())
+		{
+			// the name is a data member
+			j->second.func(L, j->second.pointer_offset);
+			return true;
+		}
+
+		if (m_getters.find(key) != m_getters.end())
+		{
+			// this means that we have a getter but no
+			// setter for an attribute. We will then fail
+			// because that attribute is read-only
+			return false;
+		}
 	}
 
 	// set the attribute to the object's table
@@ -263,7 +280,7 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 	return true;
 }
 
- int class_rep::gettable_dispatcher(lua_State* L)
+int class_rep::gettable_dispatcher(lua_State* L)
 {
 	object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
 	return obj->crep()->gettable(L);
@@ -280,30 +297,14 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 
 	if (!success)
 	{
-		// this block is needed to make sure the std::string is destructed before
-		// lua_error() is called
-#ifdef BOOST_MSVC
 		{
-			// msvc has a bug which deletes the string twice, that's
-			// why we have to create it on the heap
-			std::string* msg = new std::string("cannot set attribute '");
-			*msg += obj->crep()->m_name;
-			*msg += ".";
-			*msg += lua_tostring(L, -2);
-			*msg += "'";
-			lua_pushstring(L, msg->c_str());
-			delete msg;
-		}
-#else
-		{
-			std::string msg = "cannot set attribute '";
+			std::string msg("cannot set attribute '");
 			msg += obj->crep()->m_name;
 			msg += ".";
 			msg += lua_tostring(L, -2);
 			msg += "'";
 			lua_pushstring(L, msg.c_str());
 		}
-#endif
 		lua_error(L);
 	}
 
@@ -420,10 +421,8 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 
 	if (match_index == -1)
 	{
-		// this block is needed to make sure the std::string is destructed before
-		// lua_error() is called
 		{
-			std::string msg = "no operator ";
+			std::string msg("no operator ");
 			msg += get_operator_symbol(id);
 			msg += " matched the arguments (";
 			msg += stack_content_by_name(L, 1);
@@ -448,17 +447,14 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 					assert(num_overloads[i] == 0 && "internal error");
 				}
 			}
-
 			lua_pushstring(L, msg.c_str());
 		}
 		lua_error(L);
 	}
 	else if (ambiguous)
 	{
-		// this block is needed to make sure the std::string is destructed before
-		// lua_error() is called
 		{
-			std::string msg = "call of overloaded operator ";
+			std::string msg("call of overloaded operator ");
 			msg += get_operator_symbol(id);
 			msg += " (";
 			msg += stack_content_by_name(L, 1);
@@ -528,10 +524,8 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 
 	if (!found)
 	{
-		// this block is needed to make sure the std::string is destructed before
-		// lua_error() is called
 		{
-			std::string msg = "no constructor of '";
+			std::string msg("no constructor of '");
 			msg += crep->name();
 			msg += "' matched the arguments (";
 			msg += stack_content_by_name(L, 2);
@@ -545,10 +539,8 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 	}
 	else if (ambiguous)
 	{
-		// this block is needed to make sure the std::string is destructed before
-		// lua_error() is called
 		{
-			std::string msg = "call of overloaded constructor '";
+			std::string msg("call of overloaded constructor '");
 			msg += crep->m_name;
 			msg +=  "(";
 			msg += stack_content_by_name(L, 2);
@@ -1330,7 +1322,7 @@ int luabind::detail::class_rep::lua_class_gettable(lua_State* L)
 
 // called from the metamethod for __newindex
 // obj is the object pointer
- int luabind::detail::class_rep::lua_class_settable(lua_State* L)
+int luabind::detail::class_rep::lua_class_settable(lua_State* L)
 {
 	object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
 	class_rep* crep = obj->crep();
@@ -1356,9 +1348,17 @@ int luabind::detail::class_rep::lua_class_gettable(lua_State* L)
 	// a method that is not present in this class (but in a subclass)
 	// BUG: This will not work with keys with extra nulls in them
 	const char* key = lua_tostring(L, 2);
+
+
 	std::map<const char*, class_rep::callback, ltstr>::iterator j = crep->m_setters.find(key);
 
-	if (j == crep->m_setters.end())
+	// if the strlen(key) is not the true length,
+	// it means that the member-name contains
+	// extra nulls. luabind does not support such
+	// names as member names. So, use the lua
+	// table as fall-back
+	if (j == crep->m_setters.end()
+		|| std::strlen(key) != lua_strlen(L, 2))
 	{
 		std::map<const char*, class_rep::callback, ltstr>::iterator k = crep->m_getters.find(key);
 
@@ -1396,18 +1396,19 @@ int luabind::detail::class_rep::static_class_gettable(lua_State* L)
 {
 	class_rep* crep = static_cast<class_rep*>(lua_touserdata(L, 1));
 
-// this has changed! c++ classes now also store their methods in the table
-//	if (crep->get_class_type() == class_rep::lua_class)
-	{
-		detail::getref(L, crep->m_table_ref);
-		lua_pushvalue(L, 2);
-		lua_gettable(L, -2);
-		if (!lua_isnil(L, -1)) return 1;
-		else lua_pop(L, 2);
-	}
+	detail::getref(L, crep->m_table_ref);
+	lua_pushvalue(L, 2);
+	lua_gettable(L, -2);
+	if (!lua_isnil(L, -1)) return 1;
+	else lua_pop(L, 2);
 
-	// BUG: This will not work with keys with extra nulls in them
 	const char* key = lua_tostring(L, 2);
+
+	if (std::strlen(key) != lua_strlen(L, 2))
+	{
+		lua_pushnil(L);
+		return 1;
+	}
 
 	std::map<const char*, method_rep, ltstr>::iterator i = crep->m_methods.find(key);
 	if (i != crep->m_methods.end())

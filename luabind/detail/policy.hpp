@@ -319,8 +319,16 @@ namespace luabind { namespace detail
 	{
 		void apply(lua_State* L, const luabind::object& v)
 		{
+			// if the luabind::object is uninitialized
+			// treat it as nil.
+			if (v.lua_state() == 0)
+			{
+				lua_pushnil(L);
+				return;
+			}
 			// if you hit this assert you are trying to return a value from one state into another lua state
-			assert((v.lua_state() == L) && "you cannot return a value from one lua state into another");
+			assert((v.lua_state() == L) && "you cannot return an uninitilized value "
+				"or a value from one lua state into another");
 			v.pushvalue();
 		}
 		void apply(lua_State* L, int v) { lua_pushnumber(L, v); }
