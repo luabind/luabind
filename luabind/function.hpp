@@ -209,7 +209,10 @@ namespace luabind
 				}
 			};
 
-			inline int function_dispatcher(lua_State* L)
+#ifdef LUABIND_NO_HEADERS_ONLY
+			int function_dispatcher(lua_State* L);
+#else
+//			inline int function_dispatcher(lua_State* L)
 			{
 				function_rep* rep = static_cast<function_rep*>(lua_touserdata(L, lua_upvalueindex(1)));
 	
@@ -276,6 +279,7 @@ namespace luabind
 				const overload_rep& ov_rep = rep->overloads()[match_index];
 				return ov_rep.call(L, ov_rep.fun);
 			}
+#endif
 		}
 	}
 	
