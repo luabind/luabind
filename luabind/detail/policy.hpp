@@ -1001,7 +1001,13 @@ namespace luabind { namespace detail
 	// ****** enum converter ********
 
 	template<class Direction = cpp_to_lua>
-	struct enum_converter;
+	struct enum_converter
+	{
+		void apply(lua_State* L, int val)
+		{
+			lua_pushnumber(L, val);
+		}
+	};
 
 	template<>
 	struct enum_converter<lua_to_cpp>

@@ -256,6 +256,10 @@ namespace luabind { namespace detail
 
 		// a reference to the lua table that represents this class
 		// (only used if it is a lua class)
+		// *** CHANGE ***
+		// this should always be used, when accessing static
+		// members in the class, and even when accessing
+		// members in instances of a class.
 		int m_table_ref;
 
 		// the type of this class.. determines if it's written in c++ or lua
@@ -322,4 +326,3 @@ namespace luabind { namespace detail
 #include <luabind/detail/overload_rep_impl.hpp>
 
 #endif // LUABIND_CLASS_REP_HPP_INCLUDED
-

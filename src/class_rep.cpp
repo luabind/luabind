@@ -1403,7 +1403,7 @@ void luabind::detail::finalize(lua_State* L, class_rep* crep)
 	}
 	else
 	{
-		lua_pushvalue(L, -2);
+		lua_pushvalue(L, -3);
 		lua_call(L, 1, 0);
 	}
 

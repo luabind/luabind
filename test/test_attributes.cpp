@@ -1,6 +1,3 @@
-#pragma warning( disable: 4097 )
-#pragma warning( disable: 4096 )
-
 #include "test.h"
 
 extern "C"
@@ -13,6 +10,18 @@ namespace
 {
 	LUABIND_ANONYMOUS_FIX int feedback = 0;
 	LUABIND_ANONYMOUS_FIX std::string str;
+
+	enum my_enum
+	{
+		my_value = 3
+	};
+
+	struct my_enum_ {};
+
+	struct my_enum_user
+	{
+		my_enum e;
+	};
 
 	struct internal 
 	{
@@ -75,19 +84,26 @@ bool test_attributes()
 
 	module(L)
 	[
-		luabind::class_<internal>("internal")
+		class_<my_enum_>("my_enum")
+			.enum_("constants")
+			[
+				value("my_value", my_value)
+			],
+
+		class_<my_enum_user>("my_enum_user")
+			.def_readwrite("e", &my_enum_user::e),
+
+		class_<internal>("internal")
 			.def_readonly("name", &internal::name_),
 	
-		luabind::class_<property_test>("property")
+		class_<property_test>("property")
 			.def(luabind::constructor<>())
 			.def("get", &property_test::get)
 			.def("get_name", &property_test::get_name)
 			.property("a", &property_test::get, &property_test::set)
 			.property("name", &property_test::get_name, &property_test::set_name)
 			.def_readonly("o", &property_test::o)
-//#ifndef BOOST_MSVC
-			.property("internal", &property_test::get_internal, luabind::dependency(luabind::result, luabind::self))
-//#endif
+			.property("internal", &property_test::get_internal, dependency(result, self))
 	];
 
 	if (dostring(L, "test = property()")) return false;
@@ -109,7 +125,7 @@ bool test_attributes()
 	if (dostring(L, "tester(test.o)")) return false;
 	if (feedback != 6) return false;
 
-	luabind::object glob = luabind::get_globals(L);
+	object glob = get_globals(L);
 
 	if (dostring(L, "a = 4")) return false;
 	if (glob["a"].type() != LUA_TNUMBER) return false;
@@ -121,12 +137,12 @@ bool test_attributes()
 	lua_pushstring(L, "test");
 	glob["test_string"].set();
 
-	if (luabind::object_cast<std::string>(glob["test_string"]) != "test") return false;
+	if (object_cast<std::string>(glob["test_string"]) != "test") return false;
 
-	luabind::object t = glob["t"];
+	object t = glob["t"];
 	lua_pushnumber(L, 4);
 	t.set();
-	if (luabind::object_cast<int>(t) != 4) return false;
+	if (object_cast<int>(t) != 4) return false;
 	
 	glob["test_string"] = std::string("barfoo");
 

@@ -190,6 +190,20 @@ namespace luabind
 				return *this;
 			}
 
+			template<class T, class Policies>
+			void assign(const T& val, const Policies& p)
+			{
+				//std::cout << "proxy assigment\n";
+				lua_State* L = m_obj->m_state;
+				m_obj->pushvalue();
+				detail::getref(L, m_key_ref);
+				detail::convert_to_lua_p(L, val, p);
+				lua_settable(L, -3);
+				// pop table
+				lua_pop(L, 1);
+				return *this;
+			}
+
 			proxy_object& operator=(const object& p);
 			proxy_object& operator=(const proxy_object& p);
 			proxy_object& operator=(const proxy_raw_object& p);
@@ -297,6 +311,20 @@ namespace luabind
 				return *this;
 			}
 
+			template<class T, class Policies>
+			void assign(const T& val, const Policies& p)
+			{
+				//std::cout << "proxy assigment\n";
+				lua_State* L = m_obj->m_state;
+				m_obj->pushvalue();
+				detail::getref(L, m_key_ref);
+				detail::convert_to_lua_p(L, val, p);
+				lua_settable(L, -3);
+				// pop table
+				lua_pop(L, 1);
+				return *this;
+			}
+
 			proxy_raw_object& operator=(const object& p);
 			proxy_raw_object& operator=(const proxy_object& p);
 			proxy_raw_object& operator=(const proxy_raw_object& p);
@@ -378,6 +406,20 @@ namespace luabind
 				lua_rawseti(L, -2, m_key);
 
 				// pops the table
+				lua_pop(L, 1);
+				return *this;
+			}
+
+			template<class T, class Policies>
+			void assign(const T& val, const Policies& p)
+			{
+				//std::cout << "proxy assigment\n";
+				lua_State* L = m_obj->m_state;
+				m_obj->pushvalue();
+				detail::getref(L, m_key_ref);
+				detail::convert_to_lua_p(L, val, p);
+				lua_settable(L, -3);
+				// pop table
 				lua_pop(L, 1);
 				return *this;
 			}
@@ -957,6 +999,16 @@ namespace luabind
 			detail::convert_to_lua(m_state, val);
 			set();
 			return const_cast<luabind::object&>(*this);
+		}
+
+		template<class T, class Policies>
+		void assign(const T& val, const Policies& p) const
+		{
+			assert((m_state != 0) && "you cannot assign a non-lua value to an uninitialized object");
+			// you cannot assign a non-lua value to an uninitialized object
+
+			detail::convert_to_lua_p(m_state, val, p);
+			set();
 		}
 
 
