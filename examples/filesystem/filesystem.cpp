@@ -38,31 +38,33 @@ void bind_filesystem(lua_State* L)
 	using namespace luabind;
 	using namespace boost::filesystem;
 
+	namespace fs = boost::filesystem;
+	
 	module(L, "filesystem")
 	[
-		class_<path>("path")
+		class_<fs::path>("path")
 			.def(constructor<>())
 			.def(constructor<const char*>())
-			.def("string", &path::string)
-			.def("native_file_string", &path::native_file_string)
-			.def("native_directory_string", &path::native_directory_string)
-			.def("root_path", &path::root_path)
-			.def("root_name", &path::root_name)
-			.def("root_directory", &path::root_directory)
-			.def("relative_path", &path::relative_path)
-			.def("leaf", &path::leaf)
-			.def("branch_path", &path::branch_path)
+			.def("string", &fs::path::string)
+			.def("native_file_string", &fs::path::native_file_string)
+			.def("native_directory_string", &fs::path::native_directory_string)
+			.def("root_path", &fs::path::root_path)
+			.def("root_name", &fs::path::root_name)
+			.def("root_directory", &fs::path::root_directory)
+			.def("relative_path", &fs::path::relative_path)
+			.def("leaf", &fs::path::leaf)
+			.def("branch_path", &fs::path::branch_path)
 
-			.def("empty", &path::empty)
-			.def("is_complete", &path::is_complete)
-			.def("is_directory", &is_directory)
-			.def("is_empty", &is_directory)
-			.def("has_root_path", &path::has_root_path)
-			.def("has_root_name", &path::has_root_name)
-			.def("has_root_directory", &path::has_root_directory)
-			.def("has_relative_path", &path::has_relative_path)
-			.def("has_leaf", &path::has_leaf)
-			.def("has_branch_path", &path::has_branch_path)
+			.def("empty", &fs::path::empty)
+			.def("is_complete", &fs::path::is_complete)
+			.def("is_directory", &fs::is_directory)
+			.def("is_empty", &fs::is_empty)
+			.def("has_root_path", &fs::path::has_root_path)
+			.def("has_root_name", &fs::path::has_root_name)
+			.def("has_root_directory", &fs::path::has_root_directory)
+			.def("has_relative_path", &fs::path::has_relative_path)
+			.def("has_leaf", &fs::path::has_leaf)
+			.def("has_branch_path", &fs::path::has_branch_path)
 
 			.def(const_self / const_self)
 			.def(other<const char*>() / const_self)
@@ -71,8 +73,19 @@ void bind_filesystem(lua_State* L)
 			.property("contents", &identity, return_directory_iterator)
 			,
 
-		def("exists", &exists),
-		def("initial_path", &initial_path)
+		def("exists", &fs::exists),
+		def("is_directory", &fs::is_directory),
+		def("is_empty", &fs::is_empty),
+		def("create_directory", &fs::create_directory),
+		def("remove", &fs::remove),
+		def("remove_all", &fs::remove_all),
+		def("rename", &fs::rename),
+		def("copy_file", &fs::copy_file),
+
+		def("initial_path", &fs::initial_path),
+		def("current_path", &fs::current_path),
+		def("complete", &fs::complete),
+		def("system_complete", &fs::system_complete)
 	];
 }
 
