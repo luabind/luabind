@@ -70,6 +70,7 @@ lua_state::lua_state()
     luaopen_base(m_state);
     m_top = lua_gettop(m_state);
     luabind::open(m_state);
+    lua_baselibopen(m_state);
 }
 
 lua_state::~lua_state()
@@ -103,10 +104,12 @@ void dostring(lua_State* state, char const* str)
     lua_pop(state, 1);
 }
 
+/*
 void translate_luabind_error(luabind::error const& e)
 {
     BOOST_ERROR("luabind exception caught");
 }
+*/
 
 // -- test cases ------------------------------------------------------------
 
@@ -116,6 +119,9 @@ void test_attributes();
 void test_held_type();
 void test_separation();
 void test_scope();
+void test_yield();
+void test_construction();
+void test_type_traits();
 
 // --------------------------------------------------------------------------
 
@@ -138,7 +144,10 @@ test_suite* init_unit_test_suite( int argc, char* argv[] )
     test->add(BOOST_TEST_CASE(&test_held_type));
     test->add(BOOST_TEST_CASE(&test_separation));
     test->add(BOOST_TEST_CASE(&test_scope));
-    
+    test->add(BOOST_TEST_CASE(&test_construction));
+    test->add(BOOST_TEST_CASE(&test_yield));
+    test->add(BOOST_TEST_CASE(&test_type_traits));
+
     return test;
 }
 

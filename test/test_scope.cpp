@@ -32,7 +32,7 @@ namespace
 	int g_(int)	{ return 5; }
 	int h() { return 6; }
 
-	struct test_class
+	struct test_class : counted_type<test_class>
 	{
 		test_class()
 			: test(1)
@@ -40,7 +40,7 @@ namespace
 		int test;
 	};
 
-	struct test_class2
+	struct test_class2 : counted_type<test_class2>
 	{
 		test_class2() {}
 		int string_string(std::string const& s1, std::string const& s2)

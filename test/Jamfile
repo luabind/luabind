@@ -1,6 +1,11 @@
 import testing ;
 
 SOURCES = 
+    test_scope.cpp
+    test_typetraits.cpp
+    test_construction.cpp
+    test_operators.cpp
+    test_yield.cpp
     test_exceptions.cpp
     test_lua_classes.cpp
     test_attributes.cpp

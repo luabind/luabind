@@ -1,67 +1,74 @@
-#include "test.h"
-#include <iostream>
+// Copyright (c) 2003 Daniel Wallin and Arvid Norberg
 
-extern "C"
-{
-	#include "lualib.h"
-}
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
 
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+// OR OTHER DEALINGS IN THE SOFTWARE.
+
+#include "test.hpp"
+#include <luabind/luabind.hpp>
 
 namespace
 {
-	LUABIND_ANONYMOUS_FIX int feedback = 0;
-
-	struct operator_tester
+	struct operator_tester : counted_type<operator_tester>
 	{
-		int operator+(int) const
+		int operator+(int a) const
 		{
-			feedback = 1;
-			return 4;
+			return 1 + a;
 		}
 
 		float operator-() const
 		{
-			feedback = 2;
 			return 4.6f;
 		}
 
 		float operator()() const
 		{
-			feedback = 3;
 			return 3.5f;
 		}
 
 		float operator()(int a) const
 		{
-			feedback = 4;
-			return 3.5f + a;;
+			return 3.5f + a;
 		}
 
 		float operator()(int a)
 		{
-			feedback = 7;
-			return 3.5f + a;;
+			return 2.5f + a;
 		}
 
 	};
 
-	int operator+(int, const operator_tester&)
+	int operator+(int a, const operator_tester&)
 	{
-		feedback = 5;
-		return 2;
+		return 2 + a;
 	}
 
-	struct operator_tester2
+	struct operator_tester2 : counted_type<operator_tester2>
 	{
 	};
 
 	float operator+(const operator_tester&, const operator_tester2&)
 	{
-		feedback = 6;
-		return 6.3f;
+		return 7.3f;
 	}
 
-	struct operator_tester3: public operator_tester {};
+	struct operator_tester3: operator_tester, counted_type<operator_tester3> {};
 
 	const operator_tester* make_const_test()
 	{
@@ -71,26 +78,23 @@ namespace
 
 	std::ostream& operator<<(std::ostream& os, const operator_tester&)
 	{
-		os << "operator_tester"; feedback = 63; return os;
+		os << "operator_tester"; return os;
 	}
 	
-	operator_tester* clone(const operator_tester* p) { return new operator_tester(*p); }
+	operator_tester* clone(const operator_tester* p)
+	{ return new operator_tester(*p); }
 
 } // anonymous namespace
 
-bool test_operators()
+void test_operators()
 {
+    COUNTER_GUARD(operator_tester);
+    COUNTER_GUARD(operator_tester2);
+    COUNTER_GUARD(operator_tester3);
+
+	lua_state L;
+
 	using namespace luabind;
-
-	lua_State* L = lua_open();
-	lua_closer c(L);
-	lua_baselibopen(L);
-
-	int top = lua_gettop(L);
-
-	open(L);
-
-	if (feedback != 0) return false;
 
 	module(L)
 	[
@@ -115,43 +119,22 @@ bool test_operators()
 		def("make_const_test", &make_const_test)
 	];
 	
-	if (feedback != 0) return false;
+	DOSTRING(L, "test = operator_tester()");
+	DOSTRING(L, "test2 = operator_tester2()");
+	DOSTRING(L, "test3 = operator_tester3()");
+	DOSTRING(L, "const_test = make_const_test()");
 
-	if (dostring(L, "test = operator_tester()")) return false;
-	if (dostring(L, "test2 = operator_tester2()")) return false;
-	if (dostring(L, "test3 = operator_tester3()")) return false;
+	DOSTRING(L, "assert(test() == 3.5)");
+	DOSTRING(L, "assert(test(5) == 2.5 + 5)");
+	DOSTRING(L, "assert(const_test(7) == 3.5 + 7)");
 
-	if (dostring(L, "test()")) return false;
-	if (feedback != 3) return false;
-	if (dostring(L, "test(5)")) return false;
-	if (feedback != 7) return false;
-
-	dostring(L, "const_test = make_const_test()");
-	if (dostring(L, "const_test(5)")) return false;
-	if (feedback != 4) return false;
-
-	if (dostring(L, "a = -test")) return false;
-	if (feedback != 2) return false;
-
-	if (dostring(L, "a = test + test2")) return false;
-	if (feedback != 6) return false;
-
-	if (dostring(L, "a = 2 + test")) return false;
-	if (feedback != 5) return false;
-
-	if (dostring(L, "a = test + 2")) return false;
-	if (feedback != 1) return false;
-
-	if (dostring(L, "a = test3 + 6")) return false;
-	if (feedback != 1) return false;
-
-	if (dostring(L, "a = test3 + test2")) return false;
-	if (feedback != 6) return false;
-
-	if (dostring(L, "a = tostring(test)")) return false;
-	if (feedback != 63) return false;
-
-//	if (dostring(L, "t = test:clone()")) return false;
+	DOSTRING(L, "assert(-test == 4.6)");
+	DOSTRING(L, "assert(test + test2 == 7.3)");
+	DOSTRING(L, "assert(2 + test == 2 + 2)");
+	DOSTRING(L, "assert(test + 2 == 1 + 2)");
+	DOSTRING(L, "assert(test3 + 6 == 1 + 6)");
+	DOSTRING(L, "assert(test3 + test2 == 7.3)");
+	DOSTRING(L, "assert(tostring(test) == 'operator_tester')");
 
 	const char* prog =
 		"class 'my_class'\n"
@@ -177,14 +160,7 @@ bool test_operators()
 		"d = 10 - d\n"
 		"d = d - b\n";
 
-	if (dostring(L, prog)) return false;
-	object var_c = get_globals(L)["c"];
-	if (object_cast<int>(var_c["val"]) != 10) return false;
-
-	object var_d = get_globals(L)["d"];
-	if (object_cast<int>(var_d["val"]) != 2) return false;
-	
-	if (top != lua_gettop(L)) return false;
-
-	return true;
+	DOSTRING(L, prog);
+	DOSTRING(L, "assert(c == 10)");
+	DOSTRING(L, "assert(d == 2)");
 }

@@ -32,7 +32,7 @@ struct ex : public std::exception
     const char* msg;
 };
 
-struct exception_thrower
+struct exception_thrower : counted_type<exception_thrower>
 {
     exception_thrower() {}
     exception_thrower(int) { throw ex("exception description"); }
@@ -47,9 +47,13 @@ struct exception_thrower
 
 void test_exceptions()
 {
-    lua_state L;
+	COUNTER_GUARD(exception_thrower);
+
+	lua_state L;
 
     using namespace luabind;
+
+#ifndef LUABIND_NO_EXCEPTIONS
 
     module(L)
     [
@@ -77,5 +81,7 @@ void test_exceptions()
         "(string, string, string)\n candidates are:\n"
         "throw()\nthrow(number)\nthrow(number, number)\n"
         "throw(number, number, number)\n");
+
+#endif
 }
 
