@@ -27,14 +27,11 @@ namespace
 {
 	struct test_class : counted_type<test_class>
 	{
-		test_class(): n(0) {}
-
+		test_class() {}
 		int f() const
 		{
-			return const_cast<int&>(n)++;
+			return 5;
 		}
-
-		int n;
 	};
 
 	int f(int a)
@@ -50,8 +47,6 @@ namespace
 
 	void f() {}
 }
-
-#include <iostream>
 
 void test_yield()
 {
@@ -84,17 +79,17 @@ void test_yield()
 		"	assert(str == 'foobar')\n"
 		"	a = test()"
 		"	for i = 1, 10 do\n"
-		"		print(a:f())\n"
+		"		assert(a:f() == i + 4)\n"
 		"	end\n"
 		"end");
 
 	{
 		lua_State* thread = lua_newthread(L);
-		resume_function<void>(thread, "g", "foobar");
+		BOOST_CHECK(resume_function<int>(thread, "g", "foobar") == 5);
 
-		for (int i = 0; i < 10; ++i)
+		for (int i = 1; i < 10; ++i)
 		{
-			resume<void>(thread);
+			BOOST_CHECK(resume<int>(thread, i + 4) == 5);
 		}
 		lua_pop(L, 1); // pop thread
 	}
