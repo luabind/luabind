@@ -967,6 +967,19 @@ call <tt>super</tt> first in the constructor.</p>
 base class' member functions. You can find all member functions in the base class, 
 but you will have to give the this-pointer (<tt>self</tt>) as first argument.</p>
 
+<p>If an object needs to perform actions when it's collected we provide
+a <tt>__finalize</tt> function that can be overridden in lua-classes.
+The __finalize functions will be called on all classes in the inheritance
+chain, starting with the most derived type.</p>
+
+<pre>
+...
+
+function lua_testclass:__finalize()
+	-- called when the an object is collected
+end
+</pre>
+
 <h2><a name="class_lua_derive"></a>deriving in lua</h2>
 
 <p>It is also possible to derive lua classes from C++ 
