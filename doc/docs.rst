@@ -341,7 +341,7 @@ casts. In a function call, if the function is overloaded and there's no
 overload that match the parameters better than the other, you have an
 ambiguity. This will spawn a run-time error, stating that the function call is
 ambiguous. A simple example of this is to register one function that takes an
-int and one that takes a float. Since Lua don't distinguish between floats and
+int and one that takes a float. Since Lua doesn't distinguish between floats and
 integers, both will always match.
 
 Since all overloads are tested, it will always find the best match (not the
