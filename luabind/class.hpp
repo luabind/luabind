@@ -700,6 +700,7 @@ namespace luabind
 
 		private:
 			template<class U> void operator,(U const&) const;
+			void operator=(static_scope const&);
 			
 			T& self;
 		};
@@ -1164,6 +1165,7 @@ namespace luabind
 		detail::static_scope<self_t> scope;
 		
 	private:
+		void operator=(class_ const&);
 
 		void init()
 		{

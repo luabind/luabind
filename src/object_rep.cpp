@@ -79,19 +79,12 @@ namespace luabind { namespace detail
 		++m_dependency_cnt;
 	}
 
-	void object_rep::release_refs(lua_State* L)
-	{
-		m_dependency_ref.reset();
-		m_lua_table_ref.reset();
-	}
-
 	int object_rep::garbage_collector(lua_State* L)
 	{
 		object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, -1));
 
 		finalize(L, obj->crep());
 
-		obj->release_refs(L);
 		obj->~object_rep();
 		return 0;
 	}

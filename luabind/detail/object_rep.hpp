@@ -58,7 +58,8 @@ namespace luabind { namespace detail
 		int flags() const { return m_flags; }
 		void set_flags(int flags) { m_flags = flags; }
 
-		void get_lua_table(lua_State* L) const { m_lua_table_ref.get(L); }
+		detail::lua_reference& get_lua_table() { return m_lua_table_ref; }
+		detail::lua_reference const& get_lua_table() const { return m_lua_table_ref; }
 
 		void remove_ownership();
 		void set_destructor(void(*ptr)(void*));
@@ -66,7 +67,6 @@ namespace luabind { namespace detail
 		void set_object(void* p) { m_object = p; }
 
 		void add_dependency(lua_State* L, int index);
-		void release_refs(lua_State* L);
 
 		static int garbage_collector(lua_State* L);
 

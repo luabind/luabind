@@ -164,6 +164,13 @@ void test_lua_classes()
 		"assert(b.foo == nil)");
 
 	DOSTRING(L,
+		"x = base()\n"
+		"y = base()\n"
+		"x.foo = 'yo'\n"
+		"assert(x.foo == 'yo')"
+		"assert(y.foo == nil)");
+
+	DOSTRING(L,
 		"simple_derived.foobar = 'yi'\n"
 		"assert(b.foobar == 'yi')\n"
 		"assert(a.foobar == 'yi')\n");

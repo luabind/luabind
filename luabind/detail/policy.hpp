@@ -344,17 +344,17 @@ namespace luabind { namespace detail
 				"or a value from one lua state into another");
 			v.pushvalue();
 		}
-		void apply(lua_State* L, int v) { lua_pushnumber(L, v); }
-		void apply(lua_State* L, short v) { lua_pushnumber(L, v); }
-		void apply(lua_State* L, char v) { lua_pushnumber(L, v); }
-		void apply(lua_State* L, long v) { lua_pushnumber(L, v); }
-		void apply(lua_State* L, unsigned int v) { lua_pushnumber(L, v); }
-		void apply(lua_State* L, unsigned short v) { lua_pushnumber(L, v); }
-		void apply(lua_State* L, unsigned char v) { lua_pushnumber(L, v); }
-		void apply(lua_State* L, unsigned long v) { lua_pushnumber(L, v); }
-		void apply(lua_State* L, float v) { lua_pushnumber(L, v); }
-		void apply(lua_State* L, double v) { lua_pushnumber(L, v); }
-		void apply(lua_State* L, long double v) { lua_pushnumber(L, v); }
+		void apply(lua_State* L, int v) { lua_pushnumber(L, (lua_Number)v); }
+		void apply(lua_State* L, short v) { lua_pushnumber(L, (lua_Number)v); }
+		void apply(lua_State* L, char v) { lua_pushnumber(L, (lua_Number)v); }
+		void apply(lua_State* L, long v) { lua_pushnumber(L, (lua_Number)v); }
+		void apply(lua_State* L, unsigned int v) { lua_pushnumber(L, (lua_Number)v); }
+		void apply(lua_State* L, unsigned short v) { lua_pushnumber(L, (lua_Number)v); }
+		void apply(lua_State* L, unsigned char v) { lua_pushnumber(L, (lua_Number)v); }
+		void apply(lua_State* L, unsigned long v) { lua_pushnumber(L, (lua_Number)v); }
+		void apply(lua_State* L, float v) { lua_pushnumber(L, (lua_Number)v); }
+		void apply(lua_State* L, double v) { lua_pushnumber(L, (lua_Number)v); }
+		void apply(lua_State* L, long double v) { lua_pushnumber(L, (lua_Number)v); }
 		void apply(lua_State* L, const char* v) { lua_pushstring(L, v); }
 		void apply(lua_State* L, const std::string& v)
 		{ lua_pushlstring(L, v.data(), v.size()); }
@@ -421,7 +421,7 @@ namespace luabind { namespace detail
 			return luabind::object(L, ref, true);
 		}
 
-		PRIMITIVE_MATCHER(luabind::object) { return std::numeric_limits<int>::max() - 1; }
+		PRIMITIVE_MATCHER(luabind::object) { (void)index; (void)L; return std::numeric_limits<int>::max() - 1; }
 
 		PRIMITIVE_CONVERTER(luabind::weak_ref)
 		{
@@ -429,7 +429,7 @@ namespace luabind { namespace detail
 			return luabind::weak_ref(L, index);
 		}
 
-		PRIMITIVE_MATCHER(luabind::weak_ref) { return std::numeric_limits<int>::max() - 1; }
+		PRIMITIVE_MATCHER(luabind::weak_ref) { (void)index; (void)L; return std::numeric_limits<int>::max() - 1; }
 		
 		const char* apply(lua_State* L, detail::by_const_pointer<char>, int index) { return static_cast<const char*>(lua_tostring(L, index)); }
 		const char* apply(lua_State* L, detail::by_const_pointer<const char>, int index) { return static_cast<const char*>(lua_tostring(L, index)); }

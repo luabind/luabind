@@ -226,29 +226,33 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 		return 1;
 	}
 
+// First, look in the instance's table
+	detail::lua_reference const& tbl = obj->get_lua_table();
+	if (tbl.is_valid())
+	{
+		tbl.get(L);
+		lua_pushvalue(L, 2);
+		lua_gettable(L, -2);
+		if (!lua_isnil(L, -1)) 
+		{
+			lua_remove(L, -2); // more table
+			return 1;
+		}
+		lua_pop(L, 2);
+	}
+
+
+// Then look in the class' table for this member
 	detail::getref(L, obj->crep()->table_ref());
 	lua_pushvalue(L, 2);
 	lua_gettable(L, -2);
-
 	if (!lua_isnil(L, -1)) 
 	{
-//		std::cout << "method found in lua table: " << key << "\n";
 		lua_remove(L, -2); // more table
 		return 1;
 	}
-
 	lua_pop(L, 2);
-/*
-	std::map<const char*, method_rep, ltstr>::iterator i = m_methods.find(key);
 
-	if (i != m_methods.end())
-	{
-		// the name is a method, return it
-		lua_pushlightuserdata(L, &i->second);
-		lua_pushcclosure(L, function_dispatcher, 1);
-		return 1;
-	}
-*/
 	std::map<const char*, callback, ltstr>::iterator j = m_getters.find(key);
 	if (j != m_getters.end())
 	{
@@ -315,7 +319,20 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 	}
 
 	// set the attribute to the object's table
-	getref(L, table_ref());
+	object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
+	detail::lua_reference& tbl = obj->get_lua_table();
+	if (!tbl.is_valid())
+	{
+		// this is the first time we are trying to add
+		// a member to this instance, create the table.
+		lua_newtable(L);
+		lua_pushvalue(L, -1);
+		tbl.set(L);
+	}
+	else
+	{
+		tbl.get(L);
+	}
 	lua_pushvalue(L, 2);
 	lua_pushvalue(L, 3);
 	lua_settable(L, 4);
@@ -1302,18 +1319,20 @@ int luabind::detail::class_rep::lua_class_gettable(lua_State* L)
 		return 1;
 	}
 	
-	obj->get_lua_table(L);
+	// first look in the instance's table
+	detail::lua_reference const& tbl = obj->get_lua_table();
+	assert(tbl.is_valid());
+	tbl.get(L);
 	lua_pushvalue(L, 2);
 	lua_gettable(L, -2);
-
 	if (!lua_isnil(L, -1)) 
 	{
 		lua_remove(L, -2); // remove table
 		return 1;
 	}
-
 	lua_pop(L, 2);
 
+	// then look in the class' table
 	detail::getref(L, crep->table_ref());
 	lua_pushvalue(L, 2);
 	lua_gettable(L, -2);
@@ -1411,7 +1430,9 @@ int luabind::detail::class_rep::lua_class_settable(lua_State* L)
 
 #endif
 
-		obj->get_lua_table(L);
+		detail::lua_reference const& tbl = obj->get_lua_table();
+		assert(tbl.is_valid());
+		tbl.get(L);
 		lua_replace(L, 1);
 		lua_settable(L, 1);
 	}

@@ -29,8 +29,6 @@ int luabind::detail::free_functions::function_dispatcher(lua_State* L)
 {
 	function_rep* rep = static_cast<function_rep*>(lua_touserdata(L, lua_upvalueindex(1)));
 
-	std::size_t converter_storage[LUABIND_MAX_ARITY];
-
 	bool ambiguous = false;
 	int min_match = std::numeric_limits<int>::max();
 	int match_index = -1;
@@ -93,6 +91,6 @@ int luabind::detail::free_functions::function_dispatcher(lua_State* L)
 	}
 #endif
 	const overload_rep& ov_rep = rep->overloads()[match_index];
-	return ov_rep.call(L, ov_rep.fun, converter_storage);
+	return ov_rep.call(L, ov_rep.fun);
 }
 

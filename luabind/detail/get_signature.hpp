@@ -175,6 +175,7 @@ namespace luabind { namespace detail
 	template<class T, class C BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 	inline void get_member_signature_impl(T(C::*)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)) const, lua_State* L, std::string& s)
 	{
+		(void)L;
 		s += "(";
 #if BOOST_PP_ITERATION() > 0
 		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L, 0L);
@@ -199,6 +200,7 @@ namespace luabind { namespace detail
 	template<class T BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
 	inline void get_free_function_signature_impl(T(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, std::string& s)
 	{
+		(void)f;
 		s += "(";
 #if BOOST_PP_ITERATION() > 0
 		s += name_of_type(LUABIND_DECORATE_TYPE(A0), L, 0L);
