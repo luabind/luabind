@@ -751,7 +751,11 @@ namespace luabind { namespace detail
 			}
 
 			// import all operators
-			std::copy(bcrep->m_operators, bcrep->m_operators + number_of_operators, m_operators);
+			for (int i = 0; i < number_of_operators; ++i)
+			{
+				for (std::vector<operator_callback>::const_iterator j = bcrep->m_operators[i].begin(); j != bcrep->m_operators[i].end(); ++j)
+					m_operators[i].push_back(*j);
+			}
 
 			// also, save the baseclass info to be used for typecasts
 			m_bases.push_back(base);

@@ -665,13 +665,6 @@ namespace luabind
 			// register this new type in the class registry
 			r->add_class(m_type, crep);
 
-			for (std::vector<base_desc>::iterator i = m_bases.begin();
-							i != m_bases.end(); 
-							++i)
-			{
-				crep->add_base_class(L, i->type, i->ptr_offset);
-			}
-
 			// add methods
 			for (std::map<const char*, detail::method_rep, detail::ltstr>::iterator i = m_methods.begin();
 										i != m_methods.end(); 
@@ -695,6 +688,13 @@ namespace luabind
 				std::swap(crep->m_operators[i], m_operators[i]);
 	
 			std::swap(crep->m_static_constants, m_static_constants);
+
+			for (std::vector<base_desc>::iterator i = m_bases.begin();
+							i != m_bases.end(); 
+							++i)
+			{
+				crep->add_base_class(L, i->type, i->ptr_offset);
+			}
 		}
 
 		// destructive copy
