@@ -140,7 +140,7 @@ void test_iterator();
 #include <boost/test/unit_test.hpp>
 
 using boost::unit_test_framework::test_suite;
-using boost::unit_test_framework::register_exception_translator;
+//using boost::unit_test_framework::register_exception_translator;
 
 test_suite* init_unit_test_suite( int argc, char* argv[] )
 {

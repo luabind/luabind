@@ -51,12 +51,12 @@ namespace
 		virtual void doSomething() = 0;
 	};
 
-	struct derived1 : base1, counted_type<derived1>
+	struct deriv_1 : base1, counted_type<deriv_1>
 	{
 		void doSomething() {}
 	};
 
-	struct derived2 : derived1, counted_type<derived2>
+	struct deriv_2 : deriv_1, counted_type<deriv_2>
 	{
 		void doMore() {}
 	};
@@ -71,8 +71,8 @@ void test_construction()
     COUNTER_GUARD(B);
     COUNTER_GUARD(C);
     COUNTER_GUARD(base1);
-    COUNTER_GUARD(derived1);
-    COUNTER_GUARD(derived2);
+    COUNTER_GUARD(deriv_1);
+    COUNTER_GUARD(deriv_2);
 
 	lua_state L;
 
@@ -94,19 +94,6 @@ void test_construction()
 
 		class_<C>("C")
 
-	];
-
-	module(L)
-	[
-		class_<base1>("base1"),
-
-		class_<derived1, base1>("derived1")
-			.def(constructor<>())
-			.def("doSomething", &derived1::doSomething),
-
-		class_<derived2, derived1>("derived2")
-			.def(constructor<>())
-			.def("doMore", &derived2::doMore)
 	];
 
 	DOSTRING_EXPECTED(L, "a = C()", "no constructor of 'C' matched the arguments ()\n candidates are:\n");
