@@ -80,6 +80,8 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO type
 	, m_const_holder_destructor(const_holder_destructor)
 	, m_operator_cache(0)
 {
+	assert(m_holder_alignment >= 1 && "internal error");
+
 	class_registry* r = class_registry::get_registry(L);
 	assert((r->cpp_class() != LUA_NOREF) && "you must call luabind::open()");
 
@@ -102,7 +104,7 @@ luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	, m_construct_holder(0)
 	, m_construct_const_holder(0)
 	, m_holder_size(0)
-	, m_holder_alignment(0)
+	, m_holder_alignment(1)
 	, m_class_type(lua_class)
 	, m_destructor(0)
 	, m_const_holder_destructor(0)
@@ -143,7 +145,7 @@ std::pair<void*,void*>
 luabind::detail::class_rep::allocate(lua_State* L) const
 {
 	const int overlap = sizeof(object_rep)&(m_holder_alignment-1);
-	const int padding = (m_holder_alignment<=1)? 0 : (overlap==0)?0:m_holder_alignment-overlap;
+	const int padding = overlap==0?0:m_holder_alignment-overlap;
 	const int size = sizeof(object_rep) + padding + m_holder_size;
 
 	char* mem = static_cast<char*>(lua_newuserdata(L, size));

@@ -601,7 +601,7 @@ namespace luabind
 		{
 			static int apply()
 			{
-				return 0;
+				return 1;
 			}
 		};
 

@@ -117,34 +117,86 @@ namespace
 
 	struct base_ {};
 	
+	LUABIND_ANONYMOUS_FIX int pointer_cnt = 0;
+
 	struct base_holder
 	{
-		explicit base_holder(base_* p): ptr(p) {}
+		static int counter;
+			  
+		explicit base_holder(base_* p): ptr(p), secret(2068) 
+		{ ++counter; }
+
+		base_holder(const base_holder&)
+			: secret(9999)
+		{
+			++counter;
+		}
 
 		~base_holder()
-		{ feedback = 98; }
+		{ 
+			--counter;
+			assert(secret == 2068);
+			secret = 0;
+		}
 
 		base_* get() const { return ptr; }
 
 		base_* ptr;
+
+		int secret;
 	};
 
+	int base_holder::counter = 0;
+	
 	struct const_base_holder
 	{
-		explicit const_base_holder(const base_* p): ptr(p) {}
-		const_base_holder(const base_holder& x) {}
+		static int counter;
+			  
+		explicit const_base_holder(const base_* p): ptr(p), secret(9999) 
+		{
+			++counter;
+		}
+
+		const_base_holder(const base_holder& x)
+			: secret(9999)
+		{ ++counter; }
+
+		const_base_holder(const const_base_holder&)
+			: secret(9999)
+		{
+			++counter;
+		}
 
 		~const_base_holder()
-		{ feedback = 99; }
+		{ 
+			--counter;
+			assert(secret == 9999);
+			secret = 0;
+		}
 
 		const base_* get() const { return ptr; }
 
 		const base_* ptr;
+
+		int secret;
+		char garbage[16];
 	};
+
+	int const_base_holder::counter = 0;
 
 	void tester8(const const_base_holder&)
 	{
 		feedback = 100;
+	}
+
+	void tester15(const_base_holder)
+	{
+		feedback = 101;
+	}
+	
+	const_base_holder tester16()
+	{
+		return const_base_holder(0);
 	}
 	
 } // anonymous namespace
@@ -193,7 +245,9 @@ bool test_held_type()
 			def("tester7", &tester7),
 			def("tester8", &tester8),
 			def("tester9", &tester9),
-
+			def("tester15", &tester15),
+			def("tester16", &tester16),
+	
 			class_<base, boost::shared_ptr<base> >("base")
 				.def(constructor<>())
 				.def("f", &base::f),
@@ -251,7 +305,11 @@ bool test_held_type()
 		if (dostring(L, "a = base_()")) return false;
 		if (dostring(L, "tester8(a)")) return false;
 		if (feedback != 100) return false;
-
+		if (dostring(L, "tester15(a)")) return false;
+		if (feedback != 101) return false;
+		if (dostring(L, "tester8(tester16())")) return false;
+		if (feedback != 100) return false;
+		
 		if (top != lua_gettop(L)) return false;
 	}
 
@@ -259,6 +317,8 @@ bool test_held_type()
 	
 	if (feedback != 1) return false;
 
+	if (base_holder::counter != 0) return false;
+	if (const_base_holder::counter != 0) return false;
+
 	return true;
 }
-

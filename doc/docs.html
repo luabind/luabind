@@ -1825,7 +1825,15 @@ end
 
 <h2><a name="policies_yield"></a>yield</h2>
 
-<p>TODO: document.</p>
+<p>This policy will cause the function to always yield the current
+thread when returning. See the lua manual for restrictions on yield.</p>
+
+<pre>
+module(L)
+[
+	def("f", &amp;f, yield)
+];
+</pre>
 
 <h2><a name="policies_custom"></a>custom</h2>
 

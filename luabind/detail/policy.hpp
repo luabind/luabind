@@ -569,6 +569,9 @@ namespace luabind { namespace detail
 	template<>
 	struct pointer_converter<lua_to_cpp>
 	{
+		bool made_conversion;
+		char target[32];
+
 		template<class T>
 		typename make_pointer<T>::type apply(lua_State* L, by_pointer<T>, int index)
 		{
@@ -583,9 +586,11 @@ namespace luabind { namespace detail
 			assert((obj != 0) && "internal error, please report"); // internal error
 			const class_rep* crep = obj->crep();
 
-			char target[sizeof(T)];
 			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, target));
-			
+
+			made_conversion = (void*)ptr == (char*)target;
+			assert(!made_conversion || sizeof(T) <= 32);
+
 //			std::cerr << "pointer_converter<lua_to_cpp>: " << ptr << " " << offset << "\n";
 
 			return ptr;
@@ -611,7 +616,11 @@ namespace luabind { namespace detail
 		}
 
 		template<class T>
-		void converter_postcall(lua_State*, T, int) {}
+		void converter_postcall(lua_State*, by_pointer<T>, int) 
+		{
+			if (made_conversion)
+				reinterpret_cast<T*>(target)->~T();
+		}
 	};
 
 // ******* value converter *******
@@ -665,6 +674,20 @@ namespace luabind { namespace detail
 
 	template<class T> struct make_const_reference { typedef const T& type; };
 
+	template<class T>
+	struct destruct_guard
+	{
+		T* ptr;
+		bool dismiss;
+		destruct_guard(T* p): ptr(p), dismiss(false) {}
+
+		~destruct_guard()
+		{
+			if (!dismiss)
+				ptr->~T();
+		}
+	};
+
 	template<>
 	struct value_converter<lua_to_cpp>
 	{
@@ -685,6 +708,9 @@ namespace luabind { namespace detail
 			// TODO: align?
 			char target[sizeof(T)];
 			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, target));
+
+			destruct_guard<T> guard(ptr);
+			if ((void*)ptr != (void*)target) guard.dismiss = true;
 
 			return *ptr;
 		}
@@ -750,12 +776,13 @@ namespace luabind { namespace detail
 	template<class T> struct make_const_pointer { typedef const T* type; };
 	template<>
 	struct const_pointer_converter<lua_to_cpp>
+		: private pointer_converter<lua_to_cpp>
 	{
 		template<class T>
 		typename make_const_pointer<T>::type apply(lua_State* L, by_const_pointer<T>, int index)
 		{
 //			std::cerr << "const_pointer_converter\n";
-			return pointer_converter<lua_to_cpp>().apply(L, by_pointer<T>(), index);
+			return pointer_converter<lua_to_cpp>::apply(L, by_pointer<T>(), index);
 		}
 
 		template<class T>
@@ -775,7 +802,10 @@ namespace luabind { namespace detail
 		}
 
 		template<class T>
-		void converter_postcall(lua_State*, T, int) {}
+		void converter_postcall(lua_State* L, by_const_pointer<T>, int index) 
+		{
+			pointer_converter<lua_to_cpp>::converter_postcall(L, by_pointer<T>(), index);
+		}
 	};
 
 // ******* reference converter *******
@@ -881,12 +911,13 @@ namespace luabind { namespace detail
 
 	template<>
 	struct const_ref_converter<lua_to_cpp>
+		: private const_pointer_converter<lua_to_cpp>
 	{
 		template<class T>
 		typename make_const_reference<T>::type apply(lua_State* L, by_const_reference<T>, int index)
 		{
 //			std::cerr << "const_ref_converter<lua_to_cpp>\n";
-			return *const_pointer_converter<lua_to_cpp>().apply(L, by_const_pointer<T>(), index);
+			return *const_pointer_converter<lua_to_cpp>::apply(L, by_const_pointer<T>(), index);
 		}
 
 		template<class T>
@@ -896,7 +927,10 @@ namespace luabind { namespace detail
 		}
 
 		template<class T>
-		void converter_postcall(lua_State*, T, int) {}
+		void converter_postcall(lua_State* L, by_const_reference<T>, int index) 
+		{
+			const_pointer_converter<lua_to_cpp>::converter_postcall(L, by_const_pointer<T>(), index);
+		}
 	};
 
 	// ****** enum converter ********
