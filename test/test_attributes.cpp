@@ -53,7 +53,7 @@ struct A
 {
 	int get() const 
 	{ 
-		return 0; 
+		return 5; 
 	}
 };
 
@@ -82,9 +82,12 @@ void test_attributes()
 			.def_readonly("o", &property_test::o)
             .property("free", &free_getter, &free_setter),
 
-		class_<A>("A"),
+		class_<A>("A")
+			.def(constructor<>())
+			.property("a", &A::get),
 
 		class_<B, A>("B")
+			.def(constructor<>())
 			.property("x", &A::get)
 	];
 
@@ -103,5 +106,14 @@ void test_attributes()
     DOSTRING(L,
         "test.free = 6\n"
         "assert(test.free == 6)\n");
+
+	DOSTRING(L,
+		"a = B()\n");
+
+	DOSTRING(L,
+		"assert(a.a == 5)\n");
+
+	DOSTRING(L,
+		"assert(a.x == 5)\n");
 }
 
