@@ -74,6 +74,8 @@ namespace
 		os << "operator_tester"; feedback = 63; return os;
 	}
 	
+	operator_tester* clone(const operator_tester* p) { return new operator_tester(*p); }
+
 } // anonymous namespace
 
 bool test_operators()
@@ -101,6 +103,7 @@ bool test_operators()
 			.def(self())
 			.def(const_self(int()))
 			.def(self(int())),
+//			.def("clone", &clone, adopt(return_value)),
 
 		class_<operator_tester2>("operator_tester2")
 			.def(constructor<>())
@@ -147,6 +150,8 @@ bool test_operators()
 
 	if (dostring(L, "a = tostring(test)")) return false;
 	if (feedback != 63) return false;
+
+//	if (dostring(L, "t = test:clone()")) return false;
 
 	const char* prog =
 		"class 'my_class'\n"

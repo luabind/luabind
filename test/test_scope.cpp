@@ -25,6 +25,11 @@ namespace
 		feedback = 2;
 	}
 
+	void h()
+	{
+		feedback = 1;
+	}
+
 	struct test_class
 	{
 		test_class()
@@ -64,6 +69,15 @@ bool test_scope()
 
 		];
 
+		module(L, "test")
+		[
+			namespace_("inner")
+			[
+				def("h", &h)
+			]
+		];
+
+
 		if (dostring(L, "test.f()")) return false;
 		if (feedback != 123) return false;
 		if (dostring(L, "test.f(3)")) return false;
@@ -75,6 +89,8 @@ bool test_scope()
 		if (feedback != 2) return false;
 		if (dostring(L, "test.inner.f(4)")) return false;
 		if (feedback != 125) return false;
+		if (dostring(L, "test.inner.h()")) return false;
+		if (feedback != 1) return false;
 	}
 
 	return true;

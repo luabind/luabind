@@ -323,23 +323,23 @@ namespace luabind
 		{
 			scope::init(L);
 		}
-/*
-		module_proxy(lua_State* L)
-			: m_state(L)
-			, m_name(0)
-		{
-			scope::init(L);
-		}
-*/
+
 		void operator[](const detail::scoped_object& x) const
 		{
 			lua_State* L = m_state;
 			if (m_name)
 			{
-				lua_newtable(L);
 				lua_pushstring(L, m_name);
-				lua_pushvalue(L, -2);
-				lua_settable(L, LUA_GLOBALSINDEX);
+				lua_gettable(L, LUA_GLOBALSINDEX);
+				if (lua_isnil(L, -1))
+				{
+					lua_pop(L, 1);
+					// see if the table already exists
+					lua_newtable(L);
+					lua_pushstring(L, m_name);
+					lua_pushvalue(L, -2);
+					lua_settable(L, LUA_GLOBALSINDEX);
+				}
 			}
 			else
 			{
