@@ -13,6 +13,17 @@ namespace
 		void f(B*) { feedback = 2; }
 	};
 
+
+	struct char_pointer_convertable
+	{
+		operator const char*() const { return "foo!"; }
+	};
+
+	void func(const char_pointer_convertable& f)
+	{
+		if (std::string("foo!") == (const char*)f) feedback = 3;
+	}
+
 } // anonymous namespace
 /*
 #include <luabind/pointer_holder.hpp>
@@ -50,7 +61,12 @@ bool test_implicit_cast()
 		class_<test_implicit>("test")
 			.def(constructor<>())
 			.def("f", (f1) &test_implicit::f)
-			.def("f", (f2) &test_implicit::f)
+			.def("f", (f2) &test_implicit::f),
+
+		class_<char_pointer_convertable>("char_ptr")
+			.def(constructor<>()),
+
+		def("func", &func)
 	];
 
 //	test_instance_holder(L);
@@ -65,6 +81,11 @@ bool test_implicit_cast()
 	if (dostring(L, "t:f(b)")) return false;
 	if (feedback != 2) return false;
 
+	if (dostring(L,
+		"a = char_ptr()\n"
+		"func(a)\n")) return false;
+	if (feedback != 3) return false;
+	
 	if (top != lua_gettop(L)) return false;
 
 	return true;

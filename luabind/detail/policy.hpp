@@ -29,6 +29,7 @@
 #include <typeinfo>
 
 #include <boost/type_traits/is_enum.hpp>
+#include <boost/type_traits/is_array.hpp>
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/integral_c.hpp>
 #include <boost/mpl/equal_to.hpp>
@@ -236,15 +237,27 @@ namespace luabind { namespace detail
 			sizeof(is_policy_cons_test(t)) == sizeof(yes_t));
 	};	
 
-	no_t is_string_literal(indirection_layer);
-	yes_t is_string_literal(const char*);
+	template<bool>
+	struct is_string_literal
+	{
+		static no_t helper(indirection_layer);
+		static yes_t helper(const char*);
+	};
+
+	template<>
+	struct is_string_literal<false>
+	{
+		static no_t helper(indirection_layer);
+	};
+	
 
 	template<class T>
 	struct is_primitive/*: boost::mpl::bool_c<false>*/ 
 	{
 		static T t;
 
-		BOOST_STATIC_CONSTANT(bool, value = sizeof(is_string_literal(t)) == sizeof(yes_t));
+		BOOST_STATIC_CONSTANT(bool, value =
+				sizeof(is_string_literal<boost::is_array<T>::value>::helper(t)) == sizeof(yes_t));
 	};
 
 	template<> struct is_primitive<luabind::object>: boost::mpl::bool_<true> {};
