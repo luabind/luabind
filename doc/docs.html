@@ -1853,6 +1853,8 @@ This namespace contains non-public classes and are not supposed to be used direc
 	consists of a lot of functions). Also, if built in debug mode, no optimizations were applied, luabind
 	relies on that the compiler is able to inline functions. If you built in release mode, try running
 	<tt>strip</tt> on your executable to remove export-symbols, this will trim down the size.</p>
+	<p>Our tests suggests that cygwin's gcc produces much bigger executables compared to gcc on other 
+	platforms and other compilers.</p>
 
 	<li><h3>Can I register template classes with luabind?</h3>
 	<p>Yes you can, but you can only register explicit instantiations of the class. Because there's no

@@ -143,8 +143,10 @@ namespace luabind { namespace detail
 		void add_base_class(const base_info& binfo);
 
 		inline const std::vector<base_info>& bases() const throw() { return m_bases; }
+
 		inline LUABIND_TYPE_INFO type() const throw() { return m_type; }
 		inline void set_type(LUABIND_TYPE_INFO t) { m_type = t; }
+		inline LUABIND_TYPE_INFO holder_type() const throw() { return m_held_type; }
 
 		inline const char* name() const throw() { return m_name; }
 
@@ -157,6 +159,7 @@ namespace luabind { namespace detail
 		inline int table_ref() const { return m_table_ref; }
 
 		inline void(*destructor() const)(void*) { return m_destructor; }
+		inline void*(*extract_ptr() const)(void*) { return m_extract_underlying_fun; }
 
 		inline class_type get_class_type() const { return m_class_type; }
 
