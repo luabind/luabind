@@ -1256,7 +1256,7 @@ member variable as done in the sample below. ::
 
 Note that if you have both base classes and a base class wrapper, you must give
 both bases and the base class wrapper type as template parameter to 
-´´class_´´. The order in which you specify them is not important.
+``class_``. The order in which you specify them is not important.
 
 If we didn't have a class wrapper, it would not be possible to pass a lua class
 back to C++. Since the entry points of the virtual functions would still point
