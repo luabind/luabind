@@ -56,3 +56,4 @@ namespace luabind { namespace detail
 	};
 
 #endif
+

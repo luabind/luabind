@@ -158,11 +158,11 @@
 #include <luabind/detail/construct_rep.hpp>
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/operators.hpp>
+#include <luabind/detail/calc_arity.hpp>
 #include <luabind/detail/call_member.hpp>
 #include <luabind/detail/enum_maker.hpp>
 #include <luabind/detail/get_signature.hpp>
 #include <luabind/detail/implicit_cast.hpp>
-#include <luabind/detail/calc_arity.hpp>
 #include <luabind/detail/operator_id.hpp>
 
 namespace luabind
@@ -700,7 +700,7 @@ namespace luabind
 		}
 
 		// destructive copy
-		virtual scoped_object* clone()
+		virtual luabind::detail::scoped_object* clone()
 		{
 			assert(m_cloned == false);
 
