@@ -69,6 +69,21 @@ namespace
 		if (t->n == 4) feedback = 11;
 	}
 
+	void tester5(const boost::shared_ptr<const base>* t)
+	{
+		if ((*t)->n == 4) feedback = 12;
+	}
+
+	void tester6(const boost::shared_ptr<base>* t)
+	{
+		if ((*t)->n == 4) feedback = 13;
+	}
+
+	void tester7(boost::shared_ptr<base>* t)
+	{
+		if ((*t)->n == 4) feedback = 14;
+	}
+
 
 } // anonymous namespace
 
@@ -102,6 +117,9 @@ bool test_held_type()
 		luabind::function(L, "tester2", &tester2);
 		luabind::function(L, "tester3", &tester3);
 		luabind::function(L, "tester4", &tester4);
+		luabind::function(L, "tester5", &tester5);
+		luabind::function(L, "tester6", &tester6);
+		luabind::function(L, "tester7", &tester7);
 
 		class_<base, boost::shared_ptr<base> >("base")
 			.def(constructor<>())
@@ -133,6 +151,12 @@ bool test_held_type()
 		if (feedback != 10) return false;
 		if (dostring(L, "tester4(b)")) return false;
 		if (feedback != 11) return false;
+		if (dostring(L, "tester5(b)")) return false;
+		if (feedback != 12) return false;
+		if (dostring(L, "tester6(b)")) return false;
+		if (feedback != 13) return false;
+		if (dostring(L, "tester7(b)")) return false;
+		if (feedback != 14) return false;
 
 		if (top != lua_gettop(L)) return false;
 
