@@ -115,6 +115,9 @@ namespace luabind
 			}
 
 			From& from_;
+
+		private:
+			template<class T> void operator,(T const&) const;
 		};
 	}
 }

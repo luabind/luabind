@@ -25,6 +25,7 @@
 
 #include <luabind/lua_include.hpp>
 #include <boost/test/test_tools.hpp>
+#include <boost/preprocessor/cat.hpp>
 
 struct lua_state
 {
@@ -65,14 +66,14 @@ template<class T>
 int counted_type<T>::count = 0;
 
 #define COUNTER_GUARD(type) \
-    struct type##_counter_guard \
+    struct BOOST_PP_CAT(type, _counter_guard) \
     { \
-        ~type##_counter_guard() \
+        ~BOOST_PP_CAT(type, _counter_guard()) \
         { \
             BOOST_CHECK(counted_type<type>::count == 0); \
         } \
     }; \
-    type##_counter_guard type##_guard
+    type##_counter_guard BOOST_PP_CAT(type, _guard)
 
 #define DOSTRING_EXPECTED(state, str, expected) \
 {                                               \

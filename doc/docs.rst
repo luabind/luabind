@@ -143,7 +143,7 @@ want to have support for functions or classes you can include
     #include <luabind/function.hpp>
     #include <luabind/class.hpp>
 
-The first thing you need to do is to call ``luabind::open(lua_State*)``` which
+The first thing you need to do is to call ``luabind::open(lua_State*)`` which
 will register the functions to create classes from lua, and initialize some
 state-global structures used by luabind. If you don't call this function you
 will hit asserts later in the library. There is no corresponding close function
@@ -1849,9 +1849,10 @@ LUABIND_MAX_ARITY
     arity you have to redefine it. A high limit will increase compilation time.
 
 LUABIND_MAX_BASES
-    Controls the maximum number of classes one class can derive from in luabind 
-    (the number of classes specified within bases<>). LUABIND_MAX_BASES defaults 
-    to 4. A high limit will increase compilation time.
+    Controls the maximum number of classes one class can derive from in 
+    luabind (the number of classes specified within ``bases<>``). 
+    ``LUABIND_MAX_BASES`` defaults to 4. A high limit will increase 
+    compilation time.
 
 LUABIND_NO_ERROR_CHECKING
     If this macro is defined, all the lua code is expected only to make legal 
@@ -1865,13 +1866,13 @@ LUABIND_NO_ERROR_CHECKING
     checking is disabled.
 
     If a functions throws an exception it will be caught by luabind and 
-    propagated with lua_error().
+    propagated with ``lua_error()``.
 
 LUABIND_DONT_COPY_STRINGS
     If this macro is defined, luabind will expect that all strings given to 
-    the def() methods are static constant strings (given as string constants 
-    for example). luabind will not copy the strings if you enable this 
-    setting, but just keep the char pointers. 
+    the ``def()`` functions are static constant strings (given as string 
+    constants for example). luabind will not copy the strings if you enable 
+    this setting, but just keep the char pointers. 
     This may be especially useful for embedded systems or consoles where 
     heap allocations should be minimized.
 
@@ -1884,36 +1885,36 @@ LUABIND_NO_EXCEPTIONS
     through lua has undefined behavior).
 
     Where exceptions are the only way to get an error report from luabind, 
-    they will be replaced with calls to the callback functions set byt 
-    set_error_callback() and set_cast_failed_callback().
+    they will be replaced with calls to the callback functions set with
+    ``set_error_callback()`` and ``set_cast_failed_callback()``.
 
 LUA_API
     If you want to link dynamically against lua, you can set this define to 
     the import-keyword on your compiler and platform. On windows in devstudio 
-    this should be __declspec(dllimport) if you want to link against lua as 
-    a dll.
+    this should be ``__declspec(dllimport)`` if you want to link against lua 
+    as a dll.
 
 LUABIND_EXPORT, LUABIND_IMPORT
     If you want to link against luabind as a dll (in devstudio), you can 
-    define LUABIND_EXPORT to __declspec(dllexport) and LUABIND_IMPORT to 
-    __declspec(dllimport). Note that you have o link against lua as a dll 
-    aswell, to make it work.
+    define ``LUABIND_EXPORT`` to ``__declspec(dllexport)`` and 
+    ``LUABIND_IMPORT`` to ``__declspec(dllimport)``. 
+    Note that you have to link against lua as a dll aswell, to make it work.
 
 LUABIND_TYPE_INFO, LUABIND_TYPE_INFO_EQUAL(i1,i2), LUABIND_TYPEID(t), LUABIND_INVALID_TYPE_INFO
     If you don't want to use the RTTI supplied by C++ you can supply your own 
-    type-info structure with the LUABIND_TYPE_INFO define. Your type-info 
+    type-info structure with the ``LUABIND_TYPE_INFO`` define. Your type-info 
     structure must be copyable and must be able to compare itself against 
     other type-info structures. You supply the compare function through the 
-    LUABIND_TYPE_INFO_EQUAL() define. It should compare the two type-info 
+    ``LUABIND_TYPE_INFO_EQUAL()`` define. It should compare the two type-info 
     structures it is given and return true if they represent the same type and
     false otherwise. You also have to supply a function to generate your 
-    type-info structure. You do this through the LUABIND_TYPEID() define. 
+    type-info structure. You do this through the ``LUABIND_TYPEID()`` define. 
     It should return your type-info structure and it takes a type as its 
-    parameter. That is, a compile time parameter. LUABIND_INVALID_TYPE_INFO 
-    macro should be defined to an invalid type. No other type should be able 
-    to produce this type info. To use it you probably have to make a traits 
-    class with specializations for all classes that you have type-info for. 
-    Like this::
+    parameter. That is, a compile time parameter. 
+    ``LUABIND_INVALID_TYPE_INFO`` macro should be defined to an invalid type. 
+    No other type should be able to produce this type info. To use it you 
+    probably have to make a traits class with specializations for all classes 
+    that you have type-info for. Like this::
 
         class A;
         class B;
@@ -1933,7 +1934,7 @@ LUABIND_TYPE_INFO, LUABIND_TYPE_INFO_EQUAL(i1,i2), LUABIND_TYPEID(t), LUABIND_IN
         #define LUABIND_TYPE_INFO_EQUAL(i1, i2) *i1 == *i2
         #define LUABIND_INVALID_TYPE_INFO &typeid(detail::null_type)
 
-    Currently the type given through LUABIND_TYPE_INFO must be less-than 
+    Currently the type given through ``LUABIND_TYPE_INFO`` must be less-than 
     comparable!
 
 NDEBUG
@@ -1969,7 +1970,9 @@ userdata with the value 0x1337, this last value is used to identify functions
 registered by luabind. It should be virtually impossible to have such a pointer
 as secondary upvalue by pure chance. This means, if you are trying to replace
 an existing function with a luabind function, luabind will see that the
-secondary upvalue isn't the magical id number and replaces it.
+secondary upvalue isn't the magical id number and replace it. If it can
+identify the function to be a luabind function, it won't replace it, but rather
+add another overload to it.
 
 Inside the luabind namespace, there's another namespace called detail. This
 namespace contains non-public classes and are not supposed to be used directly.
