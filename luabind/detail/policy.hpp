@@ -699,8 +699,10 @@ namespace luabind { namespace detail
 
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
 				return (obj->flags() & object_rep::constant)?-1:0;
+//			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
+//				return 0;
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
-				return 0;
+				return (obj->flags() & object_rep::constant)?0:1;
 
 			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
 		}
@@ -766,7 +768,7 @@ namespace luabind { namespace detail
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
 				return (obj->flags() & object_rep::constant)?-1:0;
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
-				return (obj->flags() & object_rep::constant)?0:-1;
+				return (obj->flags() & object_rep::constant)?0:1;
 
 			int d;
 			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);

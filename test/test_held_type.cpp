@@ -98,11 +98,6 @@ namespace
 		if ((*t)->n == 4) feedback = 14;
 	}
 
-	void tester8(boost::weak_ptr<base> t)
-	{
-		if (!t.expired()) feedback = 19;
-	}
-
 	boost::shared_ptr<base> tester9()
 	{
 		feedback = 20;
@@ -120,8 +115,50 @@ namespace
 
 	void test_auto_ptr(std::auto_ptr<ownership>) {}
 
+	struct base_ {};
+	
+	struct base_holder
+	{
+		explicit base_holder(base_* p): ptr(p) {}
+
+		~base_holder()
+		{ feedback = 98; }
+
+		base_* get() const { return ptr; }
+
+		base_* ptr;
+	};
+
+	struct const_base_holder
+	{
+		explicit const_base_holder(const base_* p): ptr(p) {}
+		const_base_holder(const base_holder& x) {}
+
+		~const_base_holder()
+		{ feedback = 99; }
+
+		const base_* get() const { return ptr; }
+
+		const base_* ptr;
+	};
+
+	void tester8(const const_base_holder&)
+	{
+		feedback = 100;
+	}
+	
 } // anonymous namespace
 
+namespace luabind
+{
+	base_* get_pointer(const base_holder& p) { return p.get(); }
+	const base_* get_pointer(const const_base_holder& p) { return p.get(); }
+
+	type<const_base_holder> get_const_holder(type<base_holder>)
+	{
+		return type<const_base_holder>();
+	}
+}
 
 bool test_held_type()
 {
@@ -154,7 +191,7 @@ bool test_held_type()
 			def("tester5", &tester5),
 			def("tester6", &tester6),
 			def("tester7", &tester7),
-//			def("tester8", &tester8),
+			def("tester8", &tester8),
 			def("tester9", &tester9),
 
 			class_<base, boost::shared_ptr<base> >("base")
@@ -167,7 +204,10 @@ bool test_held_type()
 
 			class_<tester10>("tester10")
 				.def(constructor<>())
-				.def("test", &tester10::test)
+				.def("test", &tester10::test),
+
+			class_<base_, base_holder>("base_")
+				.def(constructor<>())
 		];
 
 		lua_gettop(L);
@@ -208,9 +248,11 @@ bool test_held_type()
 		if (dostring(L, "e = d:test()")) return false;
 		if (feedback != 3) return false;
 
+		if (dostring(L, "a = base_()")) return false;
+		if (dostring(L, "tester8(a)")) return false;
+		if (feedback != 100) return false;
 
 		if (top != lua_gettop(L)) return false;
-
 	}
 
 	ptr.reset();
