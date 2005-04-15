@@ -23,37 +23,32 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
-namespace
+struct test_class : counted_type<test_class>
 {
-	struct test_class : counted_type<test_class>
+	test_class() {}
+	int f() const
 	{
-		test_class() {}
-		int f() const
-		{
-			return 5;
-		}
-	};
-
-	int f(int a)
-	{
-		return 9;
+		return 5;
 	}
+};
 
-	int j(lua_State* L)
-	{
-		lua_pushnumber(L, 9);
-		return lua_yield(L, 1);
-	}
-
-	void f() {}
+int f(int a)
+{
+	return 9;
 }
 
-void test_yield()
+int j(lua_State* L)
 {
-    COUNTER_GUARD(test_class);
+	lua_pushnumber(L, 9);
+	return lua_yield(L, 1);
+}
 
-	lua_state L;
+void f() {}
 
+COUNTER_GUARD(test_class);
+
+void test_main(lua_State* L)
+{
 	using namespace luabind;
 
 	module(L)
@@ -70,7 +65,7 @@ void test_yield()
 
 	{
 		lua_State* thread = lua_newthread(L);
-        BOOST_CHECK(resume_function<int>(thread, "h") == 4);
+        TEST_CHECK(resume_function<int>(thread, "h") == 4);
         lua_pop(L, 1); // pop thread
     }
 
@@ -86,10 +81,10 @@ void test_yield()
 	{
         lua_State* thread = lua_newthread(L);
 
-        BOOST_CHECK(resume_function<int>(thread, "g", "foobar") == 5);
+        TEST_CHECK(resume_function<int>(thread, "g", "foobar") == 5);
 		for (int i = 1; i < 10; ++i)
 		{
-			BOOST_CHECK(resume<int>(thread, i + 4) == 5);
+			TEST_CHECK(resume<int>(thread, i + 4) == 5);
 		}
 		lua_pop(L, 1); // pop thread
 	}
@@ -99,10 +94,10 @@ void test_yield()
         lua_State* thread = lua_newthread(L);
 		object g = get_globals(thread)["g"];
 
-        BOOST_CHECK(resume_function<int>(g, "foobar") == 5);
+        TEST_CHECK(resume_function<int>(g, "foobar") == 5);
 		for (int i = 1; i < 10; ++i)
 		{
-			BOOST_CHECK(resume<int>(thread, i + 4) == 5);
+			TEST_CHECK(resume<int>(thread, i + 4) == 5);
 		}
 		lua_pop(L, 1); // pop thread
 	}

@@ -23,39 +23,33 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
-namespace
+int f() { return 1; }
+int f_(int a) { return 2; }
+int f__(int a) { return 3; }
+int g() { return 4; }
+int g_(int)	{ return 5; }
+int h() { return 6; }
+
+struct test_class : counted_type<test_class>
 {
-	int f() { return 1; }
-	int f_(int a) { return 2; }
-	int f__(int a) { return 3; }
-	int g() { return 4; }
-	int g_(int)	{ return 5; }
-	int h() { return 6; }
+	test_class()
+	  : test(1)
+	{}
+	int test;
+};
 
-	struct test_class : counted_type<test_class>
-	{
-		test_class()
-			: test(1)
-		{}
-		int test;
-	};
-
-	struct test_class2 : counted_type<test_class2>
-	{
-		test_class2() {}
-		int string_string(std::string const& s1, std::string const& s2)
-		{ return 1; }
-	};
-
-}
-
-void test_scope()
+struct test_class2 : counted_type<test_class2>
 {
-    COUNTER_GUARD(test_class);
-    COUNTER_GUARD(test_class2);
+	test_class2() {}
+	int string_string(std::string const& s1, std::string const& s2)
+	{ return 1; }
+};
 
-	lua_state L;
+COUNTER_GUARD(test_class);
+COUNTER_GUARD(test_class2);
 
+void test_main(lua_State* L)
+{
 	using namespace luabind;
 
 	module(L)

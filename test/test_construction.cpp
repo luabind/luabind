@@ -23,60 +23,52 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
-namespace
+struct A : counted_type<A>
 {
-	struct A : counted_type<A>
-	{
-		int test;
-		A(int a) { test = a; }
-		A(const A&) { test = 1; }
-		A() { test = 2; }
-		~A() {}
-	};
+	int test;
+	A(int a) { test = a; }
+	A(const A&) { test = 1; }
+	A() { test = 2; }
+	~A() {}
+};
 
-	void f(A*, const A&) {}
+void f(A*, const A&) {}
 
-	struct B: A, counted_type<B>
-	{
-		int test2;
-		B(int a):A(a) { test2 = a; }
-		B() { test2 = 3; }
-		~B() {}
-	};
-
-	struct C : counted_type<C> {};
-
-	struct base1 : counted_type<base1>
-	{
-		virtual void doSomething() = 0;
-		virtual ~base1() {}
-	};
-
-	struct deriv_1 : base1, counted_type<deriv_1>
-	{
-		void doSomething() {}
-	};
-
-	struct deriv_2 : deriv_1, counted_type<deriv_2>
-	{
-		void doMore() {}
-	};
-
-	
-} // anonymous namespace
-
-
-void test_construction()
+struct B: A, counted_type<B>
 {
-    COUNTER_GUARD(A);
-    COUNTER_GUARD(B);
-    COUNTER_GUARD(C);
-    COUNTER_GUARD(base1);
-    COUNTER_GUARD(deriv_1);
-    COUNTER_GUARD(deriv_2);
+	int test2;
+	B(int a):A(a) { test2 = a; }
+	B() { test2 = 3; }
+	~B() {}
+};
 
-	lua_state L;
+struct C : counted_type<C> {};
 
+struct base1 : counted_type<base1>
+{
+	virtual void doSomething() = 0;
+	virtual ~base1() {}
+};
+
+struct deriv_1 : base1, counted_type<deriv_1>
+{
+	void doSomething() {}
+};
+
+struct deriv_2 : deriv_1, counted_type<deriv_2>
+{
+	void doMore() {}
+};
+
+COUNTER_GUARD(A);
+COUNTER_GUARD(B);
+COUNTER_GUARD(C);
+COUNTER_GUARD(base1);
+COUNTER_GUARD(deriv_1);
+COUNTER_GUARD(deriv_2);
+
+void test_main(lua_State* L)
+{
 	using namespace luabind;
 
 	module(L)
@@ -117,3 +109,4 @@ void test_construction()
 		"assert(b2.test2 == 3)\n");
 	DOSTRING(L, "assert(b2.test == 2)");
 }
+

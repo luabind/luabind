@@ -23,44 +23,38 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
-namespace {
-
-	struct simple_class : counted_type<simple_class>
-	{
-		static int feedback;
-
-		void f()
-		{
-			feedback = 1;
-		}
-
-		void f(int, int) {}
-		void f(std::string a)
-		{
-			const char str[] = "foo\0bar";
-			if (a == std::string(str, sizeof(str)-1))
-				feedback = 2;
-		}
-
-		std::string g()
-		{
-			const char str[] = "foo\0bar";
-			return std::string(str, sizeof(str)-1);
-		}
-
-	};
-	
-	int simple_class::feedback = 0;
-	
-} // namespace unnamed
-
-void test_simple_class()
+struct simple_class : counted_type<simple_class>
 {
-	COUNTER_GUARD(simple_class);
+	static int feedback;
 
+	void f()
+	{
+		feedback = 1;
+	}
+
+	void f(int, int) {}
+	void f(std::string a)
+	{
+		const char str[] = "foo\0bar";
+		if (a == std::string(str, sizeof(str)-1))
+			feedback = 2;
+	}
+
+	std::string g()
+	{
+		const char str[] = "foo\0bar";
+		return std::string(str, sizeof(str)-1);
+	}
+
+};
+
+int simple_class::feedback = 0;
+	
+COUNTER_GUARD(simple_class);
+
+void test_main(lua_State* L)
+{
 	using namespace luabind;
-
-	lua_state L;
 
 	typedef void(simple_class::*f_overload1)();
 	typedef void(simple_class::*f_overload2)(int, int);
@@ -81,10 +75,10 @@ void test_simple_class()
         "  function simple_derived:__init() super() end\n"
         "a = simple_derived()\n"
         "a:f()\n");
-    BOOST_CHECK(simple_class::feedback == 1);
+    TEST_CHECK(simple_class::feedback == 1);
 
     DOSTRING(L, "a:f('foo\\0bar')");
-    BOOST_CHECK(simple_class::feedback == 2);
+    TEST_CHECK(simple_class::feedback == 2);
 
 	DOSTRING(L,
 		"b = simple_derived()\n"
@@ -104,6 +98,6 @@ void test_simple_class()
         "simple:f()\nsimple:f(number, number)\nsimple:f(string)\n");
 
     DOSTRING(L, "if a:g() == \"foo\\0bar\" then a:f() end");
-    BOOST_CHECK(simple_class::feedback == 1);
+    TEST_CHECK(simple_class::feedback == 1);
 }
 

@@ -23,8 +23,6 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
-namespace {
-
 struct property_test : counted_type<property_test>
 {  
     property_test(): o(6) {}
@@ -44,6 +42,8 @@ struct property_test : counted_type<property_test>
     { return str_.c_str(); }
 };
 
+COUNTER_GUARD(property_test);
+
 void free_setter(property_test& p, int a)
 { p.set(a); }
 
@@ -62,14 +62,8 @@ struct B : A
 {
 };
 
-} // namespace unnamed
-
-void test_attributes()
+void test_main(lua_State* L)
 {
-    COUNTER_GUARD(property_test);
-	
-	lua_state L;
-
     using namespace luabind;
 
     module(L)

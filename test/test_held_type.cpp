@@ -37,8 +37,6 @@ namespace luabind {
     }
 }
 
-namespace {
-
 struct base : counted_type<base>
 {
     base(): n(4) {}
@@ -65,6 +63,9 @@ struct derived : first_base, base
     void f() {}
     int n2;
 };
+
+COUNTER_GUARD(first_base);
+COUNTER_GUARD(base);
 
 int feedback = 0;
 
@@ -129,16 +130,9 @@ void tester12(boost::shared_ptr<derived> const& r)
 	if (r->n2 == 7) feedback = 12;
 }
 
-} // namespace unnamed
-
-void test_held_type()
+void test_main(lua_State* L)
 {
-    COUNTER_GUARD(first_base);
-    COUNTER_GUARD(base);
-
     boost::shared_ptr<base> base_ptr(new base());
-
-    lua_state L;
 
     using namespace luabind;
   
@@ -170,37 +164,37 @@ void test_held_type()
     g["ptr"] = base_ptr;
 
     DOSTRING(L, "tester(ptr)");
-    BOOST_CHECK(feedback == 1);
+    TEST_CHECK(feedback == 1);
 
     DOSTRING(L, 
         "a = base()\n"
         "b = derived()\n");
 
     DOSTRING(L, "tester(b)");
-    BOOST_CHECK(feedback == 2);
+    TEST_CHECK(feedback == 2);
 
     DOSTRING(L, "tester(a)");
-    BOOST_CHECK(feedback == 1);
+    TEST_CHECK(feedback == 1);
 
     DOSTRING(L, "tester2(b)");
-    BOOST_CHECK(feedback == 3);
+    TEST_CHECK(feedback == 3);
 
     DOSTRING(L, "tester3(b)");
-    BOOST_CHECK(feedback == 4);
+    TEST_CHECK(feedback == 4);
 
     DOSTRING(L, "tester4(b)");
-    BOOST_CHECK(feedback == 5);
+    TEST_CHECK(feedback == 5);
 
     feedback = 0;
 
     DOSTRING(L, "tester4(a)");
-    BOOST_CHECK(feedback == 5);
+    TEST_CHECK(feedback == 5);
 
     DOSTRING(L, "tester10(b)");
-    BOOST_CHECK(feedback == 10);
+    TEST_CHECK(feedback == 10);
 
     DOSTRING(L, "tester11(b)");
-    BOOST_CHECK(feedback == 11);
+    TEST_CHECK(feedback == 11);
 /* this test is messed up, shared_ptr<derived> isn't even registered
 	DOSTRING_EXPECTED(
 		L
@@ -210,8 +204,8 @@ void test_held_type()
 		"tester12(const custom&)\n");
 */
 	object nil = get_globals(L)["non_existing_variable_is_nil"];
-	BOOST_CHECK(object_cast<boost::shared_ptr<base> >(nil).get() == 0);
-	BOOST_CHECK(object_cast<boost::shared_ptr<const base> >(nil).get() == 0);
+	TEST_CHECK(object_cast<boost::shared_ptr<base> >(nil).get() == 0);
+	TEST_CHECK(object_cast<boost::shared_ptr<const base> >(nil).get() == 0);
 
 }
 

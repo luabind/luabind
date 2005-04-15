@@ -1,4 +1,4 @@
-// Copyright (c) 2004 Daniel Wallin and Arvid Norberg
+// Copyright (c) 2005 Daniel Wallin, Arvid Norberg
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -21,6 +21,7 @@
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "test.hpp"
+
 #include <luabind/luabind.hpp>
 #include <luabind/wrapper_base.hpp>
 #include <luabind/adopt_policy.hpp>
@@ -39,8 +40,6 @@ namespace luabind {
 }
 
 using namespace luabind;
-
-namespace {
 
 struct A : counted_type<A>
 {
@@ -137,15 +136,8 @@ struct U : T_
 	int f(int, int) { return 2; }
 };
 
-} // namespace unnamed
-
-void test_lua_classes()
+void test_main(lua_State* L)
 {
-    COUNTER_GUARD(A);
-    COUNTER_GUARD(base);
-
-	lua_state L;
-
     module(L)
     [
 		class_<A, A_wrap, boost::shared_ptr<A> >("A")
@@ -174,6 +166,22 @@ void test_lua_classes()
 			.def("g", &U::g)
 	];
 
+    try                                         
+    {                                           
+        dostring(L, 	"u = U()\n"
+		"assert(u:f(0) == 1)\n"
+		"assert(u:f(0,0) == 2)\n"
+		"assert(u:g() == 3)\n");
+    }                                           
+    catch (luabind::error const& e)             
+    {                                           
+        TEST_ERROR(lua_tostring(e.state(), -1)); 
+    }                                           
+    catch (std::string const& s)                
+    {                                           
+        TEST_ERROR(s.c_str());                  
+    }                                           
+	
 	DOSTRING(L,
 		"u = U()\n"
 		"assert(u:f(0) == 1)\n"
@@ -244,7 +252,7 @@ void test_lua_classes()
             bool result(
                 lua_tostring(L, -1) == std::string("[string \"function "
                     "gen_error()...\"]:2: assertion failed!"));
-			BOOST_CHECK(result);
+			TEST_CHECK(result);
 			lua_pop(L, 1);
 		}
 	}
@@ -265,7 +273,7 @@ void test_lua_classes()
             bool result(
                 lua_tostring(L, -1) == std::string("[string \"function "
                     "gen_error()...\"]:2: assertion failed!"));
-			BOOST_CHECK(result);
+			TEST_CHECK(result);
 			lua_pop(L, 1);
 		}
 	}
@@ -279,7 +287,7 @@ void test_lua_classes()
             bool result(
                 lua_tostring(L, -1) == std::string("[string \"function "
                     "gen_error()...\"]:2: assertion failed!"));
-			BOOST_CHECK(result);
+			TEST_CHECK(result);
 			lua_pop(L, 1);
 		}
 	}
@@ -290,9 +298,9 @@ void test_lua_classes()
 	{
 		LUABIND_CHECK_STACK(L);
 
-		BOOST_CHECK_NO_THROW(
+		TEST_NOTHROW(
 			object a = get_globals(L)["ba"];
-			BOOST_CHECK(call_member<int>(a, "fun") == 4);
+			TEST_CHECK(call_member<int>(a, "fun") == 4);
 		);
 	}
 
@@ -300,7 +308,7 @@ void test_lua_classes()
 		LUABIND_CHECK_STACK(L);
 
 		object make_derived = get_globals(L)["make_derived"];
-		BOOST_CHECK_NO_THROW(
+		TEST_NOTHROW(
 			call_function<void>(make_derived)
 			);
 	}
@@ -309,7 +317,7 @@ void test_lua_classes()
 	{
 		LUABIND_CHECK_STACK(L);
 
-		BOOST_CHECK_NO_THROW(
+		TEST_NOTHROW(
 		    own_ptr = std::auto_ptr<base>(
                 call_function<base*>(L, "make_derived") [ adopt(result) ])
 			);
@@ -324,31 +332,31 @@ void test_lua_classes()
 		"collectgarbage()\n"
 		"collectgarbage()\n");
 
-    BOOST_CHECK_NO_THROW(
-        BOOST_CHECK(own_ptr->f() == "derived:f() : base:f()")
+    TEST_NOTHROW(
+        TEST_CHECK(own_ptr->f() == "derived:f() : base:f()")
     );
 	own_ptr = std::auto_ptr<base>();
 
 	// test virtual functions that are not overridden by lua
-    BOOST_CHECK_NO_THROW(
+    TEST_NOTHROW(
         own_ptr = std::auto_ptr<base>(
             call_function<base*>(L, "make_empty_derived") [ adopt(result) ])
         );
-    BOOST_CHECK_NO_THROW(
-        BOOST_CHECK(own_ptr->f() == "base:f()")
+    TEST_NOTHROW(
+        TEST_CHECK(own_ptr->f() == "base:f()")
 	);
-    BOOST_CHECK_NO_THROW(
+    TEST_NOTHROW(
         call_function<void>(L, "adopt_ptr", own_ptr.get()) [ adopt(_1) ]
     );
 	own_ptr.release();
 
 	// test virtual functions that are overridden by lua
-    BOOST_CHECK_NO_THROW(
+    TEST_NOTHROW(
         ptr = call_function<base*>(L, "derived")
     );
 
-    BOOST_CHECK_NO_THROW(
-        BOOST_CHECK(ptr->f() == "derived:f() : base:f()")
+    TEST_NOTHROW(
+        TEST_CHECK(ptr->f() == "derived:f() : base:f()")
     );
 
 	// test virtual function dispatch from within lua

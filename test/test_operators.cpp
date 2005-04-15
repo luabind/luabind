@@ -25,78 +25,72 @@
 #include <luabind/operator.hpp>
 #include <iosfwd>
 
-namespace
+struct operator_tester : counted_type<operator_tester>
 {
-	struct operator_tester : counted_type<operator_tester>
+	int operator+(int a) const
 	{
-		int operator+(int a) const
-		{
-			return 1 + a;
-		}
-
-		int operator-() const
-		{
-			return 46;
-		}
-
-		float operator()() const
-		{
-			return 3.5f;
-		}
-
-		float operator()(int a) const
-		{
-			return 3.5f + a;
-		}
-
-		float operator()(int a)
-		{
-			return 2.5f + a;
-		}
-
-	};
-
-	int operator+(int a, const operator_tester&)
-	{
-		return 2 + a;
+		return 1 + a;
 	}
 
-	struct operator_tester2 : counted_type<operator_tester2>
+	int operator-() const
 	{
-	};
-
-	int operator+(const operator_tester&, const operator_tester2&)
-	{
-		return 73;
+		return 46;
 	}
 
-	struct operator_tester3: operator_tester, counted_type<operator_tester3> {};
-
-	std::ostream& operator<<(std::ostream& os, const operator_tester&)
+	float operator()() const
 	{
-		os << "operator_tester"; return os;
+		return 3.5f;
 	}
 
-	struct op_test1
+	float operator()(int a) const
 	{
-		bool operator==(op_test1 const& rhs) const { return true; } 
-	};
+		return 3.5f + a;
+	}
 
-	struct op_test2 : public op_test1
+	float operator()(int a)
 	{
-		bool operator==(op_test2 const& rhs) const { return true; } 
-	};
+		return 2.5f + a;
+	}
 
-} // anonymous namespace
+};
 
-void test_operators()
+int operator+(int a, const operator_tester&)
 {
-    COUNTER_GUARD(operator_tester);
-    COUNTER_GUARD(operator_tester2);
-    COUNTER_GUARD(operator_tester3);
+	return 2 + a;
+}
 
-	lua_state L;
+struct operator_tester2 : counted_type<operator_tester2>
+{
+};
 
+int operator+(const operator_tester&, const operator_tester2&)
+{
+	return 73;
+}
+
+struct operator_tester3: operator_tester, counted_type<operator_tester3> {};
+
+std::ostream& operator<<(std::ostream& os, const operator_tester&)
+{
+	os << "operator_tester"; return os;
+}
+
+struct op_test1
+{
+	bool operator==(op_test1 const& rhs) const { return true; } 
+};
+
+struct op_test2 : public op_test1
+{
+	bool operator==(op_test2 const& rhs) const { return true; } 
+};
+
+COUNTER_GUARD(operator_tester);
+COUNTER_GUARD(operator_tester2);
+COUNTER_GUARD(operator_tester3);
+
+void test_main(lua_State* L)
+{
 	using namespace luabind;
 
 	module(L)
@@ -180,3 +174,4 @@ void test_operators()
 		"b = op_test2()\n"
 		"assert(a == b)");
 }
+

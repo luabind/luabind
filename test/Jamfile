@@ -3,34 +3,37 @@ import testing ;
 use-project /luabind : ../ ;
 
 SOURCES = 
-    test_operators.cpp
     test_abstract_base.cpp
-    test_lua_classes.cpp
-    test_simple_class.cpp
-    test_free_functions.cpp
+    test_attributes.cpp
     test_const.cpp
-    test_object.cpp
+    test_construction.cpp
+    test_exceptions.cpp
+    test_free_functions.cpp
+    test_held_type.cpp
     test_implicit_cast.cpp
     test_iterator.cpp
-    test_scope.cpp
-    test_typetraits.cpp
-    test_construction.cpp
+    test_lua_classes.cpp
     test_null_pointer.cpp
+    test_object.cpp
+    test_operators.cpp
     test_policies.cpp
-    test_yield.cpp
-    test_exceptions.cpp
-    test_attributes.cpp
-    test_held_type.cpp
+    test_scope.cpp
     test_separation.cpp
-    test_separate_registration.cpp
+    test_simple_class.cpp
+    test_yield.cpp
  ;
 
-stage bin : /luabind//luabind ;
-
-test-suite luabind-test
-    : [ 
-        run main.cpp $(SOURCES) /luabind//luabind /luabind//lua /luabind//lualib
-      ]
+lib main-lib 
+    : main.cpp /luabind//luabind/<link>static /luabind//lua /luabind//lualib 
+    : <link>static
     ;
 
+tests = ;
+
+for local src in $(SOURCES)
+{
+    tests += [ run $(src) main-lib ] ;
+}
+
+test-suite luabind-test : $(tests) [ compile test_typetraits.cpp ] ;
 

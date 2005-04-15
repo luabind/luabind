@@ -30,7 +30,7 @@ using namespace luabind::detail;
 
 struct tester {};
 
-void test_type_traits()
+int main()
 {
 	BOOST_STATIC_ASSERT(is_nonconst_reference<int&>::value);
 	BOOST_STATIC_ASSERT(!is_nonconst_reference<const int&>::value);
@@ -59,4 +59,6 @@ void test_type_traits()
 	BOOST_STATIC_ASSERT(is_indirect_const<const int&>::value);
 	BOOST_STATIC_ASSERT(!is_indirect_const<int*>::value);
 	BOOST_STATIC_ASSERT(is_indirect_const<const int*>::value);
+
+	return 0;
 }

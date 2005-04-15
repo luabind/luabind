@@ -1,4 +1,4 @@
-// Copyright (c) 2004 Daniel Wallin
+// Copyright (c) 2005 Daniel Wallin, Arvid Norberg
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,27 +20,53 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef TEST_040212_HPP
-#define TEST_040212_HPP
+#ifndef TEST_050415_HPP
+#define TEST_050415_HPP
 
-#include <luabind/lua_include.hpp>
-#include <luabind/error.hpp>
-#include <boost/test/test_tools.hpp>
 #include <boost/preprocessor/cat.hpp>
-#include <cstring>
+#include <luabind/error.hpp>
 
-struct lua_state
+extern "C" 
 {
-    lua_state();
-    ~lua_state();
+    #include "lua.h"
+    #include "lauxlib.h"
+    #include "lualib.h"
+}
 
-    operator lua_State*() const;
-	void check() const;
+void report_failure(char const* str, char const* file, int line);
 
-private:
-    lua_State* m_state;
-    int m_top;
-};
+#if defined(_MSC_VER)
+#define COUNTER_GUARD(x)
+#else
+#define COUNTER_GUARD(type) \
+    struct BOOST_PP_CAT(type, _counter_guard) \
+    { \
+        ~BOOST_PP_CAT(type, _counter_guard()) \
+        { \
+            TEST_CHECK(counted_type<type>::count == 0); \
+        } \
+    } BOOST_PP_CAT(type, _guard)
+#endif
+
+#define TEST_REPORT_AUX(x, line, file) \
+	report_failure(x, line, file)
+
+#define TEST_CHECK(x) \
+    if (!(x)) \
+        TEST_REPORT_AUX("TEST_CHECK failed: \"" #x "\"", __FILE__, __LINE__)
+
+#define TEST_ERROR(x) \
+	TEST_REPORT_AUX((std::string("ERROR: \"") + x + "\"").c_str(), __FILE__, __LINE__)
+
+#define TEST_NOTHROW(x) \
+	try \
+	{ \
+		x; \
+	} \
+	catch (...) \
+	{ \
+		TEST_ERROR("Exception thrown: " #x); \
+	}
 
 void dostring(lua_State* L, char const* str);
 
@@ -61,27 +87,12 @@ struct counted_type
 
     ~counted_type()
     {
-        BOOST_CHECK(--count >= 0);
+        TEST_CHECK(--count >= 0);
     }
 };
 
 template<class T>
 int counted_type<T>::count = 0;
-
-#if defined(_MSC_VER)
-#define COUNTER_GUARD(x)
-#else
-#define COUNTER_GUARD(type) \
-    struct BOOST_PP_CAT(type, _counter_guard) \
-    { \
-        ~BOOST_PP_CAT(type, _counter_guard()) \
-        { \
-            BOOST_CHECK(counted_type<type>::count == 0); \
-        } \
-    }; \
-    type##_counter_guard BOOST_PP_CAT(type, _guard); \
-	(void)BOOST_PP_CAT(type, _guard)
-#endif
 
 #define DOSTRING_EXPECTED(state_, str, expected) \
 {                                               \
@@ -96,13 +107,13 @@ int counted_type<T>::count = 0;
             lua_tostring(e.state(), -1)         \
           , expected))                          \
         {                                       \
-            BOOST_ERROR(lua_tostring(e.state(), -1)); \
+            TEST_ERROR(lua_tostring(e.state(), -1)); \
         }                                       \
     }                                           \
     catch (std::string const& s)                \
     {                                           \
         if (s != expected)                      \
-            BOOST_ERROR(s.c_str());             \
+            TEST_ERROR(s.c_str());             \
     }                                           \
 }
 
@@ -114,13 +125,13 @@ int counted_type<T>::count = 0;
     }                                           \
     catch (luabind::error const& e)             \
     {                                           \
-        BOOST_ERROR(lua_tostring(e.state(), -1)); \
+        TEST_ERROR(lua_tostring(e.state(), -1)); \
     }                                           \
     catch (std::string const& s)                \
     {                                           \
-        BOOST_ERROR(s.c_str());                 \
+        TEST_ERROR(s.c_str());                  \
     }                                           \
 }
 
-#endif // TEST_040212_HPP
+#endif // TEST_050415_HPP
 

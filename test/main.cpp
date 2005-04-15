@@ -1,4 +1,4 @@
-// Copyright (c) 2004 Daniel Wallin
+// Copyright (c) 2005 Daniel Wallin, Arvid Norberg
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,10 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "test.hpp"
-#include <luabind/open.hpp>
-#include <luabind/error.hpp>
-#include <string>
 #include <iostream>
 
 extern "C"
@@ -32,37 +28,25 @@ extern "C"
     #include "lualib.h"
 }
 
-int pcall_handler(lua_State* L)
+#include <luabind/open.hpp>
+#include "test.hpp"
+
+extern "C" struct lua_State;
+
+void test_main(lua_State*);
+
+struct lua_state
 {
- /*   lua_Debug dbg;
-    std::string str;
-    
-    std::cout << "stacktrace..\n";
-    
-    try 
-    {
-        std::stringstream s;
+    lua_state();
+    ~lua_state();
 
-        for (int i = 0; lua_getstack(L, i, &dbg); ++i)
-        {
-            lua_getinfo(L, "lS", &dbg);
+    operator lua_State*() const;
+	void check() const;
 
-//            std::cout << i <<    ": " << dbg.currentline << "\n";
-
-            s << dbg.source << " *\n";
-        }
-
-        str = s.str();
-    }
-    catch (...)
-    {
-        return 1;
-    }
-
-//    lua_pushstring(L, str.c_str());
-*/
-    return 1;
-}
+private:
+    lua_State* m_state;
+    int m_top;
+};
 
 lua_state::lua_state()
     : m_state(lua_open())
@@ -75,18 +59,23 @@ lua_state::lua_state()
 
 lua_state::~lua_state()
 {
-    BOOST_CHECK(lua_gettop(m_state) == m_top);
+    TEST_CHECK(lua_gettop(m_state) == m_top);
     lua_close(m_state);
 }
 
 void lua_state::check() const
 {
-    BOOST_CHECK(lua_gettop(m_state) == m_top);
+    TEST_CHECK(lua_gettop(m_state) == m_top);
 }
 
 lua_state::operator lua_State*() const
 {
     return m_state;
+}
+
+int pcall_handler(lua_State* L)
+{
+	return 1;
 }
 
 void dostring(lua_State* state, char const* str)
@@ -110,68 +99,31 @@ void dostring(lua_State* state, char const* str)
     lua_pop(state, 1);
 }
 
-/*
-void translate_luabind_error(luabind::error const& e)
+bool tests_failure = false;
+
+void report_failure(char const* err, char const* file, int line)
 {
-    BOOST_ERROR("luabind exception caught");
+	std::cerr << file << ":" << line << "\"" << err << "\"\n";
+	tests_failure = true;
 }
-*/
 
-// -- test cases ------------------------------------------------------------
-
-void test_exceptions();
-void test_lua_classes();
-void test_simple_class();
-void test_attributes();
-void test_held_type();
-void test_separation();
-void test_scope();
-void test_yield();
-void test_construction();
-void test_type_traits();
-void test_implicit_cast();
-void test_operators();
-void test_const();
-void test_object();
-void test_policies();
-void test_free_functions();
-void test_iterator();
-void test_abstract_base();
-
-// --------------------------------------------------------------------------
-
-#include <boost/test/included/unit_test_framework.hpp>
-#include <boost/test/unit_test.hpp>
-
-using boost::unit_test_framework::test_suite;
-//using boost::unit_test_framework::register_exception_translator;
-
-test_suite* init_unit_test_suite( int argc, char* argv[] )
+int main()
 {
-    test_suite* test = BOOST_TEST_SUITE("luabind test suite");
-
-//    register_exception_translator<luabind::error>(
-  //      &translate_luabind_error);
-
-//    test->add(BOOST_TEST_CASE(&test_exceptions));
-    test->add(BOOST_TEST_CASE(&test_lua_classes));
-    test->add(BOOST_TEST_CASE(&test_simple_class));
-    test->add(BOOST_TEST_CASE(&test_attributes));
-    test->add(BOOST_TEST_CASE(&test_held_type));
-    test->add(BOOST_TEST_CASE(&test_separation));
-    test->add(BOOST_TEST_CASE(&test_scope));
-    test->add(BOOST_TEST_CASE(&test_construction));
-    test->add(BOOST_TEST_CASE(&test_yield));
-    test->add(BOOST_TEST_CASE(&test_type_traits));
-    test->add(BOOST_TEST_CASE(&test_implicit_cast));
-    test->add(BOOST_TEST_CASE(&test_const));
-    test->add(BOOST_TEST_CASE(&test_object));
-    test->add(BOOST_TEST_CASE(&test_policies));
-    test->add(BOOST_TEST_CASE(&test_free_functions));
-    test->add(BOOST_TEST_CASE(&test_iterator));
-    test->add(BOOST_TEST_CASE(&test_abstract_base));
-    test->add(BOOST_TEST_CASE(&test_operators));
-
-	return test;
+	try
+	{
+    	lua_state L;
+		test_main(L);
+		return tests_failure ? 1 : 0;
+	}
+	catch (std::exception const& e)
+	{
+		std::cerr << "Terminated with exception: \"" << e.what() << "\"\n";
+		return 1;
+	}
+	catch (...)
+	{
+		std::cerr << "Terminated with unknown exception\n";
+		return 1;
+	}
 }
 

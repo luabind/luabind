@@ -22,52 +22,47 @@
 
 #include "test.hpp"
 #include <luabind/luabind.hpp>
+#include <boost/shared_ptr.hpp>
 
-namespace {
+struct A : counted_type<A> 
+{ virtual ~A() {} };
 
-    struct A : counted_type<A> 
-    { virtual ~A() {} };
+struct B : A, counted_type<B>  
+{};
 
-    struct B : A, counted_type<B>  
-    {};
-
-    struct test_implicit : counted_type<test_implicit>
-    {
-        char const* f(A*) { return "f(A*)"; }
-        char const* f(B*) { return "f(B*)"; }
-    };
-
-    struct char_pointer_convertable
-        : counted_type<char_pointer_convertable>
-    {
-        operator const char*() const { return "foo!"; }
-    };
-
-    void func(const char_pointer_convertable& f)
-    {
-    }
-
-	void not_convertable(boost::shared_ptr<A>)
-	{
-		BOOST_CHECK(false);
-	}
-
-	int f(int& a)
-	{
-		return a;
-	}
-
-} // anonymous namespace
-
-void test_implicit_cast()
+struct test_implicit : counted_type<test_implicit>
 {
-    COUNTER_GUARD(A);
-    COUNTER_GUARD(B);
-    COUNTER_GUARD(test_implicit);
-    COUNTER_GUARD(char_pointer_convertable);
+	char const* f(A*) { return "f(A*)"; }
+	char const* f(B*) { return "f(B*)"; }
+};
 
-    lua_state L;
+struct char_pointer_convertable
+  : counted_type<char_pointer_convertable>
+{
+	operator const char*() const { return "foo!"; }
+};
 
+void func(const char_pointer_convertable& f)
+{
+}
+
+void not_convertable(boost::shared_ptr<A>)
+{
+	TEST_CHECK(false);
+}
+
+int f(int& a)
+{
+	return a;
+}
+
+COUNTER_GUARD(A);
+COUNTER_GUARD(B);
+COUNTER_GUARD(test_implicit);
+COUNTER_GUARD(char_pointer_convertable);
+
+void test_main(lua_State* L)
+{
     using namespace luabind;
 
     typedef char const*(test_implicit::*f1)(A*);
@@ -119,7 +114,5 @@ void test_implicit_cast()
 		"no match for function call 'f' with the parameters (nil)\n"
 		"candidates are:\n"
 		"f(number&)\n");
-
-
 }
 

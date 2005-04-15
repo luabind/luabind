@@ -23,8 +23,6 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
-namespace {
-
 struct ex : public std::exception
 {
     ex(const char* m): msg(m) {}
@@ -43,14 +41,10 @@ struct exception_thrower : counted_type<exception_thrower>
     int h() { throw 10; }
 };
 
-} // namespace unnamed
+COUNTER_GUARD(exception_thrower);
 
-void test_exceptions()
+void test_main(lua_State* L)
 {
-	COUNTER_GUARD(exception_thrower);
-
-	lua_state L;
-
     using namespace luabind;
 
 #ifndef LUABIND_NO_EXCEPTIONS

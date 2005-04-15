@@ -21,31 +21,22 @@
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "test.hpp"
-
 #include <luabind/luabind.hpp>
 
-namespace
+struct A : counted_type<A>
 {
+	A* f() { return 0; }
+};
 
-	struct A: counted_type<A>
-	{
-		A* f() { return 0; }
-	};
-
-	A* return_pointer()
-	{
-		return 0;
-	}
-
-} // anonymous namespace
-
-
-void test_null_pointer()
+A* return_pointer()
 {
-    COUNTER_GUARD(A);
+	return 0;
+}
 
-	lua_state L;
+COUNTER_GUARD(A);
 
+void test_main(lua_State* L)
+{
 	using namespace luabind;
 
 	module(L)

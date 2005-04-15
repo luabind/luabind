@@ -21,55 +21,44 @@
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "test.hpp"
-#include <luabind/luabind.hpp>
 
-#include <luabind/object.hpp>
-#include <luabind/operator.hpp>
-#include <luabind/raw_policy.hpp>
+#include <luabind/luabind.hpp>
 
 using namespace luabind;
 
-namespace {
+struct abstract
+{
+    virtual ~abstract() {}
+    virtual std::string hello() = 0;
+}; 
 
-    struct abstract
+COUNTER_GUARD(abstract);
+
+struct abstract_wrap : abstract, wrap_base
+{
+    std::string hello()
     {
-        virtual ~abstract() {}
-        virtual std::string hello() = 0;
-    }; 
-
-    struct abstract_wrap : abstract, wrap_base
-    {
-        std::string hello()
-        {
-            return call_member<std::string>(this, "hello");
-        }
-
-        static void default_hello(abstract const&)
-        {
-            throw std::runtime_error("abstract function");
-        }
-    };
-
-    std::string call_hello(abstract& a)
-    {
-        return a.hello();
+        return call_member<std::string>(this, "hello");
     }
 
-} // namespace unnamed
+    static void default_hello(abstract const&)
+    {
+        throw std::runtime_error("abstract function");
+    }
+};
 
-#include <vector>
-
-void test_abstract_base()
+std::string call_hello(abstract& a)
 {
-    COUNTER_GUARD(abstract);
+    return a.hello();
+}
 
-    lua_state L;
-
+void test_main(lua_State* L)
+{
     module(L)
     [
         class_<abstract, abstract_wrap>("abstract")
             .def(constructor<>())
-            .def("hello", &abstract::hello/*, &abstract_wrap::default_hello*/),
+            .def("hello", &abstract::hello),
 
         def("call_hello", &call_hello)
     ];

@@ -48,8 +48,6 @@ project luabind
 
 alias luabind : /luabind/luabind//luabind ;
 
-#use-project /luabind/luabind : src ;
-
 build-project src ;
 build-project test ;
 

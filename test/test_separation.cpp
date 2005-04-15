@@ -21,14 +21,29 @@
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "test.hpp"
+#include <luabind/luabind.hpp>
 #include <luabind/scope.hpp>
 
-luabind::scope test_separate_registration();
+namespace {
 
-void test_separation()
+    struct X {};
+    struct Y {};
+    
+} // namespace unnamed
+
+luabind::scope test_separate_registration()
 {
-    lua_state L;
+    using namespace luabind;
 
+    return class_<X>("X")
+               .def(constructor<>()),
+           class_<Y>("Y")
+               .def(constructor<>())
+           ;
+}
+
+void test_main(lua_State* L)
+{
     using namespace luabind;
     
     module(L)

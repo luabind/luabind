@@ -23,22 +23,16 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
-namespace {
-
-    struct A
-    {
-        const A* f() { return this; }
-
-        int g1() const { return 1; }
-        int g2() { return 2; }
-    };
-
-} // anonymous namespace
-
-void test_const()
+struct A
 {
-    lua_state L;
+    const A* f() { return this; }
 
+    int g1() const { return 1; }
+    int g2() { return 2; }
+};
+
+void test_main(lua_State* L)
+{
     using namespace luabind;
 
     module(L)
@@ -49,7 +43,7 @@ void test_const()
             .def("g", &A::g1)
             .def("g", &A::g2)
     ];
-   
+
     DOSTRING(L, "a = A()");
     DOSTRING(L, "assert(a:g() == 2)");
 

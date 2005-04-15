@@ -22,33 +22,26 @@
 
 #include "test.hpp"
 
-#include <luabind/luabind.hpp>
-
 #include <vector>
+#include <luabind/luabind.hpp>
 #include <luabind/iterator_policy.hpp>
 
-namespace
+struct IteratorTest : counted_type<IteratorTest>
 {
-	struct IteratorTest: counted_type<IteratorTest>
+	IteratorTest()
 	{
-		IteratorTest()
-		{
-			names.push_back("first one");
-			names.push_back("foobar");
-			names.push_back("last one");
-		}
+		names.push_back("first one");
+		names.push_back("foobar");
+		names.push_back("last one");
+	}
 
-		std::vector<std::string> names;
-	};
-	
-} // anonymous namespace
+	std::vector<std::string> names;
+};
 
-void test_iterator()
+COUNTER_GUARD(IteratorTest);
+
+void test_main(lua_State* L)
 {
-    COUNTER_GUARD(IteratorTest);
-
-	lua_state L;
-
 	using namespace luabind;
 
 	module(L)
@@ -64,5 +57,6 @@ void test_iterator()
 		"for name in a.names do\n"
 		"	b = b .. ' ' .. name\n"
 		"end\n"
-		"assert(b == ' first one foobar last one')");
+		"assert(b == ' first one foobar last one')"
+	);
 }

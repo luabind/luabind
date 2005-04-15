@@ -28,99 +28,93 @@
 
 #include <utility>
 
-namespace
+using namespace luabind;
+
+int test_object_param(const object& table)
 {
-	using namespace luabind;
+	LUABIND_CHECK_STACK(table.lua_state());
 
-	int test_object_param(const object& table)
+	object current_object;
+	current_object = table;
+
+	if (table.type() == LUA_TTABLE)
 	{
-		LUABIND_CHECK_STACK(table.lua_state());
 
-		object current_object;
-		current_object = table;
-		
-		if (table.type() == LUA_TTABLE)
+		int sum = object_cast<int>(table["oh"]);
+		for (object::array_iterator i = table.abegin(); i != table.aend(); ++i)
 		{
+			assert(i->type() == LUA_TNUMBER);
+			sum += object_cast<int>(*i);
+		}
 
-			int sum = object_cast<int>(table["oh"]);
-			for (object::array_iterator i = table.abegin(); i != table.aend(); ++i)
-			{
-				assert(i->type() == LUA_TNUMBER);
-				sum += object_cast<int>(*i);
-			}
+		int sum2 = 0;
+		for (object::iterator i = table.begin(); i != table.end(); ++i)
+		{
+			assert(i->type() == LUA_TNUMBER);
+			sum2 += object_cast<int>(*i);
+		}
 
-			int sum2 = 0;
-			for (object::iterator i = table.begin(); i != table.end(); ++i)
-			{
-				assert(i->type() == LUA_TNUMBER);
-				sum2 += object_cast<int>(*i);
-			}
+		int sum3 = 0;
+		for (object::raw_iterator i = table.raw_begin(); i != table.raw_end(); ++i)
+		{
+			assert(i->type() == LUA_TNUMBER);
+			sum3 += object_cast<int>(*i);
+		}
 
-			int sum3 = 0;
-			for (object::raw_iterator i = table.raw_begin(); i != table.raw_end(); ++i)
-			{
-				assert(i->type() == LUA_TNUMBER);
-				sum3 += object_cast<int>(*i);
-			}
-
-			table["sum"] = sum;
-			table["sum2"] = sum2;
-			table["sum3"] = sum3;
-			table["blurp"] = 5;
-			return 0;
+		table["sum"] = sum;
+		table["sum2"] = sum2;
+		table["sum3"] = sum3;
+		table["blurp"] = 5;
+		return 0;
+	}
+	else
+	{
+		if (table.type() != LUA_TNIL)
+		{
+			return 1;
 		}
 		else
 		{
-			if (table.type() != LUA_TNIL)
-			{
-				return 1;
-			}
-			else
-			{
-				return 2;
-			}
+			return 2;
 		}
 	}
+}
 
-	int test_fun()
-	{
-		return 42;
-	}
-
-	struct test_param : counted_type<test_param>
-	{
-		luabind::object obj;
-		luabind::object obj2;
-	};
-
-	int test_match(const luabind::object& o)
-	{
-		return 0;
-	}
-
-	int test_match(int i)
-	{
-		return 1;
-	}
-
-	void test_match_object(
-		luabind::object p1
-		, luabind::object p2
-		, luabind::object p3)
-	{
-		p1["ret"] = 1;
-		p2["ret"] = 2;
-		p3["ret"] = 3;
-	}
-
-} // anonymous namespace
-
-void test_object()
+int test_fun()
 {
-    COUNTER_GUARD(test_param);
+	return 42;
+}
 
-	lua_state L;
+struct test_param : counted_type<test_param>
+{
+	luabind::object obj;
+	luabind::object obj2;
+};
 
+COUNTER_GUARD(test_param);
+
+int test_match(const luabind::object& o)
+{
+	return 0;
+}
+
+int test_match(int i)
+{
+	return 1;
+}
+
+void test_match_object(
+	luabind::object p1
+  , luabind::object p2
+  , luabind::object p3)
+{
+	p1["ret"] = 1;
+	p2["ret"] = 2;
+	p3["ret"] = 3;
+}
+
+void test_main(lua_State* L)
+{
 	using namespace luabind;
 
 	module(L)
@@ -152,12 +146,12 @@ void test_object()
 	object g = get_globals(L);
 	object fun = g["test_fun"];
 	object ret = fun();
-	BOOST_CHECK(object_cast<int>(ret) == 42);
+	TEST_CHECK(object_cast<int>(ret) == 42);
 
 	DOSTRING(L, "function test_param_policies(x, y) end");
 	object test_param_policies = g["test_param_policies"];
 	int a = test_param_policies.type();
-	BOOST_CHECK(a == LUA_TFUNCTION);
+	TEST_CHECK(a == LUA_TFUNCTION);
 
 	// call the function and tell lua to adopt the pointer passed as first argument
 	test_param_policies(5, new test_param())[adopt(_2)];
@@ -177,14 +171,14 @@ void test_object()
 		"end");
 	object test_object_policies = g["test_object_policies"];
 	object ret_val = test_object_policies("teststring")[detail::null_type()];
-	BOOST_CHECK(object_cast<int>(ret_val) == 6);
-	BOOST_CHECK(object_cast<std::string>(g["glob"]) == "teststring");
-	BOOST_CHECK(object_cast<std::string>(g.at("glob")) == "teststring");
-	BOOST_CHECK(object_cast<std::string>(g.raw_at("glob")) == "teststring");
+	TEST_CHECK(object_cast<int>(ret_val) == 6);
+	TEST_CHECK(object_cast<std::string>(g["glob"]) == "teststring");
+	TEST_CHECK(object_cast<std::string>(g.at("glob")) == "teststring");
+	TEST_CHECK(object_cast<std::string>(g.raw_at("glob")) == "teststring");
 
 	object t = newtable(L);
-	BOOST_CHECK(t.begin() == t.end());
-	BOOST_CHECK(t.raw_begin() == t.raw_end());
+	TEST_CHECK(t.begin() == t.end());
+	TEST_CHECK(t.raw_begin() == t.raw_end());
 
 	DOSTRING(L,
 		"p1 = {}\n"
@@ -202,12 +196,12 @@ void test_object()
 		object not_initialized;
 		int i = object_cast<int>(not_initialized);
 		(void)i;
-		BOOST_ERROR("invalid cast succeeded");
+		TEST_ERROR("invalid cast succeeded");
 	}
 	catch(luabind::cast_failed&) {}
 
 #endif
 
 	object not_initialized;
-	BOOST_CHECK(!object_cast_nothrow<int>(not_initialized));
+	TEST_CHECK(!object_cast_nothrow<int>(not_initialized));
 }
