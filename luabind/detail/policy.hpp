@@ -27,6 +27,7 @@
 #include <luabind/config.hpp>
 
 #include <typeinfo>
+#include <string>
 
 #include <boost/type_traits/is_enum.hpp>
 #include <boost/type_traits/is_array.hpp>
@@ -452,37 +453,43 @@ namespace luabind { namespace detail
 		template<class T>
 		T apply(lua_State* L, detail::by_value<T>, int index) 
 		{ 
-			return converters::convert_lua_to_cpp(L, detail::by_value<T>(), index);
+			using namespace converters;
+			return convert_lua_to_cpp(L, detail::by_value<T>(), index);
 		}
 
 		template<class T>
 		T apply(lua_State* L, detail::by_reference<T>, int index) 
 		{ 
-			return converters::convert_lua_to_cpp(L, detail::by_reference<T>(), index);
+			using namespace converters;
+			return convert_lua_to_cpp(L, detail::by_reference<T>(), index);
 		}
 
 		template<class T>
 		T apply(lua_State* L, detail::by_const_reference<T>, int index) 
 		{ 
-			return converters::convert_lua_to_cpp(L, detail::by_const_reference<T>(), index);
+			using namespace converters;
+			return convert_lua_to_cpp(L, detail::by_const_reference<T>(), index);
 		}
 
 		template<class T>
 		T* apply(lua_State* L, detail::by_pointer<T>, int index) 
 		{ 
-			return converters::convert_lua_to_cpp(L, detail::by_pointer<T>(), index);
+			using namespace converters;
+			return convert_lua_to_cpp(L, detail::by_pointer<T>(), index);
 		}
 
 		template<class T>
 		const T* apply(lua_State* L, detail::by_const_pointer<T>, int index) 
 		{ 
-			return converters::convert_lua_to_cpp(L, detail::by_pointer<T>(), index);
+			using namespace converters;
+			return convert_lua_to_cpp(L, detail::by_pointer<T>(), index);
 		}
 
 		template<class T>
 		static int match(lua_State* L, T, int index)
 		{
-			return converters::match_lua_to_cpp(L, T(), index);
+			using namespace converters;
+			return match_lua_to_cpp(L, T(), index);
 		}
 
 		template<class T>
@@ -496,8 +503,9 @@ namespace luabind { namespace detail
 
 		template<class T>
 		void apply(lua_State* L, const T& v) 
-		{ 
-			converters::convert_cpp_to_lua(L, v);
+		{
+			using namespace converters;
+			convert_cpp_to_lua(L, v);
 		}
 	};
 
@@ -1110,8 +1118,7 @@ namespace luabind { namespace detail
 
 		template<class T, class Direction>
 		struct generate_converter
-		{
-			typedef typename eval_if<
+		  : eval_if<
 				is_user_defined<T>
 			  , user_defined_converter<Direction>
 			  , eval_if<
@@ -1143,7 +1150,8 @@ namespace luabind { namespace detail
 						>
 					>
 				>
-			>::type type;
+			>
+		{
 		};
 	};
 
