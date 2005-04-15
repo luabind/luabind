@@ -139,29 +139,6 @@ namespace luabind { namespace detail
 		BOOST_STATIC_CONSTANT(bool, value = sizeof(is_lua_functor_test(t)) == sizeof(yes_t));
 	};
 
-	namespace
-	{
-		static char msvc_fix[64];
-	}
-
-	template<class T>
-	struct indirect_type
-	{
-		typedef typename
-			boost::mpl::if_<is_primitive<T>
-				, const type<T>&
-				, typename boost::mpl::eval_if<boost::mpl::or_<boost::is_reference<T>, boost::is_pointer<T> >
-					, identity<T>
-					, boost::add_reference<T>
-				>::type
-			>::type result_type;
-
-		static inline result_type get()
-		{
-			return reinterpret_cast<result_type>(msvc_fix);
-		}
-	};
-
 	template<class H, class T>
 	struct policy_cons
 	{
