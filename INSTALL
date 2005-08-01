@@ -2,7 +2,7 @@ INSTALLING
 
 To install luabind follow these easy steps:
 
-1. make sure boost 1.31 is installed at the path specified by the environment variable
+1. make sure boost 1.32 is installed at the path specified by the environment variable
    BOOST_ROOT
 2. make sure lua 5 is installed (and built) at the path specified by the environment
    variable LUA_PATH
