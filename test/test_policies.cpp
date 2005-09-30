@@ -30,6 +30,14 @@
 #include <luabind/dependency_policy.hpp>
 #include <luabind/luabind.hpp>
 
+struct test_copy {};
+
+
+struct secret_type {};
+
+secret_type sec_;
+
+
 struct policies_test_class
 {
 	policies_test_class(const char* name): name_(name)
@@ -58,6 +66,9 @@ struct policies_test_class
 	//	private:
 	policies_test_class(policies_test_class const& c): name_(c.name_)
 	{ ++count; }
+
+	void member_out_val(int* v) { *v = 5; }
+	secret_type* member_secret() { return &sec_; }
 };
 
 int policies_test_class::count = 0;
@@ -66,10 +77,6 @@ policies_test_class global;
 
 void out_val(float* f) { *f = 3.f; }
 policies_test_class* copy_val() { return &global; }
-
-struct secret_type {};
-
-secret_type sec_;
 
 secret_type* secret() { return &sec_; }
 
@@ -96,15 +103,17 @@ void test_main(lua_State* L)
 
 	module(L)
 	[
-	  class_<test_t>("test_t")
-	      .def("make", &test_t::make, adopt(return_value))
-		  .def("take", &test_t::take, adopt(_2))
+		class_<test_t>("test_t")
+		.def("make", &test_t::make, adopt(return_value))
+		.def("take", &test_t::take, adopt(_2))
 	];
 	
 	module(L)
 	[
 		class_<policies_test_class>("test")
 			.def(constructor<>())
+			.def("member_out_val", &policies_test_class::member_out_val, pure_out_value(_2))
+			.def("member_secret", &policies_test_class::member_secret, discard_result)
 			.def("f", &policies_test_class::f, adopt(_2))
 			.def("make", &policies_test_class::make, adopt(return_value))
 			.def("internal_ref", &policies_test_class::internal_ref, dependency(result, _1))
@@ -186,6 +195,8 @@ void test_main(lua_State* L)
 	TEST_CHECK(policies_test_class::count == 2);
 
 	DOSTRING(L, "b = a:make('tjosan')");
+	DOSTRING(L, "assert(a:member_out_val() == 5)");
+	DOSTRING(L, "a:member_secret()");
 
 	// make instantiated a new policies_test_class
 	TEST_CHECK(policies_test_class::count == 3);

@@ -5,5 +5,5 @@ use-project /luabind : ../../ ;
 lib hello_world 
     : hello_world.cpp /luabind//luabind/<link>static /luabind//lua ;
 
-stage bin : hello_world ;
+stage . : hello_world ;
 

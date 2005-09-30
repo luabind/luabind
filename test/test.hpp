@@ -103,9 +103,9 @@ int counted_type<T>::count = 0;
     catch (luabind::error const& e)             \
     {                                           \
 		using namespace std;					\
-        if (strcmp(                             \
+		if (std::strcmp(                        \
             lua_tostring(e.state(), -1)         \
-          , expected))                          \
+          , (char const*)expected))             \
         {                                       \
             TEST_ERROR(lua_tostring(e.state(), -1)); \
         }                                       \

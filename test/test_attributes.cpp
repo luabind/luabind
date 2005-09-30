@@ -23,18 +23,33 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+struct A
+{
+	int get() const 
+	{ 
+		return 5; 
+	}
+};
+
+struct B : A
+{
+};
+
 struct property_test : counted_type<property_test>
 {  
     property_test(): o(6) {}
 
-	std::string str_;
+    std::string str_;
     int a_;
     float o;
-	signed char b;
+    signed char b;
 
     void set(int a) { a_ = a; }
     int get() const { return a_; }
 
+    void setA(A* a) {}
+	 A* getA() const { return 0; }
+	 
     void set_str(const char* str) 
     { str_ = str; }
 
@@ -50,18 +65,6 @@ void free_setter(property_test& p, int a)
 int free_getter(const property_test& p)
 { return p.get(); }
 
-struct A
-{
-	int get() const 
-	{ 
-		return 5; 
-	}
-};
-
-struct B : A
-{
-};
-
 void test_main(lua_State* L)
 {
     using namespace luabind;
@@ -72,8 +75,8 @@ void test_main(lua_State* L)
 			.def(luabind::constructor<>())
 			.def("get", &property_test::get)
 			.property("a", &property_test::get, &property_test::set)
-			.property(
-                "str", &property_test::get_str, &property_test::set_str)
+			.property("str", &property_test::get_str, &property_test::set_str)
+			.property("A", &property_test::getA, &property_test::setA)
 			.def_readonly("o", &property_test::o)
             .property("free", &free_getter, &free_setter)
 			.def_readwrite("b", &property_test::b),
@@ -89,13 +92,25 @@ void test_main(lua_State* L)
 
 	DOSTRING(L, "test = property()\n");
 
-    DOSTRING(L,
-        "test.a = 5\n"
-        "assert(test.a == 5)");
+	DOSTRING(L,
+		"test.a = 5\n"
+		"assert(test.a == 5)");
 
 	DOSTRING(L, "assert(test.o == 6)");
 
-	DOSTRING(L, 
+	DOSTRING(L,
+		"test.new_member = 'foo'\n"
+		"assert(test.new_member == 'foo')");
+
+	DOSTRING(L,
+		"property.new_member2 = 'bar'\n"
+		"assert(property.new_member2 == 'bar')");
+
+	DOSTRING(L,
+		"b = property()\n"
+		"assert(b.new_member2 == 'bar')");
+
+	DOSTRING(L,
 		"test.str = 'foobar'\n"
 		"assert(test.str == 'foobar')\n");
 

@@ -42,11 +42,12 @@ void wrap_regex(lua_State* L)
 	];
 }
 
-void test_wrap_regex()
+int main()
 {
 	lua_State* L = lua_open();
 	lua_baselibopen(L);
 	lua_strlibopen(L);
+	luabind::open(L);
 	
 	wrap_regex(L);
 	

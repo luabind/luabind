@@ -368,8 +368,8 @@ namespace luabind
 			, luabind::detail::proxy_function_void_caller<boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> >
 			, luabind::detail::proxy_function_caller<Ret, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type proxy_type;
 
-		obj.pushvalue();
-		return proxy_type(obj.lua_state(), 1, &detail::pcall, args);
+		obj.push(obj.interpreter());
+		return proxy_type(obj.interpreter(), 1, &detail::pcall, args);
 	}
 
 	template<class Ret BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -411,8 +411,8 @@ namespace luabind
 			, luabind::detail::proxy_function_void_caller<boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> >
 			, luabind::detail::proxy_function_caller<Ret, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type proxy_type;
 
-		obj.pushvalue();
-		return proxy_type(obj.lua_state(), 1, &detail::resume_impl, args);
+		obj.push(obj.interpreter());
+		return proxy_type(obj.interpreter(), 1, &detail::resume_impl, args);
 	}
 
 	template<class Ret BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>

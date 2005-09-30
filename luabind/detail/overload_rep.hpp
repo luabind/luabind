@@ -30,12 +30,14 @@
 
 #include <boost/preprocessor/enum_params.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
+#include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/preprocessor/repeat.hpp>
 
 #include <luabind/detail/overload_rep_base.hpp>
 
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/is_indirect_const.hpp>
+#include <luabind/detail/policy.hpp>
 
 namespace luabind { namespace detail
 {
@@ -94,7 +96,7 @@ namespace luabind { namespace detail
 #elif BOOST_PP_ITERATION_FLAGS() == 1
 
 #define LUABIND_PARAM(z, n, _) m_params_.push_back(LUABIND_TYPEID(A##n));
-#define LUABIND_POLICY_DECL(z,n,text) typedef typename find_conversion_policy<n + 1, Policies>::type BOOST_PP_CAT(p,n);
+#define LUABIND_POLICY_DECL(z,n,offset) typedef typename detail::find_conversion_policy<n + offset, Policies>::type BOOST_PP_CAT(p,n);
 #define LUABIND_ARITY(z,n,text) + BOOST_PP_CAT(p,n)::has_arg
 
 		// overloaded template funtion that initializes the parameter list
@@ -105,7 +107,7 @@ namespace luabind { namespace detail
 		{
 			m_params_.reserve(BOOST_PP_ITERATION());
 			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
+			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, 2)
 			m_arity = 1 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
 		}
 
@@ -115,7 +117,7 @@ namespace luabind { namespace detail
 		{
 			m_params_.reserve(BOOST_PP_ITERATION());
 			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
+			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, 2)
 			m_arity = 1 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
 		}
 
@@ -125,7 +127,7 @@ namespace luabind { namespace detail
 		{
 			m_params_.reserve(BOOST_PP_ITERATION());
 			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_PARAM, _)
-			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
+			BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, 1)
 			m_arity = 0 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, 0);
 		}
 

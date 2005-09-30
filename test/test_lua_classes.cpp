@@ -138,50 +138,50 @@ struct U : T_
 
 void test_main(lua_State* L)
 {
-    module(L)
-    [
+	module(L)
+	[
 		class_<A, A_wrap, boost::shared_ptr<A> >("A")
-            .def(constructor<>())
-            .def("f", &A::f, &A_wrap::default_f)
+			.def(constructor<>())
+			.def("f", &A::f, &A_wrap::default_f)
 			.def("g", &A::g, &A_wrap::default_g),
 
 		class_<B, A, B_wrap, boost::shared_ptr<A> >("B")
-            .def(constructor<>())
-            .def("f", &B::f, &B_wrap::default_f)
+			.def(constructor<>())
+			.def("f", &B::f, &B_wrap::default_f)
 			.def("g", &B::g, &B_wrap::default_g),
 
         def("filter", &filter),
 
         class_<base, base_wrap>("base")
-            .def(constructor<>())
-            .def("f", &base::f, &base_wrap::default_f)
+			.def(constructor<>())
+			.def("f", &base::f, &base_wrap::default_f)
 			.def("g", &base::g),
 
 		class_<T_>("T")
 			.def("f", &T_::f),
 
 		class_<U, T_>("U")
-            .def(constructor<>())
+			.def(constructor<>())
 			.def("f", &U::f)
 			.def("g", &U::g)
 	];
 
-    try                                         
-    {                                           
-        dostring(L, 	"u = U()\n"
+	try                                         
+	{                                           
+		dostring(L, "u = U()\n"
 		"assert(u:f(0) == 1)\n"
 		"assert(u:f(0,0) == 2)\n"
 		"assert(u:g() == 3)\n");
-    }                                           
-    catch (luabind::error const& e)             
-    {                                           
-        TEST_ERROR(lua_tostring(e.state(), -1)); 
-    }                                           
-    catch (std::string const& s)                
-    {                                           
-        TEST_ERROR(s.c_str());                  
-    }                                           
-	
+	}                                           
+	catch (luabind::error const& e)
+	{
+		TEST_ERROR(lua_tostring(e.state(), -1));
+	}
+	catch (std::string const& s)
+	{
+		TEST_ERROR(s.c_str());
+	}
+
 	DOSTRING(L,
 		"u = U()\n"
 		"assert(u:f(0) == 1)\n"
@@ -299,7 +299,7 @@ void test_main(lua_State* L)
 		LUABIND_CHECK_STACK(L);
 
 		TEST_NOTHROW(
-			object a = get_globals(L)["ba"];
+			object a = globals(L)["ba"];
 			TEST_CHECK(call_member<int>(a, "fun") == 4);
 		);
 	}
@@ -307,7 +307,7 @@ void test_main(lua_State* L)
 	{
 		LUABIND_CHECK_STACK(L);
 
-		object make_derived = get_globals(L)["make_derived"];
+		object make_derived = globals(L)["make_derived"];
 		TEST_NOTHROW(
 			call_function<void>(make_derived)
 			);

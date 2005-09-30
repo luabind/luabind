@@ -160,7 +160,7 @@ void test_main(lua_State* L)
             .def("f", &derived::f)
     ];
 
-    object g = get_globals(L);
+    object g = globals(L);
     g["ptr"] = base_ptr;
 
     DOSTRING(L, "tester(ptr)");
@@ -203,7 +203,7 @@ void test_main(lua_State* L)
 		"candidates are:\n"
 		"tester12(const custom&)\n");
 */
-	object nil = get_globals(L)["non_existing_variable_is_nil"];
+	object nil = globals(L)["non_existing_variable_is_nil"];
 	TEST_CHECK(object_cast<boost::shared_ptr<base> >(nil).get() == 0);
 	TEST_CHECK(object_cast<boost::shared_ptr<const base> >(nil).get() == 0);
 

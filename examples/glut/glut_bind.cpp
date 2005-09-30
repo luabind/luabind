@@ -8,7 +8,7 @@ extern "C"
 #include <luabind/luabind.hpp>
 #include <luabind/class.hpp>
 #include <luabind/function.hpp>
-#include <luabind/functor.hpp>
+#include <luabind/object.hpp>
 
 
 #include <GL/glut.h>
@@ -18,68 +18,70 @@ extern "C"
 struct glut_constants {};
 struct gl_constants {};
 
+using luabind::object;
+
 namespace glut_bindings
 {
-	luabind::functor<void> displayfunc;
+	object displayfunc;
 
 	void displayfunc_callback()
 	{
 		displayfunc();
 	}
 
-	void set_displayfunc(const luabind::functor<void>& fun)
+	void set_displayfunc(object const& fun)
 	{
 		glutDisplayFunc(&displayfunc_callback);
 		displayfunc = fun;
 	}
 
-	luabind::functor<void> idlefunc;
+	object idlefunc;
 
 	void idlefunc_callback()
 	{
 		idlefunc();
 	}
 
-	void set_idlefunc(const luabind::functor<void>& fun)
+	void set_idlefunc(object const& fun)
 	{
 		glutIdleFunc(&idlefunc_callback);
 		idlefunc = fun;
 	}
 
 
-	luabind::functor<void> reshapefunc;
+	object reshapefunc;
 
 	void reshapefunc_callback(int w, int h)
 	{
-		reshapefunc(w,h);
+		reshapefunc(w, h);
 	}
 
-	void set_reshapefunc(const luabind::functor<void>& fun)
+	void set_reshapefunc(object const& fun)
 	{
 		reshapefunc = fun;
 	}
 
-	luabind::functor<void> keyboardfunc;
+	object keyboardfunc;
 
 	void keyboardfunc_callback(unsigned char key, int x, int y)
 	{
-		keyboardfunc(key,x,y);
+		keyboardfunc(key, x, y);
 	}
 
-	void set_keyboardfunc(const luabind::functor<void>& fun)
+	void set_keyboardfunc(object const& fun)
 	{
 		glutKeyboardFunc(&keyboardfunc_callback);
 		keyboardfunc = fun;
 	}
 
-	luabind::functor<void> mousefunc;
+	object mousefunc;
 
 	void mousefunc_callback(int button, int state, int x, int y)
 	{
 		mousefunc(button, state, x, y);
 	}
 
-	void set_mousefunc(const luabind::functor<void>& fun)
+	void set_mousefunc(object const& fun)
 	{
 		mousefunc = fun;
 	}
@@ -137,7 +139,7 @@ void bind_glut(lua_State* L)
 			.enum_("constants")
 			[
 				value("COLOR_BUFFER_BIT", GL_COLOR_BUFFER_BIT),
-					value("DEPTH_BUFFER_BIT", GL_DEPTH_BUFFER_BIT),
+				value("DEPTH_BUFFER_BIT", GL_DEPTH_BUFFER_BIT),
 				value("TRIANGLES", GL_TRIANGLES),
 				value("MODELVIEW", GL_MODELVIEW),
 				value("PROJECTION", GL_PROJECTION)
@@ -163,16 +165,12 @@ void bind_glut(lua_State* L)
 	];
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 	lua_State* L = lua_open();
 	lua_baselibopen(L);
 	lua_mathlibopen(L);
 	bind_glut(L);
-
-	int argc = 1;
-	char* argv[1];
-	argv[0] = "blabla";
 
 	glutInit (&argc, argv);
 

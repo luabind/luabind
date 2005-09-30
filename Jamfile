@@ -31,7 +31,7 @@ lib lua
 
 lib lualib
     :
-    : <name>lualib <search>$(LUA_PATH)/lualib
+    : <name>lualib <search>$(LUA_PATH)/lib
     ;
 
 project luabind

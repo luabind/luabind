@@ -1,4 +1,4 @@
-// Copyright (c) 2003 Daniel Wallin and Arvid Norberg
+// Copyright (c) 2005 Daniel Wallin and Arvid Norberg
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,21 +20,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef LUABIND_OVERLOAD_REP_IMPL_HPP_INCLUDED
-#define LUABIND_OVERLOAD_REP_IMPL_HPP_INCLUDED
+#include <luabind/value_wrapper.hpp>
+#include <boost/mpl/assert.hpp>
 
-#include <luabind/detail/overload_rep.hpp>
+struct X_tag;
 
-namespace luabind { namespace detail
+struct X
 {
-	inline int overload_rep::call(lua_State* L, bool force_static_call) const 
-	{ 
-		if (force_static_call)
-			return call_fun_static(L);
-		else
-			return call_fun(L);
-	}
+    typedef X_tag value_wrapper_tag;
+};
 
-}} // namespace luabind::detail
+namespace luabind
+{
 
-#endif // LUABIND_OVERLOAD_REP_IMPL_HPP_INCLUDED
+  template<>
+  struct value_wrapper_traits<X_tag>
+  {
+      typedef boost::mpl::true_ is_specialized;
+  };
+
+} // namespace luabind
+
+BOOST_MPL_ASSERT(( luabind::is_value_wrapper<X> ));
+BOOST_MPL_ASSERT(( luabind::is_value_wrapper_arg<X> ));
+BOOST_MPL_ASSERT(( luabind::is_value_wrapper_arg<X const> ));
+BOOST_MPL_ASSERT(( luabind::is_value_wrapper_arg<X&> ));
+BOOST_MPL_ASSERT(( luabind::is_value_wrapper_arg<X const&> ));
+BOOST_MPL_ASSERT_NOT(( luabind::is_value_wrapper_arg<int> ));
+BOOST_MPL_ASSERT_NOT(( luabind::is_value_wrapper_arg<int[4]> ));
+
+BOOST_MPL_ASSERT_NOT(( luabind::is_value_wrapper<X&> ));
+BOOST_MPL_ASSERT_NOT(( luabind::is_value_wrapper<X const&> ));
+
+int main()
+{
+}

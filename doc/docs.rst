@@ -62,6 +62,11 @@ Luabind is released under the terms of the `MIT license`_.
 We are very interested in hearing about projects that use luabind, please let
 us know about your project.
 
+The main channel for help and feedback is the `luabind mailing list`_.
+There's also an IRC channel ``#luabind`` on irc.freenode.net.
+
+.. _`luabind mailing list`: https://lists.sourceforge.net/lists/listinfo/luabind-user
+
 
 Features
 ========
@@ -117,7 +122,7 @@ Building luabind
 To keep down the compilation-time luabind is built as a library. This means you
 have to either build it and link against it, or include its source files in
 your project. You also have to make sure the luabind directory is somewhere in
-your compiler's include path. It requires `Boost`_ 1.31.0 to be installed (only
+your compiler's include path. It requires `Boost`_ 1.32.0 to be installed (only
 boost headers). It also requires that Lua is installed.
 
 The official way of building luabind is with `Boost.Build V2`_. To properly build
@@ -392,8 +397,8 @@ And the following Lua code is executed::
 Calling Lua functions
 ---------------------
 
-To call a Lua function, you can either use ``call_function()``,
-an ``object`` or ``functor``.
+To call a Lua function, you can either use ``call_function()`` or
+an ``object``.
 
 ::
 
@@ -431,6 +436,9 @@ Like this::
 
 	int ret = call_function(L, "fun", boost::ref(val));
 
+
+If you want to use a custom error handler for the function call, see
+``set_pcall_callback`` under Configuration_.
 
 Using Lua threads
 -----------------
@@ -584,7 +592,8 @@ It can be registered as if it had a public data member a like this::
 
 This way the ``get_a()`` and ``set_a()`` functions will be called instead of
 just writing  to the data member. If you want to make it read only you can just
-omit the last parameter.
+omit the last parameter. Please note that the get function **has to be
+const**, otherwise it won't compile. This seems to be a common source of errors.
 
 
 Enums
@@ -811,6 +820,11 @@ raw_pointer conversion from Lua to C++. They look like this::
         }
     }
 
+The second function will only be used to get a compile time mapping
+of ``boost::shared_ptr<A>`` to its const version,
+``boost::shared_ptr<const A>``. It will never be called, so the
+return value doesn't matter (only the return type).
+
 The conversion that works are (given that B is a base class of A):
 
 .. topic:: From Lua to C++
@@ -840,10 +854,10 @@ The conversion that works are (given that B is a base class of A):
     ``holder_type<A const> const&`` ``holder_type<A const>``
     =============================== ========================
 
-When using a holder type, it can be useful to know if the pointer is valid. For
-example when using std::auto_ptr, the holder will be invalidated when passed as
-a parameter to a function. For this purpose there is a member of all object
-instances in luabind: ``__ok``. ::
+When using a holder type, it can be useful to know if the pointer is valid
+(i.e. not null). For example when using std::auto_ptr, the holder will be
+invalidated when passed as a parameter to a function. For this purpose there
+is a member of all object instances in luabind: ``__ok``. ::
 
     struct X {};
     void f(std::auto_ptr<X>);
@@ -865,6 +879,24 @@ instances in luabind: ``__ok``. ::
     false
 
 
+When registering a hierarchy of classes, where all instances are to be held
+by a smart pointer, all the classes should have the baseclass' holder type.
+Like this:
+
+.. parsed-literal::
+
+        module(L)
+        [
+            class_<base, boost::shared_ptr<base> >("base")
+                .def(constructor<>()),
+            class_<derived, base, **boost::shared_ptr<base>** >("base")
+                .def(constructor<>())
+        ];
+
+Internally, luabind will do the necessary conversions on the raw pointers, which
+are first extracted from the holder type.
+
+
 Object
 ======
 
@@ -880,44 +912,27 @@ you need to include ``luabind/object.hpp``.
         class object
         {
         public:
-            class iterator;
-            class raw_iterator;
-            class array_iterator;
-
             template<class T>
             object(lua_State\*, T const& value);
+            object(from_stack const&);
             object(object const&);
-            object(lua_State\*);
             object();
 
             ~object();
-            
-            iterator begin() const;
-            iterator end() const;
-            raw_iterator raw_begin() const;
-            raw_iterator raw_end() const;
-            array_iterator abegin() const;
-            array_iterator aend() const;
 
-            void set();
-            lua_State\* lua_state() const;
-            void pushvalue() const;
+            lua_State\* interpreter() const;
+            void push() const;
             bool is_valid() const;
-            operator safe_bool_type() const;
+            operator *safe_bool_type* () const;
 
             template<class Key>
             *implementation-defined* operator[](Key const&);
-
-            template<class Key>
-            object at(Key const&) const;
-
-            template<class Key>
-            object raw_at(Key const&) const;
 
             template<class T>
             object& operator=(T const&);
             object& operator=(object const&);
 
+            **COMPARISONS ARE NOT IMPLEMENTED YET**
             template<class T>
             bool operator==(T const&) const;
             bool operator==(object const&) const;
@@ -928,7 +943,6 @@ you need to include ``luabind/object.hpp``.
             bool operator!=(object const&) const;
 
             void swap(object&);
-            int type() const;
 
             *implementation-defined* operator()();
 
@@ -944,32 +958,34 @@ you need to include ``luabind/object.hpp``.
 When you have a Lua object, you can assign it a new value with the assignment
 operator (=). When you do this, the ``default_policy`` will be used to make the
 conversion from C++ value to Lua. If your ``luabind::object`` is a table you
-can access its members through the operator[] or the iterators. The value
+can access its members through the operator[] or the Iterators_. The value
 returned from the operator[] is a proxy object that can be used both for
 reading and writing values into the table (using operator=). Note that it is
 impossible to know if a Lua value is indexable or not (lua_gettable doesn't
 fail, it succeeds or crashes). This means that if you're trying to index
 something that cannot be indexed, you're on your own. Lua will call its
 ``panic()`` function (you can define your own panic function using
-``lua_setpanicf``). The ``at()`` and ``raw_at()`` functions returns the value at
-the given table position (like operator[] but only for reading).
+``lua_setpanicf``). There are also free functions that can be used for
+indexing the table, see `Related functions`_.
 
-The ordinary ``object::iterator`` uses lua_gettable to extract the values from
-the table, the standard way that will invoke metamethods if any. The
-``object::raw_iterator`` uses lua_rawget and ``object::array_iterator`` uses
-lua_rawgeti. The latter will only iterate over numerical keys starting at 1
-and continue until the first nil value.
+The constructor that takes a ``from_stack`` object is used when you want to
+initialize the object with a value from the lua stack. The ``from_stack``
+type has the following constructor::
 
-The ``lua_state()`` function returns the Lua state where this object is stored.
+	 from_stack(lua_State* L, int index);
+
+The index is an ordinary lua stack index, negative values are indexed from the
+top of the stack. You use it like this::
+
+	 object o(from_stack(L, -1));
+
+This will create the object ``o`` and copy the value from the top of the lua stack.
+
+The ``interpreter()`` function returns the Lua state where this object is stored.
 If you want to manipulate the object with Lua functions directly you can push
-it onto the Lua stack by calling ``pushvalue()``. And set the object's value by
-calling ``set()``, which will pop the top value from the Lua stack and assign
-it to the object.
+it onto the Lua stack by calling ``push()``.
 
 The operator== will call lua_equal() on the operands and return its result.
-
-The ``type()`` member function will return the Lua type of the object. It will
-return the same values as lua_type().
 
 The ``is_valid()`` function tells you whether the object has been initialized
 or not. When created with its default constructor, objects are invalid. To make
@@ -1043,165 +1059,121 @@ we index into it.
 Iterators
 ---------
 
-The iterators, that are returned by ``begin()`` and ``end()`` (and their
-variants) are (almost) models of the ForwardIterator concept. The exception
-is that post increment doesn't exist on them.
+There are two kinds of iterators. The normal iterator that will use the metamethod
+of the object (if there is any) when the value is retrieved. This iterator is simply
+called ``luabind::iterator``. The other iterator is called ``luabind::raw_iterator``
+and will bypass the metamethod and give the true contents of the table. They have
+identical interfaces, which implements the ForwardIterator_ concept. Apart from
+the members of standard iterators, they have the following members and constructors:
 
-They look like this
+.. _ForwardIterator: http://www.sgi.com/tech/stl/ForwardIterator.html
 
 .. parsed-literal::
 
-    class object::iterator
+    class iterator
     {
         iterator();
-        iterator(const iterator&);
-
-        iterator& operator++();
-        bool operator!=(const iterator&) const;
-        iterator& operator=(const iterator&);
+        iterator(object const&);
 
         object key() const;
 
-        *implementation-defined* operator*();
+        *standard iterator members*
     };
 
-The implementation defined return value from the dereference operator is a
-proxy object that can be used as if it was an object, it can also be used to
-assign the specific table entry with a new value. If you want to assign a value
-to an entry pointed to by an iterator, just use the assignment operator on the
-dereferenced iterator::
+The constructor that takes a ``luabind::object`` is actually a template that can be
+used with object. Passing an object as the parameter to the iterator will
+construct the iterator to refer to the first element in the object.
 
-    *iter = 5;
+The default constructor will initialize the iterator to the one-past-end
+iterator. This is used to test for the end of the sequence.
 
+The value type of the iterator is an implementation defined proxy type which
+supports the same operations as ``luabind::object``. Which means that in most
+cases you can just treat it as an ordinary object. The difference is that any
+assignments to this proxy will result in the value being inserted at the
+iterators position, in the table.
+ 
 The ``key()`` member returns the key used by the iterator when indexing the
 associated Lua table.
 
+An example using iterators::
+
+    for (iterator i(globals(L)["a"]), end; i != end; ++i)
+    {
+      *i = 1;
+    }
+
+The iterator named ``end`` will be constructed using the default constructor
+and hence refer to the end of the sequence. This example will simply iterate
+over the entries in the global table ``a`` and set all its values to 1.
 
 Related functions
 -----------------
 
-There are a couple of functions related to objects and tables. ::
+There are a couple of functions related to objects and tables.
 
+::
+
+    int type(object const&);
+
+This function will return the lua type index of the given object.
+i.e. ``LUA_TNIL``, ``LUA_TNUMBER`` etc.
+
+::
+
+    template<class T, class K>
+    void settable(object const& o, K const& key, T const& value);
+    template<class K>
+    object gettable(object const& o, K const& key);
+    template<class T, class K>
+    void rawset(object const& o, K const& key, T const& value);
+    template<class K>
+    object rawget(object const& o, K const& key);
+
+These functions are used for indexing into tables. ``settable`` and ``gettable``
+translates into calls to ``lua_settable`` and ``lua_gettable`` respectively. Which
+means that you could just as well use the index operator of the object.
+
+``rawset`` and ``rawget`` will translate into calls to ``lua_rawset`` and
+``lua_rawget`` respectively. So they will bypass any metamethod and give you the
+true value of the table entry.
+
+::
+
+    template<class T>
     T object_cast<T>(object const&);
+    template<class T, class Policies>
     T object_cast<T>(object const&, Policies);
 
+    template<class T>
     boost::optional<T> object_cast_nothrow<T>(object const&);
+    template<class T, class Policies>
     boost::optional<T> object_cast_nothrow<T>(object const&, Policies);
 
+The ``object_cast`` function casts the value of an object to a C++ value.
+You can supply a policy to handle the conversion from lua to C++. If the cast
+cannot be made a ``cast_failed`` exception will be thrown. If you have
+defined LUABIND_NO_ERROR_CHECKING (see configuration) no checking will occur,
+and if the cast is invalid the application may very well crash. The nothrow
+versions will return an uninitialized ``boost::optional<T>`` object, to
+indicate that the cast could not be performed.
 
-Functor
--------
+The function signatures of all of the above functions are really templates
+for the object parameter, but the intention is that you should only pass
+objects in there, that's why it's left out of the documentation.
 
-The ``functor`` class is similar to object, with the exception that it can only
-be used to store functions. If you take it as a parameter, it will only match
-functions.
+::
 
-To use it you need to include its header::
+    object globals(lua_State*);
+    object registry(lua_State*);
 
-    #include <luabind/functor.hpp>
+These functions return the global environment table and the registry table respectively.
 
-It takes one template parameter, the return value of the Lua function it
-represents. Currently the functor can have at most one return value (unlike Lua
-functions).
+::
 
-.. topic:: Synopsis
+  object newtable(lua_State*);
 
-    .. parsed-literal::
-
-        template<class Ret>
-        class functor
-        {
-        public:
-
-            functor(lua_State\*, char const* name);
-            functor(functor const&);
-            ~functor();
-
-            bool is_valid() const;
-            operator safe_bool_type() const;
-            void reset();
-
-            lua_State\* lua_state() const;
-            void pushvalue() const;
-            
-            bool operator==(functor<Ret> const&);
-            bool operator!=(functor<Ret> const&);
-            
-            *implementation-defined* operator()() const;
-            
-            template<class A0>
-            *implementation-defined* operator()(A0 const&) const;
-
-            template<class A0, class A1>
-            *implementation-defined* operator()(A0 const&, A1 const&) const;
-
-            /\* ... \*/
-        };
-
-The application operator takes any parameters. The parameters are converted
-into Lua and the function is called. The return value will act as if it was the
-type Ret, with the exception that you can use the return value to give policies
-to the call. You do this the same way as you do with objects, using the
-operator[], and giving the policies inside the brackets.
-
-The ``is_valid()`` function works just like the one on object, it tells you if
-the functor has been assigned with a valid Lua function. The ``operator
-safe_bool_type()`` is an alias for this member function and also works just as
-the one found in object.
-
-For example, if you have the following Lua function::
-
-    function f(a, b)
-        return a + b
-    end
-
-You can expose it to C++ like this::
-
-    functor<int> f(L, "f");
-
-    std::cout << f(3, 5) << "\n";
-
-This will print out the sum of 3 and 5. Note that you can pass any parameters
-to the application operator of ``luabind::functor``, this is because lua
-doesn't have signatures for its functions. All Lua functions take any number of
-parameters of any type.
-
-If we have a C++ function that takes a ``luabind::functor`` and registers it,
-it will accept Lua functions passed to it. This enables us to expose APIs that
-requires you to register callbacks. For example, if your C++ API looks like
-this::
-
-    void set_callback(void(*)(int, int));
-
-And you want to expose it to Lua, you have to wrap the call to the Lua 
-function inside a real C++ function, like this::
-
-    functor<void> lua_callback;
-
-    void callback_wrapper(int a, int b)
-    {
-        lua_callback(a, b);
-    }
-
-    void set_callback_wrapper(const functor<void>& f)
-    {
-        lua_callback = f;
-        set_callback(&callback_wrapper);
-    }
-
-And then register ``set_callback_wrapper`` instead of registering
-``set_callback``. This will have the effect that when one tries to register the
-callback from Lua, your ``set_callback_wrapper`` will be called instead and
-first set the Lua functor to the given function. It will then call the real
-``set_callback`` with the ``callback_wrapper``. The ``callback_wrapper`` will
-be called whenever the callback should be called, and it will simply call the
-Lua function that we registered.
-
-You can also use ``object_cast`` to cast an object to a functor.
-
-``reset`` on ``functor`` will invalidate the functor (and remove any references
-to its Lua value). If the functor object has longer lifetime than the lua state
-(e.g. if it's a global).
+This function creates a new table and returns it as an object.
 
 
 Defining classes in Lua
@@ -1584,10 +1556,10 @@ follows::
     }
 
 There's another exception that luabind may throw: ``luabind::cast_failed``,
-this exception is thrown from ``call_function<>``, ``call_member<>`` or when
-``functor<>`` is invoked. It means that the return value from the Lua function
-couldn't be converted to a C++ value. It is also thrown from ``object_cast<>``
-if the cast cannot be made.
+this exception is thrown from ``call_function<>`` or ``call_member<>``. It
+means that the return value from the Lua function couldn't be converted to
+a C++ value. It is also thrown from ``object_cast<>`` if the cast cannot
+be made.
 
 The synopsis for ``luabind::cast_failed`` is::
 
@@ -2099,7 +2071,7 @@ LUABIND_NO_ERROR_CHECKING
     was called. Functions will still be able to throw exceptions when error 
     checking is disabled.
 
-    If a functions throws an exception it will be caught by luabind and 
+    If a function throws an exception it will be caught by luabind and 
     propagated with ``lua_error()``.
 
 LUABIND_NO_EXCEPTIONS
@@ -2123,7 +2095,8 @@ LUA_API
 LUABIND_EXPORT, LUABIND_IMPORT
     If you want to link against luabind as a dll (in devstudio), you can 
     define ``LUABIND_EXPORT`` to ``__declspec(dllexport)`` and 
-    ``LUABIND_IMPORT`` to ``__declspec(dllimport)``. 
+    ``LUABIND_IMPORT`` to ``__declspec(dllimport)`` or
+    ``__attribute__ ((visibility("default")))`` on GCC 4. 
     Note that you have to link against Lua as a dll aswell, to make it work.
 
 LUABIND_NO_RTTI
@@ -2353,7 +2326,7 @@ Crashes when linking against luabind as a dll in windows
 
 I cannot register a function with a non-const parameter
     This is because there is no way to get a reference to a Lua value. Have 
-    a look at out_value and pure_out_value policies.
+    a look at out_value_ and pure_out_value_ policies.
 
 
 Known issues

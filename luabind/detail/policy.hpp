@@ -27,6 +27,7 @@
 #include <luabind/config.hpp>
 
 #include <typeinfo>
+#include <string>
 
 #include <boost/type_traits/is_enum.hpp>
 #include <boost/type_traits/is_array.hpp>
@@ -40,6 +41,7 @@
 #include <boost/type_traits/is_base_and_derived.hpp>
 #include <boost/bind/arg.hpp>
 #include <boost/limits.hpp>
+#include <boost/tuple/tuple.hpp>
 
 #include <luabind/detail/class_registry.hpp>
 #include <luabind/detail/primitives.hpp>
@@ -47,13 +49,16 @@
 #include <luabind/detail/typetraits.hpp>
 #include <luabind/detail/class_cache.hpp>
 #include <luabind/detail/debug.hpp>
+#include <luabind/detail/class_rep.hpp>
 
 #include <boost/type_traits/add_reference.hpp>
 
 #include <luabind/detail/decorate_type.hpp>
-#include <luabind/object.hpp>
 #include <luabind/weak_ref.hpp>
 #include <luabind/back_reference_fwd.hpp>
+
+#include <luabind/value_wrapper.hpp>
+#include <luabind/from_stack.hpp>
 
 namespace luabind
 {
@@ -72,7 +77,6 @@ namespace luabind
 	class index_map
 	{
 	public:
-
 		index_map(const int* m): m_map(m) {}
 
 		int operator[](int index) const
@@ -81,7 +85,6 @@ namespace luabind
 		}
 
 	private:
-
 		const int* m_map;
 	};
 
@@ -110,8 +113,7 @@ namespace luabind
 		LUABIND_API int implicit_cast(const class_rep* crep, LUABIND_TYPE_INFO const&, int& pointer_offset);
 	}
 
-	 template<class T> class functor;
-	 class object;
+//	 template<class T> class functor;
 	 class weak_ref;
 }
 
@@ -119,7 +121,7 @@ namespace luabind { namespace detail
 {
 	template<class>
 	struct is_primitive;
-
+/*
 	template<class T>
 	yes_t is_lua_functor_test(const functor<T>&);
 
@@ -137,30 +139,7 @@ namespace luabind { namespace detail
 
 		BOOST_STATIC_CONSTANT(bool, value = sizeof(is_lua_functor_test(t)) == sizeof(yes_t));
 	};
-
-	namespace
-	{
-		static char msvc_fix[64];
-	}
-
-	template<class T>
-	struct indirect_type
-	{
-		typedef typename
-			boost::mpl::if_<is_primitive<T>
-				, const type<T>&
-				, typename boost::mpl::eval_if<boost::mpl::or_<boost::is_reference<T>, boost::is_pointer<T> >
-					, identity<T>
-					, boost::add_reference<T>
-				>::type
-			>::type result_type;
-
-		static inline result_type get()
-		{
-			return reinterpret_cast<result_type>(msvc_fix);
-		}
-	};
-
+*/
 	template<class H, class T>
 	struct policy_cons
 	{
@@ -250,10 +229,6 @@ namespace luabind { namespace detail
 	
 #undef LUABIND_INTEGER_TYPE
 	
-	template<> struct is_primitive<luabind::object>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const luabind::object>: boost::mpl::bool_<true> {};
-	template<> struct is_primitive<const luabind::object&>: boost::mpl::bool_<true> {};
-
 	template<> struct is_primitive<luabind::weak_ref>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<const luabind::weak_ref>: boost::mpl::bool_<true> {};
 	template<> struct is_primitive<const luabind::weak_ref&>: boost::mpl::bool_<true> {};
@@ -289,20 +264,6 @@ namespace luabind { namespace detail
 	{
 		typedef primitive_converter type;
 		
-		void apply(lua_State* L, const luabind::object& v)
-		{
-			// if the luabind::object is uninitialized
-			// treat it as nil.
-			if (v.lua_state() == 0)
-			{
-				lua_pushnil(L);
-				return;
-			}
-			// if you hit this assert you are trying to return a value from one state into another lua state
-			assert((v.lua_state() == L) && "you cannot return an uninitilized value "
-				"or a value from one lua state into another");
-			v.pushvalue();
-		}
 		void apply(lua_State* L, int v) { lua_pushnumber(L, (lua_Number)v); }
 		void apply(lua_State* L, short v) { lua_pushnumber(L, (lua_Number)v); }
 		void apply(lua_State* L, char v) { lua_pushnumber(L, (lua_Number)v); }
@@ -385,30 +346,13 @@ namespace luabind { namespace detail
 		{ return std::string(lua_tostring(L, index), lua_strlen(L, index)); }
 		PRIMITIVE_MATCHER(std::string) { if (lua_type(L, index) == LUA_TSTRING) return 0; else return -1; }
 
-		PRIMITIVE_CONVERTER(luabind::object)
-		{
-			LUABIND_CHECK_STACK(L);
-
-			lua_pushvalue(L, index);
-			detail::lua_reference ref;
-			ref.set(L);
-			return luabind::object(L, ref, true);
-		}
-
-		PRIMITIVE_MATCHER(luabind::object)
-		{
-			(void)index;
-			(void)L;
-			return std::numeric_limits<int>::max() / LUABIND_MAX_ARITY;
-		}
-
 		PRIMITIVE_CONVERTER(luabind::weak_ref)
 		{
 			LUABIND_CHECK_STACK(L);
 			return luabind::weak_ref(L, index);
 		}
 
-		PRIMITIVE_MATCHER(luabind::weak_ref) { (void)index; (void)L; return std::numeric_limits<int>::max() - 1; }
+		PRIMITIVE_MATCHER(luabind::weak_ref) { (void)index; (void)L; return (std::numeric_limits<int>::max)() - 1; }
 		
 		const char* apply(lua_State* L, detail::by_const_pointer<char>, int index) 
 		{
@@ -452,37 +396,43 @@ namespace luabind { namespace detail
 		template<class T>
 		T apply(lua_State* L, detail::by_value<T>, int index) 
 		{ 
-			return converters::convert_lua_to_cpp(L, detail::by_value<T>(), index);
+			using namespace converters;
+			return convert_lua_to_cpp(L, detail::by_value<T>(), index);
 		}
 
 		template<class T>
 		T apply(lua_State* L, detail::by_reference<T>, int index) 
 		{ 
-			return converters::convert_lua_to_cpp(L, detail::by_reference<T>(), index);
+			using namespace converters;
+			return convert_lua_to_cpp(L, detail::by_reference<T>(), index);
 		}
 
 		template<class T>
 		T apply(lua_State* L, detail::by_const_reference<T>, int index) 
 		{ 
-			return converters::convert_lua_to_cpp(L, detail::by_const_reference<T>(), index);
+			using namespace converters;
+			return convert_lua_to_cpp(L, detail::by_const_reference<T>(), index);
 		}
 
 		template<class T>
 		T* apply(lua_State* L, detail::by_pointer<T>, int index) 
 		{ 
-			return converters::convert_lua_to_cpp(L, detail::by_pointer<T>(), index);
+			using namespace converters;
+			return convert_lua_to_cpp(L, detail::by_pointer<T>(), index);
 		}
 
 		template<class T>
 		const T* apply(lua_State* L, detail::by_const_pointer<T>, int index) 
 		{ 
-			return converters::convert_lua_to_cpp(L, detail::by_pointer<T>(), index);
+			using namespace converters;
+			return convert_lua_to_cpp(L, detail::by_pointer<T>(), index);
 		}
 
 		template<class T>
 		static int match(lua_State* L, T, int index)
 		{
-			return converters::match_lua_to_cpp(L, T(), index);
+			using namespace converters;
+			return match_lua_to_cpp(L, T(), index);
 		}
 
 		template<class T>
@@ -496,8 +446,9 @@ namespace luabind { namespace detail
 
 		template<class T>
 		void apply(lua_State* L, const T& v) 
-		{ 
-			converters::convert_cpp_to_lua(L, v);
+		{
+			using namespace converters;
+			convert_cpp_to_lua(L, v);
 		}
 	};
 
@@ -1043,7 +994,7 @@ namespace luabind { namespace detail
 		template<class T>
 		void converter_postcall(lua_State*, T, int) {}
 	};
-
+/*
 	// ****** functor converter ********
 
 	template<class Direction> struct functor_converter;
@@ -1092,10 +1043,56 @@ namespace luabind { namespace detail
 		template<class T>
 		void converter_postcall(lua_State*, T, int) {}
 	};
+*/
 
+	template<class Direction>
+	struct value_wrapper_converter;
 
+	template<>
+	struct value_wrapper_converter<lua_to_cpp>
+	{
+		typedef value_wrapper_converter type;
 
+		template<class T>
+		T apply(lua_State* L, by_const_reference<T>, int index)
+		{
+			return T(from_stack(L, index));
+		}
 
+		template<class T>
+		T apply(lua_State* L, by_value<T>, int index)
+		{
+			return apply(L, by_const_reference<T>(), index);
+		}
+
+		template<class T>
+		static int match(lua_State* L, by_const_reference<T>, int index)
+		{
+			return value_wrapper_traits<T>::check(L, index) 
+                ? (std::numeric_limits<int>::max)() / LUABIND_MAX_ARITY
+                : -1;
+		}
+
+		template<class T>
+		static int match(lua_State* L, by_value<T>, int index)
+		{
+			return match(L, by_const_reference<T>(), index);
+		}
+
+		void converter_postcall(...) {}
+	};
+
+	template<>
+	struct value_wrapper_converter<cpp_to_lua>
+	{
+		typedef value_wrapper_converter type;
+
+    	template<class T>
+        void apply(lua_State* interpreter, T const& value_wrapper)
+		{
+			value_wrapper_traits<T>::unwrap(interpreter, value_wrapper);
+        }
+    };
 
 // *********** default_policy *****************
 
@@ -1110,40 +1107,44 @@ namespace luabind { namespace detail
 
 		template<class T, class Direction>
 		struct generate_converter
-		{
-			typedef typename eval_if<
+		  : eval_if<
 				is_user_defined<T>
 			  , user_defined_converter<Direction>
 			  , eval_if<
-					is_primitive<T>
-				  , primitive_converter<Direction>
+    				is_value_wrapper_arg<T>
+				  , value_wrapper_converter<Direction>
 				  , eval_if<
-						is_lua_functor<T>
-				  	  , functor_converter<Direction>
+						is_primitive<T>
+					  , primitive_converter<Direction>
 					  , eval_if<
-							boost::is_enum<T>
-						  , enum_converter<Direction>
-						  , eval_if<
-								is_nonconst_pointer<T>
-							  , pointer_converter<Direction>
+//							is_lua_functor<T>
+//						  , functor_converter<Direction>
+//						  , eval_if<
+								boost::is_enum<T>
+							  , enum_converter<Direction>
 							  , eval_if<
-									is_const_pointer<T>
-								  , const_pointer_converter<Direction>
+									is_nonconst_pointer<T>
+								  , pointer_converter<Direction>
 								  , eval_if<
-										is_nonconst_reference<T>
-									  , ref_converter<Direction>
+										is_const_pointer<T>
+									  , const_pointer_converter<Direction>
 									  , eval_if<
-											is_const_reference<T>
-									  	  , const_ref_converter<Direction>
-										  , value_converter<Direction>
+											is_nonconst_reference<T>
+										  , ref_converter<Direction>
+										  , eval_if<
+												is_const_reference<T>
+											  , const_ref_converter<Direction>
+											  , value_converter<Direction>
+											>
 										>
 									>
 								>
 							>
-						>
+//						>
 					>
 				>
-			>::type type;
+		    >
+		{
 		};
 	};
 
@@ -1277,8 +1278,6 @@ namespace luabind {	 namespace
 	LUABIND_ANONYMOUS_FIX boost::arg<0> return_value;
 	LUABIND_ANONYMOUS_FIX boost::arg<0> result;
 }}
-
-#include <luabind/detail/object_funs.hpp>
 
 #endif // LUABIND_POLICY_HPP_INCLUDED
 

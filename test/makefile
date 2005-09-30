@@ -1,7 +1,6 @@
 include ../config
 
 SOURCES = \
-	main.cpp \
 	test_abstract_base.cpp \
 	test_attributes.cpp \
 	test_const.cpp \
@@ -17,39 +16,32 @@ SOURCES = \
 	test_operators.cpp \
 	test_policies.cpp \
 	test_scope.cpp \
-	test_separate_registration.cpp \
 	test_separation.cpp \
 	test_simple_class.cpp \
 	test_typetraits.cpp \
-	test_yield.cpp
-
-# not converted yet
-
-#	test_null_pointer.cpp \
+	test_yield.cpp \
+	test_null_pointer.cpp \
 	test_policies.cpp \
 	test_free_functions.cpp \
 	test_iterator.cpp \
 
 
-TARGET = test_luabind
+CPPFLAGS = -Wno-long-double
 
+all: $(SOURCES:.cpp=.exe)
 
-
-
-OBJECTS = $(SOURCES:.cpp=.o)
-
-all: $(TARGET)
-
-$(TARGET): $(OBJECTS)
-	$(CXX) -g $(OBJECTS) -L$(LUA_PATH)/lib -L../lib -lluabind -llua -llualib -o $@
+%.exe:%.o main.o
+	$(CXX) $? -o $@ -g -L$(LUA_PATH)/lib -L../lib -lluabind -llualib -llua
 
 %.o:%.cpp
-	$(CXX) -Wall -ftemplate-depth-100 -g $(CONFIG) -I$(LUA_PATH)/include -I. -I- -I../ -I$(BOOST_ROOT) -c $? -o $@
+	$(CXX) -Wall -ftemplate-depth-100 -g $(CPPFLAGS) $(CONFIG) -I$(LUA_PATH)/include -I. -I- -I../ -I$(BOOST_ROOT) -c $? -o $@
 
-relink:
-	rm -f $(TARGET)
-	make
+#just to force the tests to be run
+test: $(SOURCES:.cpp=.dummy)
+
+%.dummy:%.exe
+	./$?
 
 clean:
-	rm -f $(OBJECTS) $(TARGET) core
+	rm -f $(SOURCES:.cpp=.o) $(SOURCES:.cpp=.exe) main.o core
 

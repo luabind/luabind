@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
+
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 #include <luabind/adopt_policy.hpp>
@@ -32,44 +33,41 @@ using namespace luabind;
 
 int test_object_param(const object& table)
 {
-	LUABIND_CHECK_STACK(table.lua_state());
+	LUABIND_CHECK_STACK(table.interpreter());
 
 	object current_object;
 	current_object = table;
+	lua_State* L = table.interpreter();
 
-	if (table.type() == LUA_TTABLE)
+	if (type(table) == LUA_TTABLE)
 	{
-
-		int sum = object_cast<int>(table["oh"]);
-		for (object::array_iterator i = table.abegin(); i != table.aend(); ++i)
+		int sum1 = 0;
+		for (iterator i(table), e; i != e; ++i)
 		{
-			assert(i->type() == LUA_TNUMBER);
-			sum += object_cast<int>(*i);
+			assert(type(*i) == LUA_TNUMBER);
+			sum1 += object_cast<int>(*i);
 		}
 
 		int sum2 = 0;
-		for (object::iterator i = table.begin(); i != table.end(); ++i)
+		for (raw_iterator i(table), e; i != e; ++i)
 		{
-			assert(i->type() == LUA_TNUMBER);
+			assert(type(*i) == LUA_TNUMBER);
 			sum2 += object_cast<int>(*i);
 		}
 
-		int sum3 = 0;
-		for (object::raw_iterator i = table.raw_begin(); i != table.raw_end(); ++i)
-		{
-			assert(i->type() == LUA_TNUMBER);
-			sum3 += object_cast<int>(*i);
-		}
-
-		table["sum"] = sum;
+		// test iteration of empty table
+		object empty_table = newtable(L);
+		for (iterator i(empty_table), e; i != e; ++i)
+		{}
+		
+		table["sum1"] = sum1;
 		table["sum2"] = sum2;
-		table["sum3"] = sum3;
 		table["blurp"] = 5;
 		return 0;
 	}
 	else
 	{
-		if (table.type() != LUA_TNIL)
+		if (type(table) != LUA_TNIL)
 		{
 			return 1;
 		}
@@ -131,6 +129,10 @@ void test_main(lua_State* L)
 			.def_readonly("obj2", &test_param::obj2)
 	];
 
+	object uninitialized;
+	TEST_CHECK(!uninitialized);
+	TEST_CHECK(!uninitialized.is_valid());
+	
 	DOSTRING(L,
 		"t = 2\n"
 		"assert(test_object_param(t) == 1)");
@@ -138,19 +140,17 @@ void test_main(lua_State* L)
 	DOSTRING(L, "assert(test_object_param(nil) == 2)");
 	DOSTRING(L, "t = { ['oh'] = 4, 3, 5, 7, 13 }");
 	DOSTRING(L, "assert(test_object_param(t) == 0)");
-	DOSTRING(L, "assert(t.sum == 4 + 3 + 5 + 7 + 13)");
+	DOSTRING(L, "assert(t.sum1 == 4 + 3 + 5 + 7 + 13)");
 	DOSTRING(L, "assert(t.sum2 == 4 + 3 + 5 + 7 + 13)");
-	DOSTRING(L, "assert(t.sum3 == 4 + 3 + 5 + 7 + 13)");
 	DOSTRING(L, "assert(t.blurp == 5)");
 
-	object g = get_globals(L);
-	object fun = g["test_fun"];
-	object ret = fun();
+	object g = globals(L);
+	object ret = g["test_fun"]();
 	TEST_CHECK(object_cast<int>(ret) == 42);
 
 	DOSTRING(L, "function test_param_policies(x, y) end");
 	object test_param_policies = g["test_param_policies"];
-	int a = test_param_policies.type();
+	int a = type(test_param_policies);
 	TEST_CHECK(a == LUA_TFUNCTION);
 
 	// call the function and tell lua to adopt the pointer passed as first argument
@@ -172,13 +172,20 @@ void test_main(lua_State* L)
 	object test_object_policies = g["test_object_policies"];
 	object ret_val = test_object_policies("teststring")[detail::null_type()];
 	TEST_CHECK(object_cast<int>(ret_val) == 6);
+	TEST_CHECK(ret_val == 6);
+	TEST_CHECK(6 == ret_val);
+	g["temp_val"] = 6;
+	TEST_CHECK(ret_val == g["temp_val"]);
+	object temp_val = g["temp_val"];
+	TEST_CHECK(ret_val == temp_val);
+
 	TEST_CHECK(object_cast<std::string>(g["glob"]) == "teststring");
-	TEST_CHECK(object_cast<std::string>(g.at("glob")) == "teststring");
-	TEST_CHECK(object_cast<std::string>(g.raw_at("glob")) == "teststring");
+	TEST_CHECK(object_cast<std::string>(gettable(g, "glob")) == "teststring");
+	TEST_CHECK(object_cast<std::string>(rawget(g, "glob")) == "teststring");
 
 	object t = newtable(L);
-	TEST_CHECK(t.begin() == t.end());
-	TEST_CHECK(t.raw_begin() == t.raw_end());
+	TEST_CHECK(iterator(t) == iterator());
+	TEST_CHECK(raw_iterator(t) == raw_iterator());
 
 	DOSTRING(L,
 		"p1 = {}\n"
@@ -188,6 +195,7 @@ void test_main(lua_State* L)
 		"assert(p1.ret == 1)\n"
 		"assert(p2.ret == 2)\n"
 		"assert(p3.ret == 3)\n");
+
 
 #ifndef LUABIND_NO_EXCEPTIONS
 
@@ -202,6 +210,34 @@ void test_main(lua_State* L)
 
 #endif
 
-	object not_initialized;
-	TEST_CHECK(!object_cast_nothrow<int>(not_initialized));
+    object not_initialized;
+    TEST_CHECK(!object_cast_nothrow<int>(not_initialized));
+	 TEST_CHECK(!not_initialized.is_valid());
+	 TEST_CHECK(!not_initialized);
+
+    DOSTRING(L, "t = { {1}, {2}, {3}, {4} }");
+
+    int inner_sum = 0;
+
+    for (iterator i(globals(L)["t"]), e; i != e; ++i)
+    {
+        inner_sum += object_cast<int>((*i)[1]);
+    }
+
+    TEST_CHECK(inner_sum == 1 + 2 + 3 + 4);
+
+    DOSTRING(L, "t = { {1, 2}, {3, 4}, {5, 6}, {7, 8} }");
+
+    inner_sum = 0;
+
+    for (iterator i(globals(L)["t"]), e; i != e; ++i)
+    {
+        for (iterator j(*i), e; j != e; ++j)
+        {
+            inner_sum += object_cast<int>(*j);
+        }
+    }
+
+    TEST_CHECK(inner_sum == 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8);
+	TEST_CHECK(object_cast<int>(globals(L)["t"][2][2]) == 4);
 }
