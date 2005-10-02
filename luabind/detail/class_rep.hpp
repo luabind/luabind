@@ -40,17 +40,9 @@
 #include <luabind/detail/find_best_match.hpp>
 #include <luabind/detail/get_overload_signature.hpp>
 #include <luabind/error.hpp>
-#include <luabind/detail/method_rep.hpp>
+//#include <luabind/detail/method_rep.hpp>
 #include <luabind/handle.hpp>
 #include <luabind/detail/primitives.hpp>
-
-namespace luabind
-{
-
-	template<BOOST_PP_ENUM_PARAMS_WITH_A_DEFAULT(LUABIND_MAX_BASES, class A, detail::null_type)>
-	struct bases {};
-	typedef bases<detail::null_type> no_bases;
-}
 
 namespace luabind { namespace detail
 {
