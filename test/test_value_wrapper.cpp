@@ -39,6 +39,14 @@ namespace luabind
       typedef boost::mpl::true_ is_specialized;
   };
 
+  // used on compilers supporting partial template specialization
+  template<>
+  struct value_wrapper_traits<X>
+  {
+      typedef boost::mpl::true_ is_specialized;
+  };
+
+
 } // namespace luabind
 
 BOOST_MPL_ASSERT(( luabind::is_value_wrapper<X> ));
@@ -55,3 +63,4 @@ BOOST_MPL_ASSERT_NOT(( luabind::is_value_wrapper<X const&> ));
 int main()
 {
 }
+
