@@ -1055,8 +1055,6 @@ namespace luabind
 
 		void init()
 		{
-			set_back_reference((back_reference<T>*)0);
-	
 			class_base::init(LUABIND_TYPEID(T)
 				, detail::internal_holder_type<typename meta::held_type>::apply()
 				, detail::pointee_typeid(
@@ -1110,7 +1108,7 @@ namespace luabind
 		// these handle default implementation of virtual functions
 		template<class F, class Policies>
 		class_& virtual_def(char const* name, F const& fn
-			, Policies const& policies, detail::null_type, boost::mpl::true_)
+			, Policies const&, detail::null_type, boost::mpl::true_)
 		{
 			// normal def() call
 			detail::overload_rep o(fn, static_cast<Policies*>(0));
@@ -1127,7 +1125,7 @@ namespace luabind
 
 		template<class F, class Default, class Policies>
 		class_& virtual_def(char const* name, F const& fn
-			, Default const& default_, Policies const& policies, boost::mpl::false_)
+			, Default const& default_, Policies const&, boost::mpl::false_)
 		{
 			// default_ is a default implementation
 			// policies is either null_type or a policy list
@@ -1154,7 +1152,7 @@ namespace luabind
 		class_& def_constructor(
 			boost::mpl::true_ /* HasWrapper */
           , Signature*
-          , Policies const& policies)
+          , Policies const&)
         {	
 			detail::construct_rep::overload_t o;
 
@@ -1184,7 +1182,7 @@ namespace luabind
 		class_& def_constructor(
 			boost::mpl::false_ /* !HasWrapper */
           , Signature*
-          , Policies const& policies)
+          , Policies const&)
 		{
 			detail::construct_rep::overload_t o;
 
@@ -1210,16 +1208,6 @@ namespace luabind
 			this->add_constructor(o);
             return *this;
         }
-
-		void set_back_reference(detail::default_back_reference*)
-		{
-			back_reference<T>::has_wrapper 
-				= !boost::is_same<typename meta::wrapped_type, detail::null_type>::value;
-		}
-
-		void set_back_reference(void*)
-		{
-		}
 
 		typedef void(*adopt_fun_t)(void*);
 

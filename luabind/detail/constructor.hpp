@@ -104,7 +104,7 @@ namespace luabind { namespace detail
         template<class T, class Policies, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
         static T* execute(
             lua_State* L
-          , weak_ref const& ref
+          , weak_ref const&
           , T*
           , constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY,A)>*
           , Policies*)

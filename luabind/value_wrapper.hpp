@@ -127,33 +127,25 @@ struct is_value_wrapper_arg
 #else
 
 # include <luabind/detail/yes_no.hpp>
+# include <boost/type_traits/add_reference.hpp>
 
 namespace luabind {
 
 namespace detail
 {
   template<class T>
-  typename is_value_wrapper<T>::type
-    is_value_wrapper_arg_check(void(*)(T), ...);
-
-  template<class T>
-  typename is_value_wrapper<T>::type
-    is_value_wrapper_arg_check(void(*)(T&), int);
-
-  template<class T> 
-  typename is_value_wrapper<T>::type
-    is_value_wrapper_arg_check(void(*)(T const&), long);
-
-  boost::mpl::false_ is_value_wrapper_arg_check(...);
-
+  typename is_value_wrapper<T>::type is_value_wrapper_arg_check(T const*);
+  
   yes_t to_yesno(boost::mpl::true_);
   no_t to_yesno(boost::mpl::false_);
-  
+
   template<class T>
   struct is_value_wrapper_arg_aux
   {
+      static typename boost::add_reference<T>::type x;
+
       BOOST_STATIC_CONSTANT(bool, value = 
-          sizeof(to_yesno(is_value_wrapper_arg_check((void(*)(T))0, 0L)))
+          sizeof(to_yesno(is_value_wrapper_arg_check(&x)))
             == sizeof(yes_t)
       );
 

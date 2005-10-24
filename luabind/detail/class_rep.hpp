@@ -42,6 +42,15 @@
 #include <luabind/handle.hpp>
 #include <luabind/detail/primitives.hpp>
 
+#ifdef BOOST_MSVC
+// msvc doesn't have two-phase, but requires
+// method_rep (and overload_rep) to be complete
+// because of its std::list implementation.
+// gcc on the other hand has two-phase but doesn't
+// require method_rep to be complete.
+#include <luabind/detail/method_rep.hpp>
+#endif
+
 namespace luabind { namespace detail
 {
 

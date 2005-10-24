@@ -32,12 +32,15 @@
 #include <boost/preprocessor/iteration/iterate.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/preprocessor/repeat.hpp>
+#include <vector>
 
 #include <luabind/detail/overload_rep_base.hpp>
 
-#include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/is_indirect_const.hpp>
+
+#ifndef BOOST_MSVC
 #include <luabind/detail/policy.hpp>
+#endif
 
 namespace luabind { namespace detail
 {

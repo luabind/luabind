@@ -471,7 +471,7 @@ namespace luabind { namespace detail
 				return;
 			}
 
-			if (back_reference<T>::extract(L, ptr))
+			if (luabind::get_back_reference(L, ptr))
 				return;
 
 			class_rep* crep = get_class_rep<T>(L);
@@ -565,7 +565,7 @@ namespace luabind { namespace detail
 		template<class T>
 		void apply(lua_State* L, const T& ref)
 		{
-			if (back_reference<T>::extract(L, &ref))
+			if (luabind::get_back_reference(L, ref))
 				return;
 
 			class_rep* crep = get_class_rep<T>(L);
@@ -711,7 +711,7 @@ namespace luabind { namespace detail
 				return;
 			}
 
-			if (back_reference<T>::extract(L, ptr))
+			if (luabind::get_back_reference(L, ptr))
 				return;
 
 			class_rep* crep = get_class_rep<T>(L);
@@ -782,7 +782,7 @@ namespace luabind { namespace detail
 		template<class T>
 		void apply(lua_State* L, T& ref)
 		{
-			if (back_reference<T>::extract(L, &ref))
+			if (luabind::get_back_reference(L, ref))
 				return;
 
 			class_rep* crep = get_class_rep<T>(L);
@@ -840,7 +840,7 @@ namespace luabind { namespace detail
 		template<class T>
 		void apply(lua_State* L, const T& ref)
 		{
-			if (back_reference<T>::extract(L, &ref))
+			if (luabind::get_back_reference(L, ref))
 				return;
 
 			class_rep* crep = get_class_rep<T>(L);

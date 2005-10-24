@@ -21,6 +21,7 @@
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <luabind/value_wrapper.hpp>
+#include <luabind/object.hpp>
 #include <boost/mpl/assert.hpp>
 
 struct X_tag;
@@ -32,24 +33,27 @@ struct X
 
 namespace luabind
 {
-
+#ifdef LUABIND_USE_VALUE_WRAPPER_TAG
   template<>
   struct value_wrapper_traits<X_tag>
   {
       typedef boost::mpl::true_ is_specialized;
   };
-
+#else
   // used on compilers supporting partial template specialization
   template<>
   struct value_wrapper_traits<X>
   {
       typedef boost::mpl::true_ is_specialized;
   };
-
+#endif
 
 } // namespace luabind
 
 BOOST_MPL_ASSERT(( luabind::is_value_wrapper<X> ));
+BOOST_MPL_ASSERT_NOT(( luabind::is_value_wrapper<X&> ));
+BOOST_MPL_ASSERT_NOT(( luabind::is_value_wrapper<X const&> ));
+
 BOOST_MPL_ASSERT(( luabind::is_value_wrapper_arg<X> ));
 BOOST_MPL_ASSERT(( luabind::is_value_wrapper_arg<X const> ));
 BOOST_MPL_ASSERT(( luabind::is_value_wrapper_arg<X&> ));
@@ -57,8 +61,9 @@ BOOST_MPL_ASSERT(( luabind::is_value_wrapper_arg<X const&> ));
 BOOST_MPL_ASSERT_NOT(( luabind::is_value_wrapper_arg<int> ));
 BOOST_MPL_ASSERT_NOT(( luabind::is_value_wrapper_arg<int[4]> ));
 
-BOOST_MPL_ASSERT_NOT(( luabind::is_value_wrapper<X&> ));
-BOOST_MPL_ASSERT_NOT(( luabind::is_value_wrapper<X const&> ));
+BOOST_MPL_ASSERT(( luabind::is_value_wrapper_arg<X const&> ));
+BOOST_MPL_ASSERT(( luabind::is_value_wrapper_arg<luabind::object&> ));
+BOOST_MPL_ASSERT(( luabind::is_value_wrapper_arg<luabind::object const&> ));
 
 int main()
 {

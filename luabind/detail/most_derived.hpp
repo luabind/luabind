@@ -1,4 +1,4 @@
-// Copyright (c) 2004 Daniel Wallin and Arvid Norberg
+// Copyright (c) 2005 Daniel Wallin and Arvid Norberg
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,18 +20,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef LUABIND_BACK_REFERENCE_FWD_040510_HPP
-#define LUABIND_BACK_REFERENCE_FWD_040510_HPP
+#ifndef MOST_DERIVED_051018_HPP
+# define MOST_DERIVED_051018_HPP
 
-namespace luabind {
+# include <boost/mpl/if.hpp>
+# include <boost/type_traits/is_base_and_derived.hpp>
 
-template<class T>
-bool get_back_reference(lua_State* L, T const& x);
+namespace luabind { namespace detail {
 
-template<class T>
-bool move_back_reference(lua_State* L, T const& x);
+template<class Class, class WrappedClass>
+struct most_derived
+{
+    typedef typename boost::mpl::if_<
+        boost::is_base_and_derived<Class, WrappedClass>
+      , WrappedClass
+      , Class
+    >::type type;
+};
 
-} // namespace luabind
+}} // namespace luabind::detail
 
-#endif // LUABIND_BACK_REFERENCE_FWD_040510_HPP
+#endif // MOST_DERIVED_051018_HPP
 

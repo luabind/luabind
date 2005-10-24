@@ -165,22 +165,12 @@ void test_main(lua_State* L)
 			.def("f", &U::f)
 			.def("g", &U::g)
 	];
-
-	try                                         
-	{                                           
-		dostring(L, "u = U()\n"
+                              
+	DOSTRING(L, 
+		"u = U()\n"
 		"assert(u:f(0) == 1)\n"
 		"assert(u:f(0,0) == 2)\n"
 		"assert(u:g() == 3)\n");
-	}                                           
-	catch (luabind::error const& e)
-	{
-		TEST_ERROR(lua_tostring(e.state(), -1));
-	}
-	catch (std::string const& s)
-	{
-		TEST_ERROR(s.c_str());
-	}
 
 	DOSTRING(L,
 		"u = U()\n"

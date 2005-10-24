@@ -52,7 +52,7 @@ namespace detail
   {
       typedef typename boost::mpl::if_<
           boost::is_reference_wrapper<T>
-        , typename boost::unwrap_reference<T>::type&
+        , BOOST_DEDUCED_TYPENAME boost::unwrap_reference<T>::type&
         , T
       >::type unwrapped_type;
 
@@ -63,7 +63,9 @@ namespace detail
 
       cv.apply(
           interpreter
-        , boost::implicit_cast<typename boost::unwrap_reference<T>::type&>(value)
+        , boost::implicit_cast<
+              BOOST_DEDUCED_TYPENAME boost::unwrap_reference<T>::type&
+          >(value)
       );
   }
 
@@ -410,10 +412,9 @@ namespace detail
       handle m_key;
   };
 
-#if defined(__GNUC__) || BOOST_WORKAROUND(BOOST_MSVC, == 1300)
-  // Needed because of GCC's and VC7's strange ADL
+// Needed because of some strange ADL issues.
 
-# define LUABIND_OPERATOR_ADL_WKND(op) \
+#define LUABIND_OPERATOR_ADL_WKND(op) \
   inline bool operator op( \
       basic_iterator<basic_access> const& x \
     , basic_iterator<basic_access> const& y) \
@@ -431,10 +432,8 @@ namespace detail
   LUABIND_OPERATOR_ADL_WKND(==)
   LUABIND_OPERATOR_ADL_WKND(!=)
 
-# undef LUABIND_OPERATOR_ADL_WKND
-
-#endif
-  
+#undef LUABIND_OPERATOR_ADL_WKND
+ 
 } // namespace detail
 
 namespace adl
@@ -485,7 +484,6 @@ namespace adl
       this_type& operator=(T const& value)
       {
           value_wrapper_traits<Next>::unwrap(m_interpreter, m_next);
-
           detail::stack_pop pop(m_interpreter, 1);
 
           lua_pushvalue(m_interpreter, m_key_index);
@@ -570,22 +568,19 @@ struct value_wrapper_traits<adl::iterator_proxy_tag>
 
 namespace adl
 {
-  // An object holds a reference to a Lua value residing
-  // in the registry.
-  class object : public object_interface<object>
+  class object_init
   {
-      struct safe_bool_type {};
-  public:
-      object()
+  protected:
+      object_init()
       {}
-
-      explicit object(from_stack const& stack_reference)
+      
+      explicit object_init(from_stack const& stack_reference, boost::mpl::true_)
         : m_handle(stack_reference.interpreter, stack_reference.index)
       {
       }
 
       template<class ValueWrapper>
-      explicit object(ValueWrapper const& value_wrapper)
+      explicit object_init(ValueWrapper const& value_wrapper, boost::mpl::false_)
       {
           lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
               value_wrapper
@@ -595,6 +590,27 @@ namespace adl
           detail::stack_pop pop(interpreter, 1);
 
           handle(interpreter, -1).swap(m_handle);
+      }
+
+      handle m_handle;
+  };
+
+  // An object holds a reference to a Lua value residing
+  // in the registry.
+  class object : public object_interface<object>
+  {
+      struct safe_bool_type {};
+  public:
+      object()
+      {}
+
+      explicit object(handle const& other)
+        : m_handle(other)
+      {}
+
+      explicit object(from_stack const& stack_reference)
+        : m_handle(stack_reference.interpreter, stack_reference.index)
+      {
       }
 
       template<class T>
@@ -723,12 +739,14 @@ namespace detail
     , class ValueWrapper
     , class Policies
     , class ErrorPolicy
+	, class ReturnType
   >
-  typename ErrorPolicy::type object_cast_aux(
+  ReturnType object_cast_aux(
       ValueWrapper const& value_wrapper
     , T*
     , Policies*
     , ErrorPolicy*
+	, ReturnType*
   )
   {
       lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
@@ -767,8 +785,6 @@ namespace detail
   template<class T>
   struct throw_error_policy
   {
-      typedef T type;
-
       static T handle_error(lua_State* interpreter, LUABIND_TYPE_INFO type_info)
       {
 #ifndef LUABIND_NO_EXCEPTIONS
@@ -787,11 +803,9 @@ namespace detail
   template<class T>
   struct nothrow_error_policy
   {
-      typedef boost::optional<T> type;
-
-      static type handle_error(lua_State*, LUABIND_TYPE_INFO)
+      static boost::optional<T> handle_error(lua_State*, LUABIND_TYPE_INFO)
       {
-          return type();
+          return boost::optional<T>();
       }
   };
 
@@ -805,6 +819,7 @@ T object_cast(ValueWrapper const& value_wrapper)
       , (T*)0
       , (detail::null_type*)0
       , (detail::throw_error_policy<T>*)0
+      , (T*)0
     );
 }
 
@@ -816,6 +831,7 @@ T object_cast(ValueWrapper const& value_wrapper, Policies const&)
       , (T*)0
       , (Policies*)0
       , (detail::throw_error_policy<T>*)0
+	  , (T*)0
     );
 }
 
@@ -827,6 +843,7 @@ boost::optional<T> object_cast_nothrow(ValueWrapper const& value_wrapper)
       , (T*)0
       , (detail::null_type*)0
       , (detail::nothrow_error_policy<T>*)0
+      , (boost::optional<T>*)0
     );
 }
 
@@ -838,17 +855,12 @@ boost::optional<T> object_cast_nothrow(ValueWrapper const& value_wrapper, Polici
       , (T*)0
       , (Policies*)0
       , (detail::nothrow_error_policy<T>*)0
+      , (boost::optional<T>*)0
     );
 }
 
 namespace detail
 {
-
-  template<class T>
-  void convert_to_lua(lua_State*, const T&);
-
-  template<int Index, class T, class Policies>
-  void convert_to_lua_p(lua_State*, const T&, const Policies&);
 
   template<int Index>
   struct push_args_from_tuple

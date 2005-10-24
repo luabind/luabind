@@ -87,7 +87,7 @@ namespace luabind { namespace detail
 			// if there is a back_reference, then the
 			// ownership will be removed from the
 			// back reference and put on the lua stack.
-			if (back_reference<T>::move(L, ptr))
+			if (move_back_reference::move(L, ptr))
 			{
 				object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, -1));
 				obj->set_flags(obj->flags() | object_rep::owner);

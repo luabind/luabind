@@ -1,4 +1,4 @@
-// Copyright (c) 2004 Daniel Wallin and Arvid Norberg
+// Copyright (c) 2005 Daniel Wallin, Arvid Norberg
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,18 +20,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef LUABIND_BACK_REFERENCE_FWD_040510_HPP
-#define LUABIND_BACK_REFERENCE_FWD_040510_HPP
+#include "test.hpp"
 
-namespace luabind {
+#include <luabind/luabind.hpp>
 
-template<class T>
-bool get_back_reference(lua_State* L, T const& x);
+struct V
+{
+    int f(int,int) 
+    {
+        return 2; 
+    }
+};
 
-template<class T>
-bool move_back_reference(lua_State* L, T const& x);
+struct W : V
+{};
 
-} // namespace luabind
+void test_main(lua_State* L)
+{
+    using namespace luabind;
 
-#endif // LUABIND_BACK_REFERENCE_FWD_040510_HPP
+    module(L)
+    [
+        class_<W>("W")
+          .def(constructor<>())
+          .def("f", &V::f)
+    ];
+
+    DOSTRING(L,
+        "x = W()\n"
+        "assert(x:f(1,2) == 2)\n"
+    );
+}
 
