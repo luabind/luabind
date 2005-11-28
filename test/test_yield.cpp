@@ -92,7 +92,7 @@ void test_main(lua_State* L)
 
 	{
         lua_State* thread = lua_newthread(L);
-		object g = get_globals(thread)["g"];
+		object g = globals(thread)["g"];
 
         TEST_CHECK(resume_function<int>(g, "foobar") == 5);
 		for (int i = 1; i < 10; ++i)

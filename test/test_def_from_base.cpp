@@ -1,4 +1,4 @@
-// Copyright (c) 2003 Daniel Wallin and Arvid Norberg
+// Copyright (c) 2005 Daniel Wallin, Arvid Norberg
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,21 +20,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef LUABIND_OVERLOAD_REP_IMPL_HPP_INCLUDED
-#define LUABIND_OVERLOAD_REP_IMPL_HPP_INCLUDED
+#include "test.hpp"
 
-#include <luabind/detail/overload_rep.hpp>
+#include <luabind/luabind.hpp>
 
-namespace luabind { namespace detail
+struct V
 {
-	inline int overload_rep::call(lua_State* L, bool force_static_call) const 
-	{ 
-		if (force_static_call)
-			return call_fun_static(L);
-		else
-			return call_fun(L);
-	}
+    int f(int,int) 
+    {
+        return 2; 
+    }
+};
 
-}} // namespace luabind::detail
+struct W : V
+{};
 
-#endif // LUABIND_OVERLOAD_REP_IMPL_HPP_INCLUDED
+void test_main(lua_State* L)
+{
+    using namespace luabind;
+
+    module(L)
+    [
+        class_<W>("W")
+          .def(constructor<>())
+          .def("f", &V::f)
+    ];
+
+    DOSTRING(L,
+        "x = W()\n"
+        "assert(x:f(1,2) == 2)\n"
+    );
+}
+

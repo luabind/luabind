@@ -44,10 +44,11 @@
 #include <boost/mpl/int.hpp>
 #include <boost/type_traits.hpp>
 
+#include <luabind/detail/policy.hpp>
 #include <luabind/detail/primitives.hpp>
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/class_rep.hpp>
-#include <luabind/detail/policy.hpp>
+#include <luabind/detail/most_derived.hpp>
 
 namespace luabind
 {
@@ -189,7 +190,7 @@ namespace luabind { namespace detail
 	  , Policies const*)
 	{
 		typedef constructor<
-		    T&
+			BOOST_DEDUCED_TYPENAME most_derived<T,WrappedClass>::type&
 		    BOOST_PP_ENUM_TRAILING_PARAMS(N, A)
 		> params_t;
 
@@ -213,7 +214,7 @@ namespace luabind { namespace detail
 	  , Policies const* policies)
 	{
 		typedef constructor<
-			T const&
+			BOOST_DEDUCED_TYPENAME most_derived<T,WrappedClass>::type const&
 			BOOST_PP_ENUM_TRAILING_PARAMS(N, A)
 		> params_t;
 		return match_params(
@@ -245,6 +246,10 @@ namespace luabind { namespace detail
 #if N
             int current_index = 0;
 #endif
+			// Removes unreferenced local variable warning on VC7.
+			(void)start_index;
+			(void)L;
+			
             BOOST_PP_REPEAT(N, LUABIND_MATCH_DECL, _)
 			return m;
 		}

@@ -41,6 +41,8 @@
 #include <luabind/detail/policy.hpp>
 #include <luabind/yield_policy.hpp>
 
+#include <luabind/detail/most_derived.hpp>
+
 #define LUABIND_DECL(z, n, off) \
 	typedef typename find_conversion_policy< \
 		n + off \
@@ -90,16 +92,6 @@ namespace luabind { namespace detail
 		{
 			return nret;
 		}
-	};
-
-	template<class Class, class WrappedClass>
-	struct most_derived
-	{
-		typedef typename boost::mpl::if_<
-			boost::is_base_and_derived<Class, WrappedClass>
-		  , WrappedClass
-		  , Class
-		>::type type;
 	};
 
 	template<class T>

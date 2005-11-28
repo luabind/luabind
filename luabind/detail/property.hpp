@@ -25,6 +25,9 @@
 #define LUABIND_PROPERTY_HPP_INCLUDED
 
 #include <luabind/config.hpp>
+#include <boost/type_traits/add_reference.hpp>
+#include <boost/mpl/eval_if.hpp>
+#include <luabind/dependency_policy.hpp>
 
 namespace luabind { namespace detail
 {
@@ -126,7 +129,6 @@ namespace luabind { namespace detail
 		return set_matcher<Param, Policy>::apply;
 	}
 
-	// TODO: add support for policies
 	template<class T, class D, class Policies>
 	struct auto_set : Policies
 	{
@@ -167,7 +169,15 @@ namespace luabind { namespace detail
 		}
 	};
 
-	// TODO: add support for policies
+	// if the input type is a value_converter, it will produce
+	// a reference converter
+	template<class ConverterPolicy, class D>
+	struct make_reference_converter
+	{
+		typedef typename ConverterPolicy::template generate_converter<
+			typename boost::add_reference<D>::type, cpp_to_lua>::type type;
+	};
+	
 	template<class T, class D, class Policies>
 	struct auto_get : Policies
 	{
@@ -194,14 +204,29 @@ namespace luabind { namespace detail
 			T* ptr =  reinterpret_cast<T*>(static_cast<char*>(raw_ptr) + pointer_offset);
 
 			typedef typename find_conversion_policy<0,Policies>::type converter_policy;
-			typename converter_policy::template generate_converter<D,cpp_to_lua>::type converter;
+			typedef typename converter_policy::template generate_converter<D,cpp_to_lua>::type converter1_t;
+
+			// if the converter is a valua converer, return a reference instead
+			typedef typename boost::mpl::eval_if<
+				typename converter1_t::is_value_converter
+				, make_reference_converter<converter_policy, D>
+				, converter1_t>::type converter2_t;
+
+			// If this yields a reference converter, the dependency policy
+			// is automatically added
+			typedef typename boost::mpl::if_<
+				typename converter1_t::is_value_converter
+				, policy_cons<dependency_policy<1, 0>, Policies>
+				, Policies>::type policy_list;
+
+			converter2_t converter;
 			converter.apply(L, ptr->*member);
 
 			int nret = lua_gettop(L) - nargs;
 
 			const int indices[] = { 1, nargs + nret };
 
-			policy_list_postcall<Policies>::apply(L, indices);
+			policy_list_postcall<policy_list>::apply(L, indices);
 
 			return nret;
 		}

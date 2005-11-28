@@ -29,8 +29,9 @@ using namespace luabind;
 using namespace luabind::detail;
 
 struct tester {};
+struct lua_State;
 
-int main()
+int test_main(lua_State*)
 {
 	BOOST_STATIC_ASSERT(is_nonconst_reference<int&>::value);
 	BOOST_STATIC_ASSERT(!is_nonconst_reference<const int&>::value);

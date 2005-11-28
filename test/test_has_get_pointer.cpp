@@ -1,4 +1,4 @@
-// Copyright (c) 2003 Daniel Wallin and Arvid Norberg
+// Copyright (c) 2005 Daniel Wallin
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,33 +20,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef LUABIND_STACK_UTILS_HPP_INCLUDED
-#define LUABIND_STACK_UTILS_HPP_INCLUDED
+#include <luabind/detail/has_get_pointer.hpp>
+#include <boost/mpl/assert.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/get_pointer.hpp>
 
-#include <cassert>
+namespace lb = luabind::detail;
 
-namespace luabind { namespace detail
+namespace test
 {
 
-	struct stack_pop
-	{
-		stack_pop(lua_State* L, int n)
-			: m_state(L)
-			, m_n(n)
-			{
-			}
+  struct X
+  {
+  };
 
-		~stack_pop() 
-		{
-			lua_pop(m_state, m_n);
-		}
+  struct Y
+  {
+  };
 
-	private:
+  Y* get_pointer(Y const&);
 
-		lua_State* m_state;
-		int m_n;
-	};
-}}
+} // namespace test
 
-#endif // LUABIND_STACK_UTILS_HPP_INCLUDED
+#ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
+namespace luabind
+{
+  using test::get_pointer;
+  using boost::get_pointer;
+} // namespace luabind
+#endif
+
+BOOST_MPL_ASSERT(( lb::has_get_pointer<boost::shared_ptr<int> > ));
+BOOST_MPL_ASSERT(( lb::has_get_pointer<test::Y> ));
+BOOST_MPL_ASSERT(( lb::has_get_pointer<char*> ));
+BOOST_MPL_ASSERT_NOT(( lb::has_get_pointer<int> ));
+BOOST_MPL_ASSERT_NOT(( lb::has_get_pointer<test::X> ));
 

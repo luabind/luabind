@@ -5,3 +5,5 @@ exe any_converter
       /luabind//luabind
     ;
 
+stage . : any_converter ;
+

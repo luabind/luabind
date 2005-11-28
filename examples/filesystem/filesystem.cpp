@@ -7,18 +7,6 @@ extern "C"
 	#include "lualib.h"
 }
 
-bool dostring(lua_State* L, const char* str)
-{
-	if (luaL_loadbuffer(L, str, std::strlen(str), str) || lua_pcall(L, 0, 0, 0))
-	{
-		const char* a = lua_tostring(L, -1);
-		std::cout << a << "\n";
-		lua_pop(L, 1);
-		return true;
-	}
-	return false;
-}
-
 #include <luabind/luabind.hpp>
 #include <luabind/operator.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -100,7 +88,9 @@ int main(int argc, const char* argv[])
 
 	if (argc < 2)
 	{
-		std::cout << "usage: filesystem filename [args]\n";
+		std::cout << "This example will bind parts of the boost.Filesystem library\n"
+			"and then run the given lua file.\n\n"
+			"usage: filesystem filename [args]\n";
 		return 1;
 	}
 	
@@ -118,9 +108,7 @@ int main(int argc, const char* argv[])
 	}
 
 	args["n"] = argc;
-
-	object globals = get_globals(L);
-	globals["args"] = args;
+	globals(L)["args"] = args;
 
 	lua_dofile(L, argv[1]);
 }

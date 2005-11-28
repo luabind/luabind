@@ -5,3 +5,5 @@ exe intrusive_ptr
       /luabind//luabind
     ;
 
+stage . : intrusive_ptr ;
+

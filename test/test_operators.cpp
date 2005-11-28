@@ -51,8 +51,17 @@ struct operator_tester : counted_type<operator_tester>
 	{
 		return 2.5f + a;
 	}
-
 };
+
+float operator*(operator_tester const& lhs, operator_tester const& rhs)
+{
+	return 35.f;
+}
+
+std::string operator*(operator_tester const&, int v)
+{
+	return "(operator_tester, int) overload";
+}
 
 int operator+(int a, const operator_tester&)
 {
@@ -101,11 +110,14 @@ void test_main(lua_State* L)
 			.def(self + int())
 			.def(other<int>() + self)
 			.def(-self)
-            .def(self + other<operator_tester2&>())
+			.def(self + other<operator_tester2&>())
 			.def(self())
 			.def(const_self(int()))
 			.def(self(int()))
-			.def(tostring(const_self)),
+			.def(tostring(const_self))
+//			.def(const_self * other<operator_tester const&>())
+			.def(const_self * const_self)
+			.def(const_self * other<int>()),
 //			.def("clone", &clone, adopt(return_value)),
 
 		class_<operator_tester2>("operator_tester2")
@@ -134,6 +146,8 @@ void test_main(lua_State* L)
 	DOSTRING(L, "assert(test(5) == 2.5 + 5)");
 
 	DOSTRING(L, "assert(-test == 46)");
+	DOSTRING(L, "assert(test * test == 35)");
+	DOSTRING(L, "assert(test * 3 == '(operator_tester, int) overload')")
 	DOSTRING(L, "assert(test + test2 == 73)");
 	DOSTRING(L, "assert(2 + test == 2 + 2)");
 	DOSTRING(L, "assert(test + 2 == 1 + 2)");

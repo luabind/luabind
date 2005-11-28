@@ -22,15 +22,16 @@
 
 #include "test.hpp"
 #include <luabind/luabind.hpp>
-#include <luabind/functor.hpp>
+//#include <luabind/functor.hpp>
 #include <luabind/adopt_policy.hpp>
-
+/*
 luabind::functor<int> functor_test;
 
 void set_functor(luabind::functor<int> f)
 {
     functor_test = f;
 }
+*/
 
 struct base : counted_type<base>
 {
@@ -125,8 +126,8 @@ void test_main(lua_State* L)
 
         def("f", (int(*)(int)) &f),
         def("f", (int(*)(int, int)) &f),
-        def("create", &create_base, adopt(return_value)),
-        def("set_functor", &set_functor)
+        def("create", &create_base, adopt(return_value))
+//        def("set_functor", &set_functor)
             
 #if !(BOOST_MSVC < 1300)
         ,
@@ -144,11 +145,11 @@ void test_main(lua_State* L)
 
     DOSTRING(L, "assert(f(3, 9) == 12)");
 
-    DOSTRING(L, "set_functor(function(x) return x * 10 end)");
+//    DOSTRING(L, "set_functor(function(x) return x * 10 end)");
 
-    TEST_CHECK(functor_test(20) == 200);
+//    TEST_CHECK(functor_test(20) == 200);
 
-    DOSTRING(L, "set_functor(nil)");
+//    DOSTRING(L, "set_functor(nil)");
 
     DOSTRING(L, "function lua_create() return create() end");
     base* ptr = call_function<base*>(L, "lua_create") [ adopt(result) ];
@@ -165,20 +166,17 @@ void test_main(lua_State* L)
         "f(number)\n"
         "f(number, number)\n");
 
-    DOSTRING(L,
-        "function functor_test(a) glob = a\n"
-        " return 'foobar'\n"
-        "end");
-    functor<std::string> functor_test = object_cast<functor<std::string> >(get_globals(L)["functor_test"]);
+//    DOSTRING(L,
+//        "function functor_test(a) glob = a\n"
+//        " return 'foobar'\n"
+//        "end");
+//    functor<std::string> functor_test = object_cast<functor<std::string> >(globals(L)["functor_test"]);
     
-    TEST_CHECK(functor_test(6)[detail::null_type()] == "foobar");
-    TEST_CHECK(object_cast<int>(get_globals(L)["glob"]) == 6);
+//    TEST_CHECK(functor_test(6)[detail::null_type()] == "foobar");
+//    TEST_CHECK(object_cast<int>(globals(L)["glob"]) == 6);
 
-    functor<std::string> functor_test2 = object_cast<functor<std::string> >(get_globals(L)["functor_test"]);
+//    functor<std::string> functor_test2 = object_cast<functor<std::string> >(globals(L)["functor_test"]);
 
-    TEST_CHECK(functor_test == functor_test2);
-
-    // this must be reset before the lua state is destructed!
-    functor_test.reset();
+//    TEST_CHECK(functor_test == functor_test2);
 }
 

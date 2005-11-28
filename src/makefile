@@ -14,12 +14,12 @@ SOURCES = \
 	open.cpp \
 	create_class.cpp \
 	stack_content_by_name.cpp \
-	object.cpp \
 	object_rep.cpp \
 	class_info.cpp \
 	class_registry.cpp \
 	link_compatibility.cpp \
 	weak_ref.cpp \
+	overload_rep.cpp \
 	link_compatibility.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)

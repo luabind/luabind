@@ -3,6 +3,9 @@ import testing ;
 use-project /luabind : ../ ;
 
 SOURCES = 
+    test_back_reference.cpp
+    test_def_from_base.cpp
+    test_object.cpp
     test_abstract_base.cpp
     test_attributes.cpp
     test_const.cpp
@@ -14,7 +17,6 @@ SOURCES =
     test_iterator.cpp
     test_lua_classes.cpp
     test_null_pointer.cpp
-    test_object.cpp
     test_operators.cpp
     test_policies.cpp
     test_scope.cpp
@@ -22,6 +24,8 @@ SOURCES =
     test_simple_class.cpp
     test_yield.cpp
  ;
+
+project : default-build <link>static ;
 
 lib main-lib 
     : main.cpp /luabind//luabind/<link>static /luabind//lua /luabind//lualib 
@@ -35,5 +39,9 @@ for local src in $(SOURCES)
     tests += [ run $(src) main-lib ] ;
 }
 
-test-suite luabind-test : $(tests) [ compile test_typetraits.cpp ] ;
+test-suite luabind-test : $(tests) 
+    [ compile test_typetraits.cpp ] 
+    [ compile test_value_wrapper.cpp ]
+    [ compile test_has_get_pointer.cpp ]
+    ;
 
