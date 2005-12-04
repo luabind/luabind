@@ -50,27 +50,27 @@ namespace detail
   }
 
   template<class T>
-  wrap_base const* get_back_reference_aux(T const* p)
+  wrap_base const* get_back_reference_aux1(T const* p)
   {
       return get_back_reference_aux0(p, boost::is_polymorphic<T>());
   }
 
   template<class T>
-  wrap_base const* get_back_reference_aux(T const& x, mpl::true_)
+  wrap_base const* get_back_reference_aux2(T const& x, mpl::true_)
   {
-      return get_back_reference_aux(get_pointer(x));
+      return get_back_reference_aux1(get_pointer(x));
   }
 
   template<class T>
-  wrap_base const* get_back_reference_aux(T const& x, mpl::false_)
+  wrap_base const* get_back_reference_aux2(T const& x, mpl::false_)
   {
-      return get_back_reference_aux(&x);
+      return get_back_reference_aux1(&x);
   }
 
   template<class T>
   wrap_base const* get_back_reference(T const& x)
   {
-      return detail::get_back_reference_aux(
+      return detail::get_back_reference_aux2(
           x
         , has_get_pointer<T>()
       );

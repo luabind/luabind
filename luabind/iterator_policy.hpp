@@ -101,7 +101,7 @@ namespace luabind { namespace detail
 		static void postcall(lua_State*, const index_map&) {}
 
 		template<class T, class Direction>
-		struct generate_converter
+		struct apply
 		{
 			typedef iterator_converter type;
 		};

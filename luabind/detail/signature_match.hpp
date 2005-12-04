@@ -88,10 +88,9 @@ namespace luabind { namespace detail
       , Policies \
     >::type BOOST_PP_CAT(converter_policy, N); \
 \
-    typedef typename BOOST_PP_CAT(converter_policy, N) \
-        ::template generate_converter< \
-            BOOST_PP_CAT(A, N), lua_to_cpp \
-        >::type BOOST_PP_CAT(converter, N); \
+	typedef typename mpl::apply_wrap2< \
+		BOOST_PP_CAT(converter_policy, N), BOOST_PP_CAT(A, N), lua_to_cpp \
+	>::type BOOST_PP_CAT(converter, N); \
 \
 	int BOOST_PP_CAT(r, N) = BOOST_PP_CAT(converter, N)::match( \
         L \

@@ -42,6 +42,7 @@
 #include <boost/bind/arg.hpp>
 #include <boost/limits.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/version.hpp>
 
 #include <luabind/detail/class_registry.hpp>
 #include <luabind/detail/primitives.hpp>
@@ -1126,7 +1127,7 @@ namespace luabind { namespace detail
 		static void precall(lua_State*, T, int) {}
 
 		template<class T, class Direction>
-		struct generate_converter
+		struct apply
 		  : eval_if<
 				is_user_defined<T>
 			  , user_defined_converter<Direction>
@@ -1293,10 +1294,28 @@ namespace luabind { namespace detail
 }} // namespace luabind::detail
 
 
-namespace luabind {	 namespace
+namespace luabind { namespace
 {
-	LUABIND_ANONYMOUS_FIX boost::arg<0> return_value;
-	LUABIND_ANONYMOUS_FIX boost::arg<0> result;
+#if defined(__BORLANDC__) || (BOOST_VERSION < 103400 && defined(__GNUC__))
+  static inline boost::arg<0> return_value()
+  {
+	  return boost::arg<0>();
+  }
+
+  static inline boost::arg<0> result()
+  {
+	  return boost::arg<0>();
+  }
+# define LUABIND_PLACEHOLDER_ARG(N) boost::arg<N>(*)()
+#elif defined(BOOST_MSVC) || defined(__MWERKS__)
+  static boost::arg<0> return_value;
+  static boost::arg<0> result;
+# define LUABIND_PLACEHOLDER_ARG(N) boost::arg<N>
+#else
+  boost::arg<0> return_value;
+  boost::arg<0> result;
+# define LUABIND_PLACEHOLDER_ARG(N) boost::arg<N>
+#endif
 }}
 
 #endif // LUABIND_POLICY_HPP_INCLUDED

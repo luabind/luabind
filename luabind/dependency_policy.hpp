@@ -62,7 +62,7 @@ namespace luabind
 		};
 
 		template<int N>
-		size_char_array<N> deduce_size(boost::arg<N>);
+		size_char_array<N> deduce_size(LUABIND_PLACEHOLDER_ARG(N));
 
 		template<class T>
 		struct get_index_workaround
@@ -97,14 +97,14 @@ namespace luabind
 {
 	template<int A, int B>
 	detail::policy_cons<detail::dependency_policy<A, B>, detail::null_type>
-	dependency(boost::arg<A>, boost::arg<B>)
+	dependency(LUABIND_PLACEHOLDER_ARG(A), LUABIND_PLACEHOLDER_ARG(B))
 	{
 		return detail::policy_cons<detail::dependency_policy<A, B>, detail::null_type>();
 	}
 
 	template<int A>
 	detail::policy_cons<detail::dependency_policy<0, A>, detail::null_type>
-	return_internal_reference(boost::arg<A>)
+	return_internal_reference(LUABIND_PLACEHOLDER_ARG(A))
 	{
 		return detail::policy_cons<detail::dependency_policy<0, A>, detail::null_type>();
 	}

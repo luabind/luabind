@@ -26,6 +26,7 @@
 #include <boost/implicit_cast.hpp> // detail::push()
 #include <boost/ref.hpp> // detail::push()
 #include <boost/mpl/bool.hpp> // value_wrapper_traits specializations
+#include <boost/mpl/apply_wrap.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/optional.hpp>
 
@@ -46,7 +47,8 @@ namespace luabind {
 
 namespace detail 
 {
-
+  namespace mpl = boost::mpl;
+  
   template<class T, class ConverterGenerator>
   void push_aux(lua_State* interpreter, T& value, ConverterGenerator*)
   {
@@ -56,9 +58,8 @@ namespace detail
         , T
       >::type unwrapped_type;
 
-      typename ConverterGenerator::template generate_converter<
-          unwrapped_type
-        , cpp_to_lua
+      typename mpl::apply_wrap2<
+          ConverterGenerator,unwrapped_type,cpp_to_lua
       >::type cv;
 
       cv.apply(
@@ -739,14 +740,14 @@ namespace detail
     , class ValueWrapper
     , class Policies
     , class ErrorPolicy
-	, class ReturnType
+    , class ReturnType
   >
   ReturnType object_cast_aux(
       ValueWrapper const& value_wrapper
     , T*
     , Policies*
     , ErrorPolicy*
-	, ReturnType*
+    , ReturnType*
   )
   {
       lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
@@ -767,10 +768,7 @@ namespace detail
         , Policies
       >::type converter_generator;
 
-      typename converter_generator::template generate_converter<
-          T
-        , lua_to_cpp
-      >::type cv;
+      typename mpl::apply_wrap2<converter_generator, T, lua_to_cpp>::type cv;
 
 #ifndef LUABIND_NO_ERROR_CHECKING
       if (cv.match(interpreter, LUABIND_DECORATE_TYPE(T), -1) < 0)
@@ -831,7 +829,7 @@ T object_cast(ValueWrapper const& value_wrapper, Policies const&)
       , (T*)0
       , (Policies*)0
       , (detail::throw_error_policy<T>*)0
-	  , (T*)0
+      , (T*)0
     );
 }
 

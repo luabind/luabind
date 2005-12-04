@@ -36,6 +36,7 @@
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/mpl/bool.hpp>
+#include <boost/mpl/apply_wrap.hpp>
 
 #include <luabind/config.hpp>
 #include <luabind/detail/policy.hpp>
@@ -48,9 +49,9 @@
 		n + off \
 	  , Policies \
 	>::type BOOST_PP_CAT(converter_policy,n); \
-	typename BOOST_PP_CAT(converter_policy,n)::template generate_converter< \
-		A##n \
-	  , lua_to_cpp \
+\
+	typename mpl::apply_wrap2< \
+		BOOST_PP_CAT(converter_policy,n), BOOST_PP_CAT(A,n), lua_to_cpp \
 	>::type BOOST_PP_CAT(c,n);
 
 #define LUABIND_ADD_INDEX(z,n,text) \
@@ -75,6 +76,9 @@
 
 namespace luabind { namespace detail
 {
+
+	namespace mpl = boost::mpl;
+
 	template<class Policies>
 	struct maybe_yield
 	{
@@ -141,7 +145,7 @@ namespace luabind { namespace detail
 		pointer_converter<lua_to_cpp> self_cv;
 
 		typedef typename find_conversion_policy<0, Policies>::type converter_policy_ret;
-		typename converter_policy_ret::template generate_converter<T, cpp_to_lua>::type converter_ret;
+		typename mpl::apply_wrap2<converter_policy_ret,T,cpp_to_lua>::type converter_ret;
 
 		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, 2)
 
@@ -187,7 +191,7 @@ namespace luabind { namespace detail
 		const_pointer_converter<lua_to_cpp> self_cv;
 
 		typedef typename find_conversion_policy<0, Policies>::type converter_policy_ret;
-		typename converter_policy_ret::template generate_converter<T, cpp_to_lua>::type converter_ret;
+		typename mpl::apply_wrap2<converter_policy_ret,T,cpp_to_lua>::type converter_ret;
 
 		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, 2)
 
@@ -227,7 +231,7 @@ namespace luabind { namespace detail
 	{
 		int nargs = lua_gettop(L);
 		typedef typename find_conversion_policy<0, Policies>::type converter_policy_ret;
-		typename converter_policy_ret::template generate_converter<T, cpp_to_lua>::type converter_ret;
+		typename mpl::apply_wrap2<converter_policy_ret,T,cpp_to_lua>::type converter_ret;
 		BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, 1)
 		converter_ret.apply(L, f
 		(

@@ -135,7 +135,7 @@ namespace luabind { namespace detail
 		struct only_accepts_nonconst_pointers {};
 
 		template<class T, class Direction>
-		struct generate_converter
+		struct apply
 		{
 			typedef luabind::detail::is_nonconst_pointer<T> is_nonconst_p;
 			typedef typename boost::mpl::if_<is_nonconst_p, adopt_pointer<Direction>, only_accepts_nonconst_pointers>::type type;
@@ -148,7 +148,10 @@ namespace luabind
 {
 	template<int N>
 	detail::policy_cons<detail::adopt_policy<N>, detail::null_type> 
-	adopt(boost::arg<N>) { return detail::policy_cons<detail::adopt_policy<N>, detail::null_type>(); }
+	adopt(LUABIND_PLACEHOLDER_ARG(N))
+	{ 
+		return detail::policy_cons<detail::adopt_policy<N>, detail::null_type>(); 
+	}
 }
 
 #endif // LUABIND_ADOPT_POLICY_HPP_INCLUDE
