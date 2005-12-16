@@ -3,6 +3,7 @@ import testing ;
 use-project /luabind : ../ ;
 
 SOURCES = 
+    test_vector_of_object.cpp
     test_back_reference.cpp
     test_def_from_base.cpp
     test_object.cpp
