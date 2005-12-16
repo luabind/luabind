@@ -42,6 +42,7 @@
 #include <boost/python/detail/is_xxx.hpp>
 
 #include <boost/preprocessor/iteration/iterate.hpp>
+#include <boost/utility/enable_if.hpp>
 
 namespace luabind {
 
@@ -92,6 +93,25 @@ namespace detail
 namespace adl
 {
 
+  namespace mpl = boost::mpl;
+  
+  template <class R, class T, class U>
+  struct enable_binary
+# ifndef BOOST_NO_SFINAE
+    : boost::enable_if<
+          mpl::or_<
+              is_value_wrapper<T>
+            , is_value_wrapper<U>
+          >
+        , R
+      >
+  {};
+# else
+  {
+      typedef R type;
+  };
+# endif
+
   template<class T, class U, class V>
   lua_State* binary_interpreter(T const& x, U const&, boost::mpl::true_, V)
   {
@@ -117,7 +137,8 @@ namespace adl
 
 #define LUABIND_BINARY_OP_DEF(op, fn) \
   template<class LHS, class RHS> \
-  bool operator op(LHS const& lhs, RHS const& rhs) \
+  typename enable_binary<bool,LHS,RHS>::type \
+  operator op(LHS const& lhs, RHS const& rhs) \
   { \
       lua_State* L = binary_interpreter(lhs, rhs); \
 \
@@ -137,25 +158,29 @@ namespace adl
 #undef LUABIND_BINARY_OP_DEF
 
   template<class LHS, class RHS>
-  bool operator>(LHS const& lhs, RHS const& rhs)
+  typename enable_binary<bool,LHS,RHS>::type
+  operator>(LHS const& lhs, RHS const& rhs)
   {
       return !(lhs < rhs || lhs == rhs);
   }
 
   template<class LHS, class RHS>
-  bool operator<=(LHS const& lhs, RHS const& rhs)
+  typename enable_binary<bool,LHS,RHS>::type 
+  operator<=(LHS const& lhs, RHS const& rhs)
   {
       return lhs < rhs || lhs == rhs;
   }
 
   template<class LHS, class RHS>
-  bool operator>=(LHS const& lhs, RHS const& rhs)
+  typename enable_binary<bool,LHS,RHS>::type 
+  operator>=(LHS const& lhs, RHS const& rhs)
   {
       return !(lhs < rhs);
   }
 
   template<class LHS, class RHS>
-  bool operator!=(LHS const& lhs, RHS const& rhs)
+  typename enable_binary<bool,LHS,RHS>::type 
+  operator!=(LHS const& lhs, RHS const& rhs)
   {
       return !(lhs < rhs);
   }
