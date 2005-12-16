@@ -92,16 +92,44 @@ namespace detail
 
 namespace adl
 {
-
   namespace mpl = boost::mpl;
   
+  template <class T>
+  class object_interface;
+  
+  namespace is_object_interface_aux
+  {
+    typedef char (&yes)[1];
+    typedef char (&no)[2];
+    
+    template <class T>
+    yes check(object_interface<T>*);
+    no check(void*);
+
+    template <class T>
+    struct impl 
+    {
+        BOOST_STATIC_CONSTANT(bool, value =
+            sizeof(is_object_interface_aux::check((T*)0)) == sizeof(yes)
+        );
+
+        typedef mpl::bool_<value> type;
+    };
+
+  } // namespace detail
+
+  template <class T>
+  struct is_object_interface
+    : is_object_interface_aux::impl<T>::type
+  {};
+
   template <class R, class T, class U>
   struct enable_binary
 # ifndef BOOST_NO_SFINAE
     : boost::enable_if<
           mpl::or_<
-              is_value_wrapper<T>
-            , is_value_wrapper<U>
+              is_object_interface<T>
+            , is_object_interface<U>
           >
         , R
       >
