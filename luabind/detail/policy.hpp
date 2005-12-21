@@ -853,7 +853,7 @@ namespace luabind { namespace detail
 		typedef const_ref_converter type;
 		
 		template<class T>
-		void apply(lua_State* L, const T& ref)
+		void apply(lua_State* L, T const& ref)
 		{
 			if (luabind::get_back_reference(L, ref))
 				return;
@@ -864,32 +864,12 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
+			T const* ptr = &ref;
 
-			void* obj_rep;
-			void* held;
-
-			boost::tie(obj_rep,held) = crep->allocate(L);
-
-			void* object_ptr;
-			void(*destructor)(void*);
-			destructor = crep->destructor();
-			int flags = 0;
-			if (crep->has_holder())
-			{
-				flags = object_rep::owner;
-				new(held) T(ref);
-				object_ptr = held;
-				if (LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->const_holder_type()))
-				{
-					flags |= object_rep::constant;
-					destructor = crep->const_holder_destructor();
-				}
-			}
-			else
-			{
-				object_ptr = new T(ref);
-			}
-			new(obj_rep) object_rep(object_ptr, crep, flags, destructor);
+			// create the struct to hold the object
+			void* obj = lua_newuserdata(L, sizeof(object_rep));
+			assert(obj && "internal error, please report");
+			new(obj) object_rep(const_cast<T*>(ptr), crep, object_rep::constant, 0);
 
 			// set the meta table
 			detail::getref(L, crep->metatable_ref());

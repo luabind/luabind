@@ -34,6 +34,14 @@ struct abstract
 
 COUNTER_GUARD(abstract);
 
+struct concrete : abstract
+{
+    std::string hello()
+    {
+        return "test string";
+    }
+};
+
 struct abstract_wrap : abstract, wrap_base
 {
     std::string hello()
@@ -52,6 +60,19 @@ std::string call_hello(abstract& a)
     return a.hello();
 }
 
+abstract& return_abstract_ref()
+{
+	static concrete c;
+	return c;
+}
+
+abstract const& return_const_abstract_ref()
+{
+	static concrete c;
+	return c;
+}
+
+
 void test_main(lua_State* L)
 {
     module(L)
@@ -60,7 +81,9 @@ void test_main(lua_State* L)
             .def(constructor<>())
             .def("hello", &abstract::hello),
 
-        def("call_hello", &call_hello)
+        def("call_hello", &call_hello),
+		  def("return_abstract_ref", &return_abstract_ref),
+		  def("return_const_abstract_ref", &return_const_abstract_ref)
     ];
     
     DOSTRING_EXPECTED(L,

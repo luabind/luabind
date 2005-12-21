@@ -67,7 +67,7 @@ struct policies_test_class
 	policies_test_class(policies_test_class const& c): name_(c.name_)
 	{ ++count; }
 
-	void member_out_val(int* v) { *v = 5; }
+	void member_out_val(int a, int* v) { *v = a * 2; }
 	secret_type* member_secret() { return &sec_; }
 };
 
@@ -112,7 +112,7 @@ void test_main(lua_State* L)
 	[
 		class_<policies_test_class>("test")
 			.def(constructor<>())
-			.def("member_out_val", &policies_test_class::member_out_val, pure_out_value(_2))
+			.def("member_out_val", &policies_test_class::member_out_val, pure_out_value(_3))
 			.def("member_secret", &policies_test_class::member_secret, discard_result)
 			.def("f", &policies_test_class::f, adopt(_2))
 			.def("make", &policies_test_class::make, adopt(return_value))
@@ -195,7 +195,7 @@ void test_main(lua_State* L)
 	TEST_CHECK(policies_test_class::count == 2);
 
 	DOSTRING(L, "b = a:make('tjosan')");
-	DOSTRING(L, "assert(a:member_out_val() == 5)");
+	DOSTRING(L, "assert(a:member_out_val(3) == 6)");
 	DOSTRING(L, "a:member_secret()");
 
 	// make instantiated a new policies_test_class
