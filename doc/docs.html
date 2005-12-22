@@ -7,7 +7,7 @@
 <title>luabind</title>
 <meta name="author" content="Daniel Wallin, Arvid Norberg" />
 <meta name="copyright" content="Copyright Daniel Wallin, Arvid Norberg 2003." />
-<meta name="date" content="2005-10-26" />
+<meta name="date" content="2005-11-28" />
 <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 <body>
@@ -22,9 +22,9 @@
 <tr><th class="docinfo-name">Copyright:</th>
 <td>Copyright Daniel Wallin, Arvid Norberg 2003.</td></tr>
 <tr><th class="docinfo-name">Date:</th>
-<td>2005-10-26</td></tr>
+<td>2005-11-28</td></tr>
 <tr><th class="docinfo-name">Revision:</th>
-<td>1.25.2.13</td></tr>
+<td>1.26</td></tr>
 <tr class="field"><th class="docinfo-name">License:</th><td class="field-body"><p class="first">Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the &quot;Software&quot;),
 to deal in the Software without restriction, including without limitation
@@ -767,7 +767,7 @@ module(L)
 <p>There's one special operator. In Lua it's called <tt class="docutils literal"><span class="pre">__tostring</span></tt>, it's not
 really an operator. It is used for converting objects to strings in a standard
 way in Lua. If you register this functionality, you will be able to use the lua
-standard function <tt class="docutils literal"><span class="pre">tostring()</span></tt> for converting you object to a string.</p>
+standard function <tt class="docutils literal"><span class="pre">tostring()</span></tt> for converting your object to a string.</p>
 <p>To implement this operator in C++ you should supply an <tt class="docutils literal"><span class="pre">operator&lt;&lt;</span></tt> for
 std::ostream. Like this example:</p>
 <pre class="literal-block">
@@ -1671,7 +1671,7 @@ to the <tt class="docutils literal"><span class="pre">this</span></tt> pointer.<
 </ul>
 </div>
 <div class="section" id="adopt">
-<h2><a class="toc-backref" href="#id93" name="adopt">12.1&nbsp;&nbsp;&nbsp;adopt</a></h2>
+<h2><a name="adopt">12.1&nbsp;&nbsp;&nbsp;adopt</a></h2>
 <div class="section" id="motivation">
 <h3><a name="motivation">12.1.1&nbsp;&nbsp;&nbsp;Motivation</a></h3>
 <p>Used to transfer ownership across language boundaries.</p>
@@ -1725,7 +1725,7 @@ module(L)
 </div>
 </div>
 <div class="section" id="dependency">
-<h2><a class="toc-backref" href="#id94" name="dependency">12.2&nbsp;&nbsp;&nbsp;dependency</a></h2>
+<h2><a name="dependency">12.2&nbsp;&nbsp;&nbsp;dependency</a></h2>
 <div class="section" id="id2">
 <h3><a name="id2">12.2.1&nbsp;&nbsp;&nbsp;Motivation</a></h3>
 <p>The dependency policy is used to create life-time dependencies between values.
@@ -1783,12 +1783,16 @@ module(L)
 </div>
 </div>
 <div class="section" id="out-value">
-<h2><a class="toc-backref" href="#id95" name="out-value">12.3&nbsp;&nbsp;&nbsp;out_value</a></h2>
+<h2><a name="out-value">12.3&nbsp;&nbsp;&nbsp;out_value</a></h2>
 <div class="section" id="id7">
 <h3><a name="id7">12.3.1&nbsp;&nbsp;&nbsp;Motivation</a></h3>
 <p>This policy makes it possible to wrap functions that take non-const references
 or pointer to non-const as it's parameters with the intention to write return 
-values to them.</p>
+values to them. Since it's impossible to pass references to primitive types
+in lua, this policy will add another return value with the value after the
+call. If the function already has one return value, one instance of this
+policy will add another return value (read about multiple return values in
+the lua manual).</p>
 </div>
 <div class="section" id="id8">
 <h3><a name="id8">12.3.2&nbsp;&nbsp;&nbsp;Defined in</a></h3>
@@ -1846,12 +1850,13 @@ Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
 </div>
 </div>
 <div class="section" id="pure-out-value">
-<h2><a class="toc-backref" href="#id96" name="pure-out-value">12.4&nbsp;&nbsp;&nbsp;pure_out_value</a></h2>
+<h2><a name="pure-out-value">12.4&nbsp;&nbsp;&nbsp;pure_out_value</a></h2>
 <div class="section" id="id12">
 <h3><a name="id12">12.4.1&nbsp;&nbsp;&nbsp;Motivation</a></h3>
 <p>This works exactly like <tt class="docutils literal"><span class="pre">out_value</span></tt>, except that it will pass a
 default constructed object instead of converting an argument from
-Lua.</p>
+Lua. This means that the parameter will be removed from the lua
+signature.</p>
 </div>
 <div class="section" id="id13">
 <h3><a name="id13">12.4.2&nbsp;&nbsp;&nbsp;Defined in</a></h3>
@@ -1890,6 +1895,7 @@ to Lua. <tt class="docutils literal"><span class="pre">_1</span></tt> is used as
 </div>
 <div class="section" id="id16">
 <h3><a name="id16">12.4.5&nbsp;&nbsp;&nbsp;Example</a></h3>
+<p>Note that no values are passed to the calls to <tt class="docutils literal"><span class="pre">f1</span></tt> and <tt class="docutils literal"><span class="pre">f2</span></tt>.</p>
 <pre class="literal-block">
 void f1(float&amp; val) { val = 10.f; }
 void f2(float* val) { *val = 10.f; }
@@ -1908,7 +1914,7 @@ Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
 </div>
 </div>
 <div class="section" id="return-reference-to">
-<h2><a class="toc-backref" href="#id97" name="return-reference-to">12.5&nbsp;&nbsp;&nbsp;return_reference_to</a></h2>
+<h2><a name="return-reference-to">12.5&nbsp;&nbsp;&nbsp;return_reference_to</a></h2>
 <div class="section" id="id17">
 <h3><a name="id17">12.5.1&nbsp;&nbsp;&nbsp;Motivation</a></h3>
 <p>It is very common to return references to arguments or the this-pointer to
@@ -1992,7 +1998,7 @@ return-type (such as in the example).</p>
 </div>
 </div>
 <div class="section" id="copy">
-<h2><a class="toc-backref" href="#id98" name="copy">12.6&nbsp;&nbsp;&nbsp;copy</a></h2>
+<h2><a name="copy">12.6&nbsp;&nbsp;&nbsp;copy</a></h2>
 <div class="section" id="id22">
 <h3><a name="id22">12.6.1&nbsp;&nbsp;&nbsp;Motivation</a></h3>
 <p>This will make a copy of the parameter. This is the default behavior when
@@ -2051,7 +2057,7 @@ module(L)
 </div>
 </div>
 <div class="section" id="discard-result">
-<h2><a class="toc-backref" href="#id99" name="discard-result">12.7&nbsp;&nbsp;&nbsp;discard_result</a></h2>
+<h2><a name="discard-result">12.7&nbsp;&nbsp;&nbsp;discard_result</a></h2>
 <div class="section" id="id27">
 <h3><a name="id27">12.7.1&nbsp;&nbsp;&nbsp;Motivation</a></h3>
 <p>This is a very simple policy which makes it possible to throw away 
@@ -2093,7 +2099,7 @@ module(L)
 </div>
 </div>
 <div class="section" id="return-stl-iterator">
-<h2><a class="toc-backref" href="#id100" name="return-stl-iterator">12.8&nbsp;&nbsp;&nbsp;return_stl_iterator</a></h2>
+<h2><a name="return-stl-iterator">12.8&nbsp;&nbsp;&nbsp;return_stl_iterator</a></h2>
 <div class="section" id="id31">
 <h3><a name="id31">12.8.1&nbsp;&nbsp;&nbsp;Motivation</a></h3>
 <p>This policy converts an STL container to a generator function that can be used
@@ -2138,7 +2144,7 @@ module(L)
 </div>
 </div>
 <div class="section" id="raw">
-<h2><a class="toc-backref" href="#id101" name="raw">12.9&nbsp;&nbsp;&nbsp;raw</a></h2>
+<h2><a name="raw">12.9&nbsp;&nbsp;&nbsp;raw</a></h2>
 <div class="section" id="id35">
 <h3><a name="id35">12.9.1&nbsp;&nbsp;&nbsp;Motivation</a></h3>
 <p>This converter policy will pass through the <tt class="docutils literal"><span class="pre">lua_State*</span></tt> unmodified.
@@ -2198,7 +2204,7 @@ hello
 </div>
 </div>
 <div class="section" id="yield">
-<h2><a class="toc-backref" href="#id102" name="yield">12.10&nbsp;&nbsp;&nbsp;yield</a></h2>
+<h2><a name="yield">12.10&nbsp;&nbsp;&nbsp;yield</a></h2>
 <div class="section" id="id40">
 <h3><a name="id40">12.10.1&nbsp;&nbsp;&nbsp;Motivation</a></h3>
 <p>Makes a C++ function yield when returning.</p>
