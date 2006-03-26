@@ -62,6 +62,7 @@ inline handle::handle(handle const& other)
   : m_interpreter(other.m_interpreter)
   , m_index(LUA_NOREF)
 {
+    if (m_interpreter == 0) return;
     detail::getref(m_interpreter, other.m_index);
     m_index = detail::ref(m_interpreter);
 }

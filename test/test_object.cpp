@@ -26,6 +26,9 @@
 #include <luabind/adopt_policy.hpp>
 #include <luabind/detail/debug.hpp>
 #include <luabind/error.hpp>
+#include <luabind/operator.hpp>
+
+#include <boost/lexical_cast.hpp>
 
 #include <utility>
 
@@ -87,6 +90,9 @@ struct test_param : counted_type<test_param>
 {
 	luabind::object obj;
 	luabind::object obj2;
+
+	bool operator==(test_param const& rhs) const
+	{ return obj == rhs.obj && obj2 == rhs.obj2; }
 };
 
 COUNTER_GUARD(test_param);
@@ -127,11 +133,19 @@ void test_main(lua_State* L)
 			.def(constructor<>())
 			.def_readwrite("obj", &test_param::obj)
 			.def_readonly("obj2", &test_param::obj2)
+			.def(const_self == const_self)
 	];
 
 	object uninitialized;
 	TEST_CHECK(!uninitialized);
 	TEST_CHECK(!uninitialized.is_valid());
+
+	test_param temp_object;
+	globals(L)["temp"] = temp_object;
+	TEST_CHECK(object_cast<test_param>(globals(L)["temp"]) == temp_object);
+	globals(L)["temp"] = &temp_object;
+	TEST_CHECK(object_cast<test_param const*>(globals(L)["temp"]) == &temp_object);
+	TEST_CHECK(globals(L)["temp"] == temp_object);
 	
 	DOSTRING(L,
 		"t = 2\n"
@@ -152,6 +166,9 @@ void test_main(lua_State* L)
 	object test_param_policies = g["test_param_policies"];
 	int a = type(test_param_policies);
 	TEST_CHECK(a == LUA_TFUNCTION);
+
+	luabind::object obj;
+	obj = luabind::object();
 
 	// call the function and tell lua to adopt the pointer passed as first argument
 	test_param_policies(5, new test_param())[adopt(_2)];
@@ -178,6 +195,11 @@ void test_main(lua_State* L)
 	TEST_CHECK(ret_val == g["temp_val"]);
 	object temp_val = g["temp_val"];
 	TEST_CHECK(ret_val == temp_val);
+
+	g["temp"] = "test string";
+	TEST_CHECK(boost::lexical_cast<std::string>(g["temp"]) == "test string");
+	g["temp"] = 6;
+	TEST_CHECK(boost::lexical_cast<std::string>(g["temp"]) == "6");
 
 	TEST_CHECK(object_cast<std::string>(g["glob"]) == "teststring");
 	TEST_CHECK(object_cast<std::string>(gettable(g, "glob")) == "teststring");

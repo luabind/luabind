@@ -29,8 +29,10 @@
 
 namespace luabind {
 
+#ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
     template<class T>
-    T* get_pointer(boost::shared_ptr<T>& p) { return p.get(); }
+    T* get_pointer(boost::shared_ptr<T> const& p) { return p.get(); }
+#endif
 
     template<class A>
     boost::shared_ptr<const A>* get_const_holder(boost::shared_ptr<A>*)

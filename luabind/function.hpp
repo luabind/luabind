@@ -87,7 +87,7 @@ namespace luabind
                 char end;
 			};
 
-    		struct function_rep
+    		struct LUABIND_API function_rep
 			{
 				function_rep(const char* name): m_name(name) {}
 				void add_overload(const free_functions::overload_rep& o);

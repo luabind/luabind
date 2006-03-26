@@ -140,23 +140,46 @@ namespace adl
   };
 # endif
 
-  template<class T, class U, class V>
-  lua_State* binary_interpreter(T const& x, U const&, boost::mpl::true_, V)
+  template<class T, class U>
+  int binary_interpreter(lua_State*& L, T const& lhs, U const& rhs
+    , boost::mpl::true_, boost::mpl::true_)
   {
-      return value_wrapper_traits<T>::interpreter(x);
+       L = value_wrapper_traits<T>::interpreter(lhs);
+		 lua_State* L2 = value_wrapper_traits<U>::interpreter(rhs);
+
+       // you are comparing objects with different interpreters
+       // that's not allowed.
+		 assert(L == L2 || L == 0 || L2 == 0);
+
+       // if the two objects we compare have different interpreters
+       // then they
+
+       if (L != L2) return -1;
+       if (L == 0) return 1;
+       return 0;
+  }
+	
+  template<class T, class U>
+  int binary_interpreter(lua_State*& L, T const& x, U const&
+    , boost::mpl::true_, boost::mpl::false_)
+  {
+       L = value_wrapper_traits<T>::interpreter(x);
+       return 0;
   }
 
   template<class T, class U>
-  lua_State* binary_interpreter(T const&, U const& x, boost::mpl::false_, boost::mpl::true_)
+  int binary_interpreter(lua_State*& L, T const&, U const& x, boost::mpl::false_, boost::mpl::true_)
   {
-      return value_wrapper_traits<U>::interpreter(x);
+      L = value_wrapper_traits<U>::interpreter(x);
+      return 0;
   }
 
   template<class T, class U>
-  lua_State* binary_interpreter(T const& x, U const& y)
+  int binary_interpreter(lua_State*& L, T const& x, U const& y)
   {
       return binary_interpreter(
-          x
+          L
+        , x
         , y
         , is_value_wrapper<T>()
         , is_value_wrapper<U>()
@@ -168,7 +191,14 @@ namespace adl
   typename enable_binary<bool,LHS,RHS>::type \
   operator op(LHS const& lhs, RHS const& rhs) \
   { \
-      lua_State* L = binary_interpreter(lhs, rhs); \
+      lua_State* L = 0; \
+      switch (binary_interpreter(L, lhs, rhs)) \
+      { \
+          case 1: \
+              return true; \
+          case -1: \
+              return false; \
+      } \
 \
       assert(L); \
 \
@@ -180,8 +210,24 @@ namespace adl
       return fn(L, -1, -2) != 0; \
   }
 
-  LUABIND_BINARY_OP_DEF(==, lua_equal)
-  LUABIND_BINARY_OP_DEF(<, lua_lessthan)
+LUABIND_BINARY_OP_DEF(==, lua_equal)
+LUABIND_BINARY_OP_DEF(<, lua_lessthan)
+
+  template<class ValueWrapper>
+  std::ostream& operator<<(std::ostream& os
+    , object_interface<ValueWrapper> const& v)
+  {
+      using namespace luabind;
+      lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
+          static_cast<ValueWrapper const&>(v));
+      detail::stack_pop pop(interpreter, 1);
+      value_wrapper_traits<ValueWrapper>::unwrap(interpreter
+        , static_cast<ValueWrapper const&>(v));
+		char const* p = lua_tostring(interpreter, -1);
+		int len = lua_strlen(interpreter, -1);
+		std::copy(p, p + len, std::ostream_iterator<char>(os));
+		return os;
+	}
 
 #undef LUABIND_BINARY_OP_DEF
 

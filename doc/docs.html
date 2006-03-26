@@ -3,11 +3,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.3.8: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.3.9: http://docutils.sourceforge.net/" />
 <title>luabind</title>
 <meta name="author" content="Daniel Wallin, Arvid Norberg" />
 <meta name="copyright" content="Copyright Daniel Wallin, Arvid Norberg 2003." />
-<meta name="date" content="2005-11-28" />
+<meta name="date" content="2006-01-11" />
 <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 <body>
@@ -22,9 +22,9 @@
 <tr><th class="docinfo-name">Copyright:</th>
 <td>Copyright Daniel Wallin, Arvid Norberg 2003.</td></tr>
 <tr><th class="docinfo-name">Date:</th>
-<td>2005-11-28</td></tr>
+<td>2006-01-11</td></tr>
 <tr><th class="docinfo-name">Revision:</th>
-<td>1.26</td></tr>
+<td>1.26.2.5</td></tr>
 <tr class="field"><th class="docinfo-name">License:</th><td class="field-body"><p class="first">Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the &quot;Software&quot;),
 to deal in the Software without restriction, including without limitation
@@ -106,15 +106,19 @@ corrections/spelling corrections.</p>
 </ul>
 </li>
 <li><a class="reference" href="#splitting-up-the-registration" id="id85" name="id85">13&nbsp;&nbsp;&nbsp;Splitting up the registration</a></li>
-<li><a class="reference" href="#configuration" id="id86" name="id86">14&nbsp;&nbsp;&nbsp;Configuration</a><ul class="auto-toc">
-<li><a class="reference" href="#build-options" id="id87" name="id87">14.1&nbsp;&nbsp;&nbsp;Build options</a></li>
+<li><a class="reference" href="#error-handling" id="id86" name="id86">14&nbsp;&nbsp;&nbsp;Error Handling</a><ul class="auto-toc">
+<li><a class="reference" href="#pcall-errorfunc" id="id87" name="id87">14.1&nbsp;&nbsp;&nbsp;pcall errorfunc</a></li>
+<li><a class="reference" href="#file-and-line-numbers" id="id88" name="id88">14.2&nbsp;&nbsp;&nbsp;file and line numbers</a></li>
+<li><a class="reference" href="#lua-panic" id="id89" name="id89">14.3&nbsp;&nbsp;&nbsp;lua panic</a></li>
+<li><a class="reference" href="#structured-exceptions-msvc" id="id90" name="id90">14.4&nbsp;&nbsp;&nbsp;structured exceptions (MSVC)</a></li>
+<li><a class="reference" href="#error-messages" id="id91" name="id91">14.5&nbsp;&nbsp;&nbsp;Error messages</a></li>
 </ul>
 </li>
-<li><a class="reference" href="#implementation-notes" id="id88" name="id88">15&nbsp;&nbsp;&nbsp;Implementation notes</a></li>
-<li><a class="reference" href="#error-messages" id="id89" name="id89">16&nbsp;&nbsp;&nbsp;Error messages</a></li>
-<li><a class="reference" href="#faq" id="id90" name="id90">17&nbsp;&nbsp;&nbsp;FAQ</a></li>
-<li><a class="reference" href="#known-issues" id="id91" name="id91">18&nbsp;&nbsp;&nbsp;Known issues</a></li>
-<li><a class="reference" href="#acknowledgments" id="id92" name="id92">19&nbsp;&nbsp;&nbsp;Acknowledgments</a></li>
+<li><a class="reference" href="#build-options" id="id92" name="id92">15&nbsp;&nbsp;&nbsp;Build options</a></li>
+<li><a class="reference" href="#implementation-notes" id="id93" name="id93">16&nbsp;&nbsp;&nbsp;Implementation notes</a></li>
+<li><a class="reference" href="#faq" id="id94" name="id94">17&nbsp;&nbsp;&nbsp;FAQ</a></li>
+<li><a class="reference" href="#known-issues" id="id95" name="id95">18&nbsp;&nbsp;&nbsp;Known issues</a></li>
+<li><a class="reference" href="#acknowledgments" id="id96" name="id96">19&nbsp;&nbsp;&nbsp;Acknowledgments</a></li>
 </ul>
 </div>
 <div class="section" id="introduction">
@@ -216,7 +220,7 @@ in your project.</p>
 <p>When building luabind you have several options that may streamline the library
 to better suit your needs. It is extremely important that your application has
 the same settings as the library was built with. The available options are
-found in the <a class="reference" href="#configuration">Configuration</a> section.</p>
+found in the <a class="reference" href="#build-options">Build options</a> section.</p>
 <p>If you want to change the settings to differ from the default, it's recommended
 that you define the settings on the command line of all your files (in the
 project settings in visual studio).</p>
@@ -479,7 +483,7 @@ int ret = call_function&lt;int&gt;(
 int ret = call_function(L, &quot;fun&quot;, boost::ref(val));
 </pre>
 <p>If you want to use a custom error handler for the function call, see
-<tt class="docutils literal"><span class="pre">set_pcall_callback</span></tt> under <a class="reference" href="#configuration">Configuration</a>.</p>
+<tt class="docutils literal"><span class="pre">set_pcall_callback</span></tt> under <a class="reference" href="#pcall-errorfunc">pcall errorfunc</a>.</p>
 </div>
 <div class="section" id="using-lua-threads">
 <h2><a name="using-lua-threads">7.4&nbsp;&nbsp;&nbsp;Using Lua threads</a></h2>
@@ -882,8 +886,8 @@ return value doesn't matter (only the return type).</p>
 <col width="49%" />
 </colgroup>
 <thead valign="bottom">
-<tr><th>Source</th>
-<th>Target</th>
+<tr><th class="head">Source</th>
+<th class="head">Target</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -925,8 +929,8 @@ return value doesn't matter (only the return type).</p>
 <col width="44%" />
 </colgroup>
 <thead valign="bottom">
-<tr><th>Source</th>
-<th>Target</th>
+<tr><th class="head">Source</th>
+<th class="head">Target</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -1078,13 +1082,13 @@ operator (=). When you do this, the <tt class="docutils literal"><span class="pr
 conversion from C++ value to Lua. If your <tt class="docutils literal"><span class="pre">luabind::object</span></tt> is a table you
 can access its members through the operator[] or the <a class="reference" href="#iterators">Iterators</a>. The value
 returned from the operator[] is a proxy object that can be used both for
-reading and writing values into the table (using operator=). Note that it is
-impossible to know if a Lua value is indexable or not (lua_gettable doesn't
-fail, it succeeds or crashes). This means that if you're trying to index
-something that cannot be indexed, you're on your own. Lua will call its
-<tt class="docutils literal"><span class="pre">panic()</span></tt> function (you can define your own panic function using
-<tt class="docutils literal"><span class="pre">lua_setpanicf</span></tt>). There are also free functions that can be used for
-indexing the table, see <a class="reference" href="#related-functions">Related functions</a>.</p>
+reading and writing values into the table (using operator=).</p>
+<p>Note that it is impossible to know if a Lua value is indexable or not
+(<tt class="docutils literal"><span class="pre">lua_gettable</span></tt> doesn't fail, it succeeds or crashes). This means that if
+you're trying to index something that cannot be indexed, you're on your own.
+Lua will call its <tt class="docutils literal"><span class="pre">panic()</span></tt> function. See <a class="reference" href="#lua-panic">lua panic</a>.</p>
+<p>There are also free functions that can be used for indexing the table, see
+<a class="reference" href="#related-functions">Related functions</a>.</p>
 <p>The constructor that takes a <tt class="docutils literal"><span class="pre">from_stack</span></tt> object is used when you want to
 initialize the object with a value from the lua stack. The <tt class="docutils literal"><span class="pre">from_stack</span></tt>
 type has the following constructor:</p>
@@ -1105,11 +1109,6 @@ it onto the Lua stack by calling <tt class="docutils literal"><span class="pre">
 or not. When created with its default constructor, objects are invalid. To make
 an object valid, you can assign it a value. If you want to invalidate an object
 you can simply assign it an invalid object.</p>
-<!-- So what? implementation detail, leave out of docs
-isn't really an implicit cast to bool, but an implicit cast
-to a member pointer, since member pointers don't have any arithmetic operators
-on them (which can cause hard to find errors). The functionality of the cast
-operator -->
 <p>The <tt class="docutils literal"><span class="pre">operator</span> <span class="pre">safe_bool_type()</span></tt> is equivalent to <tt class="docutils literal"><span class="pre">is_valid()</span></tt>. This means
 that these snippets are equivalent:</p>
 <pre class="literal-block">
@@ -1164,6 +1163,13 @@ void my_function(object const&amp; table)
 <p>If you take a <tt class="docutils literal"><span class="pre">luabind::object</span></tt> as a parameter to a function, any Lua value
 will match that parameter. That's why we have to make sure it's a table before
 we index into it.</p>
+<pre class="literal-block">
+std::ostream&amp; operator&lt;&lt;(std::ostream&amp;, object const&amp;);
+</pre>
+<p>There's a stream operator that makes it possible to print objects or use
+<tt class="docutils literal"><span class="pre">boost::lexical_cast</span></tt> to convert it to a string. This will use lua's string
+conversion function. So if you convert a C++ object with a <tt class="docutils literal"><span class="pre">tostring</span></tt>
+operator, the stream operator for that type will be used.</p>
 <div class="section" id="iterators">
 <h2><a name="iterators">9.1&nbsp;&nbsp;&nbsp;Iterators</a></h2>
 <p>There are two kinds of iterators. The normal iterator that will use the metamethod
@@ -1244,7 +1250,7 @@ boost::optional&lt;T&gt; object_cast_nothrow&lt;T&gt;(object const&amp;, Policie
 <p>The <tt class="docutils literal"><span class="pre">object_cast</span></tt> function casts the value of an object to a C++ value.
 You can supply a policy to handle the conversion from lua to C++. If the cast
 cannot be made a <tt class="docutils literal"><span class="pre">cast_failed</span></tt> exception will be thrown. If you have
-defined LUABIND_NO_ERROR_CHECKING (see configuration) no checking will occur,
+defined LUABIND_NO_ERROR_CHECKING (see <a class="reference" href="#build-options">Build options</a>) no checking will occur,
 and if the cast is invalid the application may very well crash. The nothrow
 versions will return an uninitialized <tt class="docutils literal"><span class="pre">boost::optional&lt;T&gt;</span></tt> object, to
 indicate that the cast could not be performed.</p>
@@ -1658,16 +1664,16 @@ to the <tt class="docutils literal"><span class="pre">this</span></tt> pointer.<
 <div class="contents topic" id="policies-currently-implemented">
 <p class="topic-title first"><a name="policies-currently-implemented">Policies currently implemented</a></p>
 <ul class="auto-toc simple">
-<li><a class="reference" href="#adopt" id="id93" name="id93">12.1&nbsp;&nbsp;&nbsp;adopt</a></li>
-<li><a class="reference" href="#dependency" id="id94" name="id94">12.2&nbsp;&nbsp;&nbsp;dependency</a></li>
-<li><a class="reference" href="#out-value" id="id95" name="id95">12.3&nbsp;&nbsp;&nbsp;out_value</a></li>
-<li><a class="reference" href="#pure-out-value" id="id96" name="id96">12.4&nbsp;&nbsp;&nbsp;pure_out_value</a></li>
-<li><a class="reference" href="#return-reference-to" id="id97" name="id97">12.5&nbsp;&nbsp;&nbsp;return_reference_to</a></li>
-<li><a class="reference" href="#copy" id="id98" name="id98">12.6&nbsp;&nbsp;&nbsp;copy</a></li>
-<li><a class="reference" href="#discard-result" id="id99" name="id99">12.7&nbsp;&nbsp;&nbsp;discard_result</a></li>
-<li><a class="reference" href="#return-stl-iterator" id="id100" name="id100">12.8&nbsp;&nbsp;&nbsp;return_stl_iterator</a></li>
-<li><a class="reference" href="#raw" id="id101" name="id101">12.9&nbsp;&nbsp;&nbsp;raw</a></li>
-<li><a class="reference" href="#yield" id="id102" name="id102">12.10&nbsp;&nbsp;&nbsp;yield</a></li>
+<li><a class="reference" href="#adopt" id="id97" name="id97">12.1&nbsp;&nbsp;&nbsp;adopt</a></li>
+<li><a class="reference" href="#dependency" id="id98" name="id98">12.2&nbsp;&nbsp;&nbsp;dependency</a></li>
+<li><a class="reference" href="#out-value" id="id99" name="id99">12.3&nbsp;&nbsp;&nbsp;out_value</a></li>
+<li><a class="reference" href="#pure-out-value" id="id100" name="id100">12.4&nbsp;&nbsp;&nbsp;pure_out_value</a></li>
+<li><a class="reference" href="#return-reference-to" id="id101" name="id101">12.5&nbsp;&nbsp;&nbsp;return_reference_to</a></li>
+<li><a class="reference" href="#copy" id="id102" name="id102">12.6&nbsp;&nbsp;&nbsp;copy</a></li>
+<li><a class="reference" href="#discard-result" id="id103" name="id103">12.7&nbsp;&nbsp;&nbsp;discard_result</a></li>
+<li><a class="reference" href="#return-stl-iterator" id="id104" name="id104">12.8&nbsp;&nbsp;&nbsp;return_stl_iterator</a></li>
+<li><a class="reference" href="#raw" id="id105" name="id105">12.9&nbsp;&nbsp;&nbsp;raw</a></li>
+<li><a class="reference" href="#yield" id="id106" name="id106">12.10&nbsp;&nbsp;&nbsp;yield</a></li>
 </ul>
 </div>
 <div class="section" id="adopt">
@@ -1696,8 +1702,8 @@ adopt(index)
 <col width="83%" />
 </colgroup>
 <thead valign="bottom">
-<tr><th>Parameter</th>
-<th>Purpose</th>
+<tr><th class="head">Parameter</th>
+<th class="head">Purpose</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -1751,8 +1757,8 @@ dependency(nurse_index, patient_index)
 <col width="77%" />
 </colgroup>
 <thead valign="bottom">
-<tr><th>Parameter</th>
-<th>Purpose</th>
+<tr><th class="head">Parameter</th>
+<th class="head">Purpose</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -1814,8 +1820,8 @@ out_value(index, policies = none)
 <col width="80%" />
 </colgroup>
 <thead valign="bottom">
-<tr><th>Parameter</th>
-<th>Purpose</th>
+<tr><th class="head">Parameter</th>
+<th class="head">Purpose</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -1878,8 +1884,8 @@ pure_out_value(index, policies = none)
 <col width="80%" />
 </colgroup>
 <thead valign="bottom">
-<tr><th>Parameter</th>
-<th>Purpose</th>
+<tr><th class="head">Parameter</th>
+<th class="head">Purpose</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -1956,8 +1962,8 @@ return_reference_to(index)
 <col width="87%" />
 </colgroup>
 <thead valign="bottom">
-<tr><th>Parameter</th>
-<th>Purpose</th>
+<tr><th class="head">Parameter</th>
+<th class="head">Purpose</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -2026,8 +2032,8 @@ copy(index)
 <col width="83%" />
 </colgroup>
 <thead valign="bottom">
-<tr><th>Parameter</th>
-<th>Purpose</th>
+<tr><th class="head">Parameter</th>
+<th class="head">Purpose</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -2172,8 +2178,8 @@ raw(index)
 <col width="83%" />
 </colgroup>
 <thead valign="bottom">
-<tr><th>Parameter</th>
-<th>Purpose</th>
+<tr><th class="head">Parameter</th>
+<th class="head">Purpose</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -2626,155 +2632,111 @@ void register_module(lua_State* L)
 }
 </pre>
 </div>
-<div class="section" id="configuration">
-<h1><a name="configuration">14&nbsp;&nbsp;&nbsp;Configuration</a></h1>
+<div class="section" id="error-handling">
+<h1><a name="error-handling">14&nbsp;&nbsp;&nbsp;Error Handling</a></h1>
+<div class="section" id="pcall-errorfunc">
+<h2><a name="pcall-errorfunc">14.1&nbsp;&nbsp;&nbsp;pcall errorfunc</a></h2>
 <p>As mentioned in the <a class="reference" href="http://www.lua.org/manual/5.0/manual.html">Lua documentation</a>, it is possible to pass an
 error handler function to <tt class="docutils literal"><span class="pre">lua_pcall()</span></tt>. Luabind makes use of 
 <tt class="docutils literal"><span class="pre">lua_pcall()</span></tt> internally when calling member functions and free functions.
 It is possible to set the error handler function that Luabind will use
 globally:</p>
 <pre class="literal-block">
-typedef void(*pcall_callback_fun)(lua_State*);
+typedef int(*pcall_callback_fun)(lua_State*);
 void set_pcall_callback(pcall_callback_fun fn);
 </pre>
 <p>This is primarily useful for adding more information to the error message
-returned by a failed protected call.</p>
-<div class="section" id="build-options">
-<h2><a name="build-options">14.1&nbsp;&nbsp;&nbsp;Build options</a></h2>
-<p>There are a number of configuration options available when building luabind.
-It is very important that your project has the exact same configuration 
-options as the ones given when the library was build! The exceptions are the
-<tt class="docutils literal"><span class="pre">LUABIND_MAX_ARITY</span></tt> and <tt class="docutils literal"><span class="pre">LUABIND_MAX_BASES</span></tt> which are template-based 
-options and only matters when you use the library (which means they can 
-differ from the settings of the library).</p>
-<p>The default settings which will be used if no other settings are given
-can be found in <tt class="docutils literal"><span class="pre">luabind/config.hpp</span></tt>.</p>
-<p>If you want to change the settings of the library, you can modify the 
-config file. It is included and used by all makefiles. You can change paths
-to Lua and boost in there as well.</p>
-<dl class="docutils">
-<dt>LUABIND_MAX_ARITY</dt>
-<dd>Controls the maximum arity of functions that are registered with luabind. 
-You can't register functions that takes more parameters than the number 
-this macro is set to. It defaults to 5, so, if your functions have greater 
-arity you have to redefine it. A high limit will increase compilation time.</dd>
-<dt>LUABIND_MAX_BASES</dt>
-<dd>Controls the maximum number of classes one class can derive from in 
-luabind (the number of classes specified within <tt class="docutils literal"><span class="pre">bases&lt;&gt;</span></tt>). 
-<tt class="docutils literal"><span class="pre">LUABIND_MAX_BASES</span></tt> defaults to 4. A high limit will increase 
-compilation time.</dd>
-<dt>LUABIND_NO_ERROR_CHECKING</dt>
-<dd><p class="first">If this macro is defined, all the Lua code is expected only to make legal 
-calls. If illegal function calls are made (e.g. giving parameters that 
-doesn't match the function signature) they will not be detected by luabind
-and the application will probably crash. Error checking could be disabled 
-when shipping a release build (given that no end-user has access to write 
-custom Lua code). Note that function parameter matching will be done if a 
-function is overloaded, since otherwise it's impossible to know which one 
-was called. Functions will still be able to throw exceptions when error 
-checking is disabled.</p>
-<p class="last">If a function throws an exception it will be caught by luabind and 
-propagated with <tt class="docutils literal"><span class="pre">lua_error()</span></tt>.</p>
-</dd>
-<dt>LUABIND_NO_EXCEPTIONS</dt>
-<dd><p class="first">This define will disable all usage of try, catch and throw in luabind. 
-This will in many cases disable run-time errors, when performing invalid 
-casts or calling Lua functions that fails or returns values that cannot 
-be converted by the given policy. luabind requires that no function called 
-directly or indirectly by luabind throws an exception (throwing exceptions 
-through Lua has undefined behavior).</p>
-<p class="last">Where exceptions are the only way to get an error report from luabind, 
-they will be replaced with calls to the callback functions set with
-<tt class="docutils literal"><span class="pre">set_error_callback()</span></tt> and <tt class="docutils literal"><span class="pre">set_cast_failed_callback()</span></tt>.</p>
-</dd>
-<dt>LUA_API</dt>
-<dd>If you want to link dynamically against Lua, you can set this define to 
-the import-keyword on your compiler and platform. On windows in devstudio 
-this should be <tt class="docutils literal"><span class="pre">__declspec(dllimport)</span></tt> if you want to link against Lua 
-as a dll.</dd>
-<dt>LUABIND_EXPORT, LUABIND_IMPORT</dt>
-<dd>If you want to link against luabind as a dll (in devstudio), you can 
-define <tt class="docutils literal"><span class="pre">LUABIND_EXPORT</span></tt> to <tt class="docutils literal"><span class="pre">__declspec(dllexport)</span></tt> and 
-<tt class="docutils literal"><span class="pre">LUABIND_IMPORT</span></tt> to <tt class="docutils literal"><span class="pre">__declspec(dllimport)</span></tt> or
-<tt class="docutils literal"><span class="pre">__attribute__</span> <span class="pre">((visibility(&quot;default&quot;)))</span></tt> on GCC 4. 
-Note that you have to link against Lua as a dll aswell, to make it work.</dd>
-<dt>LUABIND_NO_RTTI</dt>
-<dd>You can define this if you don't want luabind to use <tt class="docutils literal"><span class="pre">dynamic_cast&lt;&gt;</span></tt>.
-It will disable <a class="reference" href="#object-identity">Object identity</a>.</dd>
-<dt>LUABIND_TYPE_INFO, LUABIND_TYPE_INFO_EQUAL(i1,i2), LUABIND_TYPEID(t), LUABIND_INVALID_TYPE_INFO</dt>
-<dd><p class="first">If you don't want to use the RTTI supplied by C++ you can supply your own 
-type-info structure with the <tt class="docutils literal"><span class="pre">LUABIND_TYPE_INFO</span></tt> define. Your type-info 
-structure must be copyable and must be able to compare itself against 
-other type-info structures. You supply the compare function through the 
-<tt class="docutils literal"><span class="pre">LUABIND_TYPE_INFO_EQUAL()</span></tt> define. It should compare the two type-info 
-structures it is given and return true if they represent the same type and
-false otherwise. You also have to supply a function to generate your 
-type-info structure. You do this through the <tt class="docutils literal"><span class="pre">LUABIND_TYPEID()</span></tt> define. 
-It should return your type-info structure and it takes a type as its 
-parameter. That is, a compile time parameter. 
-<tt class="docutils literal"><span class="pre">LUABIND_INVALID_TYPE_INFO</span></tt> macro should be defined to an invalid type. 
-No other type should be able to produce this type info. To use it you 
-probably have to make a traits class with specializations for all classes 
-that you have type-info for. Like this:</p>
+returned by a failed protected call. For more information on how to use the
+pcall_callback function, see <tt class="docutils literal"><span class="pre">errfunc</span></tt> under the
+<a class="reference" href="http://www.lua.org/manual/5.0/manual.html#3.15">pcall section of the lua manual</a>.</p>
+<p>For more information on how to retrieve debugging information from lua, see
+<a class="reference" href="http://www.lua.org/manual/5.0/manual.html#4">the debug section of the lua manual</a>.</p>
+<p>The message returned by the <tt class="docutils literal"><span class="pre">pcall_callback</span></tt> is accessable as the top lua
+value on the stack. For example, if you would like to access it as a luabind
+object, you could do like this:</p>
 <pre class="literal-block">
-class A;
-class B;
-class C;
-
-template&lt;class T&gt; struct typeinfo_trait;
-
-template&lt;&gt; struct typeinfo_trait&lt;A&gt; { enum { type_id = 0 }; };
-template&lt;&gt; struct typeinfo_trait&lt;B&gt; { enum { type_id = 1 }; };
-template&lt;&gt; struct typeinfo_trait&lt;C&gt; { enum { type_id = 2 }; };
+catch(error&amp; e)
+{
+    object error_msg(from_stack(e.state(), -1));
+    std::cout &lt;&lt; error_msg &lt;&lt; std::endl;
+}
 </pre>
-<p>If you have set up your own RTTI system like this (by using integers to
-identify types) you can have luabind use it with the following defines:</p>
+</div>
+<div class="section" id="file-and-line-numbers">
+<h2><a name="file-and-line-numbers">14.2&nbsp;&nbsp;&nbsp;file and line numbers</a></h2>
+<p>If you want to add file name and line number to the error messages generated
+by luabind you can define your own <a class="reference" href="#pcall-errorfunc">pcall errorfunc</a>. You may want to modify
+this callback to better suit your needs, but the basic functionality could be
+implemented like this:</p>
 <pre class="literal-block">
-#define LUABIND_TYPE_INFO const std::type_info*
-#define LUABIND_TYPEID(t) &amp;typeid(t)
-#define LUABIND_TYPE_INFO_EQUAL(i1, i2) *i1 == *i2
-#define LUABIND_INVALID_TYPE_INFO &amp;typeid(detail::null_type)
+int add_file_and_line(lua_State* L)
+{
+   lua_Debug d;
+   lua_getstack(L, 1, &amp;d);
+   lua_getinfo(L, &quot;Sln&quot;, &amp;d);
+   std::string err = lua_tostring(L, -1);
+   lua_pop(L, 1);
+   std::stringstream msg;
+   msg &lt;&lt; d.short_src &lt;&lt; &quot;:&quot; &lt;&lt; d.currentline;
+
+   if (d.name != 0)
+   {
+      msg &lt;&lt; &quot;(&quot; &lt;&lt; d.namewhat &lt;&lt; &quot; &quot; &lt;&lt; d.name &lt;&lt; &quot;)&quot;;
+   }
+   msg &lt;&lt; &quot; &quot; &lt;&lt; err;
+   lua_pushstring(L, msg.str().c_str());
+   return 1;
+}
 </pre>
-<p class="last">Currently the type given through <tt class="docutils literal"><span class="pre">LUABIND_TYPE_INFO</span></tt> must be less-than 
-comparable!</p>
-</dd>
-<dt>NDEBUG</dt>
-<dd>This define will disable all asserts and should be defined in a release 
-build.</dd>
-</dl>
+<p>For more information about what kind of information you can add to the error
+message, see <a class="reference" href="http://www.lua.org/manual/5.0/manual.html#4">the debug section of the lua manual</a>.</p>
+<p>Note that the callback set by <tt class="docutils literal"><span class="pre">set_pcall_callback()</span></tt> will only be used when
+luabind executes lua code. Anytime when you call <tt class="docutils literal"><span class="pre">lua_pcall</span></tt> yourself, you
+have to supply your function if you want error messages translated.</p>
 </div>
+<div class="section" id="lua-panic">
+<h2><a name="lua-panic">14.3&nbsp;&nbsp;&nbsp;lua panic</a></h2>
+<p>When lua encounters a fatal error caused by a bug from the C/C++ side, it will
+call its internal panic function. This can happen, for example,  when you call
+<tt class="docutils literal"><span class="pre">lua_gettable</span></tt> on a value that isn't a table. If you do the same thing from
+within lua, it will of course just fail with an error message.</p>
+<p>The default panic function will <tt class="docutils literal"><span class="pre">exit()</span></tt> the application. If you want to
+handle this case without terminating your application, you can define your own
+panic function using <tt class="docutils literal"><span class="pre">lua_atpanic</span></tt>. The best way to continue from the panic
+function is to make sure lua is compiled as C++ and throw an exception from
+the panic function. Throwing an exception instead of using <tt class="docutils literal"><span class="pre">setjmp</span></tt> and
+<tt class="docutils literal"><span class="pre">longjmp</span></tt> will make sure the stack is correctly unwound.</p>
+<p>When the panic function is called, the lua state is invalid, and the only
+allowed operation on it is to close it.</p>
+<p>For more information, see the <a class="reference" href="http://www.lua.org/manual/5.0/manual.html#3.19">lua manual section 3.19</a>.</p>
 </div>
-<div class="section" id="implementation-notes">
-<h1><a name="implementation-notes">15&nbsp;&nbsp;&nbsp;Implementation notes</a></h1>
-<p>The classes and objects are implemented as user data in Lua. To make sure that
-the user data really is the internal structure it is supposed to be, we tag
-their metatables. A user data who's metatable contains a boolean member named
-<tt class="docutils literal"><span class="pre">__luabind_classrep</span></tt> is expected to be a class exported by luabind. A user
-data who's metatable contains a boolean member named <tt class="docutils literal"><span class="pre">__luabind_class</span></tt> is
-expected to be an instantiation of a luabind class.</p>
-<p>This means that if you make your own user data and tags its metatable with the
-exact same names, you can very easily fool luabind and crash the application.</p>
-<p>In the Lua registry, luabind keeps an entry called <tt class="docutils literal"><span class="pre">__luabind_classes</span></tt>. It
-should not be removed or overwritten.</p>
-<p>In the global table, a variable called <tt class="docutils literal"><span class="pre">super</span></tt> is used every time a
-constructor in a lua-class is called. This is to make it easy for that
-constructor to call its base class' constructor. So, if you have a global
-variable named super it may be overwritten. This is probably not the best
-solution, and this restriction may be removed in the future.</p>
-<p>Luabind uses two upvalues for functions that it registers. The first is a
-userdata containing a list of overloads for the function, the other is a light
-userdata with the value 0x1337, this last value is used to identify functions
-registered by luabind. It should be virtually impossible to have such a pointer
-as secondary upvalue by pure chance. This means, if you are trying to replace
-an existing function with a luabind function, luabind will see that the
-secondary upvalue isn't the magic id number and replace it. If it can identify
-the function to be a luabind function, it won't replace it, but rather add
-another overload to it.</p>
-<p>Inside the luabind namespace, there's another namespace called detail. This
-namespace contains non-public classes and are not supposed to be used directly.</p>
+<div class="section" id="structured-exceptions-msvc">
+<h2><a name="structured-exceptions-msvc">14.4&nbsp;&nbsp;&nbsp;structured exceptions (MSVC)</a></h2>
+<p>Since lua is generally built as a C library, any callbacks called from lua
+cannot under any circumstance throw an exception. Because of that, luabind has
+to catch all exceptions and translate them into proper lua errors (by calling
+<tt class="docutils literal"><span class="pre">lua_error()</span></tt>). This means we have a <tt class="docutils literal"><span class="pre">catch(...)</span> <span class="pre">{}</span></tt> in there.</p>
+<p>In Visual Studio, <tt class="docutils literal"><span class="pre">catch</span> <span class="pre">(...)</span></tt> will not only catch C++ exceptions, it will
+also catch structured exceptions, such as segmentation fault. This means that if
+your function, that gets called from luabind, makes an invalid memory
+adressing, you won't notice it. All that will happen is that lua will return
+an error message saying &quot;unknown exception&quot;.</p>
+<p>To remedy this, you can create your own <em>exception translator</em>:</p>
+<pre class="literal-block">
+void straight_to_debugger(unsigned int, _EXCEPTION_POINTERS*)
+{ throw; }
+
+#ifdef _MSC_VER
+   ::_set_se_translator(straight_to_debugger);
+#endif
+</pre>
+<p>This will make structured exceptions, like segmentation fault, to actually get
+caught by the debugger.</p>
 </div>
 <div class="section" id="error-messages">
-<h1><a name="error-messages">16&nbsp;&nbsp;&nbsp;Error messages</a></h1>
+<h2><a name="error-messages">14.5&nbsp;&nbsp;&nbsp;Error messages</a></h2>
+<p>These are the error messages that can be generated by luabind, with a more
+in-depth explanation.</p>
 <ul>
 <li><pre class="first literal-block">
 the attribute '<em>class-name.attribute-name</em>' is read only
@@ -2825,6 +2787,140 @@ cannot derive from C++ class '<em>class-name</em>'. It does not have a wrapped t
 </li>
 </ul>
 </div>
+</div>
+<div class="section" id="build-options">
+<h1><a name="build-options">15&nbsp;&nbsp;&nbsp;Build options</a></h1>
+<p>There are a number of configuration options available when building luabind.
+It is very important that your project has the exact same configuration 
+options as the ones given when the library was build! The exceptions are the
+<tt class="docutils literal"><span class="pre">LUABIND_MAX_ARITY</span></tt> and <tt class="docutils literal"><span class="pre">LUABIND_MAX_BASES</span></tt> which are template-based 
+options and only matters when you use the library (which means they can 
+differ from the settings of the library).</p>
+<p>The default settings which will be used if no other settings are given
+can be found in <tt class="docutils literal"><span class="pre">luabind/config.hpp</span></tt>.</p>
+<p>If you want to change the settings of the library, you can modify the 
+config file. It is included and used by all makefiles. You can change paths
+to Lua and boost in there as well.</p>
+<dl class="docutils">
+<dt>LUABIND_MAX_ARITY</dt>
+<dd>Controls the maximum arity of functions that are registered with luabind. 
+You can't register functions that takes more parameters than the number 
+this macro is set to. It defaults to 5, so, if your functions have greater 
+arity you have to redefine it. A high limit will increase compilation time.</dd>
+<dt>LUABIND_MAX_BASES</dt>
+<dd>Controls the maximum number of classes one class can derive from in 
+luabind (the number of classes specified within <tt class="docutils literal"><span class="pre">bases&lt;&gt;</span></tt>). 
+<tt class="docutils literal"><span class="pre">LUABIND_MAX_BASES</span></tt> defaults to 4. A high limit will increase 
+compilation time.</dd>
+<dt>LUABIND_NO_ERROR_CHECKING</dt>
+<dd><p class="first">If this macro is defined, all the Lua code is expected only to make legal 
+calls. If illegal function calls are made (e.g. giving parameters that 
+doesn't match the function signature) they will not be detected by luabind
+and the application will probably crash. Error checking could be disabled 
+when shipping a release build (given that no end-user has access to write 
+custom Lua code). Note that function parameter matching will be done if a 
+function is overloaded, since otherwise it's impossible to know which one 
+was called. Functions will still be able to throw exceptions when error 
+checking is disabled.</p>
+<p class="last">If a function throws an exception it will be caught by luabind and 
+propagated with <tt class="docutils literal"><span class="pre">lua_error()</span></tt>.</p>
+</dd>
+<dt>LUABIND_NO_EXCEPTIONS</dt>
+<dd><p class="first">This define will disable all usage of try, catch and throw in luabind. 
+This will in many cases disable run-time errors, when performing invalid 
+casts or calling Lua functions that fails or returns values that cannot 
+be converted by the given policy. luabind requires that no function called 
+directly or indirectly by luabind throws an exception (throwing exceptions 
+through Lua has undefined behavior).</p>
+<p class="last">Where exceptions are the only way to get an error report from luabind, 
+they will be replaced with calls to the callback functions set with
+<tt class="docutils literal"><span class="pre">set_error_callback()</span></tt> and <tt class="docutils literal"><span class="pre">set_cast_failed_callback()</span></tt>.</p>
+</dd>
+<dt>LUA_API</dt>
+<dd>If you want to link dynamically against Lua, you can set this define to 
+the import-keyword on your compiler and platform. On Windows in Visual Studio 
+this should be <tt class="docutils literal"><span class="pre">__declspec(dllimport)</span></tt> if you want to link against Lua 
+as a dll.</dd>
+<dt>LUABIND_EXPORT, LUABIND_IMPORT</dt>
+<dd>If you want to link against luabind as a dll (in Visual Studio), you can 
+define <tt class="docutils literal"><span class="pre">LUABIND_EXPORT</span></tt> to <tt class="docutils literal"><span class="pre">__declspec(dllexport)</span></tt> and 
+<tt class="docutils literal"><span class="pre">LUABIND_IMPORT</span></tt> to <tt class="docutils literal"><span class="pre">__declspec(dllimport)</span></tt> or
+<tt class="docutils literal"><span class="pre">__attribute__</span> <span class="pre">((visibility(&quot;default&quot;)))</span></tt> on GCC 4. 
+Note that you have to link against Lua as a dll aswell, to make it work.</dd>
+<dt>LUABIND_NO_RTTI</dt>
+<dd>You can define this if you don't want luabind to use <tt class="docutils literal"><span class="pre">dynamic_cast&lt;&gt;</span></tt>.
+It will disable <a class="reference" href="#object-identity">Object identity</a>.</dd>
+<dt>LUABIND_TYPE_INFO, LUABIND_TYPE_INFO_EQUAL(i1,i2), LUABIND_TYPEID(t), LUABIND_INVALID_TYPE_INFO</dt>
+<dd><p class="first">If you don't want to use the RTTI supplied by C++ you can supply your own 
+type-info structure with the <tt class="docutils literal"><span class="pre">LUABIND_TYPE_INFO</span></tt> define. Your type-info 
+structure must be copyable and must be able to compare itself against 
+other type-info structures. You supply the compare function through the 
+<tt class="docutils literal"><span class="pre">LUABIND_TYPE_INFO_EQUAL()</span></tt> define. It should compare the two type-info 
+structures it is given and return true if they represent the same type and
+false otherwise. You also have to supply a function to generate your 
+type-info structure. You do this through the <tt class="docutils literal"><span class="pre">LUABIND_TYPEID()</span></tt> define. 
+It should return your type-info structure and it takes a type as its 
+parameter. That is, a compile time parameter. 
+<tt class="docutils literal"><span class="pre">LUABIND_INVALID_TYPE_INFO</span></tt> macro should be defined to an invalid type. 
+No other type should be able to produce this type info. To use it you 
+probably have to make a traits class with specializations for all classes 
+that you have type-info for. Like this:</p>
+<pre class="literal-block">
+class A;
+class B;
+class C;
+
+template&lt;class T&gt; struct typeinfo_trait;
+
+template&lt;&gt; struct typeinfo_trait&lt;A&gt; { enum { type_id = 0 }; };
+template&lt;&gt; struct typeinfo_trait&lt;B&gt; { enum { type_id = 1 }; };
+template&lt;&gt; struct typeinfo_trait&lt;C&gt; { enum { type_id = 2 }; };
+</pre>
+<p>If you have set up your own RTTI system like this (by using integers to
+identify types) you can have luabind use it with the following defines:</p>
+<pre class="literal-block">
+#define LUABIND_TYPE_INFO const std::type_info*
+#define LUABIND_TYPEID(t) &amp;typeid(t)
+#define LUABIND_TYPE_INFO_EQUAL(i1, i2) *i1 == *i2
+#define LUABIND_INVALID_TYPE_INFO &amp;typeid(detail::null_type)
+</pre>
+<p class="last">Currently the type given through <tt class="docutils literal"><span class="pre">LUABIND_TYPE_INFO</span></tt> must be less-than 
+comparable!</p>
+</dd>
+<dt>NDEBUG</dt>
+<dd>This define will disable all asserts and should be defined in a release 
+build.</dd>
+</dl>
+</div>
+<div class="section" id="implementation-notes">
+<h1><a name="implementation-notes">16&nbsp;&nbsp;&nbsp;Implementation notes</a></h1>
+<p>The classes and objects are implemented as user data in Lua. To make sure that
+the user data really is the internal structure it is supposed to be, we tag
+their metatables. A user data who's metatable contains a boolean member named
+<tt class="docutils literal"><span class="pre">__luabind_classrep</span></tt> is expected to be a class exported by luabind. A user
+data who's metatable contains a boolean member named <tt class="docutils literal"><span class="pre">__luabind_class</span></tt> is
+expected to be an instantiation of a luabind class.</p>
+<p>This means that if you make your own user data and tags its metatable with the
+exact same names, you can very easily fool luabind and crash the application.</p>
+<p>In the Lua registry, luabind keeps an entry called <tt class="docutils literal"><span class="pre">__luabind_classes</span></tt>. It
+should not be removed or overwritten.</p>
+<p>In the global table, a variable called <tt class="docutils literal"><span class="pre">super</span></tt> is used every time a
+constructor in a lua-class is called. This is to make it easy for that
+constructor to call its base class' constructor. So, if you have a global
+variable named super it may be overwritten. This is probably not the best
+solution, and this restriction may be removed in the future.</p>
+<p>Luabind uses two upvalues for functions that it registers. The first is a
+userdata containing a list of overloads for the function, the other is a light
+userdata with the value 0x1337, this last value is used to identify functions
+registered by luabind. It should be virtually impossible to have such a pointer
+as secondary upvalue by pure chance. This means, if you are trying to replace
+an existing function with a luabind function, luabind will see that the
+secondary upvalue isn't the magic id number and replace it. If it can identify
+the function to be a luabind function, it won't replace it, but rather add
+another overload to it.</p>
+<p>Inside the luabind namespace, there's another namespace called detail. This
+namespace contains non-public classes and are not supposed to be used directly.</p>
+</div>
 <div class="section" id="faq">
 <h1><a name="faq">17&nbsp;&nbsp;&nbsp;FAQ</a></h1>
 <dl class="docutils">
@@ -2842,9 +2938,6 @@ ellipses don't preserve type safety, those should be avoided anyway.</dd>
 internal structure overflow. You should try to split that compilation
 unit up in smaller ones. See <a class="reference" href="#splitting-up-the-registration">Splitting up the registration</a> and
 <a class="reference" href="#splitting-class-registrations">Splitting class registrations</a>.</dd>
-</dl>
-<!-- the three entries above were removed, why? -->
-<dl class="docutils">
 <dt>What's wrong with precompiled headers in VC?</dt>
 <dd>Visual Studio doesn't like anonymous namespace's in its precompiled 
 headers. If you encounter this problem you can disable precompiled 
@@ -2904,7 +2997,7 @@ in general).</p>
 <dd>VC6.5 chokes on warnings, if you are getting alot of warnings from your 
 code try suppressing them with a pragma directive, this should solve the 
 problem.</dd>
-<dt>Crashes when linking against luabind as a dll in windows</dt>
+<dt>Crashes when linking against luabind as a dll in Windows</dt>
 <dd>When you build luabind, Lua and you project, make sure you link against 
 the runtime dynamically (as a dll).</dd>
 <dt>I cannot register a function with a non-const parameter</dt>
@@ -2926,8 +3019,6 @@ original function name.</li>
 <li>luabind does not support class hierarchies with virtual inheritance. Casts are
 done with static pointer offsets.</li>
 </ul>
-<!-- remove? - Visual studio have problems selecting the correct overload of std::swap()
-for luabind::object. -->
 </div>
 <div class="section" id="acknowledgments">
 <h1><a name="acknowledgments">19&nbsp;&nbsp;&nbsp;Acknowledgments</a></h1>

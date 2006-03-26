@@ -726,11 +726,11 @@ namespace luabind
 				, const boost::function2<int, lua_State*, int>& g);
 
 #ifdef LUABIND_NO_ERROR_CHECKING
-			void class_base::add_setter(
+			void add_setter(
 				const char* name
 				, const boost::function2<int, lua_State*, int>& s);
 #else
-			void class_base::add_setter(
+			void add_setter(
 				const char* name
 				, const boost::function2<int, lua_State*, int>& s
 				, int (*match)(lua_State*, int)

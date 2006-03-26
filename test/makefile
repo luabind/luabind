@@ -26,15 +26,13 @@ SOURCES = \
 	test_iterator.cpp \
 
 
-CPPFLAGS = -Wno-long-double
-
 all: $(SOURCES:.cpp=.exe)
 
 %.exe:%.o main.o
 	$(CXX) $? -o $@ -g -L$(LUA_PATH)/lib -L../lib -lluabind -llualib -llua
 
 %.o:%.cpp
-	$(CXX) -Wall -ftemplate-depth-100 -g $(CPPFLAGS) $(CONFIG) -I$(LUA_PATH)/include -I. -I- -I../ -I$(BOOST_ROOT) -c $? -o $@
+	$(CXX) -Wall -ftemplate-depth-100 -g $(CONFIG) -I$(LUA_PATH)/include -I. -I- -I../ -I$(BOOST_ROOT) -c $? -o $@
 
 #just to force the tests to be run
 test: $(SOURCES:.cpp=.dummy)
