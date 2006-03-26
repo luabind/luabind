@@ -801,7 +801,7 @@ to wrap a nested class, or a static function.
 .. parsed-literal::
 
     class_<foo>("foo")
-        .def(constructor<>()
+        .def(constructor<>())
         **.scope
         [
             class_<inner>("nested"),
