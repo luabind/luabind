@@ -52,7 +52,7 @@ namespace luabind
 		std::size_t index = 1;
 		
 		for (map_type::const_iterator i = obj->crep()->properties().begin();
-				i != obj->crep()->properties().end(); ++i)
+				i != obj->crep()->properties().end(); ++i, ++index)
 		{
 			result.attributes[index] = i->first;
 		}

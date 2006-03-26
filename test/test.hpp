@@ -108,12 +108,13 @@ int counted_type<T>::count = 0;
           , (char const*)expected))             \
         {                                       \
             TEST_ERROR(lua_tostring(e.state(), -1)); \
+            lua_pop(L, 1);                      \
         }                                       \
     }                                           \
     catch (std::string const& s)                \
     {                                           \
         if (s != expected)                      \
-            TEST_ERROR(s.c_str());             \
+            TEST_ERROR(s.c_str());              \
     }                                           \
 }
 
@@ -126,6 +127,7 @@ int counted_type<T>::count = 0;
     catch (luabind::error const& e)             \
     {                                           \
         TEST_ERROR(lua_tostring(e.state(), -1)); \
+            lua_pop(L, 1);                      \
     }                                           \
     catch (std::string const& s)                \
     {                                           \

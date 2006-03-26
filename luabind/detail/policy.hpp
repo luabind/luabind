@@ -345,6 +345,9 @@ namespace luabind { namespace detail
 		PRIMITIVE_CONVERTER(double) { return static_cast<double>(lua_tonumber(L, index)); }
 		PRIMITIVE_MATCHER(double) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
 
+      PRIMITIVE_CONVERTER(lua_State*) { return lua_tothread(L, index); }
+      PRIMITIVE_MATCHER(lua_State*) { if (lua_type(L, index) == LUA_TTHREAD) return 0; else return -1; }
+
 		PRIMITIVE_CONVERTER(std::string)
 		{ return std::string(lua_tostring(L, index), lua_strlen(L, index)); }
 		PRIMITIVE_MATCHER(std::string) { if (lua_type(L, index) == LUA_TSTRING) return 0; else return -1; }
