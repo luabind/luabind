@@ -11,12 +11,12 @@ if ! $(LUA_PATH)
         "LUA_PATH needs to be set to point to your Lua5.x directory." ;
 }
 
-if ! [ GLOB $(LUA_PATH)/include : lua.h ]
-{
-    errors.user-error
-        "LUA_PATH seems to point to a broken Lua5.x installation." :
-        "Currently set to $(LUA_PATH)" ;
-}
+#if ! [ GLOB $(LUA_PATH)/include : lua.h ]
+#{
+#    errors.user-error
+#        "LUA_PATH seems to point to a broken Lua5.x installation." :
+#        "Currently set to $(LUA_PATH)" ;
+#}
 
 if ! $(BOOST_ROOT)
 {
@@ -27,6 +27,7 @@ if ! $(BOOST_ROOT)
 lib lua
     :
     : <name>lua <search>$(LUA_PATH)/lib
+      <search>$(LUA_PATH)/src
     ;
 
 lib lualib
@@ -37,11 +38,14 @@ lib lualib
 project luabind
     : requirements
         <include>./ <include>$(BOOST_ROOT) <include>$(LUA_PATH)/include/
-        <library>/luabind//lua <library>/luabind//lualib
+        <include>$(LUA_PATH)/src/
+        <library>/luabind//lua
+#        <library>/luabind//lualib
         <toolset>msvc,<link>shared:<define>LUABIND_IMPORT=__declspec(dllimport)
         <toolset>msvc,<link>shared:<define>LUABIND_EXPORT=__declspec(dllexport)
     : usage-requirements
         <include>./ <include>$(BOOST_ROOT) <include>$(LUA_PATH)/include/
+        <include>$(LUA_PATH)/src/
         <toolset>msvc,<link>shared:<define>LUABIND_IMPORT=__declspec(dllimport)
         <toolset>msvc,<link>shared:<define>LUABIND_EXPORT=__declspec(dllexport)
     ;

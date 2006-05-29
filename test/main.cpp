@@ -52,7 +52,13 @@ lua_state::lua_state()
     : m_state(lua_open())
 {
     luaopen_base(m_state);
+#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 501
+	 // lua 5.1 or newer
+	 luaL_openlibs(m_state);
+#else
+	 // lua 5.0.2 or older
     lua_baselibopen(m_state);
+#endif
     m_top = lua_gettop(m_state);
     luabind::open(m_state);
 }
@@ -109,11 +115,17 @@ void report_failure(char const* err, char const* file, int line)
 
 int main()
 {
+	lua_state L;
 	try
 	{
-    	lua_state L;
 		test_main(L);
 		return tests_failure ? 1 : 0;
+	}
+	catch (luabind::error const& e)
+	{
+		std::cerr << "Terminated with exception: \"" << e.what() << "\"\n"
+			<< lua_tostring(e.state(), -1) << "\n";
+		return 1;
 	}
 	catch (std::exception const& e)
 	{
