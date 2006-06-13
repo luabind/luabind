@@ -137,7 +137,9 @@ BOOST_ROOT
 LUA_PATH
     Point this to your Lua directory. The build system will assume that the
     include and library files are located in ``$(LUA_PATH)/include/`` and
-    ``$(LUA_PATH)/lib/.``
+    ``$(LUA_PATH)/lib/.``. If this environment variable is not defined, the
+    Jamfile will try to invoke ``pkg-config`` in order to find lua. It will
+    look for lua 5.1 (``lua5.1`` as the package is called on debian systems).
 
 For backward compatibility, there is also a makefile in the root-directory that
 will build the library and the test programs. If you are using a UNIX-system (or
@@ -1278,6 +1280,23 @@ These functions return the global environment table and the registry table respe
   object newtable(lua_State*);
 
 This function creates a new table and returns it as an object.
+
+Assigning nil
+-------------
+
+To set a table entry to ``nil``, you can use ``luabind::nil``. It will avoid
+having to take the detour by first assigning ``nil`` to an object and then
+assign that to the table entry. It will simply result in a ``lua_pushnil()``
+call, instead of copying an object.
+
+Example::
+
+  using luabind;
+  object table = newtable(L);
+  table["foo"] = "bar";
+  
+  // now, clear the "foo"-field
+  table["foo"] = nil;
 
 
 Defining classes in Lua

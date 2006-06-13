@@ -30,6 +30,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/optional.hpp>
 
+#include <luabind/nil.hpp>
 #include <luabind/value_wrapper.hpp>
 #include <luabind/detail/pcall.hpp>
 #include <luabind/handle.hpp>
@@ -356,6 +357,15 @@ LUABIND_BINARY_OP_DEF(<, lua_lessthan)
               lua_pop(m_interpreter, 2);
       }
 
+		// this will set the value to nil
+		iterator_proxy & operator=(luabind::detail::nil_type)
+		{
+          lua_pushvalue(m_interpreter, m_key_index);
+			 lua_pushnil(m_interpreter);
+          AccessPolicy::set(m_interpreter, m_table_index);
+          return *this;
+		}
+
       template<class T>
       iterator_proxy& operator=(T const& value)
       {
@@ -580,6 +590,18 @@ namespace adl
       // This is non-const to prevent conversion on lvalues.
       operator object();
 
+		// this will set the value to nil
+		this_type& operator=(luabind::detail::nil_type)
+		{
+	       value_wrapper_traits<Next>::unwrap(m_interpreter, m_next);
+          detail::stack_pop pop(m_interpreter, 1);
+
+          lua_pushvalue(m_interpreter, m_key_index);
+			 lua_pushnil(m_interpreter);
+          lua_settable(m_interpreter, -3);
+          return *this;
+		}
+		
       template<class T>
       this_type& operator=(T const& value)
       {
@@ -606,6 +628,8 @@ namespace adl
       }
 
   private:
+		struct hidden_type {};
+		
       this_type& operator=(index_proxy<Next> const&);
 
       mutable lua_State* m_interpreter;

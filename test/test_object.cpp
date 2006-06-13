@@ -209,6 +209,31 @@ void test_main(lua_State* L)
 	TEST_CHECK(iterator(t) == iterator());
 	TEST_CHECK(raw_iterator(t) == raw_iterator());
 
+	t["foo"] = "bar";
+
+	TEST_CHECK(object_cast<std::string>(t["foo"]) == "bar");
+	TEST_CHECK(object_cast<std::string>(*iterator(t)) == "bar");
+	TEST_CHECK(object_cast<std::string>(*raw_iterator(t)) == "bar");
+
+	t["foo"] = nil; // luabind::nil_type
+
+	TEST_CHECK(iterator(t) == iterator());
+	TEST_CHECK(raw_iterator(t) == raw_iterator());
+
+	t["foo"] = "bar";
+	iterator it1(t);
+	*it1 = nil;
+
+	TEST_CHECK(iterator(t) == iterator());
+	TEST_CHECK(raw_iterator(t) == raw_iterator());
+
+	t["foo"] = "bar";
+	raw_iterator it2(t);
+	*it2 = nil;
+
+	TEST_CHECK(iterator(t) == iterator());
+	TEST_CHECK(raw_iterator(t) == raw_iterator());
+
 	DOSTRING(L,
 		"p1 = {}\n"
 		"p2 = {}\n"
