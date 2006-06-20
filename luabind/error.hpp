@@ -45,7 +45,7 @@ namespace luabind
 	class LUABIND_API error : public std::exception
 	{
 	public:
-		error(lua_State* L): m_L(L) {}
+		explicit error(lua_State* L): m_L(L) {}
 		lua_State* state() const throw() { return m_L; }
 		virtual const char* what() const throw()
 		{
