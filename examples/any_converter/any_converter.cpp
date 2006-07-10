@@ -59,7 +59,7 @@ namespace luabind
 boost::any f(bool b)
 {
 	if (b) return "foobar";
-	else return "3.5f";
+	else return 3.5f;
 }
 
 int main()
