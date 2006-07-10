@@ -20,6 +20,7 @@ bool dostring(lua_State* L, const char* str)
 }
 
 #include <luabind/luabind.hpp>
+#include <luabind/detail/convert_to_lua.hpp>
 #include <boost/any.hpp>
 
 template<class T>
@@ -27,9 +28,7 @@ struct convert_any
 {
 	static void convert(lua_State* L, const boost::any& a)
 	{
-		typename luabind::detail::default_policy::template generate_converter<T, luabind::detail::cpp_to_lua>::type conv;
-
-		conv.apply(L, *boost::any_cast<T>(&a));
+		luabind::detail::convert_to_lua(L, *boost::any_cast<T>(&a));
 	}
 };
 
@@ -71,7 +70,11 @@ int main()
 	register_any_converter<std::string>();
 
 	lua_State* L = lua_open();
+#if LUA_VERSION_NUM >= 501 
+	luaL_openlibs(L);
+#else
 	lua_baselibopen(L);
+#endif
 
 	using namespace luabind;
 	
