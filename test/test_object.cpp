@@ -66,6 +66,7 @@ int test_object_param(const object& table)
 		table["sum1"] = sum1;
 		table["sum2"] = sum2;
 		table["blurp"] = 5;
+		table["sum3"] = table["sum1"];
 		return 0;
 	}
 	else

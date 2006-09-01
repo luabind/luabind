@@ -614,6 +614,17 @@ namespace adl
           return *this;
       }
 
+      this_type& operator=(this_type const& value)
+      {
+          value_wrapper_traits<Next>::unwrap(m_interpreter, m_next);
+          detail::stack_pop pop(m_interpreter, 1);
+
+          lua_pushvalue(m_interpreter, m_key_index);
+          detail::push(m_interpreter, value);
+          lua_settable(m_interpreter, -3);
+          return *this;
+      }
+
       template<class T>
       index_proxy<this_type> operator[](T const& key)
       {
@@ -630,7 +641,7 @@ namespace adl
   private:
 		struct hidden_type {};
 		
-      this_type& operator=(index_proxy<Next> const&);
+//      this_type& operator=(index_proxy<Next> const&);
 
       mutable lua_State* m_interpreter;
       int m_key_index;
