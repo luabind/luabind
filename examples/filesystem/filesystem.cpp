@@ -57,7 +57,7 @@ void bind_filesystem(lua_State* L)
 			.def(other<const char*>() / const_self)
 			.def(const_self / other<const char*>())
 
-			.property("contents", &identity, return_directory_iterator)
+//			.property("contents", &identity, return_directory_iterator)
 			,
 
 		def("exists", &fs::exists),
@@ -110,6 +110,6 @@ int main(int argc, const char* argv[])
 	args["n"] = argc;
 	globals(L)["args"] = args;
 
-	lua_dofile(L, argv[1]);
+	luaL_dofile(L, argv[1]);
 }
 
