@@ -147,6 +147,11 @@ void test_main(lua_State* L)
 	globals(L)["temp"] = &temp_object;
 	TEST_CHECK(object_cast<test_param const*>(globals(L)["temp"]) == &temp_object);
 	TEST_CHECK(globals(L)["temp"] == temp_object);
+
+	// test the registry
+	object reg = registry(L);
+	reg["__a"] = "foobar";
+	TEST_CHECK(object_cast<std::string>(registry(L)["__a"]) == "foobar");
 	
 	DOSTRING(L,
 		"t = 2\n"
