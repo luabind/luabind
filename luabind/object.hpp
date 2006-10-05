@@ -1012,9 +1012,9 @@ namespace detail
       }
 
       template<class Policies>
-      inline static void apply(lua_State*, const boost::tuples::null_type&, const Policies&) {};
+      inline static void apply(lua_State*, const boost::tuples::null_type&, const Policies&) {}
 
-      inline static void apply(lua_State*, const boost::tuples::null_type&) {};
+      inline static void apply(lua_State*, const boost::tuples::null_type&) {}
   };
 
 } // namespace detail
