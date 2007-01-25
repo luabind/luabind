@@ -36,6 +36,7 @@ corrections/spelling corrections.
 
 .. contents::
     :depth: 2
+    :backlinks: none
 .. section-numbering::
 
 Introduction
@@ -102,7 +103,9 @@ Luabind has been tested to work on the following compilers:
  - GCC 3.0.4 (Debian/Linux) 
  - GCC 3.1 (SunOS 5.8) 
  - GCC 3.2 (cygwin) 
- - GCC 3.3.1 (cygwin) 
+ - GCC 3.3.1 (cygwin)
+ - GCC 3.3 (Apple, MacOS X)
+ - GCC 4.0 (Apple, MacOS X)
 
 It has been confirmed not to work with:
 
@@ -122,8 +125,8 @@ Building luabind
 To keep down the compilation-time luabind is built as a library. This means you
 have to either build it and link against it, or include its source files in
 your project. You also have to make sure the luabind directory is somewhere in
-your compiler's include path. It requires `Boost`_ 1.32.0 to be installed (only
-boost headers). It also requires that Lua is installed.
+your compiler's include path. It requires `Boost`_ 1.32.0 or 1.33.0 to be
+installed (only boost headers). It also requires that Lua is installed.
 
 The official way of building luabind is with `Boost.Build V2`_. To properly build
 luabind with Boost.Build you need to set two environment variables:
@@ -134,10 +137,12 @@ BOOST_ROOT
 LUA_PATH
     Point this to your Lua directory. The build system will assume that the
     include and library files are located in ``$(LUA_PATH)/include/`` and
-    ``$(LUA_PATH)/lib/.``
+    ``$(LUA_PATH)/lib/.``. If this environment variable is not defined, the
+    Jamfile will try to invoke ``pkg-config`` in order to find lua. It will
+    look for lua 5.1 (``lua5.1`` as the package is called on debian systems).
 
 For backward compatibility, there is also a makefile in the root-directory that
-will build the library and the test program. If you are using a UNIX-system (or
+will build the library and the test programs. If you are using a UNIX-system (or
 cygwin) they will make it easy to build luabind as a static library. If you are
 using Visual Studio it may be easier to include the files in the src directory
 in your project.
@@ -145,7 +150,7 @@ in your project.
 When building luabind you have several options that may streamline the library
 to better suit your needs. It is extremely important that your application has
 the same settings as the library was built with. The available options are
-found in the `Configuration`_ section.
+found in the `Build options`_ section.
 
 If you want to change the settings to differ from the default, it's recommended
 that you define the settings on the command line of all your files (in the
@@ -438,7 +443,7 @@ Like this::
 
 
 If you want to use a custom error handler for the function call, see
-``set_pcall_callback`` under Configuration_.
+``set_pcall_callback`` under `pcall errorfunc`_.
 
 Using Lua threads
 -----------------
@@ -544,6 +549,39 @@ If the object pointer parameter is const, the function will act as if it was a
 const member function (it can be called on const objects).
 
 
+Overloaded member functions
+---------------------------
+
+When binding more than one overloads of a member function, or just binding
+one overload of an overloaded member function, you have to disambiguate
+the member function pointer you pass to ``def``. To do this, you can use an
+ordinary C-style cast, to cast it to the right overload. To do this, you have
+to know how to express member function types in C++, here's a short tutorial
+(for more info, refer to your favourite book on C++).
+
+The syntax for member function pointer follows:
+
+.. parsed-literal::
+
+    *return-value* (*class-name*::\*)(*arg1-type*, *arg2-type*, *...*)
+
+Here's an example illlustrating this::
+
+    struct A
+    {
+        void f(int);
+        void f(int, int);
+    };
+
+::
+
+    class_<A>()
+        .def("f", (void(A::*)(int))&A::f)
+
+This selects the first overload of the function ``f`` to bind. The second
+overload is not bound.
+
+
 Properties
 ----------
 
@@ -569,8 +607,27 @@ possible to register attributes with read-only access::
     module(L)
     [
         class_<A>("A")
-        .def_readonly("a", &A::a)
+            .def_readonly("a", &A::a)
     ];
+
+When binding members that are a non-primitive type, the auto generated getter
+function will return a reference to it. This is to allow chained .-operators.
+For example, when having a struct containing another struct. Like this::
+
+    struct A { int m; };
+    struct B { A a; };
+
+When binding ``B`` to lua, the following expression code should work::
+
+    b = B()
+    b.a.m = 1
+    assert(b.a.m == 1)
+
+This requires the first lookup (on ``a``) to return a reference to ``A``, and
+not a copy. In that case, luabind will automatically use the dependency policy
+to make the return value dependent on the object in which it is stored. So, if
+the returned reference lives longer than all references to the object (b in
+this case) it will keep the object alive, to avoid being a dangling pointer.
 
 You can also register getter and setter functions and make them look as if they
 were a public data member. Consider the following class::
@@ -630,6 +687,8 @@ and reached on the class itself rather than on an instance of the class.
 Operators
 ---------
 
+To bind operators you have to include ``<luabind/operator.hpp>``.
+
 The mechanism for registering operators on your class is pretty simple. You use
 a global name ``luabind::self`` to refer to the class itself and then you just
 write the operator expression inside the ``def()`` call. This class::
@@ -652,7 +711,7 @@ Is registered like this:
 This will work regardless if your plus operator is defined inside your class or
 as a free function.
 
-If you operator is const (or, when defined as a free function, takes a const
+If your operator is const (or, when defined as a free function, takes a const
 reference to the class itself) you have to use ``const_self`` instead of
 ``self``. Like this:
 
@@ -668,11 +727,16 @@ The operators supported are those available in Lua:
 
 .. parsed-literal::
 
-    +    -    \*    /    ==    !=    <    <=    >    >=
+    +    -    \*    /    ==    <    <=
 
 This means, no in-place operators. The equality operator (``==``) has a little
 hitch; it will not be called if the references are equal. This means that the
 ``==`` operator has to do pretty much what's it's expected to do.
+
+Lua does not support operators such as ``!=``, ``>`` or ``>=``. That's why you
+can only register the operators listed above. When you invoke one of the
+mentioned operators, lua will define it in terms of one of the avaliable
+operators.
 
 In the above example the other operand type is instantiated by writing
 ``int()``. If the operand type is a complex type that cannot easily be
@@ -698,7 +762,7 @@ Instead we use the ``other<>`` wrapper like this:
             .def(self + **other<std::string>()**)
     ];
 
-To register an application operator:
+To register an application (function call-) operator:
 
 .. parsed-literal::
 
@@ -711,7 +775,7 @@ To register an application operator:
 There's one special operator. In Lua it's called ``__tostring``, it's not
 really an operator. It is used for converting objects to strings in a standard
 way in Lua. If you register this functionality, you will be able to use the lua
-standard function ``tostring()`` for converting you object to a string.
+standard function ``tostring()`` for converting your object to a string.
 
 To implement this operator in C++ you should supply an ``operator<<`` for
 std::ostream. Like this example:
@@ -739,12 +803,15 @@ to wrap a nested class, or a static function.
 .. parsed-literal::
 
     class_<foo>("foo")
-        .def(constructor<>()
+        .def(constructor<>())
         **.scope
         [
             class_<inner>("nested"),
             def("f", &f)
         ]**;
+
+In this example, ``f`` will behave like a static member function of the class
+``foo``, and the class ``nested`` will behave like a nested class of ``foo``.
 
 It's also possible to add namespace's to classes using the same syntax.
 
@@ -807,7 +874,7 @@ raw_pointer conversion from Lua to C++. They look like this::
     namespace luabind {
 
         template<class T>
-        T* get_pointer(boost::shared_ptr<T> const& p) 
+        T* get_pointer(boost::shared_ptr<T>& p) 
         {
             return p.get(); 
         }
@@ -897,13 +964,48 @@ Internally, luabind will do the necessary conversions on the raw pointers, which
 are first extracted from the holder type.
 
 
+Splitting class registrations
+-----------------------------
+
+In some situations it may be desirable to split a registration of a class
+across different compilation units. Partly to save rebuild time when changing
+in one part of the binding, and in some cases compiler limits may force you
+to split it. To do this is very simple. Consider the following sample code::
+
+    void register_part1(class_<X>& x)
+    {
+        x.def(/*...*/);
+    }
+
+    void register_part2(class_<X>& x)
+    {
+        x.def(/*...*/);
+    }
+
+    void register_(lua_State* L)
+    {
+        class_<X> x("x");
+
+        register_part1(x);
+        register_part2(x);
+
+        module(L) [ x ];
+    }
+
+Here, the class ``X`` is registered in two steps. The two functions
+``register_part1`` and ``register_part2`` may be put in separate compilation
+units.
+
+To separate the module registration and the classes to be registered, see
+`Splitting up the registration`_.
+
 Object
 ======
 
 Since functions have to be able to take Lua values (of variable type) we need a
 wrapper around them. This wrapper is called ``luabind::object``. If the
 function you register takes an object, it will match any Lua value. To use it,
-you need to include ``luabind/object.hpp``.
+you need to include ``<luabind/object.hpp>``.
 
 .. topic:: Synopsis
 
@@ -932,15 +1034,15 @@ you need to include ``luabind/object.hpp``.
             object& operator=(T const&);
             object& operator=(object const&);
 
-            **COMPARISONS ARE NOT IMPLEMENTED YET**
-            template<class T>
-            bool operator==(T const&) const;
             bool operator==(object const&) const;
             bool operator<(object const&) const;
             bool operator<=(object const&) const;
             bool operator>(object const&) const;
             bool operator>=(object const&) const;
             bool operator!=(object const&) const;
+
+            template <class T>
+            *implementation-defined* operator[](T const& key) const
 
             void swap(object&);
 
@@ -960,13 +1062,15 @@ operator (=). When you do this, the ``default_policy`` will be used to make the
 conversion from C++ value to Lua. If your ``luabind::object`` is a table you
 can access its members through the operator[] or the Iterators_. The value
 returned from the operator[] is a proxy object that can be used both for
-reading and writing values into the table (using operator=). Note that it is
-impossible to know if a Lua value is indexable or not (lua_gettable doesn't
-fail, it succeeds or crashes). This means that if you're trying to index
-something that cannot be indexed, you're on your own. Lua will call its
-``panic()`` function (you can define your own panic function using
-``lua_setpanicf``). There are also free functions that can be used for
-indexing the table, see `Related functions`_.
+reading and writing values into the table (using operator=).
+
+Note that it is impossible to know if a Lua value is indexable or not
+(``lua_gettable`` doesn't fail, it succeeds or crashes). This means that if
+you're trying to index something that cannot be indexed, you're on your own.
+Lua will call its ``panic()`` function. See `lua panic`_.
+
+There are also free functions that can be used for indexing the table, see
+`Related functions`_.
 
 The constructor that takes a ``from_stack`` object is used when you want to
 initialize the object with a value from the lua stack. The ``from_stack``
@@ -991,12 +1095,6 @@ The ``is_valid()`` function tells you whether the object has been initialized
 or not. When created with its default constructor, objects are invalid. To make
 an object valid, you can assign it a value. If you want to invalidate an object
 you can simply assign it an invalid object.
-
-.. So what? implementation detail, leave out of docs
-  isn't really an implicit cast to bool, but an implicit cast
-  to a member pointer, since member pointers don't have any arithmetic operators
-  on them (which can cause hard to find errors). The functionality of the cast
-  operator
 
 The ``operator safe_bool_type()`` is equivalent to ``is_valid()``. This means
 that these snippets are equivalent::
@@ -1040,9 +1138,9 @@ release its Lua object in its destructor.
 
 Here's an example of how a function can use a table::
 
-    void my_function(const object& table)
+    void my_function(object const& table)
     {
-        if (table.type() == LUA_TTABLE)
+        if (type(table) == LUA_TTABLE)
         {
             table["time"] = std::clock();
             table["name"] = std::rand() < 500 ? "unusual" : "usual";
@@ -1055,6 +1153,14 @@ If you take a ``luabind::object`` as a parameter to a function, any Lua value
 will match that parameter. That's why we have to make sure it's a table before
 we index into it.
 
+::
+
+    std::ostream& operator<<(std::ostream&, object const&);
+
+There's a stream operator that makes it possible to print objects or use
+``boost::lexical_cast`` to convert it to a string. This will use lua's string
+conversion function. So if you convert a C++ object with a ``tostring``
+operator, the stream operator for that type will be used.
 
 Iterators
 ---------
@@ -1153,7 +1259,7 @@ true value of the table entry.
 The ``object_cast`` function casts the value of an object to a C++ value.
 You can supply a policy to handle the conversion from lua to C++. If the cast
 cannot be made a ``cast_failed`` exception will be thrown. If you have
-defined LUABIND_NO_ERROR_CHECKING (see configuration) no checking will occur,
+defined LUABIND_NO_ERROR_CHECKING (see `Build options`_) no checking will occur,
 and if the cast is invalid the application may very well crash. The nothrow
 versions will return an uninitialized ``boost::optional<T>`` object, to
 indicate that the cast could not be performed.
@@ -1174,6 +1280,23 @@ These functions return the global environment table and the registry table respe
   object newtable(lua_State*);
 
 This function creates a new table and returns it as an object.
+
+Assigning nil
+-------------
+
+To set a table entry to ``nil``, you can use ``luabind::nil``. It will avoid
+having to take the detour by first assigning ``nil`` to an object and then
+assign that to the table entry. It will simply result in a ``lua_pushnil()``
+call, instead of copying an object.
+
+Example::
+
+  using luabind;
+  object table = newtable(L);
+  table["foo"] = "bar";
+  
+  // now, clear the "foo"-field
+  table["foo"] = nil;
 
 
 Defining classes in Lua
@@ -2014,25 +2137,189 @@ on the module it's being registered in.
     }
 
 
-Configuration
-=============
+Error Handling
+==============
+
+pcall errorfunc
+---------------
 
 As mentioned in the `Lua documentation`_, it is possible to pass an
 error handler function to ``lua_pcall()``. Luabind makes use of 
-``lua_pcall()`` internally when calling methods and functions. It is
-possible to set the error handler function that Luabind will use 
+``lua_pcall()`` internally when calling member functions and free functions.
+It is possible to set the error handler function that Luabind will use
 globally::
 
-    typedef void(*pcall_callback_fun)(lua_State*);
+    typedef int(*pcall_callback_fun)(lua_State*);
     void set_pcall_callback(pcall_callback_fun fn);
 
 This is primarily useful for adding more information to the error message
-returned by a failed protected call.
+returned by a failed protected call. For more information on how to use the
+pcall_callback function, see ``errfunc`` under the
+`pcall section of the lua manual`_.
+
+For more information on how to retrieve debugging information from lua, see
+`the debug section of the lua manual`_.
+
+The message returned by the ``pcall_callback`` is accessable as the top lua
+value on the stack. For example, if you would like to access it as a luabind
+object, you could do like this::
+
+    catch(error& e)
+    {
+        object error_msg(from_stack(e.state(), -1));
+        std::cout << error_msg << std::endl;
+    }
 
 .. _Lua documentation: http://www.lua.org/manual/5.0/manual.html
+.. _`pcall section of the lua manual`: http://www.lua.org/manual/5.0/manual.html#3.15
+.. _`the debug section of the lua manual`: http://www.lua.org/manual/5.0/manual.html#4
+
+file and line numbers
+---------------------
+
+If you want to add file name and line number to the error messages generated
+by luabind you can define your own `pcall errorfunc`_. You may want to modify
+this callback to better suit your needs, but the basic functionality could be
+implemented like this::
+
+   int add_file_and_line(lua_State* L)
+   {
+      lua_Debug d;
+      lua_getstack(L, 1, &d);
+      lua_getinfo(L, "Sln", &d);
+      std::string err = lua_tostring(L, -1);
+      lua_pop(L, 1);
+      std::stringstream msg;
+      msg << d.short_src << ":" << d.currentline;
+
+      if (d.name != 0)
+      {
+         msg << "(" << d.namewhat << " " << d.name << ")";
+      }
+      msg << " " << err;
+      lua_pushstring(L, msg.str().c_str());
+      return 1;
+   }
+
+For more information about what kind of information you can add to the error
+message, see `the debug section of the lua manual`_.
+
+Note that the callback set by ``set_pcall_callback()`` will only be used when
+luabind executes lua code. Anytime when you call ``lua_pcall`` yourself, you
+have to supply your function if you want error messages translated.
+
+lua panic
+---------
+
+When lua encounters a fatal error caused by a bug from the C/C++ side, it will
+call its internal panic function. This can happen, for example,  when you call
+``lua_gettable`` on a value that isn't a table. If you do the same thing from
+within lua, it will of course just fail with an error message.
+
+The default panic function will ``exit()`` the application. If you want to
+handle this case without terminating your application, you can define your own
+panic function using ``lua_atpanic``. The best way to continue from the panic
+function is to make sure lua is compiled as C++ and throw an exception from
+the panic function. Throwing an exception instead of using ``setjmp`` and
+``longjmp`` will make sure the stack is correctly unwound.
+
+When the panic function is called, the lua state is invalid, and the only
+allowed operation on it is to close it.
+
+For more information, see the `lua manual section 3.19`_.
+
+.. _`lua manual section 3.19`: http://www.lua.org/manual/5.0/manual.html#3.19
+
+structured exceptions (MSVC)
+----------------------------
+
+Since lua is generally built as a C library, any callbacks called from lua
+cannot under any circumstance throw an exception. Because of that, luabind has
+to catch all exceptions and translate them into proper lua errors (by calling
+``lua_error()``). This means we have a ``catch(...) {}`` in there.
+
+In Visual Studio, ``catch (...)`` will not only catch C++ exceptions, it will
+also catch structured exceptions, such as segmentation fault. This means that if
+your function, that gets called from luabind, makes an invalid memory
+adressing, you won't notice it. All that will happen is that lua will return
+an error message saying "unknown exception".
+
+To remedy this, you can create your own *exception translator*::
+
+   void straight_to_debugger(unsigned int, _EXCEPTION_POINTERS*)
+   { throw; }
+
+   #ifdef _MSC_VER
+      ::_set_se_translator(straight_to_debugger);
+   #endif
+
+This will make structured exceptions, like segmentation fault, to actually get
+caught by the debugger.
+
+
+Error messages
+--------------
+
+These are the error messages that can be generated by luabind, with a more
+in-depth explanation.
+
+- .. parsed-literal::
+
+    the attribute '*class-name.attribute-name*' is read only
+
+  There is no data member named *attribute-name* in the class *class-name*,
+  or there's no setter-function registered on that property name. See the 
+  Properties_ section.
+
+- .. parsed-literal:: 
+
+    the attribute '*class-name.attribute-name*' is of type: (*class-name*) and does not match (*class_name*)
+
+  This error is generated if you try to assign an attribute with a value 
+  of a type that cannot be converted to the attribute's type.
+
+
+- .. parsed-literal:: 
+
+    *class-name()* threw an exception, *class-name:function-name()* threw an exception
+
+  The class' constructor or member function threw an unknown exception.
+  Known exceptions are const char*, std::exception. See the 
+  `exceptions`_ section.
+
+- .. parsed-literal::
+
+    no overload of '*class-name:function-name*' matched the arguments (*parameter-types*)
+    no match for function call '*function-name*' with the parameters (*parameter-types*)
+    no constructor of *class-name* matched the arguments (*parameter-types*)
+    no operator *operator-name* matched the arguments (*parameter-types*)
+
+  No function/operator with the given name takes the parameters you gave 
+  it. You have either misspelled the function name, or given it incorrect
+  parameters. This error is followed by a list of possible candidate 
+  functions to help you figure out what parameter has the wrong type. If
+  the candidate list is empty there's no function at all with that name.
+  See the signature matching section.
+
+- .. parsed-literal::
+
+    call of overloaded '*class-name:function-name*(*parameter-types*)' is ambiguous
+    ambiguous match for function call '*function-name*' with the parameters (*parameter-types*)
+    call of overloaded constructor '*class-name*(*parameter-types*)' is ambiguous
+    call of overloaded operator *operator-name* (*parameter-types*) is ambiguous
+
+  This means that the function/operator you are trying to call has at least
+  one other overload that matches the arguments just as good as the first
+  overload.
+
+- .. parsed-literal::
+
+    cannot derive from C++ class '*class-name*'. It does not have a wrapped type.
+
+
 
 Build options
--------------
+=============
 
 There are a number of configuration options available when building luabind.
 It is very important that your project has the exact same configuration 
@@ -2088,12 +2375,12 @@ LUABIND_NO_EXCEPTIONS
 
 LUA_API
     If you want to link dynamically against Lua, you can set this define to 
-    the import-keyword on your compiler and platform. On windows in devstudio 
+    the import-keyword on your compiler and platform. On Windows in Visual Studio 
     this should be ``__declspec(dllimport)`` if you want to link against Lua 
     as a dll.
 
 LUABIND_EXPORT, LUABIND_IMPORT
-    If you want to link against luabind as a dll (in devstudio), you can 
+    If you want to link against luabind as a dll (in Visual Studio), you can 
     define ``LUABIND_EXPORT`` to ``__declspec(dllexport)`` and 
     ``LUABIND_IMPORT`` to ``__declspec(dllimport)`` or
     ``__attribute__ ((visibility("default")))`` on GCC 4. 
@@ -2181,63 +2468,6 @@ Inside the luabind namespace, there's another namespace called detail. This
 namespace contains non-public classes and are not supposed to be used directly.
 
 
-Error messages
-==============
-
-- .. parsed-literal::
-
-    the attribute '*class-name.attribute-name*' is read only
-
-  There is no data member named *attribute-name* in the class *class-name*,
-  or there's no setter-method registered on that property name. See the 
-  properties section.
-
-- .. parsed-literal:: 
-
-    the attribute '*class-name.attribute-name*' is of type: (*class-name*) and does not match (*class_name*)
-
-  This error is generated if you try to assign an attribute with a value 
-  of a type that cannot be converted to the attribute's type.
-
-
-- .. parsed-literal:: 
-
-    *class-name()* threw an exception, *class-name:function-name()* threw an exception
-
-  The class' constructor or member function threw an unknown exception.
-  Known exceptions are const char*, std::exception. See the 
-  `exceptions`_ section.
-
-- .. parsed-literal::
-
-    no overload of '*class-name:function-name*' matched the arguments (*parameter-types*)
-    no match for function call '*function-name*' with the parameters (*parameter-types*)
-    no constructor of *class-name* matched the arguments (*parameter-types*)
-    no operator *operator-name* matched the arguments (*parameter-types*)
-
-  No function/operator with the given name takes the parameters you gave 
-  it. You have either misspelled the function name, or given it incorrect
-  parameters. This error is followed by a list of possible candidate 
-  functions to help you figure out what parameter has the wrong type. If
-  the candidate list is empty there's no function at all with that name.
-  See the signature matching section.
-
-- .. parsed-literal::
-
-    call of overloaded '*class-name:function-name*(*parameter-types*)' is ambiguous
-    ambiguous match for function call '*function-name*' with the parameters (*parameter-types*)
-    call of overloaded constructor '*class-name*(*parameter-types*)' is ambiguous
-    call of overloaded operator *operator-name* (*parameter-types*) is ambiguous
-
-  This means that the function/operator you are trying to call has at least
-  one other overload that matches the arguments just as good as the first
-  overload.
-
-- .. parsed-literal::
-
-    cannot derive from C++ class '*class-name*'. It does not have a wrapped type.
-
-
 FAQ
 ===
 
@@ -2255,9 +2485,8 @@ What's wrong with functions taking variable number of arguments?
 Internal structure overflow in VC
     If you, in visual studio, get fatal error C1204: compiler limit :
     internal structure overflow. You should try to split that compilation
-    unit up in smaller ones.
-
-.. the three entries above were removed, why?
+    unit up in smaller ones. See `Splitting up the registration`_ and
+    `Splitting class registrations`_.
 
 What's wrong with precompiled headers in VC?
     Visual Studio doesn't like anonymous namespace's in its precompiled 
@@ -2313,14 +2542,14 @@ Do I have to register destructors for my classes?
     you want to be sure that the correct destructor is called (this apply to C++ 
     in general).
 
-.. And again, the above is irrelevant to docs. This isn't a general C++ FAQ.
+.. And again, the above is irrelevant to docs. This isn't a general C++ FAQ. But it saves us support questions.
 
 Fatal Error C1063 compiler limit \: compiler stack overflow in VC
     VC6.5 chokes on warnings, if you are getting alot of warnings from your 
     code try suppressing them with a pragma directive, this should solve the 
     problem.
 
-Crashes when linking against luabind as a dll in windows
+Crashes when linking against luabind as a dll in Windows
     When you build luabind, Lua and you project, make sure you link against 
     the runtime dynamically (as a dll).
 
@@ -2346,9 +2575,6 @@ Known issues
 
 - luabind does not support class hierarchies with virtual inheritance. Casts are
   done with static pointer offsets.
-
-.. remove? - Visual studio have problems selecting the correct overload of std::swap()
-  for luabind::object.
 
 
 Acknowledgments

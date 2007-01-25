@@ -22,16 +22,7 @@
 
 #include "test.hpp"
 #include <luabind/luabind.hpp>
-//#include <luabind/functor.hpp>
 #include <luabind/adopt_policy.hpp>
-/*
-luabind::functor<int> functor_test;
-
-void set_functor(luabind::functor<int> f)
-{
-    functor_test = f;
-}
-*/
 
 struct base : counted_type<base>
 {
@@ -166,17 +157,22 @@ void test_main(lua_State* L)
         "f(number)\n"
         "f(number, number)\n");
 
-//    DOSTRING(L,
-//        "function functor_test(a) glob = a\n"
-//        " return 'foobar'\n"
-//        "end");
-//    functor<std::string> functor_test = object_cast<functor<std::string> >(globals(L)["functor_test"]);
-    
-//    TEST_CHECK(functor_test(6)[detail::null_type()] == "foobar");
-//    TEST_CHECK(object_cast<int>(globals(L)["glob"]) == 6);
 
-//    functor<std::string> functor_test2 = object_cast<functor<std::string> >(globals(L)["functor_test"]);
+    DOSTRING(L, "function failing_fun() error('expected error message') end");
+    try
+    {
+        call_function<void>(L, "failing_fun");
+        TEST_ERROR("function didn't fail when it was expected to");
+    }
+    catch(luabind::error const& e)
+    {
+        if (std::string("[string \"function failing_fun() error('expected "
+            "erro...\"]:1: expected error message") != lua_tostring(L, -1))
+        {
+            TEST_ERROR("function failed with unexpected error message");
+            lua_pop(L, 1);
+        }
+    }
 
-//    TEST_CHECK(functor_test == functor_test2);
 }
 

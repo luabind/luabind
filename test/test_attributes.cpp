@@ -35,14 +35,22 @@ struct B : A
 {
 };
 
+struct C
+{
+	int a;
+};
+
 struct property_test : counted_type<property_test>
 {  
-    property_test(): o(6) {}
+    property_test(): o(6), c_ref(&c) {}
+	 ~property_test() { c.a = 0; }
 
     std::string str_;
     int a_;
     float o;
     signed char b;
+	 C c;
+	 C* c_ref;
 
     void set(int a) { a_ = a; }
     int get() const { return a_; }
@@ -78,8 +86,10 @@ void test_main(lua_State* L)
 			.property("str", &property_test::get_str, &property_test::set_str)
 			.property("A", &property_test::getA, &property_test::setA)
 			.def_readonly("o", &property_test::o)
-            .property("free", &free_getter, &free_setter)
-			.def_readwrite("b", &property_test::b),
+			.property("free", &free_getter, &free_setter)
+			.def_readwrite("b", &property_test::b)
+			.def_readwrite("c", &property_test::c)
+			.def_readwrite("c_ref", &property_test::c_ref),
 
 		class_<A>("A")
 			.def(constructor<>())
@@ -87,7 +97,11 @@ void test_main(lua_State* L)
 
 		class_<B, A>("B")
 			.def(constructor<>())
-			.property("x", &A::get)
+			.property("x", &A::get),
+
+		class_<C>("C")
+			.def(constructor<>())
+			.def_readwrite("a", &C::a)
 	];
 
 	DOSTRING(L, "test = property()\n");
@@ -122,6 +136,20 @@ void test_main(lua_State* L)
         "test.b = 3\n"
         "assert(test.b == 3)\n");
 
+	DOSTRING(L, "test.c.a = 1\n"
+		"assert(test.c.a == 1)\n"
+		"assert(test.c_ref.a == 1)");
+
+	DOSTRING(L, "t1 = property()\n"
+		"c = t1.c\n"
+		"c2 = t1.c_ref\n"
+		"c.a = 1\n"
+		"t1 = nil\n"
+		"collectgarbage()\n"
+		"collectgarbage()\n"
+		"assert(c.a == 1)\n"
+		"assert(c2.a == 1)");
+	 
 	DOSTRING(L,
 		"a = B()\n");
 

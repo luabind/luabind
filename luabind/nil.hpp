@@ -1,4 +1,4 @@
-// Copyright (c) 2005 Daniel Wallin and Arvid Norberg
+// Copyright (c) 2004 Daniel Wallin and Arvid Norberg
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,14 +20,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef LUABIND_UNSPECIFIED_051001_HPP
-#define LUABIND_UNSPECIFIED_051001_HPP
+#ifndef LUABIND_NIL_HPP
+#define LUABIND_NIL_HPP
 
-namespace luabind { namespace detail { 
+namespace luabind
+{
+   namespace detail
+   {
+      struct nil_type {};
+   }
 
-struct unspecified; 
+   // defined in class.cpp
+   extern detail::nil_type nil;
+}
 
-}} // namespace luabind::detail
-
-#endif // LUABIND_UNSPECIFIED_051001_HPP
+#endif
 

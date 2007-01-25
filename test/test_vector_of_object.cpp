@@ -1,4 +1,4 @@
-// Copyright (c) 2005 Daniel Wallin and Arvid Norberg
+// Copyright (c) 2005 Daniel Wallin
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,22 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef LUABIND_CLASS_FWD_051002_HPP
-#define LUABIND_CLASS_FWD_051002_HPP
+#include "test.hpp"
+#include <luabind/object.hpp>
 
-#include <luabind/detail/unspecified.hpp>
+using namespace luabind;
 
-namespace luabind {
+void test_main(lua_State* L)
+{
+    std::vector<object> v;
+    v.push_back(object(L, 0));
 
-template<
-    class T
-  , class X1 = detail::unspecified
-  , class X2 = detail::unspecified
-  , class X3 = detail::unspecified
->
-struct class_;
-
-} // namespace luabind
-
-#endif // LUABIND_CLASS_FWD_051002_HPP
+    for (std::vector<object>::iterator i(v.begin()), e(v.end()); i != e; ++i)
+    {}
+}
 

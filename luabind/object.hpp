@@ -26,9 +26,11 @@
 #include <boost/implicit_cast.hpp> // detail::push()
 #include <boost/ref.hpp> // detail::push()
 #include <boost/mpl/bool.hpp> // value_wrapper_traits specializations
+#include <boost/mpl/apply_wrap.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/optional.hpp>
 
+#include <luabind/nil.hpp>
 #include <luabind/value_wrapper.hpp>
 #include <luabind/detail/pcall.hpp>
 #include <luabind/handle.hpp>
@@ -41,12 +43,14 @@
 #include <boost/python/detail/is_xxx.hpp>
 
 #include <boost/preprocessor/iteration/iterate.hpp>
+#include <boost/utility/enable_if.hpp>
 
 namespace luabind {
 
 namespace detail 
 {
-
+  namespace mpl = boost::mpl;
+  
   template<class T, class ConverterGenerator>
   void push_aux(lua_State* interpreter, T& value, ConverterGenerator*)
   {
@@ -56,9 +60,8 @@ namespace detail
         , T
       >::type unwrapped_type;
 
-      typename ConverterGenerator::template generate_converter<
-          unwrapped_type
-        , cpp_to_lua
+      typename mpl::apply_wrap2<
+          ConverterGenerator,unwrapped_type,cpp_to_lua
       >::type cv;
 
       cv.apply(
@@ -90,24 +93,94 @@ namespace detail
 
 namespace adl
 {
-
-  template<class T, class U, class V>
-  lua_State* binary_interpreter(T const& x, U const&, boost::mpl::true_, V)
+  namespace mpl = boost::mpl;
+  
+  template <class T>
+  class object_interface;
+  
+  namespace is_object_interface_aux
   {
-      return value_wrapper_traits<T>::interpreter(x);
+    typedef char (&yes)[1];
+    typedef char (&no)[2];
+    
+    template <class T>
+    yes check(object_interface<T>*);
+    no check(void*);
+
+    template <class T>
+    struct impl 
+    {
+        BOOST_STATIC_CONSTANT(bool, value =
+            sizeof(is_object_interface_aux::check((T*)0)) == sizeof(yes)
+        );
+
+        typedef mpl::bool_<value> type;
+    };
+
+  } // namespace detail
+
+  template <class T>
+  struct is_object_interface
+    : is_object_interface_aux::impl<T>::type
+  {};
+
+  template <class R, class T, class U>
+  struct enable_binary
+# ifndef BOOST_NO_SFINAE
+    : boost::enable_if<
+          mpl::or_<
+              is_object_interface<T>
+            , is_object_interface<U>
+          >
+        , R
+      >
+  {};
+# else
+  {
+      typedef R type;
+  };
+# endif
+
+  template<class T, class U>
+  int binary_interpreter(lua_State*& L, T const& lhs, U const& rhs
+    , boost::mpl::true_, boost::mpl::true_)
+  {
+       L = value_wrapper_traits<T>::interpreter(lhs);
+		 lua_State* L2 = value_wrapper_traits<U>::interpreter(rhs);
+
+       // you are comparing objects with different interpreters
+       // that's not allowed.
+		 assert(L == L2 || L == 0 || L2 == 0);
+
+       // if the two objects we compare have different interpreters
+       // then they
+
+       if (L != L2) return -1;
+       if (L == 0) return 1;
+       return 0;
+  }
+	
+  template<class T, class U>
+  int binary_interpreter(lua_State*& L, T const& x, U const&
+    , boost::mpl::true_, boost::mpl::false_)
+  {
+       L = value_wrapper_traits<T>::interpreter(x);
+       return 0;
   }
 
   template<class T, class U>
-  lua_State* binary_interpreter(T const&, U const& x, boost::mpl::false_, boost::mpl::true_)
+  int binary_interpreter(lua_State*& L, T const&, U const& x, boost::mpl::false_, boost::mpl::true_)
   {
-      return value_wrapper_traits<U>::interpreter(x);
+      L = value_wrapper_traits<U>::interpreter(x);
+      return 0;
   }
 
   template<class T, class U>
-  lua_State* binary_interpreter(T const& x, U const& y)
+  int binary_interpreter(lua_State*& L, T const& x, U const& y)
   {
       return binary_interpreter(
-          x
+          L
+        , x
         , y
         , is_value_wrapper<T>()
         , is_value_wrapper<U>()
@@ -116,9 +189,17 @@ namespace adl
 
 #define LUABIND_BINARY_OP_DEF(op, fn) \
   template<class LHS, class RHS> \
-  bool operator op(LHS const& lhs, RHS const& rhs) \
+  typename enable_binary<bool,LHS,RHS>::type \
+  operator op(LHS const& lhs, RHS const& rhs) \
   { \
-      lua_State* L = binary_interpreter(lhs, rhs); \
+      lua_State* L = 0; \
+      switch (binary_interpreter(L, lhs, rhs)) \
+      { \
+          case 1: \
+              return true; \
+          case -1: \
+              return false; \
+      } \
 \
       assert(L); \
 \
@@ -130,31 +211,51 @@ namespace adl
       return fn(L, -1, -2) != 0; \
   }
 
-  LUABIND_BINARY_OP_DEF(==, lua_equal)
-  LUABIND_BINARY_OP_DEF(<, lua_lessthan)
+LUABIND_BINARY_OP_DEF(==, lua_equal)
+LUABIND_BINARY_OP_DEF(<, lua_lessthan)
+
+  template<class ValueWrapper>
+  std::ostream& operator<<(std::ostream& os
+    , object_interface<ValueWrapper> const& v)
+  {
+      using namespace luabind;
+      lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
+          static_cast<ValueWrapper const&>(v));
+      detail::stack_pop pop(interpreter, 1);
+      value_wrapper_traits<ValueWrapper>::unwrap(interpreter
+        , static_cast<ValueWrapper const&>(v));
+		char const* p = lua_tostring(interpreter, -1);
+		int len = lua_strlen(interpreter, -1);
+		std::copy(p, p + len, std::ostream_iterator<char>(os));
+		return os;
+	}
 
 #undef LUABIND_BINARY_OP_DEF
 
   template<class LHS, class RHS>
-  bool operator>(LHS const& lhs, RHS const& rhs)
+  typename enable_binary<bool,LHS,RHS>::type
+  operator>(LHS const& lhs, RHS const& rhs)
   {
       return !(lhs < rhs || lhs == rhs);
   }
 
   template<class LHS, class RHS>
-  bool operator<=(LHS const& lhs, RHS const& rhs)
+  typename enable_binary<bool,LHS,RHS>::type 
+  operator<=(LHS const& lhs, RHS const& rhs)
   {
       return lhs < rhs || lhs == rhs;
   }
 
   template<class LHS, class RHS>
-  bool operator>=(LHS const& lhs, RHS const& rhs)
+  typename enable_binary<bool,LHS,RHS>::type 
+  operator>=(LHS const& lhs, RHS const& rhs)
   {
       return !(lhs < rhs);
   }
 
   template<class LHS, class RHS>
-  bool operator!=(LHS const& lhs, RHS const& rhs)
+  typename enable_binary<bool,LHS,RHS>::type 
+  operator!=(LHS const& lhs, RHS const& rhs)
   {
       return !(lhs < rhs);
   }
@@ -255,6 +356,15 @@ namespace adl
           if (m_interpreter)
               lua_pop(m_interpreter, 2);
       }
+
+		// this will set the value to nil
+		iterator_proxy & operator=(luabind::detail::nil_type)
+		{
+          lua_pushvalue(m_interpreter, m_key_index);
+			 lua_pushnil(m_interpreter);
+          AccessPolicy::set(m_interpreter, m_table_index);
+          return *this;
+		}
 
       template<class T>
       iterator_proxy& operator=(T const& value)
@@ -480,8 +590,31 @@ namespace adl
       // This is non-const to prevent conversion on lvalues.
       operator object();
 
+		// this will set the value to nil
+		this_type& operator=(luabind::detail::nil_type)
+		{
+	       value_wrapper_traits<Next>::unwrap(m_interpreter, m_next);
+          detail::stack_pop pop(m_interpreter, 1);
+
+          lua_pushvalue(m_interpreter, m_key_index);
+			 lua_pushnil(m_interpreter);
+          lua_settable(m_interpreter, -3);
+          return *this;
+		}
+		
       template<class T>
       this_type& operator=(T const& value)
+      {
+          value_wrapper_traits<Next>::unwrap(m_interpreter, m_next);
+          detail::stack_pop pop(m_interpreter, 1);
+
+          lua_pushvalue(m_interpreter, m_key_index);
+          detail::push(m_interpreter, value);
+          lua_settable(m_interpreter, -3);
+          return *this;
+      }
+
+      this_type& operator=(this_type const& value)
       {
           value_wrapper_traits<Next>::unwrap(m_interpreter, m_next);
           detail::stack_pop pop(m_interpreter, 1);
@@ -506,7 +639,9 @@ namespace adl
       }
 
   private:
-      this_type& operator=(index_proxy<Next> const&);
+		struct hidden_type {};
+		
+//      this_type& operator=(index_proxy<Next> const&);
 
       mutable lua_State* m_interpreter;
       int m_key_index;
@@ -739,14 +874,14 @@ namespace detail
     , class ValueWrapper
     , class Policies
     , class ErrorPolicy
-	, class ReturnType
+    , class ReturnType
   >
   ReturnType object_cast_aux(
       ValueWrapper const& value_wrapper
     , T*
     , Policies*
     , ErrorPolicy*
-	, ReturnType*
+    , ReturnType*
   )
   {
       lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
@@ -767,10 +902,7 @@ namespace detail
         , Policies
       >::type converter_generator;
 
-      typename converter_generator::template generate_converter<
-          T
-        , lua_to_cpp
-      >::type cv;
+      typename mpl::apply_wrap2<converter_generator, T, lua_to_cpp>::type cv;
 
 #ifndef LUABIND_NO_ERROR_CHECKING
       if (cv.match(interpreter, LUABIND_DECORATE_TYPE(T), -1) < 0)
@@ -831,7 +963,7 @@ T object_cast(ValueWrapper const& value_wrapper, Policies const&)
       , (T*)0
       , (Policies*)0
       , (detail::throw_error_policy<T>*)0
-	  , (T*)0
+      , (T*)0
     );
 }
 
@@ -880,9 +1012,9 @@ namespace detail
       }
 
       template<class Policies>
-      inline static void apply(lua_State*, const boost::tuples::null_type&, const Policies&) {};
+      inline static void apply(lua_State*, const boost::tuples::null_type&, const Policies&) {}
 
-      inline static void apply(lua_State*, const boost::tuples::null_type&) {};
+      inline static void apply(lua_State*, const boost::tuples::null_type&) {}
   };
 
 } // namespace detail
@@ -979,9 +1111,18 @@ inline object newtable(lua_State* interpreter)
     return object(from_stack(interpreter, -1));
 }
 
+// this could be optimized by returning a proxy
 inline object globals(lua_State* interpreter)
 {
     lua_pushvalue(interpreter, LUA_GLOBALSINDEX);
+    detail::stack_pop pop(interpreter, 1);
+    return object(from_stack(interpreter, -1));
+}
+
+// this could be optimized by returning a proxy
+inline object registry(lua_State* interpreter)
+{
+    lua_pushvalue(interpreter, LUA_REGISTRYINDEX);
     detail::stack_pop pop(interpreter, 1);
     return object(from_stack(interpreter, -1));
 }

@@ -6,7 +6,8 @@ Motivation
 
 This works exactly like ``out_value``, except that it will pass a
 default constructed object instead of converting an argument from
-Lua.
+Lua. This means that the parameter will be removed from the lua
+signature.
 
 Defined in
 ~~~~~~~~~~
@@ -36,6 +37,8 @@ Parameter       Purpose
 
 Example
 ~~~~~~~
+
+Note that no values are passed to the calls to ``f1`` and ``f2``.
 
 .. parsed-literal::
 

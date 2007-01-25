@@ -24,9 +24,15 @@
 
 #include <luabind/config.hpp>
 #include <luabind/class.hpp>
+#include <luabind/nil.hpp>
 
 #include <cstring>
 #include <iostream>
+
+namespace luabind
+{
+   detail::nil_type nil;
+}
 
 namespace luabind { namespace detail {
     

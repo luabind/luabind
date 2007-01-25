@@ -24,6 +24,7 @@
 #include <boost/mpl/assert.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/get_pointer.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 namespace lb = luabind::detail;
 
@@ -39,7 +40,9 @@ namespace test
   };
 
   Y* get_pointer(Y const&);
-
+  
+  struct Z : boost::enable_shared_from_this<Z> {};
+  
 } // namespace test
 
 #ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
@@ -55,4 +58,5 @@ BOOST_MPL_ASSERT(( lb::has_get_pointer<test::Y> ));
 BOOST_MPL_ASSERT(( lb::has_get_pointer<char*> ));
 BOOST_MPL_ASSERT_NOT(( lb::has_get_pointer<int> ));
 BOOST_MPL_ASSERT_NOT(( lb::has_get_pointer<test::X> ));
+BOOST_MPL_ASSERT(( lb::has_get_pointer<test::Z*> ));
 

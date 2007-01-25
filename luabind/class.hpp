@@ -76,12 +76,20 @@
 #include <cassert>
 
 #include <boost/static_assert.hpp>
+#include <boost/type_traits.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/type_traits/is_same.hpp>
+#include <boost/mpl/list.hpp>
+#include <boost/mpl/apply.hpp>
+#include <boost/mpl/lambda.hpp>
+#include <boost/mpl/logical.hpp>
+#include <boost/mpl/find_if.hpp>
 #include <boost/mpl/eval_if.hpp>
+#include <boost/mpl/logical.hpp>
 
 #include <luabind/config.hpp>
 #include <luabind/scope.hpp>
@@ -106,10 +114,6 @@
 #include <luabind/detail/pointee_typeid.hpp>
 #include <luabind/detail/link_compatibility.hpp>
 
-#include <luabind/class_fwd.hpp>
-#include <luabind/detail/class_aux.hpp>
-#include <luabind/detail/unspecified.hpp>
-
 // to remove the 'this' used in initialization list-warning
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -121,10 +125,15 @@ namespace luabind
 {	
 	namespace detail
 	{
+		struct unspecified {};
+
 		template<class Derived> struct operator_;
 
 		struct you_need_to_define_a_get_const_holder_function_for_your_smart_ptr {};
 	}
+
+	template<class T, class X1 = detail::unspecified, class X2 = detail::unspecified, class X3 = detail::unspecified>
+	struct class_;
 
 	// TODO: this function will only be invoked if the user hasn't defined a correct overload
 	// maybe we should have a static assert in here?
@@ -136,6 +145,61 @@ namespace luabind
 
 	namespace detail
 	{
+		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, class A)>
+		double is_bases_helper(const bases<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, A)>&);
+
+#ifndef BOOST_MSVC
+		template<class T>
+		char is_bases_helper(const T&);
+#else
+		char is_bases_helper(...);
+#endif
+
+		template<class T>
+		struct is_bases
+		{
+			static const T& t;
+
+			BOOST_STATIC_CONSTANT(bool, value = sizeof(is_bases_helper(t)) == sizeof(double));
+			typedef boost::mpl::bool_<value> type;
+			BOOST_MPL_AUX_LAMBDA_SUPPORT(1,is_bases,(T))
+		};
+
+		double is_not_unspecified_helper(const unspecified*);
+		char is_not_unspecified_helper(...);
+
+		template<class T>
+		struct is_not_unspecified
+		{
+			BOOST_STATIC_CONSTANT(bool, value = sizeof(is_not_unspecified_helper(static_cast<T*>(0))) == sizeof(char));
+			typedef boost::mpl::bool_<value> type;
+			BOOST_MPL_AUX_LAMBDA_SUPPORT(1,is_not_unspecified,(T))
+		};
+
+		template<class Predicate>
+		struct get_predicate
+		{
+			typedef typename boost::mpl::and_<
+			  	is_not_unspecified<boost::mpl::_1>
+			  , Predicate
+			> type;
+		};
+
+		template<class Parameters, class Predicate, class DefaultValue>
+		struct extract_parameter
+		{
+			typedef typename get_predicate<Predicate>::type pred;
+			typedef typename boost::mpl::find_if<Parameters, pred>::type iterator;
+			typedef typename boost::mpl::eval_if<
+				boost::is_same<
+					iterator
+				  , typename boost::mpl::end<Parameters>::type
+				>
+			  , boost::mpl::identity<DefaultValue>
+			  , boost::mpl::deref<iterator>
+			>::type type;
+		};
+
 		template<class Fn, class Class, class Policies>
 		struct mem_fn_callback
 		{
@@ -662,11 +726,11 @@ namespace luabind
 				, const boost::function2<int, lua_State*, int>& g);
 
 #ifdef LUABIND_NO_ERROR_CHECKING
-			void class_base::add_setter(
+			void add_setter(
 				const char* name
 				, const boost::function2<int, lua_State*, int>& s);
 #else
-			void class_base::add_setter(
+			void add_setter(
 				const char* name
 				, const boost::function2<int, lua_State*, int>& s
 				, int (*match)(lua_State*, int)
@@ -722,16 +786,38 @@ namespace luabind
 
 	// registers a class in the lua environment
 	template<class T, class X1, class X2, class X3>
-	struct class_ : detail::class_base
+	struct class_: detail::class_base 
 	{
 		typedef class_<T, X1, X2, X3> self_t;
-		typedef detail::class_aux<T,X1,X2,X3> meta;
 
 	private:
+
 		template<class A, class B, class C, class D>
 		class_(const class_<A,B,C,D>&);
 
 	public:
+
+		// WrappedType MUST inherit from T
+		typedef typename detail::extract_parameter<
+		    boost::mpl::vector3<X1,X2,X3>
+		  , boost::is_base_and_derived<T, boost::mpl::_>
+		  , detail::null_type
+		>::type WrappedType;
+
+		typedef typename detail::extract_parameter<
+		    boost::mpl::list3<X1,X2,X3>
+		  , boost::mpl::not_<
+		        boost::mpl::or_<
+				    boost::mpl::or_<
+					    detail::is_bases<boost::mpl::_>
+					  , boost::is_base_and_derived<boost::mpl::_, T>
+					>
+				  , boost::is_base_and_derived<T, boost::mpl::_>
+				>
+			>
+		  , detail::null_type
+		>::type HeldType;
+
 		// this function generates conversion information
 		// in the given class_rep structure. It will be able
 		// to implicitly cast to the given template type
@@ -804,7 +890,7 @@ namespace luabind
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig)
 		{
             return this->def_constructor(
-				boost::is_same<typename meta::wrapped_type, detail::null_type>()
+				boost::is_same<WrappedType, detail::null_type>()
 			  , &sig
 			  , detail::null_type()
 			);
@@ -814,7 +900,7 @@ namespace luabind
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig, const Policies& policies)
 		{
             return this->def_constructor(
-				boost::is_same<typename meta::wrapped_type, detail::null_type>()
+				boost::is_same<WrappedType, detail::null_type>()
 			  , &sig
 			  , policies
 			);
@@ -1055,25 +1141,40 @@ namespace luabind
 
 		void init()
 		{
-			class_base::init(LUABIND_TYPEID(T)
-				, detail::internal_holder_type<typename meta::held_type>::apply()
-				, detail::pointee_typeid(
-					get_const_holder(static_cast<typename meta::held_type*>(0)))
-				, detail::internal_holder_extractor<typename meta::held_type>::apply(detail::type_<T>())
-				, detail::internal_const_holder_extractor<typename meta::held_type>::apply(detail::type_<T>())
-				, detail::const_converter<typename meta::held_type>::apply(
-					get_const_holder((typename meta::held_type*)0))
-				, detail::holder_constructor<typename meta::held_type>::apply(detail::type_<T>())
-				, detail::const_holder_constructor<typename meta::held_type>::apply(detail::type_<T>())
-				, detail::holder_default_constructor<typename meta::held_type>::apply(detail::type_<T>())
-				, detail::const_holder_default_constructor<typename meta::held_type>::apply(detail::type_<T>())
-				, get_adopt_fun((typename meta::wrapped_type*)0) // adopt fun
-				, detail::internal_holder_destructor<typename meta::held_type>::apply(detail::type_<T>())
-				, detail::internal_const_holder_destructor<typename meta::held_type>::apply(detail::type_<T>())
-				, detail::internal_holder_size<typename meta::held_type>::apply()
-				, detail::get_holder_alignment<typename meta::held_type>::apply());
+			typedef typename detail::extract_parameter<
+					boost::mpl::list3<X1,X2,X3>
+				,	boost::mpl::or_<
+							detail::is_bases<boost::mpl::_>
+						,	boost::is_base_and_derived<boost::mpl::_, T>
+					>
+				,	no_bases
+			>::type bases_t;
 
-			generate_baseclass_list(detail::type_<typename meta::bases_type>());
+			typedef typename 
+				boost::mpl::if_<detail::is_bases<bases_t>
+					,	bases_t
+					,	bases<bases_t>
+				>::type Base;
+	
+			class_base::init(LUABIND_TYPEID(T)
+				, detail::internal_holder_type<HeldType>::apply()
+				, detail::pointee_typeid(
+					get_const_holder(static_cast<HeldType*>(0)))
+				, detail::internal_holder_extractor<HeldType>::apply(detail::type_<T>())
+				, detail::internal_const_holder_extractor<HeldType>::apply(detail::type_<T>())
+				, detail::const_converter<HeldType>::apply(
+					get_const_holder((HeldType*)0))
+				, detail::holder_constructor<HeldType>::apply(detail::type_<T>())
+				, detail::const_holder_constructor<HeldType>::apply(detail::type_<T>())
+				, detail::holder_default_constructor<HeldType>::apply(detail::type_<T>())
+				, detail::const_holder_default_constructor<HeldType>::apply(detail::type_<T>())
+				, get_adopt_fun((WrappedType*)0) // adopt fun
+				, detail::internal_holder_destructor<HeldType>::apply(detail::type_<T>())
+				, detail::internal_const_holder_destructor<HeldType>::apply(detail::type_<T>())
+				, detail::internal_holder_size<HeldType>::apply()
+				, detail::get_holder_alignment<HeldType>::apply());
+
+			generate_baseclass_list(detail::type_<Base>());
 		}
 
 		template<class Getter, class GetPolicies>
@@ -1189,7 +1290,7 @@ namespace luabind
 			o.set_constructor(
 				&detail::construct_wrapped_class<
 					T
-				  , typename meta::wrapped_type
+				  , WrappedType
 				  , Policies
 				  , Signature
 				>::apply);

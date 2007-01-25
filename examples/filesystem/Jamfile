@@ -10,5 +10,3 @@ exe filesystem
       /luabind//luabind
     ;
 
-stage . : filesystem ;
-

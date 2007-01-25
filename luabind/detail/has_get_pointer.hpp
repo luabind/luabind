@@ -55,7 +55,7 @@ namespace has_get_pointer_
 # ifndef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
 
   template<class T>
-  T* get_pointer(T*);
+  T* get_pointer(T const volatile*);
 
   template<class T>
   T* get_pointer(std::auto_ptr<T> const&);

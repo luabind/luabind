@@ -42,6 +42,7 @@
 #include <boost/bind/arg.hpp>
 #include <boost/limits.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/version.hpp>
 
 #include <luabind/detail/class_registry.hpp>
 #include <luabind/detail/primitives.hpp>
@@ -262,6 +263,7 @@ namespace luabind { namespace detail
 	template<>
 	struct primitive_converter<cpp_to_lua>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef primitive_converter type;
 		
 		void apply(lua_State* L, int v) { lua_pushnumber(L, (lua_Number)v); }
@@ -294,6 +296,7 @@ namespace luabind { namespace detail
 	template<>
 	struct primitive_converter<lua_to_cpp>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef primitive_converter type;
 
 		#define PRIMITIVE_CONVERTER(prim) \
@@ -341,6 +344,9 @@ namespace luabind { namespace detail
 
 		PRIMITIVE_CONVERTER(double) { return static_cast<double>(lua_tonumber(L, index)); }
 		PRIMITIVE_MATCHER(double) { if (lua_type(L, index) == LUA_TNUMBER) return 0; else return -1; }
+
+      PRIMITIVE_CONVERTER(lua_State*) { return lua_tothread(L, index); }
+      PRIMITIVE_MATCHER(lua_State*) { if (lua_type(L, index) == LUA_TTHREAD) return 0; else return -1; }
 
 		PRIMITIVE_CONVERTER(std::string)
 		{ return std::string(lua_tostring(L, index), lua_strlen(L, index)); }
@@ -391,6 +397,7 @@ namespace luabind { namespace detail
 	template<>
 	struct user_defined_converter<lua_to_cpp>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef user_defined_converter type;
 		
 		template<class T>
@@ -442,6 +449,7 @@ namespace luabind { namespace detail
 	template<>
 	struct user_defined_converter<cpp_to_lua>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef user_defined_converter type;
 
 		template<class T>
@@ -460,6 +468,7 @@ namespace luabind { namespace detail
 	template<>
 	struct pointer_converter<cpp_to_lua>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef pointer_converter type;
 		
 		template<class T>
@@ -495,6 +504,7 @@ namespace luabind { namespace detail
 	template<>
 	struct pointer_converter<lua_to_cpp>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef pointer_converter type;
 
 		// TODO: does the pointer converter need this?!
@@ -560,6 +570,7 @@ namespace luabind { namespace detail
 	template<>
 	struct value_converter<cpp_to_lua>
 	{
+		typedef boost::mpl::bool_<true> is_value_converter;
 		typedef value_converter type;
 
 		template<class T>
@@ -625,6 +636,7 @@ namespace luabind { namespace detail
 	template<>
 	struct value_converter<lua_to_cpp>
 	{
+		typedef boost::mpl::bool_<true> is_value_converter;
 		typedef value_converter type;
 
 		template<class T>
@@ -700,6 +712,7 @@ namespace luabind { namespace detail
 	template<>
 	struct const_pointer_converter<cpp_to_lua>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef const_pointer_converter type;
 		
 		template<class T>
@@ -738,6 +751,7 @@ namespace luabind { namespace detail
 	struct const_pointer_converter<lua_to_cpp>
 		: private pointer_converter<lua_to_cpp>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef const_pointer_converter type;
 
 		template<class T>
@@ -760,7 +774,8 @@ namespace luabind { namespace detail
 
             bool const_ = obj->flags() & object_rep::constant;
 			int d;
-			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d) + !const_;
+			int points = implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
+			return points == -1 ? -1 : points + !const_;
 		}
 
 		template<class T>
@@ -777,6 +792,7 @@ namespace luabind { namespace detail
 	template<>
 	struct ref_converter<cpp_to_lua>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef ref_converter type;
 		
 		template<class T>
@@ -808,6 +824,7 @@ namespace luabind { namespace detail
 	template<>
 	struct ref_converter<lua_to_cpp>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef ref_converter type;
 		
 		template<class T>
@@ -835,10 +852,11 @@ namespace luabind { namespace detail
 	template<>
 	struct const_ref_converter<cpp_to_lua>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef const_ref_converter type;
 		
 		template<class T>
-		void apply(lua_State* L, const T& ref)
+		void apply(lua_State* L, T const& ref)
 		{
 			if (luabind::get_back_reference(L, ref))
 				return;
@@ -849,32 +867,12 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
+			T const* ptr = &ref;
 
-			void* obj_rep;
-			void* held;
-
-			boost::tie(obj_rep,held) = crep->allocate(L);
-
-			void* object_ptr;
-			void(*destructor)(void*);
-			destructor = crep->destructor();
-			int flags = 0;
-			if (crep->has_holder())
-			{
-				flags = object_rep::owner;
-				new(held) T(ref);
-				object_ptr = held;
-				if (LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->const_holder_type()))
-				{
-					flags |= object_rep::constant;
-					destructor = crep->const_holder_destructor();
-				}
-			}
-			else
-			{
-				object_ptr = new T(ref);
-			}
-			new(obj_rep) object_rep(object_ptr, crep, flags, destructor);
+			// create the struct to hold the object
+			void* obj = lua_newuserdata(L, sizeof(object_rep));
+			assert(obj && "internal error, please report");
+			new(obj) object_rep(const_cast<T*>(ptr), crep, object_rep::constant, 0);
 
 			// set the meta table
 			detail::getref(L, crep->metatable_ref());
@@ -885,6 +883,7 @@ namespace luabind { namespace detail
 	template<>
 	struct const_ref_converter<lua_to_cpp>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef const_ref_converter type;
 
 		// TODO: align!
@@ -947,7 +946,8 @@ namespace luabind { namespace detail
 
             bool const_ = obj->flags() & object_rep::constant;
 			int d;
-			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d) + !const_;
+			int points = implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
+			return points == -1 ? -1 : points + !const_;
 		}
 
 		~const_ref_converter()
@@ -966,6 +966,7 @@ namespace luabind { namespace detail
 	template<class Direction = cpp_to_lua>
 	struct enum_converter
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef enum_converter type;
 		
 		void apply(lua_State* L, int val)
@@ -977,6 +978,7 @@ namespace luabind { namespace detail
 	template<>
 	struct enum_converter<lua_to_cpp>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef enum_converter type;
 		
 		template<class T>
@@ -1051,6 +1053,7 @@ namespace luabind { namespace detail
 	template<>
 	struct value_wrapper_converter<lua_to_cpp>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef value_wrapper_converter type;
 
 		template<class T>
@@ -1085,6 +1088,7 @@ namespace luabind { namespace detail
 	template<>
 	struct value_wrapper_converter<cpp_to_lua>
 	{
+		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef value_wrapper_converter type;
 
     	template<class T>
@@ -1106,7 +1110,7 @@ namespace luabind { namespace detail
 		static void precall(lua_State*, T, int) {}
 
 		template<class T, class Direction>
-		struct generate_converter
+		struct apply
 		  : eval_if<
 				is_user_defined<T>
 			  , user_defined_converter<Direction>
@@ -1273,10 +1277,28 @@ namespace luabind { namespace detail
 }} // namespace luabind::detail
 
 
-namespace luabind {	 namespace
+namespace luabind { namespace
 {
-	LUABIND_ANONYMOUS_FIX boost::arg<0> return_value;
-	LUABIND_ANONYMOUS_FIX boost::arg<0> result;
+#if defined(__BORLANDC__) || (BOOST_VERSION >= 103400 && defined(__GNUC__))
+  static inline boost::arg<0> return_value()
+  {
+	  return boost::arg<0>();
+  }
+
+  static inline boost::arg<0> result()
+  {
+	  return boost::arg<0>();
+  }
+# define LUABIND_PLACEHOLDER_ARG(N) boost::arg<N>(*)()
+#elif defined(BOOST_MSVC) || defined(__MWERKS__)
+  static boost::arg<0> return_value;
+  static boost::arg<0> result;
+# define LUABIND_PLACEHOLDER_ARG(N) boost::arg<N>
+#else
+  boost::arg<0> return_value;
+  boost::arg<0> result;
+# define LUABIND_PLACEHOLDER_ARG(N) boost::arg<N>
+#endif
 }}
 
 #endif // LUABIND_POLICY_HPP_INCLUDED

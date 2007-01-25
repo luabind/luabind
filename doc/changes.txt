@@ -1,3 +1,11 @@
+LUABIND 7.1 changes
+===================
+
+* Applied patches from Evan Wies to support lua 5.1
+* added a new assignment operator and a special value,
+  luabind::nil, to set table entries to nil. 
+
+
 LUABIND BETA 7 changes
 ======================
 
@@ -126,6 +134,11 @@ additions
 bugfixes
 ........
 
+* bugs in the overload resolution could give internal errors
+  in some cases.
+* def_readonly and def_readwrite will now return references
+  if the type is not a primitive type. This will allow
+  chained . operators.
 * object_cast() of uninitialized objects works
 * supports strings with extra nulls in them (not for member
   names though)
