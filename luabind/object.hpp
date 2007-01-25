@@ -276,6 +276,19 @@ LUABIND_BINARY_OP_DEF(<, lua_lessthan)
 
       call_proxy<Derived, boost::tuples::tuple<> > operator()();
 
+      typedef bool(object_interface<Derived>::*safe_bool)() const;
+
+      bool operator!() const
+      {
+          if (!derived().interpreter()) return true;
+          return type(derived()) == 0;
+      }
+
+      operator safe_bool() const
+      {
+          return !*this ? 0 : &object_interface<Derived>::operator!;
+      }
+
       template<class A0>
       call_proxy<
           Derived
@@ -734,7 +747,6 @@ namespace adl
   // in the registry.
   class object : public object_interface<object>
   {
-      struct safe_bool_type {};
   public:
       object()
       {}
@@ -767,7 +779,6 @@ namespace adl
       void push(lua_State* interpreter) const;
       lua_State* interpreter() const;
       bool is_valid() const;
-      operator safe_bool_type*() const;
 
       template<class T>
       index_proxy<object> operator[](T const& key) const
@@ -799,11 +810,6 @@ namespace adl
   inline bool object::is_valid() const
   {
       return m_handle.interpreter() != 0;
-  }
-
-  inline object::operator object::safe_bool_type*() const
-  {
-      return is_valid()?(safe_bool_type*)1:0;
   }
 
 } // namespace adl
@@ -1197,6 +1203,31 @@ inline int type(ValueWrapper const& value)
     value_wrapper_traits<ValueWrapper>::unwrap(interpreter, value);
     detail::stack_pop pop(interpreter, 1);
     return lua_type(interpreter, -1);
+}
+
+template<class ValueWrapper>
+inline object getmetatable(ValueWrapper const& table)
+{
+    lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
+        table
+    );
+
+    value_wrapper_traits<ValueWrapper>::unwrap(interpreter, table);
+    lua_getmetatable(interpreter, -1);
+    detail::stack_pop pop(interpreter, 2);
+    return object(from_stack(interpreter, -1));
+}
+
+template<class T, class ValueWrapper>
+inline T* touserdata(ValueWrapper const& userdata)
+{
+    lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
+        userdata
+    );
+
+    value_wrapper_traits<ValueWrapper>::unwrap(interpreter, userdata);
+    detail::stack_pop pop(interpreter, 1);
+    return static_cast<T*>(lua_touserdata(interpreter, -1));
 }
 
 } // namespace luabind
