@@ -1531,7 +1531,7 @@ self object. ::
     end
 
 The reason why ``__sub`` is used as an example is because subtraction is not
-commutative (the order of the operands matter). That's why luabind cannot
+commutative (the order of the operands matters). That's why luabind cannot
 change order of the operands to make the self reference always refer to the
 actual class instance.
 
