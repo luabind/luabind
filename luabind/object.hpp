@@ -701,6 +701,30 @@ struct value_wrapper_traits<adl::iterator_proxy_tag>
     }
 };
 
+#ifndef LUABIND_USE_VALUE_WRAPPER_TAG
+template <class ValueWrapper, class Arguments>
+struct value_wrapper_traits<adl::call_proxy<ValueWrapper, Arguments> >
+#else
+template<>
+struct value_wrapper_traits<adl::call_proxy_tag>
+#endif
+{
+    typedef boost::mpl::true_ is_specialized;
+
+    template<class W, class A>
+    static lua_State* interpreter(adl::call_proxy<W,A> const& proxy)
+    {
+        return value_wrapper_traits<W>::interpreter(*proxy.value_wrapper);
+    }
+
+    template<class W, class A>
+    static void unwrap(lua_State* interpreter, adl::call_proxy<W,A> const& proxy)
+    {
+        object result = const_cast<adl::call_proxy<W,A>&>(proxy);
+        result.push(result.interpreter());
+    }
+};
+
 namespace adl
 {
   class object_init
@@ -929,6 +953,7 @@ namespace detail
               "luabind::set_error_callback()");
           std::terminate();
 #endif
+          return *(typename boost::remove_reference<T>::type*)0;
       }
   };
 
