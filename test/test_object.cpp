@@ -118,6 +118,28 @@ void test_match_object(
 	p3["ret"] = 3;
 }
 
+void test_call(lua_State* L)
+{
+    DOSTRING(L,
+        "function sum(...)\n"
+        "    local result = 0\n"
+        "    for _,x in pairs({...}) do\n"
+        "        result = result + x\n"
+        "    end\n"
+        "    return result\n"
+        "end\n"
+    );
+
+    object sum = globals(L)["sum"];
+
+    TEST_CHECK(object_cast<int>(sum()) == 0);
+    TEST_CHECK(object_cast<int>(sum(1)) == 1);
+    TEST_CHECK(object_cast<int>(sum(1,2)) == 3);
+    TEST_CHECK(object_cast<int>(sum(1,2,3)) == 6);
+    TEST_CHECK(object_cast<int>(sum(1,2,3,4)) == 10);
+    TEST_CHECK(object_cast<int>(sum(1,2,3,4,5)) == 15);
+}
+
 void test_main(lua_State* L)
 {
 	using namespace luabind;
@@ -292,5 +314,8 @@ void test_main(lua_State* L)
     }
 
     TEST_CHECK(inner_sum == 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8);
-	TEST_CHECK(object_cast<int>(globals(L)["t"][2][2]) == 4);
+    TEST_CHECK(object_cast<int>(globals(L)["t"][2][2]) == 4);
+
+    test_call(L);
 }
+
