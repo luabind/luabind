@@ -298,7 +298,7 @@ LUABIND_BINARY_OP_DEF(<, lua_lessthan)
       {
           typedef boost::tuples::tuple<A0 const*, A1 const*> arguments;
 
-          return call_proxy<object, arguments>(
+          return call_proxy<Derived, arguments>(
               derived()
             , arguments(&a0, &a1)
           );
