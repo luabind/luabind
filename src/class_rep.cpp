@@ -460,6 +460,7 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 	if (rep->overloads.size() == 1)
 	{
 		match_index = 0;
+		found = true;
 	}
 	else
 	{
@@ -467,7 +468,9 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 #endif
 
 		int num_params = lua_gettop(L) - 1;
-		found = find_best_match(L, &rep->overloads.front(), rep->overloads.size(), sizeof(construct_rep::overload_t), ambiguous, min_match, match_index, num_params);
+		overload_rep_base const* first = 
+			rep->overloads.empty() ? 0 : &rep->overloads.front();
+		found = find_best_match(L, first, rep->overloads.size(), sizeof(construct_rep::overload_t), ambiguous, min_match, match_index, num_params);
 
 #ifdef LUABIND_NO_ERROR_CHECKING
 	}
