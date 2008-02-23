@@ -59,7 +59,7 @@ namespace luabind { namespace detail {
     };
     
     template<class T>
-    class_rep* get_class_rep(lua_State* L, void(*)(T) = 0)
+    class_rep* get_class_rep(lua_State* L, void(*)(T*) = 0)
     {
         if (class_cache<T>::state != L)
         {
@@ -75,7 +75,7 @@ namespace luabind { namespace detail {
 #else
 
     template<class T>
-    class_rep* get_class_rep(lua_State* L, void(*)(T) = 0)
+    class_rep* get_class_rep(lua_State* L, void(*)(T*) = 0)
     {
         class_registry* registry = class_registry::get_registry(L);
         return registry->find_class(LUABIND_TYPEID(T));
