@@ -34,11 +34,6 @@ namespace luabind {
     T* get_pointer(boost::shared_ptr<T> const& p) { return p.get(); }
 #endif
 
-    template<class A>
-    boost::shared_ptr<const A>* get_const_holder(boost::shared_ptr<A>*)
-    {
-        return 0;
-    }
 }
 
 using namespace luabind;

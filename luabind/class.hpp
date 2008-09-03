@@ -120,6 +120,12 @@
 #pragma warning(disable: 4355)
 #endif
 
+namespace boost
+{
+
+  template <class T> class shared_ptr;
+
+} // namespace boost
 
 namespace luabind
 {	
@@ -139,6 +145,12 @@ namespace luabind
 	// maybe we should have a static assert in here?
 	inline detail::you_need_to_define_a_get_const_holder_function_for_your_smart_ptr*
 	get_const_holder(...)
+	{
+		return 0;
+	}
+
+	template <class T>
+	boost::shared_ptr<T const>* get_const_holder(boost::shared_ptr<T>*)
 	{
 		return 0;
 	}
