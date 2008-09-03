@@ -57,8 +57,17 @@ namespace luabind
 			struct overload_rep: public overload_rep_base
 			{
 
+#define LUABIND_CC
 #define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/function.hpp>, 1))
 #include BOOST_PP_ITERATE()
+#undef LUABIND_CC
+
+#ifdef BOOST_MSVC
+# define LUABIND_CC __stdcall
+# define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/function.hpp>, 1))
+# include BOOST_PP_ITERATE()
+# undef LUABIND_CC
+#endif
 
 				inline bool operator==(const overload_rep& o) const
 				{
