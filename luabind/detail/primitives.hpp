@@ -25,6 +25,7 @@
 #define LUABIND_PRIMITIVES_HPP_INCLUDED
 
 #include <algorithm>
+#include <cstring>
 
 #include <luabind/config.hpp>
 #include <luabind/detail/yes_no.hpp>

@@ -21,6 +21,7 @@
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <iostream>
+#include <cstring>
 
 extern "C"
 {
