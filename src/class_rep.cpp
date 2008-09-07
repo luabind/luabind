@@ -30,6 +30,16 @@
 
 using namespace luabind::detail;
 
+namespace luabind { namespace detail
+{
+	LUABIND_API int property_tag(lua_State* L)
+	{
+		lua_pushstring(L, "luabind: property_tag function can't be called");
+		lua_error(L);
+		return 0;
+	}
+}}
+
 #ifndef LUABIND_NO_ERROR_CHECKING
 
 	std::string luabind::detail::get_overload_signatures_candidates(

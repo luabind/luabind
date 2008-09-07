@@ -59,6 +59,9 @@ namespace luabind { namespace detail
 
 	struct conversion_storage;
 
+	// This function is used as a tag to identify "properties".
+	LUABIND_API int property_tag(lua_State*);
+
 	// this is class-specific information, poor man's vtable
 	// this is allocated statically (removed by the compiler)
 	// a pointer to this structure is stored in the lua tables'
