@@ -172,37 +172,6 @@ luabind::detail::class_rep::allocate(lua_State* L) const
 
 	return std::pair<void*,void*>(mem,ptr);
 }
-/*
-#include <iostream>
-namespace
-{
-	void dump_stack(lua_State* L)
-	{
-		for (int i = 1; i <= lua_gettop(L); ++i)
-		{
-			int t = lua_type(L, i);
-			switch (t)
-			{
-			case LUA_TNUMBER:
-				std::cout << "[" << i << "] number: " << lua_tonumber(L, i) << "\n";
-				break;
-			case LUA_TSTRING:
-				std::cout << "[" << i << "] string: " << lua_tostring(L, i) << "\n";
-				break;
-			case LUA_TUSERDATA:
-				std::cout << "[" << i << "] userdata: " << lua_touserdata(L, i) << "\n";
-				break;
-			case LUA_TTABLE:
-				std::cout << "[" << i << "] table:\n";
-				break;
-			case LUA_TNIL:
-				std::cout << "[" << i << "] nil:\n";
-				break;
-			}
-		}
-	}
-}
-*/
 
 void luabind::detail::class_rep::adopt(bool const_obj, void* obj)
 {
