@@ -110,6 +110,7 @@ SOURCES =
     class_rep.cpp
     create_class.cpp
     error.cpp
+    exception_handler.cpp
     find_best_match.cpp
     function.cpp
     implicit_cast.cpp
