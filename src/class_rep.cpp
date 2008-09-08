@@ -24,6 +24,7 @@
 
 #include <luabind/detail/stack_utils.hpp>
 #include <luabind/luabind.hpp>
+#include <luabind/exception_handler.hpp>
 #include <utility>
 
 using namespace luabind::detail;
@@ -482,10 +483,8 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 #endif
 
 #ifndef LUABIND_NO_EXCEPTIONS
-
 	try
 	{
-
 #endif
 		void* obj_rep;
 		void* held;
@@ -506,37 +505,17 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 		detail::getref(L, crep->m_instance_metatable);
 		lua_setmetatable(L, -2);
 		return 1;
-
 #ifndef LUABIND_NO_EXCEPTIONS
-
 	}
-    
-    catch(const error&)
-    {
-    }
-	catch(const std::exception& e)
+	catch (...)
 	{
-		lua_pushstring(L, e.what());
-	}
-	catch(const char* s)
-	{
-		lua_pushstring(L, s);
-	}
-	catch(...)
-	{
-		{
-			std::string msg = crep->name();
-			msg += "() threw an exception";
-			lua_pushstring(L, msg.c_str());
-		}
+		detail::handle_exception_aux(L);
 	}
 
 	// we can only reach this line if an exception was thrown
 	lua_error(L);
 	return 0; // will never be reached
-
 #endif
-
 }
 
 /*
@@ -650,12 +629,9 @@ int luabind::detail::class_rep::function_dispatcher(lua_State* L)
 #endif
 
 #ifndef LUABIND_NO_EXCEPTIONS
-
 	try
 	{
-
 #endif
-
 		const overload_rep& o = rep->overloads()[match_index];
 
         if (force_static_call && !o.has_static())
@@ -666,30 +642,12 @@ int luabind::detail::class_rep::function_dispatcher(lua_State* L)
 		{
 	        return o.call(L, force_static_call != 0);
 		}
-
 #ifndef LUABIND_NO_EXCEPTIONS
-
 	}
-    catch(const error&)
-    {
-    }
-    catch(const std::exception& e)
+	catch (...)
 	{
-		lua_pushstring(L, e.what());
+		detail::handle_exception_aux(L);
 	}
-	catch (const char* s)
-	{
-		lua_pushstring(L, s);
-	}
-	catch(...)
-	{
-		std::string msg = rep->crep->name();
-		msg += ":";
-		msg += rep->name;
-		msg += "() threw an exception";
-		lua_pushstring(L, msg.c_str());
-	}
-
 #endif
 
 	// we can only reach this line if an error occured
@@ -1017,10 +975,8 @@ int luabind::detail::class_rep::super_callback(lua_State* L)
 #endif
 
 #ifndef LUABIND_NO_EXCEPTIONS
-
 		try
 		{
-
 #endif
 			lua_pushvalue(L, lua_upvalueindex(2));
 			weak_ref backref(L, -1);
@@ -1069,24 +1025,10 @@ int luabind::detail::class_rep::super_callback(lua_State* L)
 			return 0;
 
 #ifndef LUABIND_NO_EXCEPTIONS
-
 		}
-        catch(const error&)
-        {
-        }
-        catch(const std::exception& e)
+		catch (...)
 		{
-			lua_pushstring(L, e.what());
-		}
-		catch(const char* s)
-		{
-			lua_pushstring(L, s);
-		}
-		catch(...)
-		{
-			std::string msg = base->m_name;
-			msg += "() threw an exception";
-			lua_pushstring(L, msg.c_str());
+			detail::handle_exception_aux(L);
 		}
 		// can only be reached if an exception was thrown
 		lua_error(L);

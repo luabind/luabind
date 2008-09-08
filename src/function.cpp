@@ -24,6 +24,7 @@
 
 #include <luabind/config.hpp>
 #include <luabind/luabind.hpp>
+#include <luabind/exception_handler.hpp>
 
 namespace luabind { namespace detail { namespace free_functions {
 
@@ -142,22 +143,9 @@ namespace luabind { namespace detail { namespace free_functions {
             return ov_rep.call(L, ov_rep.fun);
 #ifndef LUABIND_NO_EXCEPTIONS
         }
-        catch(const luabind::error&)
+        catch (...)
         {
-        }
-        catch(const std::exception& e)
-        {
-            lua_pushstring(L, e.what());
-        }
-        catch (const char* s)
-        {
-            lua_pushstring(L, s);
-        }
-        catch(...)
-        {
-            std::string msg = rep->name();
-            msg += "() threw an exception";
-            lua_pushstring(L, msg.c_str());
+            detail::handle_exception_aux(L);
         }
         // we can only reach this line if an exception was thrown
         lua_error(L);
