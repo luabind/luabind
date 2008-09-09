@@ -66,7 +66,6 @@ lua_state::lua_state()
 
 lua_state::~lua_state()
 {
-    TEST_CHECK(lua_gettop(m_state) == m_top);
     lua_close(m_state);
 }
 
@@ -120,6 +119,7 @@ int main()
 	try
 	{
 		test_main(L);
+		L.check();
 		return tests_failure ? 1 : 0;
 	}
 	catch (luabind::error const& e)
