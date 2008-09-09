@@ -6,6 +6,7 @@
 
 #include <luabind/config.hpp>
 #include <luabind/exception_handler.hpp>
+#include <luabind/error.hpp>
 #include <stdexcept>
 
 namespace luabind { namespace detail {
@@ -41,6 +42,8 @@ LUABIND_API void handle_exception_aux(lua_State* L)
         else
             throw;
     }
+    catch (error const&)
+    {}
     catch (std::logic_error const& e)
     {
         push_exception_string(L, "std::logic_error", e.what());
