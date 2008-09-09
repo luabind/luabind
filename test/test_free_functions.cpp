@@ -170,8 +170,9 @@ void test_main(lua_State* L)
             "erro...\"]:1: expected error message") != lua_tostring(L, -1))
         {
             TEST_ERROR("function failed with unexpected error message");
-            lua_pop(L, 1);
         }
+
+        lua_pop(L, 1);
     }
 
 }
