@@ -160,11 +160,11 @@ namespace luabind { namespace detail {
             lua_rawset(L, -3);
 
             lua_pushstring(L, "__index");
-            lua_pushcclosure(L, &class_rep::lua_class_gettable, 0);
+            lua_pushcclosure(L, &class_rep::gettable_dispatcher, 0);
             lua_rawset(L, -3);
 
             lua_pushstring(L, "__newindex");
-            lua_pushcclosure(L, &class_rep::lua_class_settable, 0);
+            lua_pushcclosure(L, &class_rep::settable_dispatcher, 0);
             lua_rawset(L, -3);
 
             lua_pushstring(L, "__gc");
