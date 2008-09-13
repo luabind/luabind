@@ -32,8 +32,9 @@
 #include <boost/config.hpp>
 #include <boost/preprocessor/repeat.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
-#include <boost/preprocessor/repetition/enum.hpp> 
+#include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/repetition/enum_trailing.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/mpl/apply_wrap.hpp>
 
