@@ -16,7 +16,38 @@ debug-message os.name is [ os.name ] ;
 
 if [ os.name ] = NT
 {
-    errors.user-error *** not implemented ;
+    if ! $(BOOST_ROOT)
+    {
+        errors.user-error "*** BOOST_ROOT must be set to a Boost installation." ;
+    }
+
+    LUA_PATH = [ os.environ LUA_PATH ] ;
+
+    if ! $(LUA_PATH)
+    {
+        errors.user-error "*** LUA_PATH must be set." ;
+    }
+
+    local includes = [ GLOB $(LUA_PATH)/include $(LUA_PATH)/src : lua.h ] ;
+
+    if ! $(includes)
+    {
+        errors.user-error "*** Unable to determine Lua include directory." ;
+    }
+
+    includes = $(includes:D) ;
+
+    debug-message found include directory in $(includes) ;
+
+    if [ GLOB $(LUA_PATH) : lib ]
+    {
+        lib lua : : <link>static <name>lua5.1 <search>$(LUA_PATH)/lib/static : : <include>$(includes) ;
+        lib lua : : <link>shared <name>lua5.1 <search>$(LUA_PATH)/lib : : <include>$(includes) ;
+    }
+    else if [ GLOB $(LUA_PATH) : lua5.1.dll ]
+    {
+        lib lua : : <name>lua5.1 <search>$(LUA_PATH) : : <include>$(includes) ;
+    }
 }
 else if [ os.name ] = LINUX
 {
