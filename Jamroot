@@ -89,7 +89,8 @@ SOURCES =
 usage-requirements =
     <library>lua
     <toolset>msvc,<link>shared:<define>LUABIND_IMPORT=__declspec(dllimport)
-    <toolset>msvc,<link>shared:<define>LUABIND_EXPORT=__declspec(dllexport) ;
+    <toolset>msvc,<link>shared:<define>LUABIND_EXPORT=__declspec(dllexport)
+    <toolset>msvc,<link>shared:<cxxflags>/wd4251 ;
 
 lib luabind
     : src/$(SOURCES)
