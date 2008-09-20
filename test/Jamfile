@@ -1,6 +1,6 @@
 import testing ;
 
-SOURCES = 
+SOURCES =
     test_vector_of_object.cpp
     test_back_reference.cpp
     test_def_from_base.cpp

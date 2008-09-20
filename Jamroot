@@ -49,20 +49,49 @@ if [ os.name ] = NT
         lib lua : : <name>lua5.1 <search>$(LUA_PATH) : : <include>$(includes) ;
     }
 }
-else if [ os.name ] = LINUX
+else if [ os.name ] in LINUX MACOSX
 {
-    local includes = [ GLOB /usr/include : lua5.1 ] ;
+    LUA_PATH = [ os.environ LUA_PATH ] ;
+    HOME = [ os.environ HOME ] ;
+
+    local possible-prefixes =
+        $(LUA_PATH) $(HOME)/Library/Frameworks /Library/Frameworks /usr /usr/local /opt/local /opt ;
+
+    local possible-suffixes =
+        include/lua5.1 include/lua51 include/lua include ;
+
+    local includes = [ GLOB $(possible-prefixes)/$(possible-suffixes) : lua.h ] ;
 
     if ! $(includes)
     {
-        debug-message couldn't find lua include directory ;
+        errors.user-error "*** Unable to determine Lua include directory." ;
     }
 
-    debug-message found lua include directory in $(includes) ;
+    local includes = $(includes[1]:D) ;
+    local prefix = $(includes:D) ;
+
+    if $(prefix:B) = "include"
+    {
+        prefix = $(prefix:D) ;
+    }
+
+    local lib = $(prefix)/lib ;
+
+    debug-message prefix: $(prefix) ;
+    debug-message includes: $(includes) ;
+    debug-message lib: $(lib) ;
+
+    library = [ GLOB $(lib) : liblua5.1.* liblua51.* liblua.* ] ;
+    lib-name = [ MATCH "lib(.*)" : $(library[1]:B) ] ;
+
+    if ! $(lib-name)
+    {
+        errors.user-error "*** Unable to find Lua library." ;
+    }
 
     lib m : : <link>shared ;
     lib dl : : <link>shared ;
-    lib lua : m dl : <name>lua5.1 : : <include>$(includes) ;
+    lib lua : m dl : <name>$(lib-name) <search>$(lib) : : <include>$(includes) ;
 }
 
 SOURCES =
