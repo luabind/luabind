@@ -49,7 +49,7 @@ if [ os.name ] = NT
         lib lua : : <name>lua5.1 <search>$(LUA_PATH) : : <include>$(includes) ;
     }
 }
-else if [ os.name ] in LINUX MACOSX
+else if [ os.name ] in LINUX MACOSX FREEBSD
 {
     LUA_PATH = [ os.environ LUA_PATH ] ;
     HOME = [ os.environ HOME ] ;
@@ -76,13 +76,13 @@ else if [ os.name ] in LINUX MACOSX
     }
 
     local lib = $(prefix)/lib ;
+    library = [ GLOB $(lib)/lua51 $(lib)/lua5.1 $(lib)/lua $(lib) :
+        liblua5.1.* liblua51.* liblua.* ] ;
+    lib-name = [ MATCH "lib(.*)" : $(library[1]:B) ] ;
 
     debug-message prefix: $(prefix) ;
     debug-message includes: $(includes) ;
-    debug-message lib: $(lib) ;
-
-    library = [ GLOB $(lib) : liblua5.1.* liblua51.* liblua.* ] ;
-    lib-name = [ MATCH "lib(.*)" : $(library[1]:B) ] ;
+    debug-message lib: $(library:D) ;
 
     if ! $(lib-name)
     {
@@ -90,8 +90,15 @@ else if [ os.name ] in LINUX MACOSX
     }
 
     lib m : : <link>shared ;
-    lib dl : : <link>shared ;
-    lib lua : m dl : <name>$(lib-name) <search>$(lib) : : <include>$(includes) ;
+    if [ os.name ] = LINUX
+    {
+        lib dl : : <link>shared ;
+    }
+    else
+    {
+        alias dl ;
+    }
+    lib lua : m dl : <name>$(lib-name) <search>$(library:D) : : <include>$(includes) ;
 }
 
 SOURCES =
