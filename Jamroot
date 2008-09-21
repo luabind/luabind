@@ -1,65 +1,84 @@
-import modules ;
-import path ;
+import os ;
 import errors ;
 
-BOOST_ROOT = [ modules.peek : BOOST_ROOT ] ;
-LUA_PATH = [ modules.peek : LUA_PATH ] ;
+BOOST_ROOT = [ os.environ BOOST_ROOT ] ;
 
-if ! $(BOOST_ROOT)
+rule debug-message ( txt * )
 {
-    errors.user-error
-        "BOOST_ROOT must be set to your boost installation path." ;
+    if --debug-build in [ modules.peek : ARGV ]
+    {
+        echo [luabind DEBUG] $(txt) ;
+    }
 }
 
-if ! $(LUA_PATH)
+debug-message figuring out which libraries to link to... ;
+debug-message os.name is [ os.name ] ;
+
+if [ os.name ] = NT
 {
-    ECHO LUA_PATH not specified. using pkg-config to find lua
-    alias lua : : : :
-        <cflags>"`pkg-config --cflags lua5.1`"
-        <linkflags>"`pkg-config --libs lua5.1`"
-    ;
-
-    lib lualib : ;
-
-#    alias lualib : : : :
-#        <lua-version>5:<cflags>"`pkg-config --cflags lualib50`"
-#        <lua-version>5:<linkflags>"`pkg-config --libs lualib50`"
-#    ;
+    errors.user-error *** not implemented ;
 }
-else
+else if [ os.name ] = LINUX
 {
-    lib lua :
-    : <name>lua <search>$(LUA_PATH)/lib
-      <search>$(LUA_PATH)/src
+    local includes = [ GLOB /usr/include : lua5.1 ] ;
+
+    if ! $(includes)
+    {
+        debug-message couldn't find lua include directory ;
+    }
+
+    debug-message found lua include directory in $(includes) ;
+
+    lib m : : <link>shared ;
+    lib dl : : <link>shared ;
+    lib lua : m dl : <name>lua5.1 : : <include>$(includes) ;
+}
+
+SOURCES =
+    class.cpp
+    class_info.cpp
+    class_registry.cpp
+    class_rep.cpp
+    create_class.cpp
+    error.cpp
+    find_best_match.cpp
+    function.cpp
+    implicit_cast.cpp
+    link_compatibility.cpp
+    object_rep.cpp
+    open.cpp
+    overload_rep.cpp
+    pcall.cpp
+    ref.cpp
+    scope.cpp
+    stack_content_by_name.cpp
+    weak_ref.cpp
+    wrapper_base.cpp ;
+
+usage-requirements =
+    <library>lua
+    <toolset>msvc,<link>shared:<define>LUABIND_IMPORT=__declspec(dllimport)
+    <toolset>msvc,<link>shared:<define>LUABIND_EXPORT=__declspec(dllexport) ;
+
+lib luabind
+    : src/$(SOURCES)
+    # requirements
+    : <define>LUABIND_BUILDING
+      <include>. <include>$(BOOST_ROOT)
+      $(usage-requirements)
+    # default-build
     :
-    : <include>$(LUA_PATH)/include
-      <include>$(LUA_PATH)/src
+    # usage-requirements
+    : <include>. <include>$(BOOST_ROOT)
+      $(usage-requirements)
     ;
 
-    lib lualib : ;
+alias test
+  : test//test
+  # requirements
+  :
+  # default-build
+  : <link>static <link>shared release debug ;
 
-#    lib lualib :
-#        <lua-version>5:<name>lualib <search>$(LUA_PATH)/lib
-#      : <lua-version>5:<include>$(LUA_PATH)/include
-#        <lua-version>5:<include>$(LUA_PATH)/src
-#    ;
-}
-
-project luabind
-    : requirements
-        <include>./ <include>$(BOOST_ROOT)
-        <library>/luabind//lua
-#        <library>/lualib
-        <toolset>msvc,<link>shared:<define>LUABIND_IMPORT=__declspec(dllimport)
-        <toolset>msvc,<link>shared:<define>LUABIND_EXPORT=__declspec(dllexport)
-    : usage-requirements
-        <include>./ <include>$(BOOST_ROOT)
-        <toolset>msvc,<link>shared:<define>LUABIND_IMPORT=__declspec(dllimport)
-        <toolset>msvc,<link>shared:<define>LUABIND_EXPORT=__declspec(dllexport)
-    ;
-
-alias luabind : /luabind/luabind//luabind ;
-
-build-project src ;
-build-project test ;
+explicit test ;
 
