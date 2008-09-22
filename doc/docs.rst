@@ -118,46 +118,7 @@ functions.
 If you have tried luabind with a compiler not listed here, let us know 
 your result with it.
 
-
-Building luabind
-================
-
-To keep down the compilation-time luabind is built as a library. This means you
-have to either build it and link against it, or include its source files in
-your project. You also have to make sure the luabind directory is somewhere in
-your compiler's include path. It requires `Boost`_ 1.32.0 or 1.33.0 to be
-installed (only boost headers). It also requires that Lua is installed.
-
-The official way of building luabind is with `Boost.Build V2`_. To properly build
-luabind with Boost.Build you need to set two environment variables:
-
-BOOST_ROOT
-    Point this to your Boost installation.
-
-LUA_PATH
-    Point this to your Lua directory. The build system will assume that the
-    include and library files are located in ``$(LUA_PATH)/include/`` and
-    ``$(LUA_PATH)/lib/.``. If this environment variable is not defined, the
-    Jamfile will try to invoke ``pkg-config`` in order to find lua. It will
-    look for lua 5.1 (``lua5.1`` as the package is called on debian systems).
-
-For backward compatibility, there is also a makefile in the root-directory that
-will build the library and the test programs. If you are using a UNIX-system (or
-cygwin) they will make it easy to build luabind as a static library. If you are
-using Visual Studio it may be easier to include the files in the src directory
-in your project.
-
-When building luabind you have several options that may streamline the library
-to better suit your needs. It is extremely important that your application has
-the same settings as the library was built with. The available options are
-found in the `Build options`_ section.
-
-If you want to change the settings to differ from the default, it's recommended
-that you define the settings on the command line of all your files (in the
-project settings in visual studio).
-
-.. _`Boost.Build V2`: http://www.boost.org/tools/build/v2/index_v2.html
-
+.. include:: building.rst
 
 Basic usage
 ===========
