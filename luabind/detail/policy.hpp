@@ -1279,7 +1279,7 @@ namespace luabind { namespace detail
 
 namespace luabind { namespace
 {
-#if defined(__BORLANDC__) || (BOOST_VERSION == 103400 && defined(__GNUC__))
+#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ <= 400)
   static inline boost::arg<0> return_value()
   {
 	  return boost::arg<0>();
