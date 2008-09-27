@@ -1,11 +1,11 @@
-+++++++++
- luabind
-+++++++++
+.. include:: version.rst
+
++++++++++++++++++++
+ luabind |version|
++++++++++++++++++++
 
 :Author: Daniel Wallin, Arvid Norberg
 :Copyright: Copyright Daniel Wallin, Arvid Norberg 2003.
-:Date: $Date$
-:Revision: $Revision$
 :License: Permission is hereby granted, free of charge, to any person obtaining a
           copy of this software and associated documentation files (the "Software"),
           to deal in the Software without restriction, including without limitation
