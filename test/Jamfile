@@ -22,6 +22,7 @@ SOURCES =
     test_separation.cpp
     test_simple_class.cpp
     test_yield.cpp
+    test_private_destructors.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;

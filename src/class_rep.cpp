@@ -23,6 +23,7 @@
 #include <luabind/lua_include.hpp>
 
 #include <luabind/detail/stack_utils.hpp>
+#include <luabind/detail/conversion_storage.hpp>
 #include <luabind/luabind.hpp>
 #include <utility>
 
@@ -1474,7 +1475,7 @@ void luabind::detail::finalize(lua_State* L, class_rep* crep)
 void* luabind::detail::class_rep::convert_to(
 	LUABIND_TYPE_INFO target_type
 	, const object_rep* obj
-	, void* target_memory) const
+	, conversion_storage& storage) const
 {
 	// TODO: since this is a member function, we don't have to use the accesor functions for
 	// the types and the extractor
@@ -1497,8 +1498,9 @@ void* luabind::detail::class_rep::convert_to(
 		if (obj == 0)
 		{
 			// we are trying to convert nil to a holder type
-			m_default_construct_holder(target_memory);
-			return target_memory;
+			m_default_construct_holder(&storage.data);
+			storage.destructor = m_destructor;
+			return &storage.data;
 		}
 		// if the type we are trying to convert to is the holder_type
 		// it means that his crep has a holder_type (since it would have
@@ -1513,8 +1515,9 @@ void* luabind::detail::class_rep::convert_to(
 		if (obj == 0)
 		{
 			// we are trying to convert nil to a const holder type
-			m_default_construct_const_holder(target_memory);
-			return target_memory;
+			m_default_construct_const_holder(&storage.data);
+			storage.destructor = m_const_holder_destructor;
+			return &storage.data;
 		}
 
 		if (obj->flags() & object_rep::constant)
@@ -1526,8 +1529,9 @@ void* luabind::detail::class_rep::convert_to(
 		{
 			// we are holding a non-constant, we need to convert it
 			// to a const_holder.
-			m_const_converter(obj->ptr(), target_memory);
-			return target_memory;
+			m_const_converter(obj->ptr(), &storage.data);
+			storage.destructor = m_const_holder_destructor;
+			return &storage.data;
 		}
 	}
 

@@ -51,6 +51,7 @@
 #include <luabind/detail/class_cache.hpp>
 #include <luabind/detail/debug.hpp>
 #include <luabind/detail/class_rep.hpp>
+#include <luabind/detail/conversion_storage.hpp>
 
 #include <boost/type_traits/add_reference.hpp>
 
@@ -507,11 +508,7 @@ namespace luabind { namespace detail
 		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef pointer_converter type;
 
-		// TODO: does the pointer converter need this?!
-		char target[32];
-		void (*destructor)(void *);
-
-		pointer_converter(): destructor(0) {}
+		conversion_storage storage;
 
 		template<class T>
 		typename make_pointer<T>::type apply(lua_State* L, by_pointer<T>, int index)
@@ -527,12 +524,7 @@ namespace luabind { namespace detail
 			assert((obj != 0) && "internal error, please report"); // internal error
 			const class_rep* crep = obj->crep();
 
-			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, target));
-
-			if ((void*)ptr == (char*)target) destructor = detail::destruct_only_s<T>::apply;
-			assert(!destructor || sizeof(T) <= 32);
-
-			return ptr;
+			return static_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, storage));
 		}
 
 		template<class T>
@@ -547,15 +539,10 @@ namespace luabind { namespace detail
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
 				return (obj->flags() & object_rep::constant)?-1:0;
 			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
-				return (obj->flags() & object_rep::constant)?0:-1;
+				return (obj->flags() & object_rep::constant)?0:1;
 
 			int d;
 			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
-		}
-
-		~pointer_converter()
-		{
-			if (destructor) destructor(target);
 		}
 
 		template<class T>
@@ -619,25 +606,13 @@ namespace luabind { namespace detail
 
 	template<class T> struct make_const_reference { typedef const T& type; };
 
-	template<class T>
-	struct destruct_guard
-	{
-		T* ptr;
-		bool dismiss;
-		destruct_guard(T* p): ptr(p), dismiss(false) {}
-
-		~destruct_guard()
-		{
-			if (!dismiss)
-				ptr->~T();
-		}
-	};
-
 	template<>
 	struct value_converter<lua_to_cpp>
 	{
 		typedef boost::mpl::bool_<true> is_value_converter;
 		typedef value_converter type;
+
+        conversion_storage storage;
 
 		template<class T>
 		T apply(lua_State* L, by_value<T>, int index)
@@ -664,14 +639,7 @@ namespace luabind { namespace detail
 			}
 			assert(crep);
 
-			// TODO: align!
-			char target[sizeof(T)];
-			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, target));
-
-			destruct_guard<T> guard(ptr);
-			if ((void*)ptr != (void*)target) guard.dismiss = true;
-
-			return *ptr;
+			return *static_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, storage));
 		}
 
 		template<class T>
@@ -886,11 +854,7 @@ namespace luabind { namespace detail
 		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef const_ref_converter type;
 
-		// TODO: align!
-		char target[32];
-		void (*destructor)(void*);
-
-		const_ref_converter(): destructor(0) {}
+		conversion_storage storage;
 
 		template<class T>
 		typename make_const_reference<T>::type apply(lua_State* L, by_const_reference<T>, int index)
@@ -912,13 +876,7 @@ namespace luabind { namespace detail
 			}
 			assert(crep);
 
-			T* ptr = reinterpret_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, target));
-			// if the pointer returned points into the converter storage,
-			// we need to destruct it once the converter destructs
-			if ((void*)ptr == (void*)target) destructor = detail::destruct_only_s<T>::apply;
-			assert(!destructor || sizeof(T) <= 32);
-
-			return *ptr;
+			return *static_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, storage));
 		}
 
 		template<class T>
@@ -948,11 +906,6 @@ namespace luabind { namespace detail
 			int d;
 			int points = implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
 			return points == -1 ? -1 : points + !const_;
-		}
-
-		~const_ref_converter()
-		{
-			if (destructor) destructor(target);
 		}
 
 		template<class T>

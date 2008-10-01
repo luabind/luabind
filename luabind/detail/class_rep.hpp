@@ -67,7 +67,9 @@ namespace luabind { namespace detail
 	int construct_lua_class_callback(lua_State* L);
 
 	struct class_registration;
-	
+
+	struct conversion_storage;
+
 	// this is class-specific information, poor man's vtable
 	// this is allocated statically (removed by the compiler)
 	// a pointer to this structure is stored in the lua tables'
@@ -217,7 +219,9 @@ namespace luabind { namespace detail
 		// obj is the object pointer
 		static int static_class_gettable(lua_State* L);
 
-		void* convert_to(LUABIND_TYPE_INFO target_type, const object_rep* obj, void*) const;
+		void* convert_to(
+			LUABIND_TYPE_INFO target_type
+		  , const object_rep* obj, conversion_storage&) const;
 
 		bool has_operator_in_lua(lua_State*, int id);
 
