@@ -37,6 +37,7 @@
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/or.hpp>
 #include <boost/type_traits/add_reference.hpp>
+#include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/is_pointer.hpp>
 #include <boost/type_traits/is_base_and_derived.hpp>
 #include <boost/bind/arg.hpp>
@@ -994,6 +995,18 @@ namespace luabind { namespace detail
 		}
 
 		template<class T>
+		T apply(lua_State* L, by_const_reference<T>, int index)
+		{
+			return static_cast<T>(static_cast<int>(lua_tonumber(L, index)));
+		}
+
+		template<class T>
+		static int match(lua_State* L, by_const_reference<T>, int index)
+		{
+			if (lua_isnumber(L, index)) return 0; else return -1;
+		}
+
+		template<class T>
 		void converter_postcall(lua_State*, T, int) {}
 	};
 /*
@@ -1124,7 +1137,7 @@ namespace luabind { namespace detail
 //							is_lua_functor<T>
 //						  , functor_converter<Direction>
 //						  , eval_if<
-								boost::is_enum<T>
+								boost::is_enum<typename boost::remove_reference<T>::type>
 							  , enum_converter<Direction>
 							  , eval_if<
 									is_nonconst_pointer<T>
