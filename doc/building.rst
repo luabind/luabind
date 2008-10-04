@@ -4,7 +4,7 @@ Building luabind
 Prerequisites
 -------------
 
-Luabind depends on a number of Boost 1.35 libraries. It also depends on
+Luabind depends on a number of Boost 1.34 libraries. It also depends on
 Boost Jam and Boost Build V2 to build the library and run the tests.
 Boost provides `precompiled bjam binaries`__ for a number of platforms.
 If there isn't a precompiled binary available for your platform, you may
