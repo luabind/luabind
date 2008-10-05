@@ -1586,9 +1586,27 @@ will be the string returned by ``std::exception::what()`` or the string itself
 respectively. If the exception is unknown, a generic string saying that the
 function threw an exception will be pushed.
 
-Exceptions thrown from user defined functions have to be caught by luabind. If
-they weren't they would be thrown through Lua itself, which is usually compiled
-as C code and doesn't support the stack-unwinding that exceptions imply.
+If you have an exception type that isn't derived from
+``std::exception``, or you wish to change the error message from the
+default result of ``what()``, it is possible to register custom
+exception handlers::
+
+  struct my_exception
+  {};
+
+  void translate_my_exception(lua_State* L, my_exception const&)
+  {
+      lua_pushstring(L, "my_exception");
+  }
+
+  …
+
+  luabind::register_exception_handler<my_exception>(&translate_my_exception);
+
+``translate_my_exception()`` will be called by luabind whenever a
+``my_exception`` is caught. ``lua_error()`` will be called after the
+handler function returns, so it is expected that the function will push
+an error string on the stack.
 
 Any function that invokes Lua code may throw ``luabind::error``. This exception
 means that a Lua run-time error occurred. The error message is found on top of
@@ -2541,7 +2559,7 @@ Known issues
 Acknowledgments
 ===============
 
-Written by Daniel Wallin and Arvid Norberg. � Copyright 2003.
+Written by Daniel Wallin and Arvid Norberg. © Copyright 2003.
 All rights reserved.
 
 Evan Wies has contributed with thorough testing, countless bug reports

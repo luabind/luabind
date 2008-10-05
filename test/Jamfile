@@ -23,6 +23,7 @@ SOURCES =
     test_simple_class.cpp
     test_yield.cpp
     test_private_destructors.cpp
+    test_exception_handlers.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;
