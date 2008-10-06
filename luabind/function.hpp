@@ -21,8 +21,6 @@
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-#if !BOOST_PP_IS_ITERATING
-
 #ifndef LUABIND_FUNCTION_HPP_INCLUDED
 #define LUABIND_FUNCTION_HPP_INCLUDED
 
@@ -38,10 +36,12 @@
 #include <boost/preprocessor/cat.hpp>
 #include <boost/mpl/apply_wrap.hpp>
 
-#include <luabind/detail/signature_match.hpp>
 #include <luabind/detail/call_function.hpp>
 #include <luabind/detail/get_overload_signature.hpp>
+#include <luabind/detail/compute_score.hpp>
+#include <luabind/detail/call.hpp>
 #include <luabind/detail/overload_rep_base.hpp>
+#include <luabind/detail/deduce_signature.hpp>
 
 #include <luabind/scope.hpp>
 
@@ -57,17 +57,11 @@ namespace luabind
 
 			struct overload_rep: public overload_rep_base
 			{
-
-#define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/function.hpp>, 1))
-#include BOOST_PP_ITERATE()
-
-				inline bool operator==(const overload_rep& o) const
+				template <class F, class Policies>
+				overload_rep(F fn, Policies const& policies)
+				  : fun(reinterpret_cast<void(*)()>(fn))
 				{
-					if (o.m_arity != m_arity) return false;
-					if (o.m_params_.size() != m_params_.size()) return false;
-					for (int i = 0; i < (int)m_params_.size(); ++i)
-						if (!(LUABIND_TYPE_INFO_EQUAL(m_params_[i], o.m_params_[i]))) return false;
-					return true;
+					m_arity = compute_arity(deduce_signature(fn), policies);
 				}
 
 				typedef int(*call_ptr)(lua_State*, void(*)());
@@ -81,11 +75,6 @@ namespace luabind
 //TODO:		private: 
 
 				call_ptr call_fun;
-
-				// the types of the parameter it takes
-				std::vector<LUABIND_TYPE_INFO> m_params_;
-
-                char end;
 			};
 
     		struct LUABIND_API function_rep
@@ -106,75 +95,13 @@ namespace luabind
 				std::vector<free_functions::overload_rep> m_overloads;
 			};
 
-
-
-		// returns generates functions that calls function pointers
-
-#define LUABIND_DECL(z, n, text) typedef typename find_conversion_policy<n + 1, Policies>::type BOOST_PP_CAT(converter_policy,n); \
-		typename mpl::apply_wrap2< \
-			BOOST_PP_CAT(converter_policy,n), BOOST_PP_CAT(A,n), lua_to_cpp \
-		>::type BOOST_PP_CAT(c,n);
-
-#define LUABIND_ADD_INDEX(z,n,text) + BOOST_PP_CAT(converter_policy,n)::has_arg
-#define LUABIND_INDEX_MAP(z,n,text) 1 BOOST_PP_REPEAT(n, LUABIND_ADD_INDEX, _)
-#define LUABIND_PARAMS(z,n,text) BOOST_PP_CAT(c,n).apply(L, LUABIND_DECORATE_TYPE(A##n), LUABIND_INDEX_MAP(_,n,_))
-#define LUABIND_POSTCALL(z,n,text) BOOST_PP_CAT(c,n).converter_postcall(L, LUABIND_DECORATE_TYPE(A##n), LUABIND_INDEX_MAP(_,n,_));
-
-			template<class Policies>
-			struct maybe_yield
-			{
-				static inline int apply(lua_State* L, int nret)
-				{
-					return ret(L, nret, boost::mpl::bool_<has_yield<Policies>::value>());
-				}
-
-				static inline int ret(lua_State* L, int nret, boost::mpl::bool_<true>)
-				{
-					return lua_yield(L, nret);
-				}
-
-				static inline int ret(lua_State*, int nret, boost::mpl::bool_<false>)
-				{
-					return nret;
-				}
-			};
-
-		
-			template<class T>
-			struct returns
-			{
-				#define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/function.hpp>, 2))
-				#include BOOST_PP_ITERATE()
-			};
-
-			template<>
-			struct returns<void>
-			{
-				#define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/function.hpp>, 3))
-				#include BOOST_PP_ITERATE()
-			};
-
-			#define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/function.hpp>, 4))
-			#include BOOST_PP_ITERATE()
-
-
-#undef LUABIND_PARAMS
-#undef LUABIND_DECL
-#undef LUABIND_POSTCALL
-#undef LUABIND_ADD_INDEX
-#undef LUABIND_INDEX_MAP
-
-
-			#define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/function.hpp>, 5))
-			#include BOOST_PP_ITERATE()
-
-
 			template<class F, class Policies>
 			struct function_callback_s
 			{
 				static inline int apply(lua_State* L, void(*fun)())
 				{
-					return free_functions::call(reinterpret_cast<F>(fun), L, static_cast<const Policies*>(0));
+					F fn = reinterpret_cast<F>(fun);
+					return invoke(L, fn, deduce_signature(fn), Policies());
 				}
 			};
 
@@ -183,14 +110,7 @@ namespace luabind
 			{
 				static inline int apply(lua_State* L)
 				{
-					F fptr = 0;
-					return free_functions::match(fptr, L, static_cast<Policies*>(0));
-				}
-
-				static int callback(lua_State* L)
-				{
-					F fptr = 0;
-					return free_functions::match(fptr, L, static_cast<Policies*>(0));
+					return compute_score(L, deduce_signature((F)0), Policies());
 				}
 			};
 
@@ -225,7 +145,7 @@ namespace luabind
 
 			virtual void register_(lua_State* L) const
 			{
-				detail::free_functions::overload_rep o(fun, static_cast<Policies*>(0));
+				detail::free_functions::overload_rep o(fun, Policies());
 
 				o.set_match_fun(&detail::free_functions::match_function_callback_s<F, Policies>::apply);
 				o.set_fun(&detail::free_functions::function_callback_s<F, Policies>::apply);
@@ -307,114 +227,5 @@ namespace luabind
 
 } // namespace luabind
 
-
 #endif // LUABIND_FUNCTION_HPP_INCLUDED
-
-#elif BOOST_PP_ITERATION_FLAGS() == 1
-
-// overloaded template funtion that initializes the parameter list
-// called m_params and the m_arity member.
-
-#define LUABIND_INIT_PARAM(z, n, _) m_params_.push_back(LUABIND_TYPEID(A##n));
-#define LUABIND_POLICY_DECL(z,n,text) typedef typename find_conversion_policy<n + 1, Policies>::type BOOST_PP_CAT(p,n);
-#define LUABIND_ARITY(z,n,text) + BOOST_PP_CAT(p,n)::has_arg
-
-template<class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A), class Policies>
-overload_rep(R(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), Policies*)
-	: fun(reinterpret_cast<void(*)()>(f))
-{
-	m_params_.reserve(BOOST_PP_ITERATION());
-	BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_INIT_PARAM, _)
-	BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POLICY_DECL, _)
-
-	m_arity = 0 BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_ARITY, _);
-}
-
-#undef LUABIND_INIT_PARAM
-#undef LUABIND_POLICY_DECL
-#undef LUABIND_ARITY
-
-#elif BOOST_PP_ITERATION_FLAGS() == 2
-
-template<class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-static int call(T(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, const Policies*)
-{
-	int nargs = lua_gettop(L);
-
-	typedef typename find_conversion_policy<0, Policies>::type converter_policy_ret;
-	typename mpl::apply_wrap2<converter_policy_ret,T,cpp_to_lua>::type converter_ret;
-
-	BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
-		converter_ret.apply(L, f
-				(
-				 BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAMS, _)
-				));
-	BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POSTCALL, _)
-
-	int nret = lua_gettop(L) - nargs;
-
-	const int indices[] =
-	{
-		-1		/* self */,
-		nargs + nret	/* result*/
-		BOOST_PP_ENUM_TRAILING(BOOST_PP_ITERATION(), LUABIND_INDEX_MAP, _)
-	};
-
-	policy_list_postcall<Policies>::apply(L, indices);
-
-	return maybe_yield<Policies>::apply(L, nret);
-}
-
-
-
-#elif BOOST_PP_ITERATION_FLAGS() == 3
-
-template<class Policies BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-static int call(void(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, const Policies*)
-{
-	int nargs = lua_gettop(L);
-
-	BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
-		f
-		(
-		 BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAMS, _)
-		);
-	BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_POSTCALL, _)
-
-	int nret = lua_gettop(L) - nargs;
-
-	const int indices[] =
-	{
-		-1		/* self */,
-		nargs + nret	/* result*/
-		BOOST_PP_ENUM_TRAILING(BOOST_PP_ITERATION(), LUABIND_INDEX_MAP, _)
-	};
-
-	policy_list_postcall<Policies>::apply(L, indices);
-
-	return maybe_yield<Policies>::apply(L, nret);
-}
-
-
-#elif BOOST_PP_ITERATION_FLAGS() == 4
-
-template<class Policies, class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-int call(R(*f)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, const Policies* policies)
-{
-	return free_functions::returns<R>::call(f, L, policies);
-}
-
-#elif BOOST_PP_ITERATION_FLAGS() == 5
-
-	template<class Policies, class R BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
-	static int match(R(*)(BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)), lua_State* L, const Policies* policies)
-	{
-		//if (lua_gettop(L) != BOOST_PP_ITERATION()) return -1;
-		typedef constructor<BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), A)> ParameterTypes;
-		return match_params(L, 1, static_cast<ParameterTypes*>(0), policies);
-	}
-
-
-
-#endif
 
