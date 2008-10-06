@@ -98,7 +98,7 @@
 #include <luabind/detail/constructor.hpp>
 #include <luabind/detail/call.hpp>
 #include <luabind/detail/deduce_signature.hpp>
-#include <luabind/detail/signature_match.hpp>
+#include <luabind/detail/compute_score.hpp>
 #include <luabind/detail/primitives.hpp>
 #include <luabind/detail/property.hpp>
 #include <luabind/detail/typetraits.hpp>
@@ -239,7 +239,7 @@ namespace luabind
 
 			int operator()(lua_State* L) const
 			{
-				return match(fn, L, (Class*)0, (Policies*)0);
+				return compute_score(L, deduce_signature(fn, (Class*)0), Policies());
 			}
 
 			mem_fn_matcher(Fn fn_)
