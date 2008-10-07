@@ -31,18 +31,18 @@
 #include <boost/config.hpp>
 #include <boost/preprocessor/repeat.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
-#include <boost/preprocessor/repetition/enum.hpp> 
+#include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/cat.hpp>
+#include <boost/preprocessor/arithmetic/inc.hpp>
 
 #include <boost/mpl/vector.hpp>
-#include <boost/mpl/for_each.hpp>
+#include <boost/mpl/find.hpp>
+#include <boost/mpl/iterator_range.hpp>
 #include <boost/mpl/size.hpp>
-#include <boost/mpl/int.hpp>
-#include <boost/type_traits.hpp>
 
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/primitives.hpp>
@@ -53,31 +53,24 @@
 namespace luabind
 {
 
-	namespace detail
-	{
-		template<class A>
-		struct constructor_arity_helper
-		{
-			BOOST_STATIC_CONSTANT(int, value = 1);
-		};
-
-		template<>
-		struct constructor_arity_helper<luabind::detail::null_type>
-		{
-			BOOST_STATIC_CONSTANT(int, value = 0);
-		};
-	}
-
-
-#define LUABIND_SUM(z, n, _) detail::constructor_arity_helper<A##n >::value + 
-
 	template<BOOST_PP_ENUM_PARAMS_WITH_A_DEFAULT(LUABIND_MAX_ARITY, class A, detail::null_type)>
 	struct constructor
 	{
-		BOOST_STATIC_CONSTANT(int, arity = BOOST_PP_REPEAT(LUABIND_MAX_ARITY, LUABIND_SUM, _) 0);
+		typedef BOOST_PP_CAT(boost::mpl::vector, BOOST_PP_INC(LUABIND_MAX_ARITY))<
+			void, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)
+		> signature0;
+
+		typedef typename boost::mpl::find<
+			signature0, detail::null_type>::type first_null_element;
+
+		typedef boost::mpl::iterator_range<
+			typename boost::mpl::begin<signature0>::type
+		  , first_null_element
+		> signature;
+
+		BOOST_STATIC_CONSTANT(int, arity = boost::mpl::size<signature>::value - 1);
 	};
 
-#undef LUABIND_SUM
 }
 
 namespace luabind { namespace detail
