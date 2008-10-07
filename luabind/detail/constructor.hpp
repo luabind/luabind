@@ -105,7 +105,7 @@ namespace luabind { namespace detail
 	>::type BOOST_PP_CAT(c,n);
 
 #define LUABIND_PARAM(z,n,text) \
-	BOOST_PP_CAT(c,n).apply(L, LUABIND_DECORATE_TYPE(BOOST_PP_CAT(A,n)), n + 2)
+	BOOST_PP_CAT(c,n).apply(L, LUABIND_DECORATE_TYPE(BOOST_PP_CAT(A,n)), n + 1)
 
 	template<>
 	struct constructor_helper<BOOST_PP_ITERATION()>

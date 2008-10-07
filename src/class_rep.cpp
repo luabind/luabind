@@ -426,6 +426,10 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 	int min_match = std::numeric_limits<int>::max();
 	bool found;
 
+	// Remove the class_rep from the stack and shift down
+	// so that only the actual arguments are left.
+	lua_remove(L, 1);
+
 #ifdef LUABIND_NO_ERROR_CHECKING
 
 	if (rep->overloads.size() == 1)
@@ -438,8 +442,8 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 
 #endif
 
-		int num_params = lua_gettop(L) - 1;
-		overload_rep_base const* first = 
+		int num_params = lua_gettop(L);
+		overload_rep_base const* first =
 			rep->overloads.empty() ? 0 : &rep->overloads.front();
 		found = find_best_match(L, first, rep->overloads.size(), sizeof(construct_rep::overload_t), ambiguous, min_match, match_index, num_params);
 
@@ -454,7 +458,7 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 			std::string msg("no constructor of '");
 			msg += crep->name();
 			msg += "' matched the arguments (";
-			msg += stack_content_by_name(L, 2);
+			msg += stack_content_by_name(L, 1);
 			msg += ")\n candidates are:\n";
 
 			msg += get_overload_signatures(L, rep->overloads.begin(), rep->overloads.end(), crep->name());
@@ -469,7 +473,7 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 			std::string msg("call of overloaded constructor '");
 			msg += crep->m_name;
 			msg +=  "(";
-			msg += stack_content_by_name(L, 2);
+			msg += stack_content_by_name(L, 1);
 			msg += ")' is ambiguous\nnone of the overloads have a best conversion:\n";
 
 			std::vector<const overload_rep_base*> candidates;
@@ -900,10 +904,6 @@ int luabind::detail::class_rep::super_callback(lua_State* L)
 	{
 		obj->set_flags(obj->flags() & ~object_rep::call_super);
 
-		// we need to push some garbage at index 1 to make the construction work
-		lua_pushboolean(L, 1);
-		lua_insert(L, 1);
-
 		construct_rep* rep = &base->m_constructor;
 
 		bool ambiguous = false;
@@ -922,7 +922,7 @@ int luabind::detail::class_rep::super_callback(lua_State* L)
 
 #endif
 
-			int num_params = lua_gettop(L) - 1;
+			int num_params = lua_gettop(L);
 			found = find_best_match(L, &rep->overloads.front(), rep->overloads.size(), sizeof(construct_rep::overload_t), ambiguous, min_match, match_index, num_params);
 
 #ifdef LUABIND_NO_ERROR_CHECKING
@@ -937,7 +937,7 @@ int luabind::detail::class_rep::super_callback(lua_State* L)
 				std::string msg = "no constructor of '";
 				msg += base->m_name;
 				msg += "' matched the arguments (";
-				msg += stack_content_by_name(L, 2);
+				msg += stack_content_by_name(L, 1);
 				msg += ")";
 				lua_pushstring(L, msg.c_str());
 			}
@@ -949,7 +949,7 @@ int luabind::detail::class_rep::super_callback(lua_State* L)
 				std::string msg = "call of overloaded constructor '";
 				msg += base->m_name;
 				msg +=  "(";
-				msg += stack_content_by_name(L, 2);
+				msg += stack_content_by_name(L, 1);
 				msg += ")' is ambiguous";
 				lua_pushstring(L, msg.c_str());
 			}
