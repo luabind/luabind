@@ -42,29 +42,17 @@ namespace luabind { namespace detail {
 		op_unm,
 		op_tostring,
         op_concat,
+		op_len,
 
 		number_of_operators
 	};
-
-	struct op_add_tag {};
-	struct op_sub_tag {};
-	struct op_mul_tag {};
-	struct op_div_tag {};
-	struct op_pow_tag {};
-	struct op_lt_tag {};
-	struct op_le_tag {};
-	struct op_eq_tag {};
-	struct op_call_tag {};
-	struct op_unm_tag {};
-	struct op_tostring_tag {};
-    struct op_concat_tag {};
 
 	inline const char* get_operator_name(int i)
 	{
 		static const char* a[number_of_operators] = {
             "__add", "__sub", "__mul", "__div", "__pow", 
             "__lt", "__le", "__eq", "__call", "__unm", 
-            "__tostring", "__concat" };
+            "__tostring", "__concat", "__len" };
 		return a[i];
 	}
 
@@ -73,7 +61,7 @@ namespace luabind { namespace detail {
 		static const char* a[number_of_operators] = {
             "+", "-", "*", "/", "^", "<", 
             "<=", "==", "()", "- (unary)", 
-            "tostring", ".." };
+            "tostring", "..", "#" };
 		return a[i];
 	}
 

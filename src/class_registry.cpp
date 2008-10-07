@@ -35,7 +35,7 @@ namespace luabind { namespace detail {
         {
             lua_pushstring(L, get_operator_name(op_index));
             lua_pushstring(L, get_operator_name(op_index));
-            lua_pushboolean(L, op_index == op_unm);
+            lua_pushboolean(L, op_index == op_unm || op_index == op_len);
             lua_pushcclosure(L, &class_rep::operator_dispatcher, 2);
             lua_settable(L, -3);
         }
