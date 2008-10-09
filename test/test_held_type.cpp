@@ -127,6 +127,14 @@ void tester12(boost::shared_ptr<derived> const& r)
 	if (r->n2 == 7) feedback = 12;
 }
 
+derived tester13()
+{
+    feedback = 13;
+	derived d;
+	d.n2 = 13;
+	return d;
+}
+
 void test_main(lua_State* L)
 {
     boost::shared_ptr<base> base_ptr(new base());
@@ -147,6 +155,7 @@ void test_main(lua_State* L)
 		def("tester10", &tester10),
 		def("tester11", &tester11),
 		def("tester12", &tester12),
+		def("tester13", &tester13),
 
         class_<base, boost::shared_ptr<base> >("base")
             .def(constructor<>())
@@ -204,5 +213,7 @@ void test_main(lua_State* L)
 	TEST_CHECK(object_cast<boost::shared_ptr<base> >(nil).get() == 0);
 	TEST_CHECK(object_cast<boost::shared_ptr<const base> >(nil).get() == 0);
 
+    DOSTRING(L, "tester13()");
+    TEST_CHECK(feedback == 13);
 }
 

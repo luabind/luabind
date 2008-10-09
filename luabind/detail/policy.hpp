@@ -597,12 +597,25 @@ namespace luabind { namespace detail
 			int flags = object_rep::owner;
 			if (crep->has_holder())
 			{
-				new(held) T(ref);
-				object_ptr = held;
 				if (LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->const_holder_type()))
 				{
+					new(held) T(ref);
+					object_ptr = held;
 					flags |= object_rep::constant;
 					destructor = crep->const_holder_destructor();
+				}
+				else if (LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->holder_type()))
+				{
+					new(held) T(ref);
+					object_ptr = held;
+				}
+				else
+				{
+					assert(LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->type()));
+					std::auto_ptr<T> obj(new T(ref));
+					crep->construct_holder()(held, obj.get());
+					object_ptr = held;
+					obj.release();
 				}
 			}
 			else
