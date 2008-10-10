@@ -727,9 +727,9 @@ namespace luabind
 				, void(*const_holder_constructor)(void*,void*)
 				, void(*holder_default_constructor)(void*)
 				, void(*const_holder_default_constructor)(void*)
+				, void(*adopt_fun)(void*)
 				, void(*destructor)(void*)
 				, void(*const_holder_destructor)(void*)
-				, void(*m_adopt_fun)(void*)
 				, int holder_size
 				, int holder_alignment);
 
