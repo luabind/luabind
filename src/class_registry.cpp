@@ -178,23 +178,6 @@ namespace luabind { namespace detail {
             return detail::ref(L);
         }
 
-        int create_lua_function_metatable(lua_State* L)
-        {
-            lua_newtable(L);
-
-            lua_pushstring(L, "__gc");
-            lua_pushcclosure(
-                L 
-              , detail::garbage_collector_s<
-                    detail::free_functions::function_rep
-                >::apply
-              , 0);
-
-            lua_rawset(L, -3);
-
-            return detail::ref(L);
-        }
-
     } // namespace unnamed
 
     class class_rep;
@@ -204,7 +187,6 @@ namespace luabind { namespace detail {
         , m_cpp_class_metatable(create_cpp_class_metatable(L))
         , m_lua_instance_metatable(create_lua_instance_metatable(L))
         , m_lua_class_metatable(create_lua_class_metatable(L))
-        , m_lua_function_metatable(create_lua_function_metatable(L))
     {
     }
 
