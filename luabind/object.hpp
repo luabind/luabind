@@ -1224,6 +1224,33 @@ inline int type(ValueWrapper const& value)
     return lua_type(interpreter, -1);
 }
 
+template <class ValueWrapper>
+inline object getmetatable(ValueWrapper const& obj)
+{
+    lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
+        obj
+    );
+
+    value_wrapper_traits<ValueWrapper>::unwrap(interpreter, obj);
+    detail::stack_pop pop(interpreter, 2);
+    lua_getmetatable(interpreter, -1);
+    return object(from_stack(interpreter, -1));
+}
+
+template <class ValueWrapper1, class ValueWrapper2>
+inline void setmetatable(
+    ValueWrapper1 const& obj, ValueWrapper2 const& metatable)
+{
+    lua_State* interpreter = value_wrapper_traits<ValueWrapper1>::interpreter(
+        obj
+    );
+
+    value_wrapper_traits<ValueWrapper1>::unwrap(interpreter, obj);
+    detail::stack_pop pop(interpreter, 1);
+    value_wrapper_traits<ValueWrapper2>::unwrap(interpreter, metatable);
+    lua_setmetatable(interpreter, -2);
+}
+
 } // namespace luabind
 
 #endif // LUABIND_OBJECT_050419_HPP

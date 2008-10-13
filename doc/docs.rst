@@ -1242,6 +1242,13 @@ These functions return the global environment table and the registry table respe
 
 This function creates a new table and returns it as an object.
 
+::
+
+  object getmetatable(object const& obj);
+  void setmetatable(object const& obj, object const& metatable);
+
+These functions get and set the metatable of a Lua object.
+
 Assigning nil
 -------------
 

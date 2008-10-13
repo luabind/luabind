@@ -140,6 +140,36 @@ void test_call(lua_State* L)
     TEST_CHECK(object_cast<int>(sum(1,2,3,4,5)) == 15);
 }
 
+void test_metatable(lua_State* L)
+{
+	object metatable = newtable(L);
+	object G = globals(L);
+
+	DOSTRING(L,
+		"function index_function(table, key)\n"
+		"  return key*2\n"
+		"end\n"
+
+		"index_table = {}"
+	);
+
+	metatable["__index"] = G["index_function"];
+	setmetatable(G["index_table"], metatable);
+
+	DOSTRING(L,
+		"assert(index_table[0] == 0)\n"
+		"assert(index_table[1] == 2)\n"
+		"assert(index_table[2] == 4)\n"
+	);
+
+	DOSTRING(L,
+		"setmetatable(index_table, { ['luabind.metatable'] = 1 })"
+	);
+
+	assert(getmetatable(G["index_table"])["luabind.metatable"] == 1);
+	assert(type(getmetatable(G["index_table"])["nonexistent"]) == LUA_TNIL);
+}
+
 void test_main(lua_State* L)
 {
 	using namespace luabind;
@@ -317,5 +347,6 @@ void test_main(lua_State* L)
     TEST_CHECK(object_cast<int>(globals(L)["t"][2][2]) == 4);
 
     test_call(L);
+    test_metatable(L);
 }
 
