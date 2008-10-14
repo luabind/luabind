@@ -9,15 +9,18 @@
 
 #  include <luabind/detail/most_derived.hpp>
 
-#  if LUABIND_MAX_ARITY <= 10
+#  if LUABIND_MAX_ARITY <= 8
 #   include <boost/mpl/vector/vector10.hpp>
 #  else
 #   include <boost/mpl/vector/vector50.hpp>
 #  endif
+#  include <boost/preprocessor/cat.hpp>
 #  include <boost/preprocessor/iteration/iterate.hpp>
 #  include <boost/preprocessor/repetition/enum_params.hpp>
 
 namespace luabind { namespace detail {
+
+namespace mpl = boost::mpl;
 
 template <class R>
 mpl::vector1<R> deduce_signature(R(*)(), ...)
