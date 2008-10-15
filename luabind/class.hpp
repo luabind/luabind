@@ -105,7 +105,6 @@
 #include <luabind/detail/typetraits.hpp>
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/call.hpp>
-#include <luabind/detail/method_rep.hpp>
 #include <luabind/detail/construct_rep.hpp>
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/calc_arity.hpp>
@@ -754,7 +753,6 @@ namespace luabind
 
 			void add_base(const base_desc& b);
 			void add_constructor(const detail::construct_rep::overload_t& o);	
-			void add_method(const char* name, const detail::overload_rep& o);
 
 #ifndef LUABIND_NO_ERROR_CHECKING
 			void add_operator(

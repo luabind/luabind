@@ -42,15 +42,6 @@
 #include <luabind/handle.hpp>
 #include <luabind/detail/primitives.hpp>
 
-#ifdef BOOST_MSVC
-// msvc doesn't have two-phase, but requires
-// method_rep (and overload_rep) to be complete
-// because of its std::list implementation.
-// gcc on the other hand has two-phase but doesn't
-// require method_rep to be complete.
-#include <luabind/detail/method_rep.hpp>
-#endif
-
 namespace luabind
 {
 
@@ -62,7 +53,6 @@ namespace luabind
 namespace luabind { namespace detail
 {
 
-	struct method_rep;
 	LUABIND_API std::string stack_content_by_name(lua_State* L, int start_index);
 	int construct_lua_class_callback(lua_State* L);
 
@@ -94,10 +84,6 @@ namespace luabind { namespace detail
 			cpp_class = 0,
 			lua_class = 1
 		};
-
-#ifndef NDEBUG
-		std::string class_info_string(lua_State*) const;
-#endif
 
 		// destructor is a lua callback function that is hooked as garbage collector event on every instance
 		// of this class (including those that is not owned by lua). It gets an object_rep as argument
@@ -195,8 +181,6 @@ namespace luabind { namespace detail
 		class_type get_class_type() const { return m_class_type; }
 
 		void add_static_constant(const char* name, int val);
-		void add_method(detail::method_rep const& m);
-		void register_methods(lua_State* L);
 
 		// takes a pointer to the instance object
 		// and if it has a wrapper, the wrapper
@@ -371,11 +355,6 @@ namespace luabind { namespace detail
 		int m_instance_metatable;
 
 		// ***** the maps below contains all members in this class *****
-
-		// list of methods. pointers into this list is put in the m_table and
-		// m_default_table for access. The struct contains the function-
-		// signatures for every overload
-		std::list<method_rep> m_methods;
 
 		// datamembers, some members may be readonly, and
 		// only have a getter function

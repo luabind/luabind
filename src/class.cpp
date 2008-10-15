@@ -36,14 +36,6 @@ namespace luabind
 
 namespace luabind { namespace detail {
     
-	struct method_name
-	{
-		method_name(char const* n): name(n) {}
-		bool operator()(method_rep const& o) const
-		{ return std::strcmp(o.name, name) == 0; }
-		char const* name;
-	};
-
     struct class_registration : registration
     {   
         class_registration(char const* name);
@@ -51,8 +43,6 @@ namespace luabind { namespace detail {
         void register_(lua_State* L) const;
 
         const char* m_name;
-
-        mutable std::list<detail::method_rep> m_methods;
 
         // datamembers, some members may be readonly, and
         // only have a getter function
@@ -166,8 +156,6 @@ namespace luabind { namespace detail {
 
         crep->m_static_constants.swap(m_static_constants);
 
-		typedef std::list<detail::method_rep> methods_t;
-
 		detail::class_registry* registry = detail::class_registry::get_registry(L);
 
         for (std::vector<class_base::base_desc>::iterator i = m_bases.begin();
@@ -211,18 +199,6 @@ namespace luabind { namespace detail {
             lua_pop(L, 2);
 
 		}
-
-        // add methods
-        for (std::list<detail::method_rep>::iterator i 
-            = m_methods.begin(); i != m_methods.end(); ++i)
-        {
-            LUABIND_CHECK_STACK(L);
-			crep->add_method(*i);
-		}
-
-		crep->register_methods(L);
-
-        m_methods.clear();
 
         crep->get_default_table(L);
         m_scope.register_(L);
@@ -324,26 +300,6 @@ namespace luabind { namespace detail {
     void class_base::add_constructor(const detail::construct_rep::overload_t& o)
     {
         m_registration->m_constructor.overloads.push_back(o);
-    }
-
-    void class_base::add_method(const char* name, const detail::overload_rep& o)
-    {
-		typedef std::list<detail::method_rep> methods_t;
-
-		methods_t::iterator m = std::find_if(
-			m_registration->m_methods.begin()
-			, m_registration->m_methods.end()
-			, method_name(name));
-		if (m == m_registration->m_methods.end())
-		{
-			m_registration->m_methods.push_back(method_rep());
-			m = m_registration->m_methods.end();
-			std::advance(m, -1);
-			m->name = name;
-		}
-		
-        m->add_overload(o);
-        m->crep = 0;
     }
 
 	void class_base::add_member(registration* member)
