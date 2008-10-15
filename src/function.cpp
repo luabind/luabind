@@ -161,6 +161,11 @@ namespace
 
 } // namespace unnamed
 
+LUABIND_API bool is_luabind_function(lua_State* L, int index)
+{
+    return lua_tocfunction(L, index) == &function_dispatcher;
+}
+
 LUABIND_API void add_overload(
     object const& context, char const* name, object const& fn)
 {

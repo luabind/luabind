@@ -22,6 +22,7 @@
 
 #include <luabind/config.hpp>
 #include <luabind/lua_include.hpp>
+#include <luabind/function.hpp>
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/stack_utils.hpp>
@@ -38,12 +39,8 @@ namespace luabind { namespace detail
 		lua_gettable(L, -2);
 		lua_remove(L, -2); // remove the crep table
 
-		{
-			if (!lua_iscfunction(L, -1)) return;
-			if (lua_getupvalue(L, -1, 3) == 0) return;
-			detail::stack_pop p(L, 1);
-			if (lua_touserdata(L, -1) != reinterpret_cast<void*>(0x1337)) return;
-		}
+		if (!is_luabind_function(L, -1))
+			return;
 
 		// this (usually) means the function has not been
 		// overridden by lua, call the default implementation
@@ -51,7 +48,6 @@ namespace luabind { namespace detail
 		obj->crep()->get_default_table(L); // push the crep table
 		lua_pushstring(L, name);
 		lua_gettable(L, -2);
-		assert(!lua_isnil(L, -1));
 		lua_remove(L, -2); // remove the crep table
 	}
 }}

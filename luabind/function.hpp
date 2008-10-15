@@ -39,6 +39,8 @@ namespace detail
       Policies policies;
   };
 
+  LUABIND_API bool is_luabind_function(lua_State* L, int index);
+
 } // namespace detail
 
 template <class F, class Policies>
