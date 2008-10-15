@@ -95,6 +95,7 @@
 #include <luabind/scope.hpp>
 #include <luabind/raw_policy.hpp>
 #include <luabind/back_reference.hpp>
+#include <luabind/function.hpp>
 #include <luabind/detail/constructor.hpp>
 #include <luabind/detail/call.hpp>
 #include <luabind/detail/deduce_signature.hpp>
@@ -771,6 +772,9 @@ namespace luabind
 				, int arity);
 #endif
 
+			void add_member(registration* member);
+			void add_default_member(registration* member);
+
 			const char* name() const;
 
 			void add_static_constant(const char* name, int val);
@@ -795,6 +799,32 @@ namespace luabind
 				self.m_strong_ref.set(self.state());
             }
         };
+
+		template <class Class, class F, class Policies>
+		struct memfun_registration : registration
+		{
+			memfun_registration(char const* name, F f, Policies const& policies)
+			  : name(name)
+			  , f(f)
+			  , policies(policies)
+			{}
+
+			void register_(lua_State* L) const
+			{
+				object fn = make_function(
+					L, f, deduce_signature(f, (Class*)0), policies);
+
+				add_overload(
+					object(from_stack(L, -1))
+				  , name
+				  , fn
+				);
+			}
+
+			char const* name;
+			F f;
+			Policies policies;
+		};
 
 	} // namespace detail
 
@@ -1225,16 +1255,9 @@ namespace luabind
 		class_& virtual_def(char const* name, F const& fn
 			, Policies const&, detail::null_type, boost::mpl::true_)
 		{
-			// normal def() call
-			detail::overload_rep o(fn, static_cast<Policies*>(0));
-
-			o.set_match_fun(detail::mem_fn_matcher<F, T, Policies>(fn));
-			o.set_fun(detail::mem_fn_callback<F, T, Policies>(fn));
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-			o.set_sig_fun(&detail::get_member_signature<F>::apply);
-#endif
-			this->add_method(name, o);
+			this->add_member(
+				new detail::memfun_registration<T, F, Policies>(
+					name, fn, Policies()));
 			return *this;
 		}
 
@@ -1242,24 +1265,14 @@ namespace luabind
 		class_& virtual_def(char const* name, F const& fn
 			, Default const& default_, Policies const&, boost::mpl::false_)
 		{
-			// default_ is a default implementation
-			// policies is either null_type or a policy list
+			this->add_member(
+				new detail::memfun_registration<T, F, Policies>(
+					name, fn, Policies()));
 
-			// normal def() call
-			detail::overload_rep o(fn, (Policies*)0);
+			this->add_default_member(
+				new detail::memfun_registration<T, Default, Policies>(
+					name, default_, Policies()));
 
-			o.set_match_fun(detail::mem_fn_matcher<F, T, Policies>(fn));
-			o.set_fun(detail::mem_fn_callback<F, T, Policies>(fn));
-
-			o.set_fun_static(
-				detail::mem_fn_callback<Default, T, Policies>(default_));
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-			o.set_sig_fun(&detail::get_member_signature<F>::apply);
-#endif
-
-			this->add_method(name, o);
-			// register virtual function
 			return *this;
 		}
 

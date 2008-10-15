@@ -90,6 +90,8 @@ namespace luabind { namespace detail {
         LUABIND_TYPE_INFO m_const_holder_type;
 
         scope m_scope;
+        scope m_members;
+        scope m_default_members;
     };
 
     class_registration::class_registration(char const* name)
@@ -224,6 +226,11 @@ namespace luabind { namespace detail {
 
         crep->get_default_table(L);
         m_scope.register_(L);
+		m_default_members.register_(L);
+		lua_pop(L, 1);
+
+        crep->get_table(L);
+        m_members.register_(L);
         lua_pop(L, 1);
 
         lua_settable(L, -3);
@@ -338,6 +345,18 @@ namespace luabind { namespace detail {
         m->add_overload(o);
         m->crep = 0;
     }
+
+	void class_base::add_member(registration* member)
+	{
+		std::auto_ptr<registration> ptr(member);
+		m_registration->m_members.operator,(scope(ptr));
+	}
+
+	void class_base::add_default_member(registration* member)
+	{
+		std::auto_ptr<registration> ptr(member);
+		m_registration->m_default_members.operator,(scope(ptr));
+	}
 
 #ifndef LUABIND_NO_ERROR_CHECKING
     void class_base::add_operator(
