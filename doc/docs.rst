@@ -1249,6 +1249,20 @@ This function creates a new table and returns it as an object.
 
 These functions get and set the metatable of a Lua object.
 
+::
+
+  lua_CFunction tocfunction(object const& value);
+  template <class T> T* touserdata(object const& value)
+
+These extract values from the object at a lower level than ``object_cast()``.
+
+::
+
+  object getupvalue(object const& function, int index);
+  void setupvalue(object const& function, int index, object const& value);
+
+These get and set the upvalues of ``function``.
+
 Assigning nil
 -------------
 

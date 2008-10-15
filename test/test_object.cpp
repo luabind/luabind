@@ -170,6 +170,46 @@ void test_metatable(lua_State* L)
 	assert(type(getmetatable(G["index_table"])["nonexistent"]) == LUA_TNIL);
 }
 
+int with_upvalues(lua_State *)
+{
+	return 0;
+}
+
+void test_upvalues(lua_State* L)
+{
+	lua_pushnumber(L, 3);
+	lua_pushnumber(L, 4);
+	lua_pushcclosure(L, &with_upvalues, 2);
+
+	object f(from_stack(L, -1));
+	lua_pop(L, 1);
+
+	assert(getupvalue(f, 1) == 3);
+	assert(getupvalue(f, 2) == 4);
+
+	setupvalue(f, 1, object(L, 4));
+	assert(getupvalue(f, 1) == 4);
+	assert(getupvalue(f, 2) == 4);
+
+	setupvalue(f, 2, object(L, 5));
+	assert(getupvalue(f, 1) == 4);
+	assert(getupvalue(f, 2) == 5);
+}
+
+void test_explicit_conversions(lua_State* L)
+{
+	lua_pushcclosure(L, &with_upvalues, 0);
+	object f(from_stack(L, -1));
+	lua_pop(L, 1);
+	assert(tocfunction(f) == &with_upvalues);
+
+	int* p = static_cast<int*>(lua_newuserdata(L, sizeof(int)));
+	*p = 1234;
+	object x(from_stack(L, -1));
+	lua_pop(L, 1);
+	assert(*touserdata<int>(x) == 1234);
+}
+
 void test_main(lua_State* L)
 {
 	using namespace luabind;
@@ -348,5 +388,7 @@ void test_main(lua_State* L)
 
     test_call(L);
     test_metatable(L);
+    test_upvalues(L);
+    test_explicit_conversions(L);
 }
 

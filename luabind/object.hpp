@@ -1251,6 +1251,57 @@ inline void setmetatable(
     lua_setmetatable(interpreter, -2);
 }
 
+template <class ValueWrapper>
+inline lua_CFunction tocfunction(ValueWrapper const& value)
+{
+    lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
+        value
+    );
+
+    value_wrapper_traits<ValueWrapper>::unwrap(interpreter, value);
+    detail::stack_pop pop(interpreter, 1);
+    return lua_tocfunction(interpreter, -1);
+}
+
+template <class T, class ValueWrapper>
+inline T* touserdata(ValueWrapper const& value)
+{
+    lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
+        value
+    );
+
+    value_wrapper_traits<ValueWrapper>::unwrap(interpreter, value);
+    detail::stack_pop pop(interpreter, 1);
+    return static_cast<T*>(lua_touserdata(interpreter, -1));
+}
+
+template <class ValueWrapper>
+inline object getupvalue(ValueWrapper const& value, int index)
+{
+    lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
+        value
+    );
+
+    value_wrapper_traits<ValueWrapper>::unwrap(interpreter, value);
+    detail::stack_pop pop(interpreter, 2);
+    lua_getupvalue(interpreter, -1, index);
+    return object(from_stack(interpreter, -1));
+}
+
+template <class ValueWrapper1, class ValueWrapper2>
+inline void setupvalue(
+    ValueWrapper1 const& function, int index, ValueWrapper2 const& value)
+{
+    lua_State* interpreter = value_wrapper_traits<ValueWrapper1>::interpreter(
+        function
+    );
+
+    value_wrapper_traits<ValueWrapper1>::unwrap(interpreter, function);
+    detail::stack_pop pop(interpreter, 1);
+    value_wrapper_traits<ValueWrapper2>::unwrap(interpreter, value);
+    lua_setupvalue(interpreter, -2, index);
+}
+
 } // namespace luabind
 
 #endif // LUABIND_OBJECT_050419_HPP
