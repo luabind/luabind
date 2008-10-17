@@ -210,6 +210,36 @@ void test_explicit_conversions(lua_State* L)
 	assert(*touserdata<int>(x) == 1234);
 }
 
+int with_argument(argument const& arg)
+{
+	return object_cast<int>(arg) * 2;
+}
+
+int with_table_argument(argument const& arg, argument const& key)
+{
+	return object_cast<int>(arg[key]);
+}
+
+void test_argument(lua_State* L)
+{
+    module(L) [
+        def("with_argument", &with_argument),
+        def("with_table_argument", &with_table_argument)
+    ];
+
+    DOSTRING(L,
+        "assert(with_argument(1) == 2)\n"
+        "assert(with_argument(2) == 4)\n"
+    );
+
+    DOSTRING(L,
+        "x = { foo = 1, bar = 2 }\n"
+
+        "assert(with_table_argument(x, 'foo') == 1)\n"
+        "assert(with_table_argument(x, 'bar') == 2)\n"
+    );
+}
+
 void test_main(lua_State* L)
 {
 	using namespace luabind;
@@ -390,5 +420,6 @@ void test_main(lua_State* L)
     test_metatable(L);
     test_upvalues(L);
     test_explicit_conversions(L);
+    test_argument(L);
 }
 

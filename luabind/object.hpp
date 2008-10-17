@@ -780,9 +780,42 @@ namespace adl
       return is_valid()?(safe_bool_type*)1:0;
   }
 
+  class argument : public object_interface<argument>
+  {
+  public:
+	  argument(from_stack const& stack_reference)
+		: m_interpreter(stack_reference.interpreter)
+		, m_index(stack_reference.index)
+	  {
+		  if (m_index < 0)
+			  m_index = lua_gettop(m_interpreter) - m_index + 1;
+	  }
+
+      template<class T>
+      index_proxy<argument> operator[](T const& key) const
+      {
+          return index_proxy<argument>(*this, m_interpreter, key);
+      }
+
+	  void push(lua_State* L) const
+	  {
+		  lua_pushvalue(L, m_index);
+	  }
+
+	  lua_State* interpreter() const
+	  {
+		  return m_interpreter;
+	  }
+
+  private:
+	  lua_State* m_interpreter;
+	  int m_index;
+  };
+
 } // namespace adl
 
 using adl::object;
+using adl::argument;
 
 #ifndef LUABIND_USE_VALUE_WRAPPER_TAG
 template <class ValueWrapper, class Arguments>
@@ -819,6 +852,27 @@ struct value_wrapper_traits<object>
     }
 
     static void unwrap(lua_State* interpreter, object const& value)
+    {
+        value.push(interpreter);
+    }
+
+    static bool check(...)
+    {
+        return true;
+    }
+};
+
+template<>
+struct value_wrapper_traits<argument>
+{
+    typedef boost::mpl::true_ is_specialized;
+
+    static lua_State* interpreter(argument const& value)
+    {
+        return value.interpreter();
+    }
+
+    static void unwrap(lua_State* interpreter, argument const& value)
     {
         value.push(interpreter);
     }
