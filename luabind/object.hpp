@@ -271,6 +271,7 @@ LUABIND_BINARY_OP_DEF(<, lua_lessthan)
   template<class Derived>
   class object_interface
   {
+      struct safe_bool_type {};
   public:
       ~object_interface() {}
 
@@ -308,6 +309,19 @@ LUABIND_BINARY_OP_DEF(<, lua_lessthan)
       #define BOOST_PP_ITERATION_PARAMS_1 (3, \
           (3, LUABIND_MAX_ARITY, <luabind/detail/object_call.hpp>))
       #include BOOST_PP_ITERATE()
+
+      operator safe_bool_type*() const
+      {
+          lua_State* L = value_wrapper_traits<Derived>::interpreter(derived());
+
+          if (!L)
+              return 0;
+
+          value_wrapper_traits<Derived>::unwrap(L, derived());
+          detail::stack_pop pop(L, 1);
+
+          return lua_toboolean(L, -1) == 1 ? (safe_bool_type*)1 : 0;
+      }
 
   private:
       Derived& derived()
@@ -708,7 +722,6 @@ namespace adl
   // in the registry.
   class object : public object_interface<object>
   {
-      struct safe_bool_type {};
   public:
       object()
       {}
@@ -741,7 +754,6 @@ namespace adl
       void push(lua_State* interpreter) const;
       lua_State* interpreter() const;
       bool is_valid() const;
-      operator safe_bool_type*() const;
 
       template<class T>
       index_proxy<object> operator[](T const& key) const
@@ -773,11 +785,6 @@ namespace adl
   inline bool object::is_valid() const
   {
       return m_handle.interpreter() != 0;
-  }
-
-  inline object::operator object::safe_bool_type*() const
-  {
-      return is_valid()?(safe_bool_type*)1:0;
   }
 
   class argument : public object_interface<argument>

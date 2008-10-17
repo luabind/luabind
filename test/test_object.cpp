@@ -240,6 +240,40 @@ void test_argument(lua_State* L)
     );
 }
 
+void test_bool_convertible(lua_State* L)
+{
+    DOSTRING(L,
+        "x1 = nil\n"
+        "x2 = false\n"
+        "x3 = 0\n"
+        "x4 = 1\n"
+    );
+
+    DOSTRING(L,
+        "assert(not x1)\n"
+        "assert(not x2)\n"
+        "assert(x3)\n"
+        "assert(x4)\n"
+    );
+
+    object G = globals(L);
+
+    object x1 = G["x1"];
+    object x2 = G["x2"];
+    object x3 = G["x3"];
+    object x4 = G["x4"];
+
+    assert(!x1);
+    assert(!x2);
+    assert(x3);
+    assert(x4);
+
+    assert(!G["x1"]);
+    assert(!G["x2"]);
+    assert(G["x3"]);
+    assert(G["x4"]);
+}
+
 void test_main(lua_State* L)
 {
 	using namespace luabind;
@@ -421,5 +455,6 @@ void test_main(lua_State* L)
     test_upvalues(L);
     test_explicit_conversions(L);
     test_argument(L);
+    test_bool_convertible(L);
 }
 
