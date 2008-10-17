@@ -703,32 +703,6 @@ struct value_wrapper_traits<adl::iterator_proxy_tag>
 
 namespace adl
 {
-  class object_init
-  {
-  protected:
-      object_init()
-      {}
-      
-      explicit object_init(from_stack const& stack_reference, boost::mpl::true_)
-        : m_handle(stack_reference.interpreter, stack_reference.index)
-      {
-      }
-
-      template<class ValueWrapper>
-      explicit object_init(ValueWrapper const& value_wrapper, boost::mpl::false_)
-      {
-          lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
-              value_wrapper
-          );
-
-          value_wrapper_traits<ValueWrapper>::unwrap(interpreter, value_wrapper);
-          detail::stack_pop pop(interpreter, 1);
-
-          handle(interpreter, -1).swap(m_handle);
-      }
-
-      handle m_handle;
-  };
 
   // An object holds a reference to a Lua value residing
   // in the registry.
