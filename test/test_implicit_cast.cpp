@@ -30,6 +30,14 @@ struct A : counted_type<A>
 struct B : A, counted_type<B>  
 {};
 
+
+struct enum_placeholder {};
+typedef enum { VAL1 = 1, VAL2 = 2 } LBENUM_t;
+LBENUM_t enum_by_val(LBENUM_t e)    { return e; }
+LBENUM_t enum_by_const_ref(const LBENUM_t &e)   { return e; }
+
+
+
 struct test_implicit : counted_type<test_implicit>
 {
 	char const* f(A*) { return "f(A*)"; }
@@ -84,6 +92,15 @@ void test_main(lua_State* L)
         class_<char_pointer_convertable>("char_ptr")
             .def(constructor<>()),
 
+        class_<enum_placeholder>("LBENUM")
+            .enum_("constants")
+            [
+                value("VAL1", VAL1),
+                value("VAL2", VAL2)
+            ],
+        def("enum_by_val", &enum_by_val),
+        def("enum_by_const_ref", &enum_by_const_ref),
+
         def("func", &func),
 		def("no_convert", &not_convertable),
 		def("f", &f)
@@ -99,6 +116,13 @@ void test_main(lua_State* L)
     DOSTRING(L, 
         "a = char_ptr()\n"
         "func(a)");
+
+    DOSTRING(L, "assert(LBENUM.VAL1 == 1)");
+    DOSTRING(L, "assert(LBENUM.VAL2 == 2)");
+    DOSTRING(L, "assert(enum_by_val(LBENUM.VAL1) == LBENUM.VAL1)");
+    DOSTRING(L, "assert(enum_by_val(LBENUM.VAL2) == LBENUM.VAL2)");
+    DOSTRING(L, "assert(enum_by_const_ref(LBENUM.VAL1) == LBENUM.VAL1)");
+    DOSTRING(L, "assert(enum_by_const_ref(LBENUM.VAL2) == LBENUM.VAL2)");
 
 	DOSTRING_EXPECTED(L,
 		"a = A()\n"
