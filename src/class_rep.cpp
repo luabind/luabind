@@ -406,109 +406,40 @@ int luabind::detail::class_rep::operator_dispatcher(lua_State* L)
 // this is called as metamethod __call on the class_rep.
 int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 {
-	class_rep* crep = static_cast<class_rep*>(lua_touserdata(L, 1));
-	construct_rep* rep = &crep->m_constructor;
+    class_rep* cls = static_cast<class_rep*>(lua_touserdata(L, 1));
 
-	bool ambiguous = false;
-	int match_index = -1;
-	int min_match = std::numeric_limits<int>::max();
-	bool found;
+    int args = lua_gettop(L);
 
-	// Remove the class_rep from the stack and shift down
-	// so that only the actual arguments are left.
-	lua_remove(L, 1);
+    lua_newtable(L);
+    lua_reference ref;
+    ref.set(L);
 
-#ifdef LUABIND_NO_ERROR_CHECKING
+    void* obj_ptr;
+    void* held_storage;
 
-	if (rep->overloads.size() == 1)
-	{
-		match_index = 0;
-		found = true;
-	}
-	else
-	{
+    int flags = object_rep::lua_class | object_rep::owner;
 
-#endif
+    boost::tie(obj_ptr, held_storage) = cls->allocate(L);
+    (new(obj_ptr) object_rep(cls, flags, ref))->set_object(held_storage);
 
-		int num_params = lua_gettop(L);
-		overload_rep_base const* first =
-			rep->overloads.empty() ? 0 : &rep->overloads.front();
-		found = find_best_match(L, first, rep->overloads.size(), sizeof(construct_rep::overload_t), ambiguous, min_match, match_index, num_params);
+    detail::getref(L, cls->metatable_ref());
+    lua_setmetatable(L, -2);
 
-#ifdef LUABIND_NO_ERROR_CHECKING
-	}
+    lua_pushvalue(L, -1);
+    lua_replace(L, 1);
 
-#else
+    cls->get_table(L);
+    lua_pushstring(L, "__init");
+    lua_gettable(L, -2);
 
-	if (!found)
-	{
-		{
-			std::string msg("no constructor of '");
-			msg += crep->name();
-			msg += "' matched the arguments (";
-			msg += stack_content_by_name(L, 1);
-			msg += ")\n candidates are:\n";
+    lua_insert(L, 1);
 
-			msg += get_overload_signatures(L, rep->overloads.begin(), rep->overloads.end(), crep->name());
+    lua_pop(L, 1);
+    lua_insert(L, 1);
 
-			lua_pushstring(L, msg.c_str());
-		}
-		lua_error(L);
-	}
-	else if (ambiguous)
-	{
-		{
-			std::string msg("call of overloaded constructor '");
-			msg += crep->m_name;
-			msg +=  "(";
-			msg += stack_content_by_name(L, 1);
-			msg += ")' is ambiguous\nnone of the overloads have a best conversion:\n";
+    lua_call(L, args, 0);
 
-			std::vector<const overload_rep_base*> candidates;
-			find_exact_match(L, &rep->overloads.front(), rep->overloads.size(), sizeof(construct_rep::overload_t), min_match, num_params, candidates);
-			msg += get_overload_signatures_candidates(L, candidates.begin(), candidates.end(), crep->name());
-
-			lua_pushstring(L, msg.c_str());
-		}
-		lua_error(L);
-	}
-
-#endif
-
-#ifndef LUABIND_NO_EXCEPTIONS
-	try
-	{
-#endif
-		void* obj_rep;
-		void* held;
-
-		boost::tie(obj_rep,held) = crep->allocate(L);
-
-		weak_ref backref(L, -1);
-
-		void* object_ptr = rep->overloads[match_index].construct(L, backref);
-
-		if (crep->has_holder())
-		{
-			crep->m_construct_holder(held, object_ptr);
-			object_ptr = held;
-		}
-		new(obj_rep) object_rep(object_ptr, crep, object_rep::owner, crep->destructor());
-
-		detail::getref(L, crep->m_instance_metatable);
-		lua_setmetatable(L, -2);
-		return 1;
-#ifndef LUABIND_NO_EXCEPTIONS
-	}
-	catch (...)
-	{
-		detail::handle_exception_aux(L);
-	}
-
-	// we can only reach this line if an exception was thrown
-	lua_error(L);
-	return 0; // will never be reached
-#endif
+    return 1;
 }
 
 void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep::base_info& binfo)
