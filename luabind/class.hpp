@@ -824,6 +824,28 @@ namespace luabind
 			Policies policies;
 		};
 
+        template <class Class, class Signature, class Policies>
+        struct constructor_registration : registration
+        {
+            constructor_registration(Policies const& policies)
+              : policies(policies)
+            {}
+
+            void register_(lua_State* L) const
+            {
+                object fn = make_function(
+                    L, construct<Class, Signature>(), Signature(), policies);
+
+                add_overload(
+                    object(from_stack(L, -1))
+                  , "__init"
+                  , fn
+                );
+            }
+
+            Policies policies;
+        };
+
 	} // namespace detail
 
 	// registers a class in the lua environment
@@ -931,21 +953,13 @@ namespace luabind
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig)
 		{
-            return this->def_constructor(
-				boost::is_same<WrappedType, detail::null_type>()
-			  , &sig
-			  , detail::null_type()
-			);
+            return this->def_constructor(&sig, detail::null_type());
 		}
 
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A), class Policies>
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig, const Policies& policies)
 		{
-            return this->def_constructor(
-				boost::is_same<WrappedType, detail::null_type>()
-			  , &sig
-			  , policies
-			);
+            return this->def_constructor(&sig, policies);
 		}
 
 		template<class Getter>
@@ -1275,63 +1289,26 @@ namespace luabind
 		}
 
         template<class Signature, class Policies>
-		class_& def_constructor(
-			boost::mpl::true_ /* HasWrapper */
-          , Signature*
-          , Policies const&)
-        {	
-			detail::construct_rep::overload_t o;
+		class_& def_constructor(Signature*, Policies const&)
+        {
+            typedef typename Signature::signature signature;
 
-			o.set_constructor(
-				&detail::construct_class<
-					T
-				  , Policies
-				  , Signature
-				>::apply);
+            typedef typename boost::mpl::if_<
+                boost::is_same<WrappedType, detail::null_type>
+              , T
+              , WrappedType
+            >::type construct_type;
 
-			o.set_match_fun(
-				&detail::constructor_match<
-				    Signature
-			      , 2
-			      , Policies
-			    >::apply);
+            this->add_member(
+                new detail::constructor_registration<
+                    construct_type, signature, Policies>(
+                        Policies()));
 
-#ifndef LUABIND_NO_ERROR_CHECKING
-			o.set_sig_fun(&detail::get_signature<Signature>::apply);
-#endif
-			o.set_arity(detail::calc_arity<Signature::arity>::apply(Signature(), (Policies*)0));
-			this->add_constructor(o);
-            return *this;
-        }
+            this->add_default_member(
+                new detail::constructor_registration<
+                    construct_type, signature, Policies>(
+                        Policies()));
 
-        template<class Signature, class Policies>
-		class_& def_constructor(
-			boost::mpl::false_ /* !HasWrapper */
-          , Signature*
-          , Policies const&)
-		{
-			detail::construct_rep::overload_t o;
-
-			o.set_constructor(
-				&detail::construct_wrapped_class<
-					T
-				  , WrappedType
-				  , Policies
-				  , Signature
-				>::apply);
-
-			o.set_match_fun(
-				&detail::constructor_match<
-				    Signature
-			      , 2
-			      , Policies
-			    >::apply);
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-			o.set_sig_fun(&detail::get_signature<Signature>::apply);
-#endif
-			o.set_arity(detail::calc_arity<Signature::arity>::apply(Signature(), (Policies*)0));
-			this->add_constructor(o);
             return *this;
         }
 
