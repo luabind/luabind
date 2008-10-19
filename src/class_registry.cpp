@@ -139,7 +139,7 @@ namespace luabind { namespace detail {
             lua_rawset(L, -3);
 
             lua_pushstring(L, "__call");
-            lua_pushcclosure(L, &class_rep::construct_lua_class_callback, 0);
+            lua_pushcclosure(L, &class_rep::constructor_dispatcher, 0);
             lua_rawset(L, -3);
 
             lua_pushstring(L, "__index");

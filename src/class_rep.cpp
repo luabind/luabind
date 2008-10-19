@@ -425,6 +425,16 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
     detail::getref(L, cls->metatable_ref());
     lua_setmetatable(L, -2);
 
+    if (cls->get_class_type() == class_rep::lua_class
+     && !cls->bases().empty())
+    {
+        lua_pushstring(L, "super");
+        lua_pushvalue(L, 1);
+        lua_pushvalue(L, -3);
+        lua_pushcclosure(L, super_callback, 2);
+        lua_settable(L, LUA_GLOBALSINDEX);
+    }
+
     lua_pushvalue(L, -1);
     lua_replace(L, 1);
 
@@ -574,98 +584,6 @@ int luabind::detail::class_rep::lua_settable_dispatcher(lua_State* L)
 	crep->m_operator_cache = 0; // invalidate cache
 	
 	return 0;
-}
-
-int luabind::detail::class_rep::construct_lua_class_callback(lua_State* L)
-{
-	class_rep* crep = static_cast<class_rep*>(lua_touserdata(L, 1));
-
-	int args = lua_gettop(L);
-
-	// lua stack: crep <arguments>
-
-	lua_newtable(L);
-	detail::lua_reference ref;
-	ref.set(L);
-
-	bool has_bases = !crep->bases().empty();
-		
-	if (has_bases)
-	{
-		lua_pushstring(L, "super");
-		lua_pushvalue(L, 1); // crep
-	}
-
-	// lua stack: crep <arguments> "super" crep
-	// or
-	// lua stack: crep <arguments>
-
-	// if we have a baseclass we set the flag to say that the super has not yet been called
-	// we will use this flag later to check that it actually was called from __init()
-	int flags = object_rep::lua_class | object_rep::owner | (has_bases ? object_rep::call_super : 0);
-
-//	void* obj_ptr = lua_newuserdata(L, sizeof(object_rep));
-	void* obj_ptr;
-	void* held_storage;
-
-	boost::tie(obj_ptr, held_storage) = crep->allocate(L);
-	(new(obj_ptr) object_rep(crep, flags, ref))->set_object(held_storage);
-
-	detail::getref(L, crep->metatable_ref());
-	lua_setmetatable(L, -2);
-
-	// lua stack: crep <arguments> "super" crep obj_ptr
-	// or
-	// lua stack: crep <arguments> obj_ptr
-
-	if (has_bases)	lua_pushvalue(L, -1); // obj_ptr
-	lua_replace(L, 1); // obj_ptr
-
-	// lua stack: obj_ptr <arguments> "super" crep obj_ptr
-	// or
-	// lua stack: obj_ptr <arguments>
-
-	if (has_bases)
-	{
-		lua_pushcclosure(L, super_callback, 2);
-		// lua stack: crep <arguments> "super" function
-		lua_settable(L, LUA_GLOBALSINDEX);
-	}
-
-	// lua stack: crep <arguments>
-
-	lua_pushvalue(L, 1);
-	lua_insert(L, 1);
-
-	crep->get_table(L);
-	lua_pushstring(L, "__init");
-	lua_gettable(L, -2);
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-
-	// TODO: should this be a run-time error?
-	// maybe the default behavior should be to just call
-	// the base calss' constructor. We should register
-	// the super callback funktion as __init
-	if (!lua_isfunction(L, -1))
-	{
-		{
-			std::string msg = crep->name();
-			msg += ":__init is not defined";
-			lua_pushstring(L, msg.c_str());
-		}
-		lua_error(L);
-	}
-
-#endif
-
-	lua_insert(L, 2); // function first on stack
-	lua_pop(L, 1);
-	// TODO: lua_call may invoke longjump! make sure we don't have any memory leaks!
-	// we don't have any stack objects here
-	lua_call(L, args, 0);
-
-	return 1;
 }
 
 // called from the metamethod for __index

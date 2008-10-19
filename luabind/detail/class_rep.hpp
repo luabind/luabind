@@ -54,7 +54,6 @@ namespace luabind { namespace detail
 {
 
 	LUABIND_API std::string stack_content_by_name(lua_State* L, int start_index);
-	int construct_lua_class_callback(lua_State* L);
 
 	struct class_registration;
 
@@ -190,7 +189,6 @@ namespace luabind { namespace detail
 		static int super_callback(lua_State* L);
 
 		static int lua_settable_dispatcher(lua_State* L);
-		static int construct_lua_class_callback(lua_State* L);
 
 		// called from the metamethod for __index
 		// obj is the object pointer
