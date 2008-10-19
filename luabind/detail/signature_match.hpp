@@ -37,9 +37,8 @@
 #include <boost/preprocessor/arithmetic/inc.hpp>
 
 #include <boost/mpl/vector.hpp>
-#include <boost/mpl/find.hpp>
-#include <boost/mpl/iterator_range.hpp>
 #include <boost/mpl/size.hpp>
+#include <boost/mpl/remove.hpp>
 
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/compute_score.hpp>
@@ -47,20 +46,21 @@
 namespace luabind
 {
 
+	namespace adl
+	{
+		class argument;
+	}
+
 	template<BOOST_PP_ENUM_PARAMS_WITH_A_DEFAULT(LUABIND_MAX_ARITY, class A, detail::null_type)>
 	struct constructor
 	{
-		typedef BOOST_PP_CAT(boost::mpl::vector, BOOST_PP_INC(LUABIND_MAX_ARITY))<
-			void, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)
+		typedef BOOST_PP_CAT(
+			boost::mpl::vector, BOOST_PP_INC(BOOST_PP_INC(LUABIND_MAX_ARITY)))<
+				void, argument const&, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)
 		> signature0;
 
-		typedef typename boost::mpl::find<
-			signature0, detail::null_type>::type first_null_element;
-
-		typedef boost::mpl::iterator_range<
-			typename boost::mpl::begin<signature0>::type
-		  , first_null_element
-		> signature;
+		typedef typename boost::mpl::remove<
+			signature0, detail::null_type>::type signature;
 
 		BOOST_STATIC_CONSTANT(int, arity = boost::mpl::size<signature>::value - 1);
 	};
