@@ -578,181 +578,42 @@ int luabind::detail::class_rep::super_callback(lua_State* L)
 	class_rep* crep = static_cast<class_rep*>(lua_touserdata(L, lua_upvalueindex(1)));
 	class_rep* base = crep->bases()[0].base;
 
-	if (base->get_class_type() == class_rep::lua_class)
+	if (base->bases().empty())
 	{
-		if (base->bases().empty())
-		{
-			obj->set_flags(obj->flags() & ~object_rep::call_super);
+		obj->set_flags(obj->flags() & ~object_rep::call_super);
 
-			lua_pushstring(L, "super");
-			lua_pushnil(L);
-			lua_settable(L, LUA_GLOBALSINDEX);
-		}
-		else
-		{
-			lua_pushstring(L, "super");
-			lua_pushlightuserdata(L, base);
-			lua_pushvalue(L, lua_upvalueindex(2));
-			lua_pushcclosure(L, super_callback, 2);
-			lua_settable(L, LUA_GLOBALSINDEX);
-		}
-
-		base->get_table(L);
-		lua_pushstring(L, "__init");
-		lua_gettable(L, -2);
-		lua_insert(L, 1);
-		lua_pop(L, 1);
-
-		lua_pushvalue(L, lua_upvalueindex(2));
-		lua_insert(L, 2);
-
-		lua_call(L, args + 1, 0);
-
-		// TODO: instead of clearing the global variable "super"
-		// store it temporarily in the registry. maybe we should
-		// have some kind of warning if the super global is used?
 		lua_pushstring(L, "super");
 		lua_pushnil(L);
 		lua_settable(L, LUA_GLOBALSINDEX);
 	}
 	else
 	{
-		obj->set_flags(obj->flags() & ~object_rep::call_super);
-
-		construct_rep* rep = &base->m_constructor;
-
-		bool ambiguous = false;
-		int match_index = -1;
-		int min_match = std::numeric_limits<int>::max();
-		bool found;
-			
-#ifdef LUABIND_NO_ERROR_CHECKING
-
-		if (rep->overloads.size() == 1)
-		{
-			match_index = 0;
-		}
-		else
-		{
-
-#endif
-
-			int num_params = lua_gettop(L);
-			found = find_best_match(L, &rep->overloads.front(), rep->overloads.size(), sizeof(construct_rep::overload_t), ambiguous, min_match, match_index, num_params);
-
-#ifdef LUABIND_NO_ERROR_CHECKING
-
-		}
-
-#else
-				
-		if (!found)
-		{
-			{
-				std::string msg = "no constructor of '";
-				msg += base->m_name;
-				msg += "' matched the arguments (";
-				msg += stack_content_by_name(L, 1);
-				msg += ")";
-				lua_pushstring(L, msg.c_str());
-			}
-			lua_error(L);
-		}
-		else if (ambiguous)
-		{
-			{
-				std::string msg = "call of overloaded constructor '";
-				msg += base->m_name;
-				msg +=  "(";
-				msg += stack_content_by_name(L, 1);
-				msg += ")' is ambiguous";
-				lua_pushstring(L, msg.c_str());
-			}
-			lua_error(L);
-		}
-
-			// TODO: should this be a warning or something?
-/*
-			// since the derived class is a lua class
-			// it may have reimplemented virtual functions
-			// therefore, we have to instantiate the Basewrapper
-			// if there is no basewrapper, throw a run-time error
-			if (!rep->overloads[match_index].has_wrapped_construct())
-			{
-				{
-					std::string msg = "Cannot derive from C++ class '";
-					msg += base->name();
-					msg += "'. It does not have a wrapped type";
-					lua_pushstring(L, msg.c_str());
-				}
-				lua_error(L);
-			}
-*/
-#endif
-
-#ifndef LUABIND_NO_EXCEPTIONS
-		try
-		{
-#endif
-			lua_pushvalue(L, lua_upvalueindex(2));
-			weak_ref backref(L, -1);
-			lua_pop(L, 1);
-
-			void* storage_ptr = obj->ptr();		
-
-			if (!rep->overloads[match_index].has_wrapped_construct())
-			{
-				// if the type doesn't have a wrapped type, use the ordinary constructor
-				void* instance = rep->overloads[match_index].construct(L, backref);
-
-				if (crep->has_holder())
-				{
-					crep->m_construct_holder(storage_ptr, instance);
-				}
-				else
-				{
-					obj->set_object(instance);
-				}
-			}
-			else
-			{
-				// get reference to lua object
-/*				lua_pushvalue(L, lua_upvalueindex(2));
-				detail::lua_reference ref;
-				ref.set(L);
-				void* instance = rep->overloads[match_index].construct_wrapped(L, ref);*/
-
-				void* instance = rep->overloads[match_index].construct_wrapped(L, backref);
-
-				if (crep->has_holder())
-				{
-					crep->m_construct_holder(storage_ptr, instance);			
-				}
-				else
-				{
-					obj->set_object(instance);
-				}
-			}
-			// TODO: is the wrapped type destructed correctly?
-			// it should, since the destructor is either the wrapped type's
-			// destructor or the base type's destructor, depending on wether
-			// the type has a wrapped type or not.
-			obj->set_destructor(base->destructor());
-			return 0;
-
-#ifndef LUABIND_NO_EXCEPTIONS
-		}
-		catch (...)
-		{
-			detail::handle_exception_aux(L);
-		}
-		// can only be reached if an exception was thrown
-		lua_error(L);
-#endif
+		lua_pushstring(L, "super");
+		lua_pushlightuserdata(L, base);
+		lua_pushvalue(L, lua_upvalueindex(2));
+		lua_pushcclosure(L, super_callback, 2);
+		lua_settable(L, LUA_GLOBALSINDEX);
 	}
 
-	return 0;
+	base->get_table(L);
+	lua_pushstring(L, "__init");
+	lua_gettable(L, -2);
+	lua_insert(L, 1);
+	lua_pop(L, 1);
 
+	lua_pushvalue(L, lua_upvalueindex(2));
+	lua_insert(L, 2);
+
+	lua_call(L, args + 1, 0);
+
+	// TODO: instead of clearing the global variable "super"
+	// store it temporarily in the registry. maybe we should
+	// have some kind of warning if the super global is used?
+	lua_pushstring(L, "super");
+	lua_pushnil(L);
+	lua_settable(L, LUA_GLOBALSINDEX);
+
+	return 0;
 }
 
 
@@ -870,17 +731,6 @@ int luabind::detail::class_rep::construct_lua_class_callback(lua_State* L)
 	// we don't have any stack objects here
 	lua_call(L, args, 0);
 
-#ifndef LUABIND_NO_ERROR_CHECKING
-
-	object_rep* obj = static_cast<object_rep*>(obj_ptr);
-	if (obj->flags() & object_rep::call_super)
-	{
-		lua_pushstring(L, "derived class must call super on base");
-		lua_error(L);
-	}
-
-#endif
-
 	return 1;
 }
 
@@ -890,16 +740,6 @@ int luabind::detail::class_rep::lua_class_gettable(lua_State* L)
 {
 	object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
 	class_rep* crep = obj->crep();
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-
-	if (obj->flags() & object_rep::call_super)
-	{
-		lua_pushstring(L, "derived class must call super on base");
-		lua_error(L);
-	}
-
-#endif
 
 	// we have to ignore the first argument since this may point to
 	// a method that is not present in this class (but in a subclass)
@@ -967,23 +807,6 @@ int luabind::detail::class_rep::lua_class_settable(lua_State* L)
 {
 	object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
 	class_rep* crep = obj->crep();
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-
-	if (obj->flags() & object_rep::call_super)
-	{
-		// this block makes sure the std::string is destructed
-		// before lua_error is called
-		{
-			std::string msg = "derived class '";
-			msg += crep->name();
-			msg += "'must call super on base";
-			lua_pushstring(L, msg.c_str());
-		}
-		lua_error(L);
-	}
-
-#endif
 
 	// we have to ignore the first argument since this may point to
 	// a method that is not present in this class (but in a subclass)
