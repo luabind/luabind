@@ -22,6 +22,8 @@
 
 #if !BOOST_PP_IS_ITERATING
 
+# include <luabind/detail/signature_match.hpp>
+
 #ifndef LUABIND_CALC_ARITY_HPP_INCLUDED
 #define LUABIND_CALC_ARITY_HPP_INCLUDED
 
