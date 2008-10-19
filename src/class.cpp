@@ -158,6 +158,15 @@ namespace luabind { namespace detail {
 
 		detail::class_registry* registry = detail::class_registry::get_registry(L);
 
+        crep->get_default_table(L);
+        m_scope.register_(L);
+        m_default_members.register_(L);
+        lua_pop(L, 1);
+
+        crep->get_table(L);
+        m_members.register_(L);
+        lua_pop(L, 1);
+
         for (std::vector<class_base::base_desc>::iterator i = m_bases.begin();
             i != m_bases.end(); ++i)
         {
@@ -180,7 +189,18 @@ namespace luabind { namespace detail {
             while (lua_next(L, -2))
             {
                 lua_pushvalue(L, -2); // copy key
+                lua_gettable(L, -5);
+
+                if (!lua_isnil(L, -1))
+                {
+                    lua_pop(L, 2);
+                    continue;
+                }
+
+                lua_pop(L, 1);
+                lua_pushvalue(L, -2); // copy key
                 lua_insert(L, -2);
+
                 lua_settable(L, -5);
             }
             lua_pop(L, 2);
@@ -193,21 +213,23 @@ namespace luabind { namespace detail {
             while (lua_next(L, -2))
             {
                 lua_pushvalue(L, -2); // copy key
+                lua_gettable(L, -5);
+
+                if (!lua_isnil(L, -1))
+                {
+                    lua_pop(L, 2);
+                    continue;
+                }
+
+                lua_pop(L, 1);
+                lua_pushvalue(L, -2); // copy key
                 lua_insert(L, -2);
+
                 lua_settable(L, -5);
             }
             lua_pop(L, 2);
 
 		}
-
-        crep->get_default_table(L);
-        m_scope.register_(L);
-		m_default_members.register_(L);
-		lua_pop(L, 1);
-
-        crep->get_table(L);
-        m_members.register_(L);
-        lua_pop(L, 1);
 
         lua_settable(L, -3);
     }

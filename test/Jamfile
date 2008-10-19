@@ -24,6 +24,7 @@ SOURCES =
     test_yield.cpp
     test_private_destructors.cpp
     test_exception_handlers.cpp
+    test_shadow.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;

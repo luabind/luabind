@@ -159,6 +159,7 @@ void test_main(lua_State* L)
 
 		class_<U, T_>("U")
 			.def(constructor<>())
+			.def("f", &T_::f)
 			.def("f", &U::f)
 			.def("g", &U::g)
 	];
