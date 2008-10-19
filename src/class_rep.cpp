@@ -568,6 +568,9 @@ void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep
 
 	// also, save the baseclass info to be used for typecasts
 	m_bases.push_back(binfo);
+
+    if (!m_destructor)
+        m_destructor = bcrep->m_destructor;
 }
 
 int luabind::detail::class_rep::super_callback(lua_State* L)
