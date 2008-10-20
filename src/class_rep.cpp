@@ -514,8 +514,30 @@ void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep
         m_destructor = bcrep->m_destructor;
 }
 
+namespace
+{
+
+  bool super_deprecation_disabled = false;
+
+} // namespace unnamed
+
+LUABIND_API void luabind::disable_super_deprecation()
+{
+    super_deprecation_disabled = true;
+}
+
 int luabind::detail::class_rep::super_callback(lua_State* L)
 {
+	if (!super_deprecation_disabled)
+	{
+		lua_pushstring(L,
+			"DEPRECATION: 'super' has been deprecated in favor of "
+			"directly calling the base class __init() function. "
+			"This error can be disabled by calling 'luabind::disable_super_deprecation()'."
+		);
+		lua_error(L);
+	}
+
 	int args = lua_gettop(L);
 		
 	object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, lua_upvalueindex(2)));

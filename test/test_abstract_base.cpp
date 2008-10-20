@@ -98,7 +98,7 @@ void test_main(lua_State* L)
     DOSTRING(L,
         "class 'concrete' (abstract)\n"
         "  function concrete:__init()\n"
-        "      super()\n"
+        "      abstract.__init(self)\n"
         "  end\n"
 
         "  function concrete:hello()\n"

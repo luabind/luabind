@@ -1305,7 +1305,8 @@ Inheritance can be used between lua-classes::
 
     class 'derived' (lua_testclass)
 
-    function derived:__init() super('derived name')
+    function derived:__init()
+        lua_testclass.__init(self, 'derived name')
     end
 
     function derived:print()
@@ -1313,8 +1314,8 @@ Inheritance can be used between lua-classes::
         lua_testclass.print(self)
     end
 
-Here the ``super`` keyword is used in the constructor to initialize the base
-class. The user is required to call ``super`` first in the constructor.
+The base class is initialized explicitly by calling its ``__init()``
+function.
 
 As you can see in this example, you can call the base class member functions.
 You can find all member functions in the base class, but you will have to give
@@ -2453,6 +2454,15 @@ constructor in a lua-class is called. This is to make it easy for that
 constructor to call its base class' constructor. So, if you have a global
 variable named super it may be overwritten. This is probably not the best
 solution, and this restriction may be removed in the future.
+
+.. note:: Deprecated
+
+  ``super()`` has been deprecated since version 0.8 in favor of directly
+  invoking the base class' ``__init()`` function::
+
+    function Derived:__init()
+        Base.__init(self)
+    end
 
 Luabind uses two upvalues for functions that it registers. The first is a
 userdata containing a list of overloads for the function, the other is a light

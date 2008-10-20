@@ -151,5 +151,11 @@ namespace std
 
 #endif
 
+namespace luabind {
+
+LUABIND_API void disable_super_deprecation();
+
+} // namespace luabind
+
 #endif // LUABIND_CONFIG_HPP_INCLUDED
 
