@@ -204,14 +204,20 @@ namespace luabind { namespace detail
 	};
 	
 
-	template<class T>
-	struct is_primitive/*: boost::mpl::bool_c<false>*/ 
-	{
-		static T t;
+    namespace mpl = boost::mpl;
 
-		BOOST_STATIC_CONSTANT(bool, value =
-				sizeof(is_string_literal<boost::is_array<T>::value>::helper(t)) == sizeof(yes_t));
-	};
+    template<class T>
+    struct is_primitive
+    {
+        static T t;
+
+        BOOST_STATIC_CONSTANT(
+            bool, value = sizeof(
+                is_string_literal<boost::is_array<T>::value>::helper(t)
+            ) == sizeof(yes_t));
+
+        typedef mpl::bool_<value> type;
+    };
 
 #define LUABIND_INTEGER_TYPE(type) \
 	template<> struct is_primitive<type> : boost::mpl::true_ {}; \
