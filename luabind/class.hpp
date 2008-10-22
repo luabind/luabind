@@ -83,6 +83,7 @@
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/type_traits/is_same.hpp>
+#include <boost/type_traits/is_member_object_pointer.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/mpl/apply.hpp>
 #include <boost/mpl/lambda.hpp>
@@ -96,6 +97,7 @@
 #include <luabind/raw_policy.hpp>
 #include <luabind/back_reference.hpp>
 #include <luabind/function.hpp>
+#include <luabind/dependency_policy.hpp>
 #include <luabind/detail/constructor.hpp>
 #include <luabind/detail/call.hpp>
 #include <luabind/detail/deduce_signature.hpp>
@@ -846,6 +848,121 @@ namespace luabind
             Policies policies;
         };
 
+        template <class T>
+        struct reference_result
+          : mpl::if_<
+                mpl::or_<boost::is_pointer<T>, is_primitive<T> >
+              , T
+              , typename boost::add_reference<T>::type
+            >
+        {};
+
+        template <class T, class Policies>
+        struct inject_dependency_policy
+          : mpl::if_<
+                is_primitive<T>
+              , Policies
+              , policy_cons<dependency_policy<0, 1>, Policies>
+            >
+        {};
+
+        template <
+            class Class
+          , class Get, class GetPolicies
+          , class Set = null_type, class SetPolicies = null_type
+        >
+        struct property_registration : registration
+        {
+            property_registration(
+                char const* name
+              , Get const& get
+              , GetPolicies const& get_policies
+              , Set const& set = Set()
+              , SetPolicies const& set_policies = SetPolicies()
+            )
+              : name(name)
+              , get(get)
+              , get_policies(get_policies)
+              , set(set)
+              , set_policies(set_policies)
+            {}
+
+            void register_(lua_State* L) const
+            {
+                object context(from_stack(L, -1));
+                register_aux(
+                    L
+                  , context
+                  , make_get(L, get, boost::is_member_object_pointer<Get>())
+                  , set
+                );
+            }
+
+            template <class F>
+            object make_get(lua_State* L, F const& f, mpl::false_) const
+            {
+                return make_function(
+                    L, f, deduce_signature(f, (Class*)0), get_policies);
+            }
+
+            template <class T, class D>
+            object make_get(lua_State* L, D T::* mem_ptr, mpl::true_) const
+            {
+                typedef typename reference_result<D>::type result_type;
+                typedef typename inject_dependency_policy<
+                    D, GetPolicies>::type policies;
+
+                return make_function(
+                    L
+                  , access_member_ptr<T, D, result_type>(mem_ptr)
+                  , mpl::vector2<result_type, Class const&>()
+                  , policies()
+                );
+            }
+
+            template <class F>
+            object make_set(lua_State* L, F const& f, mpl::false_) const
+            {
+                return make_function(
+                    L, f, deduce_signature(f, (Class*)0), set_policies);
+            }
+
+            template <class T, class D>
+            object make_set(lua_State* L, D T::* mem_ptr, mpl::true_) const
+            {
+                return make_function(
+                    L
+                  , access_member_ptr<T, D>(mem_ptr)
+                  , mpl::vector3<void, Class&, D const&>()
+                  , set_policies
+                );
+            }
+
+            template <class S>
+            void register_aux(
+                lua_State* L, object const& context
+              , object const& get_, S const&) const
+            {
+                context[name] = property(
+                    get_
+                  , make_set(L, set, boost::is_member_object_pointer<Set>())
+                );
+            }
+
+            void register_aux(
+                lua_State* L, object const& context
+              , object const& get_, null_type) const
+            {
+                context[name] = property(get_);
+            }
+
+            char const* name;
+            Get get;
+            GetPolicies get_policies;
+            Set set;
+            SetPolicies set_policies;
+        };
+
 	} // namespace detail
 
 	// registers a class in the lua environment
@@ -962,117 +1079,118 @@ namespace luabind
             return this->def_constructor(&sig, policies);
 		}
 
-		template<class Getter>
-		class_& property(const char* name, Getter g)
-		{
-			add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, detail::null_type>(), _1, _2, g));
-			return *this;
-		}
+        template <class Getter>
+        class_& property(const char* name, Getter g)
+        {
+            this->add_member(
+                new detail::property_registration<T, Getter, detail::null_type>(
+                    name, g, detail::null_type()));
+            return *this;
+        }
 
-		template<class Getter, class MaybeSetter>
-		class_& property(const char* name, Getter g, MaybeSetter s)
-		{
-			return property_impl(name, g, s, boost::mpl::bool_<detail::is_policy_cons<MaybeSetter>::value>());
-		}
+        template <class Getter, class MaybeSetter>
+        class_& property(const char* name, Getter g, MaybeSetter s)
+        {
+            return property_impl(
+                name, g, s
+              , boost::mpl::bool_<detail::is_policy_cons<MaybeSetter>::value>()
+            );
+        }
 
-		template<class Getter, class Setter, class GetPolicies>
-		class_& property(const char* name, Getter g, Setter s, const GetPolicies& get_policies)
-		{
-			add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, GetPolicies>(get_policies), _1, _2, g));
-#ifndef LUABIND_NO_ERROR_CHECKING
-			add_setter(
-				name
-				, boost::bind<int>(detail::set_caller<T, Setter, detail::null_type>(), _1, _2, s)
-				, detail::gen_set_matcher((Setter)0, (detail::null_type*)0)
-				, &detail::get_member_signature<Setter>::apply);
-#else
-			add_setter(
-				name
-				, boost::bind<int>(detail::set_caller<T, Setter, detail::null_type>(), _1, _2, s));
-#endif
-			return *this;
-		}
+        template<class Getter, class Setter, class GetPolicies>
+        class_& property(const char* name, Getter g, Setter s, const GetPolicies& get_policies)
+        {
+            typedef detail::property_registration<
+                T, Getter, GetPolicies, Setter, detail::null_type
+            > registration_type;
 
-		template<class Getter, class Setter, class GetPolicies, class SetPolicies>
-		class_& property(const char* name
-									, Getter g, Setter s
-									, const GetPolicies& get_policies
-									, const SetPolicies& set_policies)
-		{
-			add_getter(name, boost::bind<int>(detail::get_caller<T, Getter, GetPolicies>(get_policies), _1, _2, g));
-#ifndef LUABIND_NO_ERROR_CHECKING
-			add_setter(
-				name
-				, boost::bind<int>(detail::set_caller<T, Setter, SetPolicies>(), _1, _2, s)
-				, detail::gen_set_matcher((Setter)0, (SetPolicies*)0)
-				, &detail::get_member_signature<Setter>::apply);
-#else
-			add_setter(name, boost::bind<int>(detail::set_caller<T, Setter, SetPolicies>(set_policies), _1, _2, s));
-#endif
-			return *this;
-		}
+            this->add_member(
+                new registration_type(name, g, get_policies, s));
+            return *this;
+        }
 
-		template<class D>
-		class_& def_readonly(const char* name, D T::*member_ptr)
-		{
-			add_getter(name, boost::bind<int>(detail::auto_get<T,D,detail::null_type>(), _1, _2, member_ptr));
-			return *this;
-		}
+        template<class Getter, class Setter, class GetPolicies, class SetPolicies>
+        class_& property(
+            const char* name
+          , Getter g, Setter s
+          , GetPolicies const& get_policies
+          , SetPolicies const& set_policies)
+        {
+            typedef detail::property_registration<
+                T, Getter, GetPolicies, Setter, SetPolicies
+            > registration_type;
 
-		template<class D, class Policies>
-		class_& def_readonly(const char* name, D T::*member_ptr, const Policies& policies)
-		{
-			add_getter(name, boost::bind<int>(detail::auto_get<T,D,Policies>(policies), _1, _2, member_ptr));
-			return *this;
-		}
+            this->add_member(
+                new registration_type(name, g, get_policies, s, set_policies));
+            return *this;
+        }
 
-		template<class D>
-		class_& def_readwrite(const char* name, D T::*member_ptr)
-		{
-			add_getter(name, boost::bind<int>(detail::auto_get<T,D,detail::null_type>(), _1, _2, member_ptr));
-#ifndef LUABIND_NO_ERROR_CHECKING
-			add_setter(
-				name
-				, boost::bind<int>(detail::auto_set<T,D,detail::null_type>(), _1, _2, member_ptr)
-				, &detail::set_matcher<D, detail::null_type>::apply
-				, &detail::get_setter_signature<D>::apply);
-#else
-			add_setter(name, boost::bind<int>(detail::auto_set<T,D,detail::null_type>(), _1, _2, member_ptr));
-#endif
-			return *this;
-		}
+        template <class C, class D>
+        class_& def_readonly(const char* name, D C::*mem_ptr)
+        {
+            typedef detail::property_registration<T, D C::*, detail::null_type>
+                registration_type;
 
-		template<class D, class GetPolicies>
-		class_& def_readwrite(const char* name, D T::*member_ptr, const GetPolicies& get_policies)
-		{
-			add_getter(name, boost::bind<int>(detail::auto_get<T,D,GetPolicies>(get_policies), _1, _2, member_ptr));
-#ifndef LUABIND_NO_ERROR_CHECKING
-			add_setter(
-				name
-				, boost::bind<int>(detail::auto_set<T,D,detail::null_type>(), _1, _2, member_ptr)
-				, &detail::set_matcher<D, detail::null_type>::apply
-				, &detail::get_setter_signature<D>::apply);
-#else
-			add_setter(name, boost::bind<int>(detail::auto_set<T,D,detail::null_type>(), _1, _2, member_ptr));
-#endif
-			return *this;
-		}
+            this->add_member(
+                new registration_type(name, mem_ptr, detail::null_type()));
+            return *this;
+        }
 
-		template<class D, class GetPolicies, class SetPolicies>
-		class_& def_readwrite(const char* name, D T::*member_ptr, const GetPolicies& get_policies, const SetPolicies& set_policies)
-		{
-			add_getter(name, boost::bind<int>(detail::auto_get<T,D,GetPolicies>(get_policies), _1, _2, member_ptr));
-#ifndef LUABIND_NO_ERROR_CHECKING
-			add_setter(
-				name
-				, boost::bind<int>(detail::auto_set<T,D,SetPolicies>(), _1, _2, member_ptr)
-				, &detail::set_matcher<D, SetPolicies>::apply
-				, &detail::get_setter_signature<D>::apply);
-#else
-			add_setter(name, boost::bind<int>(detail::auto_set<T,D,SetPolicies>(set_policies), _1, _2, member_ptr));
-#endif
-			return *this;
-		}
+        template <class C, class D, class Policies>
+        class_& def_readonly(const char* name, D C::*mem_ptr, Policies const& policies)
+        {
+            typedef detail::property_registration<T, D C::*, Policies>
+                registration_type;
+
+            this->add_member(
+                new registration_type(name, mem_ptr, policies));
+            return *this;
+        }
+
+        template <class C, class D>
+        class_& def_readwrite(const char* name, D C::*mem_ptr)
+        {
+            typedef detail::property_registration<
+                T, D C::*, detail::null_type, D C::*
+            > registration_type;
+
+            this->add_member(
+                new registration_type(
+                    name, mem_ptr, detail::null_type(), mem_ptr));
+            return *this;
+        }
+
+        template <class C, class D, class GetPolicies>
+        class_& def_readwrite(
+            const char* name, D C::*mem_ptr, GetPolicies const& get_policies)
+        {
+            typedef detail::property_registration<
+                T, D C::*, GetPolicies, D C::*
+            > registration_type;
+
+            this->add_member(
+                new registration_type(
+                    name, mem_ptr, get_policies, mem_ptr));
+            return *this;
+        }
+
+        template <class C, class D, class GetPolicies, class SetPolicies>
+        class_& def_readwrite(
+            const char* name
+          , D C::*mem_ptr
+          , GetPolicies const& get_policies
+          , SetPolicies const& set_policies
+        )
+        {
+            typedef detail::property_registration<
+                T, D C::*, GetPolicies, D C::*, SetPolicies
+            > registration_type;
+
+            this->add_member(
+                new registration_type(
+                    name, mem_ptr, get_policies, mem_ptr, set_policies));
+            return *this;
+        }
 
 		template<class Derived, class Policies>
 		class_& def(detail::operator_<Derived>, Policies const& policies)
@@ -1239,7 +1357,9 @@ namespace luabind
 									 GetPolicies policies,
 									 boost::mpl::bool_<true>)
 		{
-			add_getter(name, boost::bind<int>(detail::get_caller<T,Getter,GetPolicies>(policies), _1, _2, g));
+            this->add_member(
+                new detail::property_registration<T, Getter, GetPolicies>(
+                    name, g, policies));
 			return *this;
 		}
 
@@ -1249,16 +1369,12 @@ namespace luabind
 									 Setter s,
 									 boost::mpl::bool_<false>)
 		{
-			add_getter(name, boost::bind<int>(detail::get_caller<T,Getter,detail::null_type>(), _1, _2, g));
-#ifndef LUABIND_NO_ERROR_CHECKING
-			add_setter(
-				name
-				, boost::bind<int>(detail::set_caller<T, Setter, detail::null_type>(), _1, _2, s)
-				, detail::gen_set_matcher((Setter)0, (detail::null_type*)0)
-				, &detail::get_member_signature<Setter>::apply);
-#else
-			add_setter(name, boost::bind<int>(detail::set_caller<T,Setter,detail::null_type>(), _1, _2, s));
-#endif
+            typedef detail::property_registration<
+                T, Getter, detail::null_type, Setter, detail::null_type
+            > registration_type;
+
+            this->add_member(
+                new registration_type(name, g, detail::null_type(), s));
 			return *this;
 		}
 
