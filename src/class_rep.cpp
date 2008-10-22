@@ -208,18 +208,13 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 	const char* key = lua_tostring(L, 2);
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-
 	if (std::strlen(key) != lua_strlen(L, 2))
 	{
-		{
-			std::string msg("luabind does not support "
-				"member names with extra nulls:\n");
-			msg += std::string(lua_tostring(L, 2), lua_strlen(L, 2));
-			lua_pushstring(L, msg.c_str());
-		}
+		lua_pushfstring(L,
+			"luabind does not support keys with "
+			"embedded nulls: '%s'", lua_tostring(L, 2));
 		lua_error(L);
 	}
-
 #endif
 
 	// special case to see if this is a null-pointer
@@ -285,12 +280,9 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 #ifndef LUABIND_NO_ERROR_CHECKING
 	if (std::strlen(key) != lua_strlen(L, 2))
 	{
-		{
-			std::string msg("luabind does not support "
-				"member names with extra nulls:\n");
-			msg += std::string(lua_tostring(L, 2), lua_strlen(L, 2));
-			lua_pushstring(L, msg.c_str());
-		}
+		lua_pushfstring(L,
+			"luabind does not support keys with "
+			"embedded nulls: '%s'", lua_tostring(L, 2));
 		lua_error(L);
 	}
 #endif
@@ -330,7 +322,7 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 
 		if (lua_isnil(L, -1))
 		{
-			lua_pushstringf(L, "property '%s' is read only", lua_tostring(L, 2));
+			lua_pushfstring(L, "property '%s' is read only", lua_tostring(L, 2));
 			lua_error(L);
 		}
 
