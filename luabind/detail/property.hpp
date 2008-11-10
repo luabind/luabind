@@ -48,15 +48,15 @@ namespace luabind { namespace detail
 */
 
 	template<class R, class C, class T, class Policies>
-	int get(R(C::*f)() const, T* obj, lua_State* L, Policies* policies)  
+	int get(R(C::*f)() const, T* obj, lua_State* L, Policies* policies)
 	{ 
-		return returns<R>::call(f, obj, L, policies); 
+		return invoke(L, f, mpl::vector2<R, C const&>(), Policies());
 	}
 
 	template<class R, class T, class U, class Policies>
 	int get(R(*f)(T), U* obj, lua_State* L, Policies* policies) 
-	{ 
-		return returns<R>::call(f, obj, L, policies); 
+	{
+		return invoke(L, f, mpl::vector2<R, T>(), Policies());
 	}
 
 	template<class T, class F, class Policies>
@@ -75,9 +75,9 @@ namespace luabind { namespace detail
 	};
 
 	template<class R, class C, class T, class A1, class Policies>
-	int set(R(C::*f)(A1), T* obj, lua_State* L, Policies* policies)  
+	int set(R(C::*f)(A1), T* obj, lua_State* L, Policies* policies)
 	{ 
-		return returns<void>::call(f, obj, L, policies); 
+		return invoke(L, f, mpl::vector3<void, C&, A1>(), Policies());
 	}
 /*
 	template<class R, class T, class A1, class Policies>
@@ -88,7 +88,10 @@ namespace luabind { namespace detail
 */
 
 	template<class R, class T, class U, class A1, class Policies>
-	int set(R(*f)(T, A1), U* obj, lua_State* L, Policies* policies) { return returns<void>::call(f, obj, L, policies); }
+	int set(R(*f)(T, A1), U* obj, lua_State* L, Policies* policies)
+	{
+		return invoke(L, f, mpl::vector3<void, T, A1>(), Policies());
+	}
 
 	template<class T, class F, class Policies>
 	struct set_caller : Policies

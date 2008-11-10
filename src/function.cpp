@@ -30,18 +30,7 @@ namespace luabind { namespace detail { namespace free_functions {
 
     void function_rep::add_overload(overload_rep const& o)
     {
-        std::vector<overload_rep>::iterator i = std::find(
-            m_overloads.begin(), m_overloads.end(), o);
-
-        // if the overload already exists, overwrite the existing function
-        if (i != m_overloads.end())
-        {
-            *i = o;
-        }
-        else
-        {
-            m_overloads.push_back(o);
-        }
+        m_overloads.push_back(o);
     }
 
     int function_dispatcher(lua_State* L)

@@ -97,11 +97,13 @@
 #include <luabind/back_reference.hpp>
 #include <luabind/detail/constructor.hpp>
 #include <luabind/detail/call.hpp>
-#include <luabind/detail/signature_match.hpp>
+#include <luabind/detail/deduce_signature.hpp>
+#include <luabind/detail/compute_score.hpp>
 #include <luabind/detail/primitives.hpp>
 #include <luabind/detail/property.hpp>
 #include <luabind/detail/typetraits.hpp>
 #include <luabind/detail/class_rep.hpp>
+#include <luabind/detail/call.hpp>
 #include <luabind/detail/method_rep.hpp>
 #include <luabind/detail/construct_rep.hpp>
 #include <luabind/detail/object_rep.hpp>
@@ -219,7 +221,7 @@ namespace luabind
 
 			int operator()(lua_State* L) const
 			{
-				return call(fn, (Class*)0, L, (Policies*)0);
+				return invoke(L, fn, deduce_signature(fn, (Class*)0), Policies());
 			}
 
 			mem_fn_callback(Fn fn_)
@@ -237,7 +239,7 @@ namespace luabind
 
 			int operator()(lua_State* L) const
 			{
-				return match(fn, L, (Class*)0, (Policies*)0);
+				return compute_score(L, deduce_signature(fn, (Class*)0), Policies());
 			}
 
 			mem_fn_matcher(Fn fn_)
