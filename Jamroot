@@ -78,13 +78,19 @@ else if [ os.name ] in LINUX MACOSX FREEBSD
     }
 
     local lib = $(prefix)/lib ;
+
+    local names = liblua5.1 liblua51 liblua ;
+    local extensions = .a .so ;
+
     library = [ GLOB $(lib)/lua51 $(lib)/lua5.1 $(lib)/lua $(lib) :
-        liblua5.1.* liblua51.* liblua.* ] ;
+        $(names)$(extensions) ] ;
     lib-name = [ MATCH "lib(.*)" : $(library[1]:B) ] ;
 
     debug-message prefix: $(prefix) ;
     debug-message includes: $(includes) ;
     debug-message lib: $(library:D) ;
+    debug-message candidates: $(library) ;
+    debug-message linking to: $(lib-name) ;
 
     if ! $(lib-name)
     {
