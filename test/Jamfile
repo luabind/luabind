@@ -25,6 +25,7 @@ SOURCES =
     test_private_destructors.cpp
     test_exception_handlers.cpp
     test_shadow.cpp
+    test_tag_function.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;
