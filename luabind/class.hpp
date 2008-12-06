@@ -95,6 +95,7 @@
 #include <luabind/scope.hpp>
 #include <luabind/raw_policy.hpp>
 #include <luabind/back_reference.hpp>
+#include <luabind/function.hpp>
 #include <luabind/detail/constructor.hpp>
 #include <luabind/detail/call.hpp>
 #include <luabind/detail/deduce_signature.hpp>
@@ -104,7 +105,6 @@
 #include <luabind/detail/typetraits.hpp>
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/call.hpp>
-#include <luabind/detail/method_rep.hpp>
 #include <luabind/detail/construct_rep.hpp>
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/calc_arity.hpp>
@@ -753,7 +753,6 @@ namespace luabind
 
 			void add_base(const base_desc& b);
 			void add_constructor(const detail::construct_rep::overload_t& o);	
-			void add_method(const char* name, const detail::overload_rep& o);
 
 #ifndef LUABIND_NO_ERROR_CHECKING
 			void add_operator(
@@ -770,6 +769,9 @@ namespace luabind
 				, int(*matcher)(lua_State*)
 				, int arity);
 #endif
+
+			void add_member(registration* member);
+			void add_default_member(registration* member);
 
 			const char* name() const;
 
@@ -794,6 +796,54 @@ namespace luabind
 				self.get(self.state());
 				self.m_strong_ref.set(self.state());
             }
+        };
+
+		template <class Class, class F, class Policies>
+		struct memfun_registration : registration
+		{
+			memfun_registration(char const* name, F f, Policies const& policies)
+			  : name(name)
+			  , f(f)
+			  , policies(policies)
+			{}
+
+			void register_(lua_State* L) const
+			{
+				object fn = make_function(
+					L, f, deduce_signature(f, (Class*)0), policies);
+
+				add_overload(
+					object(from_stack(L, -1))
+				  , name
+				  , fn
+				);
+			}
+
+			char const* name;
+			F f;
+			Policies policies;
+		};
+
+        template <class Class, class Signature, class Policies>
+        struct constructor_registration : registration
+        {
+            constructor_registration(Policies const& policies)
+              : policies(policies)
+            {}
+
+            void register_(lua_State* L) const
+            {
+                object fn = make_function(
+                    L, construct<Class, Signature>(), Signature(), policies);
+
+                add_overload(
+                    object(from_stack(L, -1))
+                  , "__init"
+                  , fn
+                );
+            }
+
+            Policies policies;
         };
 
 	} // namespace detail
@@ -903,21 +953,13 @@ namespace luabind
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig)
 		{
-            return this->def_constructor(
-				boost::is_same<WrappedType, detail::null_type>()
-			  , &sig
-			  , detail::null_type()
-			);
+            return this->def_constructor(&sig, detail::null_type());
 		}
 
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A), class Policies>
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig, const Policies& policies)
 		{
-            return this->def_constructor(
-				boost::is_same<WrappedType, detail::null_type>()
-			  , &sig
-			  , policies
-			);
+            return this->def_constructor(&sig, policies);
 		}
 
 		template<class Getter>
@@ -1225,16 +1267,9 @@ namespace luabind
 		class_& virtual_def(char const* name, F const& fn
 			, Policies const&, detail::null_type, boost::mpl::true_)
 		{
-			// normal def() call
-			detail::overload_rep o(fn, static_cast<Policies*>(0));
-
-			o.set_match_fun(detail::mem_fn_matcher<F, T, Policies>(fn));
-			o.set_fun(detail::mem_fn_callback<F, T, Policies>(fn));
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-			o.set_sig_fun(&detail::get_member_signature<F>::apply);
-#endif
-			this->add_method(name, o);
+			this->add_member(
+				new detail::memfun_registration<T, F, Policies>(
+					name, fn, Policies()));
 			return *this;
 		}
 
@@ -1242,85 +1277,38 @@ namespace luabind
 		class_& virtual_def(char const* name, F const& fn
 			, Default const& default_, Policies const&, boost::mpl::false_)
 		{
-			// default_ is a default implementation
-			// policies is either null_type or a policy list
+			this->add_member(
+				new detail::memfun_registration<T, F, Policies>(
+					name, fn, Policies()));
 
-			// normal def() call
-			detail::overload_rep o(fn, (Policies*)0);
+			this->add_default_member(
+				new detail::memfun_registration<T, Default, Policies>(
+					name, default_, Policies()));
 
-			o.set_match_fun(detail::mem_fn_matcher<F, T, Policies>(fn));
-			o.set_fun(detail::mem_fn_callback<F, T, Policies>(fn));
-
-			o.set_fun_static(
-				detail::mem_fn_callback<Default, T, Policies>(default_));
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-			o.set_sig_fun(&detail::get_member_signature<F>::apply);
-#endif
-
-			this->add_method(name, o);
-			// register virtual function
 			return *this;
 		}
 
         template<class Signature, class Policies>
-		class_& def_constructor(
-			boost::mpl::true_ /* HasWrapper */
-          , Signature*
-          , Policies const&)
-        {	
-			detail::construct_rep::overload_t o;
+		class_& def_constructor(Signature*, Policies const&)
+        {
+            typedef typename Signature::signature signature;
 
-			o.set_constructor(
-				&detail::construct_class<
-					T
-				  , Policies
-				  , Signature
-				>::apply);
+            typedef typename boost::mpl::if_<
+                boost::is_same<WrappedType, detail::null_type>
+              , T
+              , WrappedType
+            >::type construct_type;
 
-			o.set_match_fun(
-				&detail::constructor_match<
-				    Signature
-			      , 2
-			      , Policies
-			    >::apply);
+            this->add_member(
+                new detail::constructor_registration<
+                    construct_type, signature, Policies>(
+                        Policies()));
 
-#ifndef LUABIND_NO_ERROR_CHECKING
-			o.set_sig_fun(&detail::get_signature<Signature>::apply);
-#endif
-			o.set_arity(detail::calc_arity<Signature::arity>::apply(Signature(), (Policies*)0));
-			this->add_constructor(o);
-            return *this;
-        }
+            this->add_default_member(
+                new detail::constructor_registration<
+                    construct_type, signature, Policies>(
+                        Policies()));
 
-        template<class Signature, class Policies>
-		class_& def_constructor(
-			boost::mpl::false_ /* !HasWrapper */
-          , Signature*
-          , Policies const&)
-		{
-			detail::construct_rep::overload_t o;
-
-			o.set_constructor(
-				&detail::construct_wrapped_class<
-					T
-				  , WrappedType
-				  , Policies
-				  , Signature
-				>::apply);
-
-			o.set_match_fun(
-				&detail::constructor_match<
-				    Signature
-			      , 2
-			      , Policies
-			    >::apply);
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-			o.set_sig_fun(&detail::get_signature<Signature>::apply);
-#endif
-			o.set_arity(detail::calc_arity<Signature::arity>::apply(Signature(), (Policies*)0));
-			this->add_constructor(o);
             return *this;
         }
 

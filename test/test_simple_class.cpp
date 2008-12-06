@@ -72,7 +72,7 @@ void test_main(lua_State* L)
 
     DOSTRING(L,
         "class 'simple_derived' (simple)\n"
-        "  function simple_derived:__init() super() end\n"
+        "  function simple_derived:__init() simple.__init(self) end\n"
         "a = simple_derived()\n"
         "a:f()\n");
     TEST_CHECK(simple_class::feedback == 1);

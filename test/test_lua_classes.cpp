@@ -159,6 +159,7 @@ void test_main(lua_State* L)
 
 		class_<U, T_>("U")
 			.def(constructor<>())
+			.def("f", &T_::f)
 			.def("f", &U::f)
 			.def("g", &U::g)
 	];
@@ -184,16 +185,16 @@ void test_main(lua_State* L)
 
     DOSTRING(L, 
         "class 'derived' (base)\n"
-        "  function derived:__init() super() end\n"
+        "  function derived:__init() base.__init(self) end\n"
         "  function derived:f()\n"
         "    return 'derived:f() : ' .. base.f(self)\n"
         "  end\n"
 
 		"class 'empty_derived' (base)\n"
-		"  function empty_derived:__init() super() end\n"
+		"  function empty_derived:__init() base.__init(self) end\n"
 
 		"class 'C' (B)\n"
-        "  function C:__init() super() end\n"
+        "  function C:__init() B.__init(self) end\n"
 		"  function C:f() return 'C:f()' end\n"
 
         "function make_derived()\n"

@@ -36,14 +36,6 @@ namespace luabind
 
 namespace luabind { namespace detail {
     
-	struct method_name
-	{
-		method_name(char const* n): name(n) {}
-		bool operator()(method_rep const& o) const
-		{ return std::strcmp(o.name, name) == 0; }
-		char const* name;
-	};
-
     struct class_registration : registration
     {   
         class_registration(char const* name);
@@ -51,8 +43,6 @@ namespace luabind { namespace detail {
         void register_(lua_State* L) const;
 
         const char* m_name;
-
-        mutable std::list<detail::method_rep> m_methods;
 
         // datamembers, some members may be readonly, and
         // only have a getter function
@@ -90,6 +80,8 @@ namespace luabind { namespace detail {
         LUABIND_TYPE_INFO m_const_holder_type;
 
         scope m_scope;
+        scope m_members;
+        scope m_default_members;
     };
 
     class_registration::class_registration(char const* name)
@@ -164,9 +156,16 @@ namespace luabind { namespace detail {
 
         crep->m_static_constants.swap(m_static_constants);
 
-		typedef std::list<detail::method_rep> methods_t;
-
 		detail::class_registry* registry = detail::class_registry::get_registry(L);
+
+        crep->get_default_table(L);
+        m_scope.register_(L);
+        m_default_members.register_(L);
+        lua_pop(L, 1);
+
+        crep->get_table(L);
+        m_members.register_(L);
+        lua_pop(L, 1);
 
         for (std::vector<class_base::base_desc>::iterator i = m_bases.begin();
             i != m_bases.end(); ++i)
@@ -190,7 +189,18 @@ namespace luabind { namespace detail {
             while (lua_next(L, -2))
             {
                 lua_pushvalue(L, -2); // copy key
+                lua_gettable(L, -5);
+
+                if (!lua_isnil(L, -1))
+                {
+                    lua_pop(L, 2);
+                    continue;
+                }
+
+                lua_pop(L, 1);
+                lua_pushvalue(L, -2); // copy key
                 lua_insert(L, -2);
+
                 lua_settable(L, -5);
             }
             lua_pop(L, 2);
@@ -203,28 +213,23 @@ namespace luabind { namespace detail {
             while (lua_next(L, -2))
             {
                 lua_pushvalue(L, -2); // copy key
+                lua_gettable(L, -5);
+
+                if (!lua_isnil(L, -1))
+                {
+                    lua_pop(L, 2);
+                    continue;
+                }
+
+                lua_pop(L, 1);
+                lua_pushvalue(L, -2); // copy key
                 lua_insert(L, -2);
+
                 lua_settable(L, -5);
             }
             lua_pop(L, 2);
 
 		}
-
-        // add methods
-        for (std::list<detail::method_rep>::iterator i 
-            = m_methods.begin(); i != m_methods.end(); ++i)
-        {
-            LUABIND_CHECK_STACK(L);
-			crep->add_method(*i);
-		}
-
-		crep->register_methods(L);
-
-        m_methods.clear();
-
-        crep->get_default_table(L);
-        m_scope.register_(L);
-        lua_pop(L, 1);
 
         lua_settable(L, -3);
     }
@@ -319,25 +324,17 @@ namespace luabind { namespace detail {
         m_registration->m_constructor.overloads.push_back(o);
     }
 
-    void class_base::add_method(const char* name, const detail::overload_rep& o)
-    {
-		typedef std::list<detail::method_rep> methods_t;
+	void class_base::add_member(registration* member)
+	{
+		std::auto_ptr<registration> ptr(member);
+		m_registration->m_members.operator,(scope(ptr));
+	}
 
-		methods_t::iterator m = std::find_if(
-			m_registration->m_methods.begin()
-			, m_registration->m_methods.end()
-			, method_name(name));
-		if (m == m_registration->m_methods.end())
-		{
-			m_registration->m_methods.push_back(method_rep());
-			m = m_registration->m_methods.end();
-			std::advance(m, -1);
-			m->name = name;
-		}
-		
-        m->add_overload(o);
-        m->crep = 0;
-    }
+	void class_base::add_default_member(registration* member)
+	{
+		std::auto_ptr<registration> ptr(member);
+		m_registration->m_default_members.operator,(scope(ptr));
+	}
 
 #ifndef LUABIND_NO_ERROR_CHECKING
     void class_base::add_operator(

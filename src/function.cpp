@@ -1,146 +1,205 @@
-// Copyright (c) 2003 Daniel Wallin and Arvid Norberg
+// Copyright Daniel Wallin 2008. Use, modification and distribution is
+// subject to the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
+#define LUABIND_SOURCE
 
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
-// OR OTHER DEALINGS IN THE SOFTWARE.
-
-#include <luabind/lua_include.hpp>
-
-#include <luabind/config.hpp>
-#include <luabind/luabind.hpp>
 #include <luabind/exception_handler.hpp>
+#include <luabind/make_function.hpp>
 
-namespace luabind { namespace detail { namespace free_functions {
+#include <boost/bind.hpp>
 
-    void function_rep::add_overload(overload_rep const& o)
+namespace luabind { namespace detail {
+
+namespace
+{
+
+  struct function
+  {
+      function(
+          int arity
+        , function_callback const& call
+        , function_callback const& score
+        , function_callback const& signature
+      )
+        : m_arity(arity)
+        , m_call(call)
+        , m_score(score)
+        , m_signature(signature)
+        , m_next(0)
+      {}
+
+      int call(lua_State*) const;
+
+      int m_arity;
+      function_callback m_call;
+      function_callback m_score;
+      function_callback m_signature;
+      function const* m_next;
+      object m_keep_alive;
+  };
+
+  int const max_candidates = 10;
+
+  int function::call(lua_State* L) const
+  {
+      function const* candidates[max_candidates];
+      int candidate_idx = 0;
+
+      function const* best = 0;
+      int best_score = std::numeric_limits<int>::max();
+
+      int args = lua_gettop(L);
+
+      for (function const* f = this; f != 0; f = f->m_next)
+      {
+          if (args != f->m_arity)
+              continue;
+
+          int score = f->m_score(L);
+
+          if (score < 0)
+              continue;
+
+          if (score < best_score)
+          {
+              best = f;
+              best_score = score;
+              candidate_idx = 0;
+          }
+          else if (score == best_score)
+          {
+              best = 0;
+          }
+
+          assert(candidate_idx < max_candidates);
+          candidates[candidate_idx++] = f;
+      }
+
+      if (!best)
+      {
+          if (best_score != std::numeric_limits<int>::max())
+          {
+              // Ambiguous
+              lua_pushstring(L, "Ambiguous, candidates:\n");
+              for (int i = 0; i < candidate_idx; ++i)
+              {
+                  if (i != 0)
+                      lua_pushstring(L, "\n");
+                  candidates[i]->m_signature(L);
+              }
+              lua_concat(L, candidate_idx * 2);
+          }
+          else
+          {
+              // No overload
+              lua_pushstring(L, "No matching overload found, candidates:\n");
+              int count = 0;
+              for (function const* f = this; f != 0; f = f->m_next)
+              {
+                  if (count != 0)
+                      lua_pushstring(L, "\n");
+                  f->m_signature(L);
+                  ++count;
+              }
+              lua_concat(L, count * 2);
+          }
+
+          return -2;
+      }
+
+      return best->m_call(L);
+  }
+
+  int function_dispatcher(lua_State* L)
+  {
+      function const* f =
+          (function const*)lua_touserdata(L, lua_upvalueindex(1));
+
+      int results = -2;
+      {
+          boost::optional<int> result = handle_exceptions<int>(
+              L, boost::bind(&function::call, f, L));
+
+          if (result)
+              results = *result;
+      }
+
+      if (results == -2)
+          lua_error(L);
+
+      return results;
+  }
+
+  int function_destroy(lua_State* L)
+  {
+      function* fn = (function*)lua_touserdata(L, 1);
+      fn->~function();
+      return 0;
+  }
+
+  void push_function_metatable(lua_State* L)
+  {
+      lua_pushstring(L, "luabind.function");
+      lua_rawget(L, LUA_REGISTRYINDEX);
+
+      if (lua_istable(L, -1))
+          return;
+
+      lua_pop(L, 1);
+
+      lua_newtable(L);
+
+      lua_pushstring(L, "__gc");
+      lua_pushcclosure(L, &function_destroy, 0);
+      lua_rawset(L, -3);
+
+      lua_pushstring(L, "luabind.function");
+      lua_pushvalue(L, -2);
+      lua_rawset(L, LUA_REGISTRYINDEX);
+  }
+
+} // namespace unnamed
+
+LUABIND_API bool is_luabind_function(lua_State* L, int index)
+{
+    return lua_tocfunction(L, index) == &function_dispatcher;
+}
+
+LUABIND_API void add_overload(
+    object const& context, char const* name, object const& fn)
+{
+    if (object overloads = context[name])
     {
-        m_overloads.push_back(o);
+        if (tocfunction(overloads) == &function_dispatcher
+         && tocfunction(fn) == &function_dispatcher)
+        {
+            function* f = touserdata<function>(getupvalue(fn, 1));
+            f->m_next = touserdata<function>(getupvalue(overloads, 1));
+            f->m_keep_alive = overloads;
+        }
     }
 
-    int function_dispatcher(lua_State* L)
-    {
-        function_rep* rep = static_cast<function_rep*>(
-            lua_touserdata(L, lua_upvalueindex(1))
-        );
+    context[name] = fn;
+}
 
-        bool ambiguous = false;
-        int min_match = std::numeric_limits<int>::max();
-        int match_index = -1;
-        bool ret;
+LUABIND_API object make_function_aux(
+    lua_State* L, int arity
+  , function_callback const& call
+  , function_callback const& score
+  , function_callback const& signature
+)
+{
+    void* storage = lua_newuserdata(L, sizeof(function));
+    push_function_metatable(L);
+    new (storage) function(arity, call, score, signature);
+    lua_setmetatable(L, -2);
 
-#ifdef LUABIND_NO_ERROR_CHECKING
-        if (rep->overloads().size() == 1)
-        {
-            match_index = 0;
-        }
-        else
-        {
-#endif
-            int num_params = lua_gettop(L);
-            ret = find_best_match(
-                L
-              , &rep->overloads().front()
-              , (int)rep->overloads().size()
-              , sizeof(overload_rep)
-              , ambiguous
-              , min_match
-              , match_index
-              , num_params
-            );
-#ifdef LUABIND_NO_ERROR_CHECKING
-        }
-#else
-        if (!ret)
-        {
-            // this bock is needed to make sure the std::string is destructed
-            {
-                std::string msg = "no match for function call '";
-                msg += rep->name();
-                msg += "' with the parameters (";
-                msg += stack_content_by_name(L, 1);
-                msg += ")\ncandidates are:\n";
+    lua_pushcclosure(L, &function_dispatcher, 1);
+    stack_pop pop(L, 1);
 
-                msg += get_overload_signatures(
-                    L
-                  , rep->overloads().begin()
-                  , rep->overloads().end()
-                  , rep->name()
-                );
+    return object(from_stack(L, -1));
+}
 
-                lua_pushstring(L, msg.c_str());
-            }
-
-            lua_error(L);
-        }
-
-        if (ambiguous)
-        {
-            // this bock is needed to make sure the std::string is destructed
-            {
-                std::string msg = "call of overloaded function '";
-                msg += rep->name();
-                msg += "(";
-                msg += stack_content_by_name(L, 1);
-                msg += ") is ambiguous\nnone of the overloads "
-                       "have a best conversion:";
-
-                std::vector<overload_rep_base const*> candidates;
-                find_exact_match(
-                    L
-                  , &rep->overloads().front()
-                  , (int)rep->overloads().size()
-                  , sizeof(overload_rep)
-                  , min_match
-                  , num_params
-                  , candidates
-                );
-
-                msg += get_overload_signatures_candidates(
-                    L
-                  , candidates.begin()
-                  , candidates.end()
-                  , rep->name()
-                );
-
-                lua_pushstring(L, msg.c_str());
-            }
-            lua_error(L);
-        }
-#endif
-        overload_rep const& ov_rep = rep->overloads()[match_index];
-
-#ifndef LUABIND_NO_EXCEPTIONS
-        try
-        {
-#endif
-            return ov_rep.call(L, ov_rep.fun);
-#ifndef LUABIND_NO_EXCEPTIONS
-        }
-        catch (...)
-        {
-            detail::handle_exception_aux(L);
-        }
-        // we can only reach this line if an exception was thrown
-        lua_error(L);
-        return 0; // will never be reached
-#endif
-    }
-
-}}} // namespace luabind::detail::free_functions
+}} // namespace luabind::detail
 

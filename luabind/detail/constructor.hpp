@@ -1,176 +1,111 @@
-// Copyright (c) 2003 Daniel Wallin and Arvid Norberg
-
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
-// OR OTHER DEALINGS IN THE SOFTWARE.
-
+// Copyright Daniel Wallin 2008. Use, modification and distribution is
+// subject to the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !BOOST_PP_IS_ITERATING
 
-#ifndef LUABIND_CONSTRUCTOR_HPP_INCLUDED
-#define LUABIND_CONSTRUCTOR_HPP_INCLUDED
+# ifndef LUABIND_DETAIL_CONSTRUCTOR_081018_HPP
+#  define LUABIND_DETAIL_CONSTRUCTOR_081018_HPP
 
-#include <boost/config.hpp>
-#include <boost/preprocessor/iterate.hpp>
-#include <boost/preprocessor/repetition/enum.hpp>
-#include <boost/preprocessor/repetition/enum_params.hpp>
-#include <boost/preprocessor/repeat.hpp>
-#include <boost/preprocessor/comma_if.hpp>
+#  include <luabind/object.hpp>
+#  include <luabind/wrapper_base.hpp>
 
-#include <boost/mpl/apply_wrap.hpp>
+#  include <boost/preprocessor/iteration/iterate.hpp>
+#  include <boost/preprocessor/iteration/local.hpp>
+#  include <boost/preprocessor/repetition/enum_params.hpp>
+#  include <boost/preprocessor/repetition/enum_binary_params.hpp>
 
-#include <luabind/config.hpp>
-#include <luabind/wrapper_base.hpp>
-#include <luabind/detail/policy.hpp>
-#include <luabind/detail/signature_match.hpp>
-#include <luabind/detail/call_member.hpp>
-#include <luabind/wrapper_base.hpp>
-#include <luabind/weak_ref.hpp>
+namespace luabind { namespace detail {
 
-namespace luabind { namespace detail
+inline void inject_backref(lua_State* L, void*, void*)
+{}
+
+template <class T>
+void inject_backref(lua_State* L, T* p, wrap_base*)
 {
-	template<int N>
-	struct constructor_helper;
+    weak_ref(L, -1).swap(wrap_access::ref(*p));
+}
 
-	namespace mpl = boost::mpl;
-	
-	template<int N>
-	struct wrapped_constructor_helper;
-	
-	#define BOOST_PP_ITERATION_PARAMS_1 (4, (0, LUABIND_MAX_ARITY, <luabind/detail/constructor.hpp>, 1))
-	#include BOOST_PP_ITERATE()
+template <std::size_t Arity, class T, class Signature>
+struct construct_aux;
 
-	template<class T, class Policies, class ConstructorSig>
-	struct construct_class
-	{
-		inline static void* apply(lua_State* L, weak_ref const& ref)
-		{
-			typedef constructor_helper<ConstructorSig::arity> helper;
-			return helper::execute(
-                L
-			  , ref
-              , (T*)0
-              , (ConstructorSig*)0
-              , (Policies*)0
-            );
-		}
-	};
+template <class T, class Signature>
+struct construct
+  : construct_aux<mpl::size<Signature>::value - 2, T, Signature>
+{};
 
-	template<class T, class W, class Policies, class ConstructorSig>
-	struct construct_wrapped_class
-	{
-		inline static void* apply(lua_State* L, weak_ref const& ref)
-		{
-			typedef wrapped_constructor_helper<ConstructorSig::arity> helper;
-			return helper::execute(
-                L
-              , ref
-              , (T*)0
-              , (W*)0
-              , (ConstructorSig*)0
-              , (Policies*)0
-            );
-		}
-	};
+template <class T, class Signature>
+struct construct_aux<0, T, Signature>
+{
+    void operator()(argument const& self_) const
+    {
+        object_rep* self = touserdata<object_rep>(self_);
+        class_rep* cls = self->crep();
 
-}}
+        std::auto_ptr<T> instance(new T);
+        inject_backref(self_.interpreter(), instance.get(), instance.get());
 
-#endif // LUABIND_CONSTRUCTOR_HPP_INCLUDED
-
-
-#elif BOOST_PP_ITERATION_FLAGS() == 1
-
-
-#define LUABIND_DECL(z, n, text) \
-	typedef typename find_conversion_policy<n+1,Policies>::type BOOST_PP_CAT(converter_policy,n); \
-\
-	typename mpl::apply_wrap2< \
-		BOOST_PP_CAT(converter_policy,n), BOOST_PP_CAT(A,n), lua_to_cpp \
-	>::type BOOST_PP_CAT(c,n);
-
-#define LUABIND_PARAM(z,n,text) \
-	BOOST_PP_CAT(c,n).apply(L, LUABIND_DECORATE_TYPE(BOOST_PP_CAT(A,n)), n + 1)
-
-	template<>
-	struct constructor_helper<BOOST_PP_ITERATION()>
-	{
-        template<class T, class Policies, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
-        static T* execute(
-            lua_State* L
-          , weak_ref const&
-          , T*
-          , constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY,A)>*
-          , Policies*)
+        if (cls->has_holder())
         {
-            BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
-            return new T(BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
+            cls->construct_holder()(self->ptr(), instance.get());
         }
-/*
-		template<class T>
-		struct apply
-		{
-			template<class Policies, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
-			static T* call(lua_State* L, const constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY,A)>*, const Policies*)
-			{
-				// L is used, but the metrowerks compiler warns about this before expanding the macros
-				L = L;
-				BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
-				return new T(BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
-			}
-		};*/
-	};
-
-	template<>
-	struct wrapped_constructor_helper<BOOST_PP_ITERATION()>
-	{
-        template<class T, class W, class Policies, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
-        static T* execute(
-            lua_State* L
-          , weak_ref const& ref
-          , T*
-          , W*
-          , constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY,A)>*
-          , Policies*)
+        else
         {
-            BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
-            W* result = new W(BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
-            static_cast<weak_ref&>(detail::wrap_access::ref(*result)) = ref;
-            return result;
+            self->set_object(instance.get());
         }
-/*
-        template<class T>
-		struct apply
-		{
-			template<class Policies, BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
-			static T* call(lua_State* L, weak_ref const& ref, const constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY,A)>*, const Policies*)
-			{
-				BOOST_PP_REPEAT(BOOST_PP_ITERATION(), LUABIND_DECL, _)
-				T* o = new T(BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_PARAM, _));
-				static_cast<weak_ref&>(detail::wrap_access::ref(*o)) = ref;
-				return o;
-			}
-		};*/
-	};
 
+        self->set_destructor(cls->destructor());
+        instance.release();
+    }
+};
 
-#undef LUABIND_PARAM
-#undef LUABIND_DECL
+#  define BOOST_PP_ITERATION_PARAMS_1 \
+    (3, (1, LUABIND_MAX_ARITY, <luabind/detail/constructor.hpp>))
+#  include BOOST_PP_ITERATE()
 
-#endif // LUABIND_CONSTRUCTOR_HPP_INCLUDED
+}} // namespace luabind::detail
+
+# endif // LUABIND_DETAIL_CONSTRUCTOR_081018_HPP
+
+#else // !BOOST_PP_IS_ITERATING
+
+# define N BOOST_PP_ITERATION()
+
+template <class T, class Signature>
+struct construct_aux<N, T, Signature>
+{
+    typedef typename mpl::begin<Signature>::type first;
+    typedef typename mpl::next<first>::type iter0;
+
+# define BOOST_PP_LOCAL_MACRO(n) \
+    typedef typename mpl::next< \
+        BOOST_PP_CAT(iter,BOOST_PP_DEC(n))>::type BOOST_PP_CAT(iter,n); \
+    typedef typename BOOST_PP_CAT(iter,n)::type BOOST_PP_CAT(a,BOOST_PP_DEC(n));
+
+# define BOOST_PP_LOCAL_LIMITS (1,N)
+# include BOOST_PP_LOCAL_ITERATE()
+
+    void operator()(argument const& self_, BOOST_PP_ENUM_BINARY_PARAMS(N,a,_)) const
+    {
+        object_rep* self = touserdata<object_rep>(self_);
+        class_rep* cls = self->crep();
+
+        std::auto_ptr<T> instance(new T(BOOST_PP_ENUM_PARAMS(N,_)));
+        inject_backref(self_.interpreter(), instance.get(), instance.get());
+
+        if (cls->has_holder())
+        {
+            cls->construct_holder()(self->ptr(), instance.get());
+        }
+        else
+        {
+            self->set_object(instance.get());
+        }
+
+        self->set_destructor(cls->destructor());
+        instance.release();
+    }
+};
+
+#endif
 

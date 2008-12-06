@@ -75,12 +75,12 @@ void test_main(lua_State* L)
     DOSTRING(L,
         "class 'derived0' (base0)\n"
         "  function derived0:__init()\n"
-        "    super()\n"
+        "    base0.__init(self)\n"
         "  end\n"
 
         "class 'derived1' (base1)\n"
         "  function derived1:__init()\n"
-        "    super()\n"
+        "    base1.__init(self)\n"
         "  end\n"
     );
 
