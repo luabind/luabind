@@ -72,10 +72,10 @@ namespace luabind { namespace detail
 			m_classrep->adopt(m_flags & constant, m_object);
 		else*/
 
-        // daniel040727 I changed the above. It just seems wrong. adopt()
-        // should only be called on the wrapper type.
-        if (m_classrep->get_class_type() == class_rep::lua_class)
-			m_classrep->bases().front().base->adopt(m_flags & constant, m_object);
+        class_rep* cpp_base = m_classrep;
+        while (cpp_base->get_class_type() == class_rep::lua_class)
+            cpp_base = cpp_base->bases().front().base;
+        cpp_base->adopt(m_flags & constant, m_object);
 	}
 
 	void object_rep::set_destructor(void(*ptr)(void*))

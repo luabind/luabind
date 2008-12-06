@@ -26,6 +26,7 @@ SOURCES =
     test_exception_handlers.cpp
     test_shadow.cpp
     test_tag_function.cpp
+    test_adopt.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;
