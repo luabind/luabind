@@ -30,6 +30,16 @@
 
 using namespace luabind::detail;
 
+namespace luabind { namespace detail
+{
+	LUABIND_API int property_tag(lua_State* L)
+	{
+		lua_pushstring(L, "luabind: property_tag function can't be called");
+		lua_error(L);
+		return 0;
+	}
+}}
+
 #ifndef LUABIND_NO_ERROR_CHECKING
 
 	std::string luabind::detail::get_overload_signatures_candidates(
@@ -198,18 +208,13 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 	const char* key = lua_tostring(L, 2);
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-
 	if (std::strlen(key) != lua_strlen(L, 2))
 	{
-		{
-			std::string msg("luabind does not support "
-				"member names with extra nulls:\n");
-			msg += std::string(lua_tostring(L, 2), lua_strlen(L, 2));
-			lua_pushstring(L, msg.c_str());
-		}
+		lua_pushfstring(L,
+			"luabind does not support keys with "
+			"embedded nulls: '%s'", lua_tostring(L, 2));
 		lua_error(L);
 	}
-
 #endif
 
 	// special case to see if this is a null-pointer
@@ -224,41 +229,38 @@ int luabind::detail::class_rep::gettable(lua_State* L)
 		return 1;
 	}
 
-// First, look in the instance's table
+	// first, look in the instance's table..
 	detail::lua_reference const& tbl = obj->get_lua_table();
 	if (tbl.is_valid())
 	{
 		tbl.get(L);
 		lua_pushvalue(L, 2);
 		lua_gettable(L, -2);
-		if (!lua_isnil(L, -1)) 
-		{
-			lua_remove(L, -2); // remove table
-			return 1;
-		}
-		lua_pop(L, 2);
+		lua_remove(L, -2);
 	}
-
-// Then look in the class' table for this member
-	obj->crep()->get_table(L);
-	lua_pushvalue(L, 2);
-	lua_gettable(L, -2);
-
-	if (!lua_isnil(L, -1)) 
+	else
 	{
-		lua_remove(L, -2); // remove table
-		return 1;
+		lua_pushnil(L);
 	}
-	lua_pop(L, 2);
 
-	std::map<const char*, callback, ltstr>::iterator j = m_getters.find(key);
-	if (j != m_getters.end())
+	// .. if it's not found in the instance, look in the class table.
+	if (lua_isnil(L, -1))
 	{
-		// the name is a data member
-		return j->second.func(L, j->second.pointer_offset);
+		lua_pop(L, 1);
+		obj->crep()->get_table(L);
+		lua_pushvalue(L, 2);
+		lua_gettable(L, -2);
+		lua_remove(L, -2);
 	}
 
-	lua_pushnil(L);
+	if (lua_tocfunction(L, -1) == &property_tag)
+	{
+		// this member is a property, extract the "get" function and call it.
+		lua_getupvalue(L, -1, 1);
+		lua_pushvalue(L, 1);
+		lua_call(L, 1, 1);
+	}
+
 	return 1;
 }
 
@@ -275,46 +277,15 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 
 	const char* key = lua_tostring(L, 2);
 
-	if (std::strlen(key) == lua_strlen(L, 2))
-	{
-		std::map<const char*, callback, ltstr>::iterator j = m_setters.find(key);
-		if (j != m_setters.end())
-		{
-			// the name is a data member
 #ifndef LUABIND_NO_ERROR_CHECKING
-			if (j->second.match(L, 3) < 0)
-			{
-				std::string msg("the attribute '");
-				msg += m_name;
-				msg += ".";
-				msg += key;
-				msg += "' is of type: ";
-				j->second.sig(L, msg);
-				msg += "\nand does not match: (";
-				msg += stack_content_by_name(L, 3);
-				msg += ")";
-				lua_pushstring(L, msg.c_str());
-				return false;
-			}
-#endif
-			j->second.func(L, j->second.pointer_offset);
-			return true;
-		}
-
-		if (m_getters.find(key) != m_getters.end())
-		{
-			// this means that we have a getter but no
-			// setter for an attribute. We will then fail
-			// because that attribute is read-only
-			std::string msg("the attribute '");
-			msg += m_name;
-			msg += ".";
-			msg += key;
-			msg += "' is read only";
-			lua_pushstring(L, msg.c_str());
-			return false;
-		}
+	if (std::strlen(key) != lua_strlen(L, 2))
+	{
+		lua_pushfstring(L,
+			"luabind does not support keys with "
+			"embedded nulls: '%s'", lua_tostring(L, 2));
+		lua_error(L);
 	}
+#endif
 
 	// set the attribute to the object's table
 	object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
@@ -326,15 +297,46 @@ bool luabind::detail::class_rep::settable(lua_State* L)
 		lua_newtable(L);
 		lua_pushvalue(L, -1);
 		tbl.set(L);
+		lua_pushnil(L);
 	}
 	else
 	{
 		tbl.get(L);
+		lua_pushvalue(L, 2);
+		lua_gettable(L, -2);
 	}
+
+	if (lua_isnil(L, -1))
+	{
+		lua_pop(L, 1);
+		obj->crep()->get_table(L);
+		lua_pushvalue(L, 2);
+		lua_gettable(L, -2);
+		lua_remove(L, -2);
+	}
+
+	if (lua_tocfunction(L, -1) == &property_tag)
+	{
+		// this member is a property, extract the "set" function and call it.
+		lua_getupvalue(L, -1, 2);
+
+		if (lua_isnil(L, -1))
+		{
+			lua_pushfstring(L, "property '%s' is read only", lua_tostring(L, 2));
+			lua_error(L);
+		}
+
+		lua_pushvalue(L, 1);
+		lua_pushvalue(L, 3);
+		lua_call(L, 2, 0);
+		return true;
+	}
+
 	lua_pushvalue(L, 2);
 	lua_pushvalue(L, 3);
 	lua_settable(L, 4);
 	lua_pop(L, 3);
+
 	return true;
 }
 
@@ -605,130 +607,6 @@ int luabind::detail::class_rep::lua_settable_dispatcher(lua_State* L)
 
 	crep->m_operator_cache = 0; // invalidate cache
 	
-	return 0;
-}
-
-// called from the metamethod for __index
-// obj is the object pointer
-int luabind::detail::class_rep::lua_class_gettable(lua_State* L)
-{
-	object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
-	class_rep* crep = obj->crep();
-
-	// we have to ignore the first argument since this may point to
-	// a method that is not present in this class (but in a subclass)
-
-	// BUG: This might catch members called "__ok\0foobar"
-	const char* key = lua_tostring(L, 2);
-
-	if (key && !std::strcmp(key, "__ok"))
-	{
-		class_rep* crep = obj->crep();
-
-		void* p = crep->extractor() ? crep->extractor()(obj->ptr())
-			: obj->ptr();
-
-		lua_pushboolean(L, p != 0);
-		return 1;
-	}
-	
-	// first look in the instance's table
-	detail::lua_reference const& tbl = obj->get_lua_table();
-	assert(tbl.is_valid());
-	tbl.get(L);
-	lua_pushvalue(L, 2);
-	lua_gettable(L, -2);
-	if (!lua_isnil(L, -1)) 
-	{
-		lua_remove(L, -2); // remove table
-		return 1;
-	}
-	lua_pop(L, 2);
-
-	// then look in the class' table
-	crep->get_table(L);
-	lua_pushvalue(L, 2);
-	lua_gettable(L, -2);
-
-	if (!lua_isnil(L, -1)) 
-	{
-		lua_remove(L, -2); // more table
-		return 1;
-	}
-
-	lua_pop(L, 2);
-
-	if (lua_isnil(L, 2))
-	{
-		lua_pushnil(L);
-		return 1;
-	}
-
-	std::map<const char*, class_rep::callback, ltstr>::iterator j = crep->m_getters.find(key);
-	if (j != crep->m_getters.end())
-	{
-		// the name is a data member
-		return j->second.func(L, j->second.pointer_offset);
-	}
-
-	lua_pushnil(L);
-	return 1;
-}
-
-// called from the metamethod for __newindex
-// obj is the object pointer
-int luabind::detail::class_rep::lua_class_settable(lua_State* L)
-{
-	object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, 1));
-	class_rep* crep = obj->crep();
-
-	// we have to ignore the first argument since this may point to
-	// a method that is not present in this class (but in a subclass)
-	// BUG: This will not work with keys with extra nulls in them
-	const char* key = lua_tostring(L, 2);
-
-
-	std::map<const char*, class_rep::callback, ltstr>::iterator j = crep->m_setters.find(key);
-
-	// if the strlen(key) is not the true length,
-	// it means that the member-name contains
-	// extra nulls. luabind does not support such
-	// names as member names. So, use the lua
-	// table as fall-back
-	if (j == crep->m_setters.end()
-		|| std::strlen(key) != lua_strlen(L, 2))
-	{
-		std::map<const char*, class_rep::callback, ltstr>::iterator k = crep->m_getters.find(key);
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-
-		if (k != crep->m_getters.end())
-		{
-			{
-				std::string msg = "cannot set property '";
-				msg += crep->name();
-				msg += ".";
-				msg += key;
-				msg += "', because it's read only";
-				lua_pushstring(L, msg.c_str());
-			}
-			lua_error(L);
-		}
-
-#endif
-
-		detail::lua_reference const& tbl = obj->get_lua_table();
-		assert(tbl.is_valid());
-		tbl.get(L);
-		lua_replace(L, 1);
-		lua_settable(L, 1);
-	}
-	else
-	{
-		// the name is a data member
-		j->second.func(L, j->second.pointer_offset);
-	}
-
 	return 0;
 }
 

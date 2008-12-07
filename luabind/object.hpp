@@ -1337,6 +1337,40 @@ inline void setupvalue(
     lua_setupvalue(interpreter, -2, index);
 }
 
+template <class GetValueWrapper>
+object property(GetValueWrapper const& get)
+{
+    lua_State* interpreter = value_wrapper_traits<GetValueWrapper>::interpreter(
+        get
+    );
+
+    value_wrapper_traits<GetValueWrapper>::unwrap(interpreter, get);
+    lua_pushnil(interpreter);
+
+    lua_pushcclosure(interpreter, &detail::property_tag, 2);
+    detail::stack_pop pop(interpreter, 1);
+
+    return object(from_stack(interpreter, -1));
+}
+
+template <class GetValueWrapper, class SetValueWrapper>
+object property(GetValueWrapper const& get, SetValueWrapper const& set)
+{
+    lua_State* interpreter = value_wrapper_traits<GetValueWrapper>::interpreter(
+        get
+    );
+
+    value_wrapper_traits<GetValueWrapper>::unwrap(interpreter, get);
+    value_wrapper_traits<SetValueWrapper>::unwrap(interpreter, set);
+
+    lua_pushcclosure(interpreter, &detail::property_tag, 2);
+    detail::stack_pop pop(interpreter, 1);
+
+    return object(from_stack(interpreter, -1));
+
+}
+
+
 } // namespace luabind
 
 #endif // LUABIND_OBJECT_050419_HPP

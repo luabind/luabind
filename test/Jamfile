@@ -27,6 +27,7 @@ SOURCES =
     test_shadow.cpp
     test_tag_function.cpp
     test_adopt.cpp
+    test_properties.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;
