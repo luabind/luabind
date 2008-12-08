@@ -12,6 +12,13 @@
 # include <boost/mpl/next.hpp>
 # include <boost/mpl/size.hpp>
 
+namespace luabind {
+
+class object;
+class argument;
+
+} // namespace luabind
+
 namespace luabind { namespace detail {
 
 LUABIND_API std::string get_class_name(lua_State* L, LUABIND_TYPE_INFO i);
@@ -81,6 +88,9 @@ LUABIND_TYPE_TO_STRING(void)
 LUABIND_TYPE_TO_STRING(bool)
 LUABIND_TYPE_TO_STRING(std::string)
 LUABIND_TYPE_TO_STRING(lua_State)
+
+LUABIND_TYPE_TO_STRING(luabind::object)
+LUABIND_TYPE_TO_STRING(luabind::argument)
 
 # undef LUABIND_INTEGRAL_TYPE_TO_STRING
 # undef LUABIND_TYPE_TO_STRING
