@@ -20,7 +20,7 @@ namespace
           int arity
         , function_callback const& call
         , function_callback const& score
-        , function_callback const& signature
+        , signature_callback const& signature
       )
         : m_arity(arity)
         , m_call(call)
@@ -31,10 +31,11 @@ namespace
 
       int call(lua_State*) const;
 
+      std::string m_name;
       int m_arity;
       function_callback m_call;
       function_callback m_score;
-      function_callback m_signature;
+      signature_callback m_signature;
       function const* m_next;
       object m_keep_alive;
   };
@@ -50,6 +51,8 @@ namespace
       int best_score = std::numeric_limits<int>::max();
 
       int args = lua_gettop(L);
+
+      char const* function_name = m_name.empty() ? "<unknown>" : m_name.c_str();
 
       for (function const* f = this; f != 0; f = f->m_next)
       {
@@ -86,7 +89,7 @@ namespace
               {
                   if (i != 0)
                       lua_pushstring(L, "\n");
-                  candidates[i]->m_signature(L);
+                  candidates[i]->m_signature(L, function_name);
               }
               lua_concat(L, candidate_idx * 2);
           }
@@ -99,7 +102,7 @@ namespace
               {
                   if (count != 0)
                       lua_pushstring(L, "\n");
-                  f->m_signature(L);
+                  f->m_signature(L, function_name);
                   ++count;
               }
               lua_concat(L, count * 2);
@@ -169,14 +172,17 @@ LUABIND_API bool is_luabind_function(lua_State* L, int index)
 LUABIND_API void add_overload(
     object const& context, char const* name, object const& fn)
 {
+    function* f = touserdata<function>(getupvalue(fn, 1));
+    f->m_name = name;
+
     if (object overloads = context[name])
     {
         if (tocfunction(overloads) == &function_dispatcher
          && tocfunction(fn) == &function_dispatcher)
         {
-            function* f = touserdata<function>(getupvalue(fn, 1));
             f->m_next = touserdata<function>(getupvalue(overloads, 1));
             f->m_keep_alive = overloads;
+            f->m_name = name;
         }
     }
 
@@ -187,7 +193,7 @@ LUABIND_API object make_function_aux(
     lua_State* L, int arity
   , function_callback const& call
   , function_callback const& score
-  , function_callback const& signature
+  , signature_callback const& signature
 )
 {
     void* storage = lua_newuserdata(L, sizeof(function));

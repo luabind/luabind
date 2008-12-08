@@ -46,20 +46,21 @@ namespace detail
   template <class Signature>
   struct function_signature
   {
-      int operator()(lua_State* L) const
+      int operator()(lua_State* L, char const* function) const
       {
-          format_signature(L, Signature());
+          format_signature(L, function, Signature());
           return 0;
       }
   };
 
   typedef boost::function1<int, lua_State*> function_callback;
+  typedef boost::function2<int, lua_State*, char const*> signature_callback;
 
   LUABIND_API object make_function_aux(
       lua_State*, int
     , function_callback const& call
     , function_callback const& score
-    , function_callback const& signature
+    , signature_callback const& signature
   );
 
   LUABIND_API void add_overload(object const&, char const*, object const&);

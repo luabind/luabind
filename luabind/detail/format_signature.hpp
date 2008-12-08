@@ -99,11 +99,14 @@ void format_signature_aux(lua_State* L, bool first, Iter, End end)
 }
 
 template <class Signature>
-void format_signature(lua_State* L, Signature)
+void format_signature(lua_State* L, char const* function, Signature)
 {
     typedef typename mpl::begin<Signature>::type first;
 
     type_to_string<typename first::type>::get(L);
+
+    lua_pushstring(L, " ");
+    lua_pushstring(L, function);
 
     lua_pushstring(L, "(");
     format_signature_aux(
@@ -114,7 +117,7 @@ void format_signature(lua_State* L, Signature)
     );
     lua_pushstring(L, ")");
 
-    lua_concat(L, mpl::size<Signature>() * 2);
+    lua_concat(L, mpl::size<Signature>() * 2 + 2);
 }
 
 }} // namespace luabind::detail
