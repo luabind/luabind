@@ -89,7 +89,7 @@ void test_main(lua_State* L)
 
 	];
 
-	DOSTRING_EXPECTED(L, "a = C()", "no constructor of 'C' matched the arguments ()\n candidates are:\n");
+	DOSTRING_EXPECTED(L, "a = C()", "attempt to call a nil value");
 
 	DOSTRING(L,
 		"a = A(4)\n"

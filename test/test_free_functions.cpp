@@ -152,10 +152,9 @@ void test_main(lua_State* L)
 #endif
 
     DOSTRING_EXPECTED(L, "f('incorrect', 'parameters')",
-        "no match for function call 'f' with the parameters (string, string)\n"
-        "candidates are:\n"
-        "f(number)\n"
-        "f(number, number)\n");
+        "No matching overload found, candidates:\n"
+        "int f(int,int)\n"
+        "int f(int)");
 
 
     DOSTRING(L, "function failing_fun() error('expected error message') end");

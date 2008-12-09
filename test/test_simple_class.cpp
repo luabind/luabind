@@ -93,9 +93,10 @@ void test_main(lua_State* L)
     simple_class::feedback = 0;
 
     DOSTRING_EXPECTED(L, "a:f('incorrect', 'parameters')",
-        "no overload of  'simple:f' matched the arguments "
-        "(simple_derived, string, string)\ncandidates are:\n"
-        "simple:f()\nsimple:f(number, number)\nsimple:f(string)\n");
+        "No matching overload found, candidates:\n"
+		"void f(simple&,std::string)\n"
+		"void f(simple&,int,int)\n"
+		"void f(simple&)");
 
     DOSTRING(L, "if a:g() == \"foo\\0bar\" then a:f() end");
     TEST_CHECK(simple_class::feedback == 1);

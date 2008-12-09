@@ -128,7 +128,6 @@ void test_main(lua_State* L)
 			.def(self())
 			.def(const_self(int()))
 			.def(self(int()))
-			.def(tostring(const_self))
 //			.def(const_self * other<operator_tester const&>())
 			.def(const_self * const_self)
 			.def(const_self * other<int>()),

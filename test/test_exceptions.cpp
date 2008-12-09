@@ -71,10 +71,11 @@ void test_main(lua_State* L)
     DOSTRING_EXPECTED(L, "a:h()", "Unknown C++ exception");
     DOSTRING_EXPECTED(L, 
         "obj = throw('incorrect', 'parameters', 'constructor')",
-        "no constructor of 'throw' matched the arguments "
-        "(string, string, string)\n candidates are:\n"
-        "throw()\nthrow(number)\nthrow(number, number)\n"
-        "throw(number, number, number)\n");
+        "No matching overload found, candidates:\n"
+        "void __init(luabind::argument const&,int,int,int)\n"
+        "void __init(luabind::argument const&,int,int)\n"
+        "void __init(luabind::argument const&,int)\n"
+        "void __init(luabind::argument const&)");
 
 #endif
 }
