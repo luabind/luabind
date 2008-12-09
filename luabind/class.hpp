@@ -1442,13 +1442,8 @@ namespace luabind
 		}
 	};
 
-	namespace 
-	{
-		LUABIND_ANONYMOUS_FIX detail::policy_cons<
-			detail::pure_virtual_tag
-		  , detail::null_type
-		> pure_virtual;
-	}
+	detail::policy_cons<
+		detail::pure_virtual_tag, detail::null_type> const pure_virtual = {};
 }
 
 #ifdef _MSC_VER
