@@ -122,27 +122,6 @@ namespace luabind
 
 namespace luabind { namespace detail
 {
-	template<class>
-	struct is_primitive;
-/*
-	template<class T>
-	yes_t is_lua_functor_test(const functor<T>&);
-
-#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1300)
-	no_t is_lua_functor_test(...);
-#else
-	template<class T>
-	no_t is_lua_functor_test(const T&);
-#endif
-
-	template<class T>
-	struct is_lua_functor
-	{
-		static T t;
-
-		BOOST_STATIC_CONSTANT(bool, value = sizeof(is_lua_functor_test(t)) == sizeof(yes_t));
-	};
-*/
 	template<class H, class T>
 	struct policy_cons
 	{
@@ -981,56 +960,6 @@ namespace luabind { namespace detail
 		template<class T>
 		void converter_postcall(lua_State*, T, int) {}
 	};
-/*
-	// ****** functor converter ********
-
-	template<class Direction> struct functor_converter;
-
-	template<>
-	struct functor_converter<lua_to_cpp>
-	{
-		typedef functor_converter type;
-		
-		template<class T>
-		functor<T> apply(lua_State* L, by_const_reference<functor<T> >, int index)
-		{
-			if (lua_isnil(L, index))
-				return functor<T>();
-
-			lua_pushvalue(L, index);
-			detail::lua_reference ref;
-			ref.set(L);
-			return functor<T>(L, ref);
-		}
-
-		template<class T>
-		functor<T> apply(lua_State* L, by_value<functor<T> >, int index)
-		{
-			if (lua_isnil(L, index))
-				return functor<T>();
-
-			lua_pushvalue(L, index);
-			detail::lua_reference ref;
-			ref.set(L);
-			return functor<T>(L, ref);
-		}
-
-		template<class T>
-		static int match(lua_State* L, by_const_reference<functor<T> >, int index)
-		{
-			if (lua_isfunction(L, index) || lua_isnil(L, index)) return 0; else return -1;
-		}
-
-		template<class T>
-		static int match(lua_State* L, by_value<functor<T> >, int index)
-		{
-			if (lua_isfunction(L, index) || lua_isnil(L, index)) return 0; else return -1;
-		}
-
-		template<class T>
-		void converter_postcall(lua_State*, T, int) {}
-	};
-*/
 
 	template<class Direction>
 	struct value_wrapper_converter;
@@ -1106,9 +1035,6 @@ namespace luabind { namespace detail
 						is_primitive<T>
 					  , primitive_converter<Direction>
 					  , eval_if<
-//							is_lua_functor<T>
-//						  , functor_converter<Direction>
-//						  , eval_if<
 								boost::is_enum<typename boost::remove_reference<T>::type>
 							  , enum_converter<Direction>
 							  , eval_if<
