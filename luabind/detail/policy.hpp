@@ -91,27 +91,8 @@ namespace luabind
 		const int* m_map;
 	};
 
-	namespace converters
-	{
-		using luabind::detail::yes_t;
-		using luabind::detail::no_t;
-		using luabind::detail::by_value;
-		using luabind::detail::by_reference;
-		using luabind::detail::by_const_reference;
-		using luabind::detail::by_pointer;
-		using luabind::detail::by_const_pointer;
-
-		no_t is_user_defined(...);
-	}
-
 	namespace detail
 	{
-		template<class T>
-		struct is_user_defined
-		{
-			BOOST_STATIC_CONSTANT(bool, value = 
-				sizeof(luabind::converters::is_user_defined(LUABIND_DECORATE_TYPE(T))) == sizeof(yes_t));
-		};
 
 		LUABIND_API int implicit_cast(const class_rep* crep, LUABIND_TYPE_INFO const&, int& pointer_offset);
 	}
@@ -184,76 +165,6 @@ namespace luabind { namespace detail
 	
 
     namespace mpl = boost::mpl;
-
-// ********** user defined converter ***********
-
-	template<class Direction> struct user_defined_converter;
-	
-	template<>
-	struct user_defined_converter<lua_to_cpp>
-	{
-		typedef boost::mpl::bool_<false> is_value_converter;
-		typedef user_defined_converter type;
-		
-		template<class T>
-		T apply(lua_State* L, detail::by_value<T>, int index) 
-		{ 
-			using namespace converters;
-			return convert_lua_to_cpp(L, detail::by_value<T>(), index);
-		}
-
-		template<class T>
-		T apply(lua_State* L, detail::by_reference<T>, int index) 
-		{ 
-			using namespace converters;
-			return convert_lua_to_cpp(L, detail::by_reference<T>(), index);
-		}
-
-		template<class T>
-		T apply(lua_State* L, detail::by_const_reference<T>, int index) 
-		{ 
-			using namespace converters;
-			return convert_lua_to_cpp(L, detail::by_const_reference<T>(), index);
-		}
-
-		template<class T>
-		T* apply(lua_State* L, detail::by_pointer<T>, int index) 
-		{ 
-			using namespace converters;
-			return convert_lua_to_cpp(L, detail::by_pointer<T>(), index);
-		}
-
-		template<class T>
-		const T* apply(lua_State* L, detail::by_const_pointer<T>, int index) 
-		{ 
-			using namespace converters;
-			return convert_lua_to_cpp(L, detail::by_pointer<T>(), index);
-		}
-
-		template<class T>
-		static int match(lua_State* L, T, int index)
-		{
-			using namespace converters;
-			return match_lua_to_cpp(L, T(), index);
-		}
-
-		template<class T>
-		void converter_postcall(lua_State*, T, int) {}
-	};
-
-	template<>
-	struct user_defined_converter<cpp_to_lua>
-	{
-		typedef boost::mpl::bool_<false> is_value_converter;
-		typedef user_defined_converter type;
-
-		template<class T>
-		void apply(lua_State* L, const T& v) 
-		{
-			using namespace converters;
-			convert_cpp_to_lua(L, v);
-		}
-	};
 
 // ********** pointer converter ***********
 
