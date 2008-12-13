@@ -170,7 +170,6 @@ namespace luabind { namespace detail
 
 	struct pointer_converter
 	{
-		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef pointer_converter type;
         typedef mpl::false_ is_native;
 		
@@ -248,7 +247,6 @@ namespace luabind { namespace detail
 
 	struct value_converter
 	{
-		typedef boost::mpl::bool_<true> is_value_converter;
 		typedef value_converter type;
         typedef mpl::false_ is_native;
 
@@ -438,7 +436,6 @@ namespace luabind { namespace detail
 
 	struct ref_converter
 	{
-		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef ref_converter type;
         typedef mpl::false_ is_native;
 		
@@ -488,7 +485,6 @@ namespace luabind { namespace detail
 
 	struct const_ref_converter
 	{
-		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef const_ref_converter type;
         typedef mpl::false_ is_native;
 		
@@ -580,7 +576,6 @@ namespace luabind { namespace detail
 
 	struct enum_converter
 	{
-		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef enum_converter type;
         typedef mpl::true_ is_native;
 		
@@ -620,7 +615,6 @@ namespace luabind { namespace detail
 	template <class U>
 	struct value_wrapper_converter
 	{
-		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef value_wrapper_converter<U> type;
 		typedef mpl::true_ is_native;
 
@@ -700,7 +694,6 @@ struct default_converter
 template <class T, class Derived = default_converter<T> >
 struct native_converter_base
 {
-    typedef boost::mpl::false_ is_value_converter;
     typedef boost::mpl::true_ is_native;
 
     template <class U>
@@ -856,7 +849,6 @@ struct default_converter<std::string const&>
 template <>
 struct default_converter<char const*>
 {
-    typedef boost::mpl::false_ is_value_converter;
     typedef boost::mpl::true_ is_native;
 
     template <class U>

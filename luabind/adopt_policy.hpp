@@ -35,7 +35,6 @@ namespace luabind { namespace detail
 	template<class Direction = lua_to_cpp>
 	struct adopt_pointer
 	{
-		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef adopt_pointer type;
 
 		template<class T>
@@ -80,7 +79,6 @@ namespace luabind { namespace detail
 	template<>
 	struct adopt_pointer<cpp_to_lua>
 	{
-		typedef boost::mpl::bool_<false> is_value_converter;
 		typedef adopt_pointer type;
 
 		template<class T>
