@@ -1529,6 +1529,7 @@ metamethods in Lua). The operators you can overload are:
  - ``__call`` 
  - ``__unm`` 
  - ``__tostring``
+ - ``__len``
 
 ``__tostring`` isn't really an operator, but it's the metamethod that is called
 by the standard library's ``tostring()`` function. There's one strange behavior
