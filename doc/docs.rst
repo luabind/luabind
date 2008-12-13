@@ -1017,6 +1017,45 @@ provides a mean for backward compatibility since the underlying
 interface is in flux.
 
 
+Binding function objects with explicit signatures
+=================================================
+
+Using ``luabind::tag_function<>`` it is possible to export function objects
+from which luabind can't automatically deduce a signature. This can be used to
+slightly alter the signature of a bound function, or even to bind stateful
+function objects.
+
+Synopsis:
+
+.. parsed-literal::
+
+  template <class Signature, class F>
+  *implementation-defined* tag_function(F f);
+
+Where ``Signature`` is a function type describing the signature of ``F``.
+It can be used like this::
+
+  int f(int x);
+
+  // alter the signature so that the return value is ignored
+  def("f", tag_function<void(int)>(f));
+
+  struct plus
+  {
+      plus(int x)
+        : x(x)
+      {}
+
+      int operator()(int y) const
+      {
+          return x + y;
+      }
+  };
+
+  // bind a stateful function object
+  def("plus3", tag_function<int(int)>(plus(3)));
+
+
 Object
 ======
 
