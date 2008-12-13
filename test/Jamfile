@@ -28,6 +28,7 @@ SOURCES =
     test_tag_function.cpp
     test_adopt.cpp
     test_properties.cpp
+    test_user_defined_converter.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;

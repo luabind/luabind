@@ -17,7 +17,7 @@ namespace detail
       template <class T>
       void apply(lua_State* L, T const& x)
       {
-          value_converter<cpp_to_lua>().apply(L, x);
+          value_converter().apply(L, x);
       }
 
       template <class T>
