@@ -56,8 +56,8 @@ namespace luabind { namespace detail
 	void object_rep::remove_ownership()
 	{
 		assert((m_flags & owner) && "cannot remove ownership of object that's not owned");
-		assert(m_classrep->get_class_type() == class_rep::cpp_class
-			|| m_classrep->bases().size() == 1 && "can only adopt c++ types or lua classes that derives from a c++ class");
+		assert((m_classrep->get_class_type() == class_rep::cpp_class
+			|| m_classrep->bases().size() == 1) && "can only adopt c++ types or lua classes that derives from a c++ class");
 
         // daniel040727 Bogus assert above? C++ types can be adopted just fine
         // without a hierarchy?

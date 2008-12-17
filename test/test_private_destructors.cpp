@@ -113,13 +113,19 @@ void h4(ptr<X const> const*)
     TEST_CHECK(ptr_count == 2);
 }
 
+ptr<X> get()
+{
+    return ptr<X>(new X);
+}
+
 void test_main(lua_State* L)
 {
     using namespace luabind;
 
     module(L) [
-        class_<X, ptr<X> >("X")
-          .def(constructor<>()),
+        class_<X, ptr<X> >("X"),
+
+        def("get", &get),
 
         def("f1", &f1),
         def("f2", &f2),
@@ -137,7 +143,7 @@ void test_main(lua_State* L)
         def("h4", &h4)
     ];
 
-    DOSTRING(L, "x = X()\n");
+    DOSTRING(L, "x = get()\n");
     TEST_CHECK(ptr_count == 1);
 
     DOSTRING(L, "f1(x)\n");

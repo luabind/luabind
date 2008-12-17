@@ -960,6 +960,102 @@ units.
 To separate the module registration and the classes to be registered, see
 `Splitting up the registration`_.
 
+
+Adding converters for user defined types
+========================================
+
+It is possible to get luabind to handle user defined types like it does
+the built in types by specializing ``luabind::default_converter<>``:
+
+::
+
+  struct int_wrapper
+  {
+      int_wrapper(int value)
+        : value(value)
+      {}
+
+      int value;
+  };
+
+  namespace luabind
+  {
+      template <>
+      struct default_converter<X>
+        : native_converter_base<X>
+      {
+          static int compute_score(lua_State* L, int index)
+          {
+              return lua_type(L, index) == LUA_TNUMBER ? 0 : -1;
+          }
+
+          X from(lua_State* L, int index)
+          {
+              return X(lua_tonumber(L, index));
+          }
+
+          void to(lua_State* L, X const& x)
+          {
+              lua_pushnumber(L, x.value);
+          }
+      };
+
+      template <>
+      struct default_converter<X const&>
+        : default_converter<X>
+      {};
+  }
+
+Note that ``default_converter<>`` is instantiated for the actual argument and
+return types of the bound functions. In the above example, we add a
+specialization for ``X const&`` that simply forwards to the ``X`` converter.
+This lets us export functions which accept ``X`` by const reference.
+
+``native_converter_base<>`` should be used as the base class for the
+specialized converters. It simplifies the converter interface, and
+provides a mean for backward compatibility since the underlying
+interface is in flux.
+
+
+Binding function objects with explicit signatures
+=================================================
+
+Using ``luabind::tag_function<>`` it is possible to export function objects
+from which luabind can't automatically deduce a signature. This can be used to
+slightly alter the signature of a bound function, or even to bind stateful
+function objects.
+
+Synopsis:
+
+.. parsed-literal::
+
+  template <class Signature, class F>
+  *implementation-defined* tag_function(F f);
+
+Where ``Signature`` is a function type describing the signature of ``F``.
+It can be used like this::
+
+  int f(int x);
+
+  // alter the signature so that the return value is ignored
+  def("f", tag_function<void(int)>(f));
+
+  struct plus
+  {
+      plus(int x)
+        : x(x)
+      {}
+
+      int operator()(int y) const
+      {
+          return x + y;
+      }
+  };
+
+  // bind a stateful function object
+  def("plus3", tag_function<int(int)>(plus(3)));
+
+
 Object
 ======
 
@@ -1472,6 +1568,7 @@ metamethods in Lua). The operators you can overload are:
  - ``__call`` 
  - ``__unm`` 
  - ``__tostring``
+ - ``__len``
 
 ``__tostring`` isn't really an operator, but it's the metamethod that is called
 by the standard library's ``tostring()`` function. There's one strange behavior

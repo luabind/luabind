@@ -1444,6 +1444,14 @@ namespace luabind
 
 	detail::policy_cons<
 		detail::pure_virtual_tag, detail::null_type> const pure_virtual = {};
+
+    namespace detail
+    {
+      inline void ignore_unused_pure_virtual()
+      {
+          (void)pure_virtual;
+      }
+    }
 }
 
 #ifdef _MSC_VER

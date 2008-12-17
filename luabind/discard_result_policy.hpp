@@ -58,6 +58,14 @@ namespace luabind
 {
   detail::policy_cons<
       detail::discard_result_policy, detail::null_type> const discard_result = {};
+
+  namespace detail
+  {
+    inline void ignore_unused_discard_result()
+    {
+        (void)discard_result;
+    }
+  }
 }
 
 #endif // LUABIND_DISCARD_RESULT_POLICY_HPP_INCLUDED
