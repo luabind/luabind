@@ -95,7 +95,12 @@ struct MI1
 	void add(MI2 *) {}
 };
 
-struct MI2 : public MI1 {};
+struct MI2 : public MI1
+{
+	virtual ~MI2()
+	{}
+};
+
 struct MI2W : public MI2, public luabind::wrap_base {};
 
 void test_main(lua_State* L)
