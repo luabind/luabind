@@ -789,14 +789,15 @@ namespace luabind
 		{
 		    static void execute(void* p)
             {
-			    wrapped_self_t& self = wrap_access::ref(
-					*static_cast<W*>(static_cast<T*>(p))
-				);
+                if (W* wrapper = dynamic_cast<W*>(static_cast<T*>(p)))
+                {
+                    wrapped_self_t& self = wrap_access::ref(*wrapper);
 
-				LUABIND_CHECK_STACK(self.state());
+                    LUABIND_CHECK_STACK(self.state());
 
-				self.get(self.state());
-				self.m_strong_ref.set(self.state());
+                    self.get(self.state());
+                    self.m_strong_ref.set(self.state());
+                }
             }
         };
 
