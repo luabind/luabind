@@ -123,32 +123,22 @@ namespace std
 // by luabind throws an exception (throwing exceptions through
 // C code has undefined behavior, lua is written in C).
 
-// LUABIND_EXPORT
-// LUABIND_IMPORT
-// If you're building luabind as a dll on windows with devstudio
-// you can set LUABIND_EXPORT to __declspec(dllexport)
-// and LUABIND_IMPORT to __declspec(dllimport)
-
-#if _GNUC_ >= 4
-#define LUABIND_API __attribute__ ((visibility("default")))
-#else
-
-// this define is set if we're currently building a luabind file
-// select import or export depending on it
-#ifdef LUABIND_BUILDING
-	#ifdef LUABIND_EXPORT
-		#define LUABIND_API LUABIND_EXPORT
-	#else
-		#define LUABIND_API
-	#endif
-#else
-	#ifdef LUABIND_IMPORT
-		#define LUABIND_API LUABIND_IMPORT
-	#else
-		#define LUABIND_API
-	#endif
+#ifdef LUABIND_DYNAMIC_LINK
+# ifdef BOOST_WINDOWS
+#  ifdef LUABIND_BUILDING
+#   define LUABIND_API __declspec(dllexport)
+#  else
+#   define LUABIND_API __declspec(dllimport)
+#  endif
+# else
+#  if defined(_GNUC_) && _GNUC_ >=4
+#   define LUABIND_API __attribute__ ((visibility("default")))
+#  endif
+# endif
 #endif
 
+#ifndef LUABIND_API
+# define LUABIND_API
 #endif
 
 namespace luabind {
