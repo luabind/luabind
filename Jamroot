@@ -139,8 +139,7 @@ usage-requirements =
 lib luabind
     : src/$(SOURCES)
     # requirements
-    : <define>LUABIND_BUILDING
-      <include>. <include>$(BOOST_ROOT)
+    : <include>. <include>$(BOOST_ROOT)
       $(usage-requirements)
     # default-build
     :
