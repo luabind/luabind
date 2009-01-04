@@ -88,3 +88,6 @@ A failed run would end with something like:
   ...failed updating *xxx* target...
   ...skipped *xxx* targets...
 
+If you are not using Boost Build to build your application, and want to
+use the shared library variant, ``LUABIND_DYNAMIC_LINK`` needs to be
+defined to properly import symbols.

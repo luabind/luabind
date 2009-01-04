@@ -29,6 +29,7 @@ SOURCES =
     test_adopt.cpp
     test_properties.cpp
     test_user_defined_converter.cpp
+    test_adopt_wrapper.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;

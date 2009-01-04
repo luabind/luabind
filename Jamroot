@@ -133,15 +133,13 @@ SOURCES =
 
 usage-requirements =
     <library>lua
-    <toolset>msvc,<link>shared:<define>LUABIND_IMPORT=__declspec(dllimport)
-    <toolset>msvc,<link>shared:<define>LUABIND_EXPORT=__declspec(dllexport)
-    <toolset>msvc,<link>shared:<cxxflags>/wd4251 ;
+    <toolset>msvc,<link>shared:<cxxflags>/wd4251
+    <link>shared:<define>LUABIND_DYNAMIC_LINK ;
 
 lib luabind
     : src/$(SOURCES)
     # requirements
-    : <define>LUABIND_BUILDING
-      <include>. <include>$(BOOST_ROOT)
+    : <include>. <include>$(BOOST_ROOT)
       $(usage-requirements)
     # default-build
     :

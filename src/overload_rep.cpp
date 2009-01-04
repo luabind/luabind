@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
+#define LUABIND_BUILDING
+
 #include <luabind/detail/overload_rep.hpp>
 
 namespace luabind { namespace detail

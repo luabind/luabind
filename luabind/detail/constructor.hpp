@@ -23,7 +23,7 @@ inline void inject_backref(lua_State* L, void*, void*)
 template <class T>
 void inject_backref(lua_State* L, T* p, wrap_base*)
 {
-    weak_ref(L, -1).swap(wrap_access::ref(*p));
+    weak_ref(L, 1).swap(wrap_access::ref(*p));
 }
 
 template <std::size_t Arity, class T, class Signature>
