@@ -28,6 +28,7 @@
 
 #include <typeinfo>
 #include <string>
+#include <memory>
 
 #include <boost/type_traits/is_enum.hpp>
 #include <boost/type_traits/is_array.hpp>

@@ -13,6 +13,7 @@
 # include <luabind/detail/format_signature.hpp>
 
 # include <boost/function/function1.hpp>
+# include <boost/function/function2.hpp>
 
 namespace luabind {
 

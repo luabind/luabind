@@ -117,13 +117,11 @@ SOURCES =
     create_class.cpp
     error.cpp
     exception_handler.cpp
-    find_best_match.cpp
     function.cpp
     implicit_cast.cpp
     link_compatibility.cpp
     object_rep.cpp
     open.cpp
-    overload_rep.cpp
     pcall.cpp
     ref.cpp
     scope.cpp

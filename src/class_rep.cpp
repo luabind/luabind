@@ -42,27 +42,6 @@ namespace luabind { namespace detail
 	}
 }}
 
-#ifndef LUABIND_NO_ERROR_CHECKING
-
-	std::string luabind::detail::get_overload_signatures_candidates(
-			lua_State* L
-			, std::vector<const overload_rep_base*>::iterator start
-			, std::vector<const overload_rep_base*>::iterator end
-			, std::string name)
-	{
-		std::string s;
-		for (; start != end; ++start)
-		{
-			s += name;
-			(*start)->get_signature(L, s);
-			s += "\n";
-		}
-		return s;
-	}
-
-#endif
-
-
 luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO type
 	, const char* name
 	, lua_State* L
@@ -467,48 +446,12 @@ void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep
 
 	class_rep* bcrep = binfo.base;
 
-	// import all getters from the base
-	for (std::map<const char*, callback, ltstr>::const_iterator i = bcrep->m_getters.begin(); 
-			i != bcrep->m_getters.end(); ++i)
-	{
-		callback& m = m_getters[i->first];
-		m.pointer_offset = i->second.pointer_offset + binfo.pointer_offset;
-		m.func = i->second.func;
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-		m.match = i->second.match;
-		m.sig = i->second.sig;
-#endif
-	}
-
-	// import all setters from the base
-	for (std::map<const char*, callback, ltstr>::const_iterator i = bcrep->m_setters.begin(); 
-			i != bcrep->m_setters.end(); ++i)
-	{
-		callback& m = m_setters[i->first];
-		m.pointer_offset = i->second.pointer_offset + binfo.pointer_offset;
-		m.func = i->second.func;
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-		m.match = i->second.match;
-		m.sig = i->second.sig;
-#endif
-	}
-
 	// import all static constants
 	for (std::map<const char*, int, ltstr>::const_iterator i = bcrep->m_static_constants.begin(); 
 			i != bcrep->m_static_constants.end(); ++i)
 	{
 		int& v = m_static_constants[i->first];
 		v = i->second;
-	}
-
-	// import all operators
-	for (int i = 0; i < number_of_operators; ++i)
-	{
-		for (std::vector<operator_callback>::const_iterator j = bcrep->m_operators[i].begin(); 
-				j != bcrep->m_operators[i].end(); ++j)
-			m_operators[i].push_back(*j);
 	}
 
 	// also, save the baseclass info to be used for typecasts
@@ -812,9 +755,3 @@ bool luabind::detail::class_rep::has_operator_in_lua(lua_State* L, int id)
 
 	return (m_operator_cache & mask) != 0;
 }
-
-const class_rep::property_map& luabind::detail::class_rep::properties() const
-{
-	return m_getters;
-}
-

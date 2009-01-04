@@ -27,17 +27,15 @@
 #include <boost/limits.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
 
+#include <string>
 #include <utility>
-#include <list>
+#include <vector>
 
 #include <luabind/config.hpp>
 #include <luabind/detail/object_rep.hpp>
-#include <luabind/detail/construct_rep.hpp>
 #include <luabind/detail/garbage_collector.hpp>
 #include <luabind/detail/operator_id.hpp>
 #include <luabind/detail/class_registry.hpp>
-#include <luabind/detail/find_best_match.hpp>
-#include <luabind/detail/get_overload_signature.hpp>
 #include <luabind/error.hpp>
 #include <luabind/handle.hpp>
 #include <luabind/detail/primitives.hpp>
@@ -141,8 +139,6 @@ namespace luabind { namespace detail
 		// this is called as metamethod __call on the class_rep.
 		static int constructor_dispatcher(lua_State* L);
 
-		static int function_dispatcher(lua_State* L);
-
 		struct base_info
 		{
 			int pointer_offset; // the offset added to the pointer to obtain a basepointer (due to multiple-inheritance)
@@ -161,9 +157,6 @@ namespace luabind { namespace detail
 
 		const char* name() const throw() { return m_name; }
 
-		// the lua reference to this class_rep
-		// TODO: remove
-//		int self_ref() const throw() { return m_self_ref; }
 		// the lua reference to the metatable for this class' instances
 		int metatable_ref() const throw() { return m_instance_metatable; }
 
@@ -195,14 +188,6 @@ namespace luabind { namespace detail
 
 		// called from the metamethod for __index
 		// obj is the object pointer
-		static int lua_class_gettable(lua_State* L);
-
-		// called from the metamethod for __newindex
-		// obj is the object pointer
-		static int lua_class_settable(lua_State* L);
-
-		// called from the metamethod for __index
-		// obj is the object pointer
 		static int static_class_gettable(lua_State* L);
 
 		void* convert_to(
@@ -210,22 +195,6 @@ namespace luabind { namespace detail
 		  , const object_rep* obj, conversion_storage&) const;
 
 		bool has_operator_in_lua(lua_State*, int id);
-
-		// this is used to describe setters and getters
-		struct callback
-		{
-			boost::function2<int, lua_State*, int> func;
-#ifndef LUABIND_NO_ERROR_CHECKING
-			int (*match)(lua_State*, int);
-
-			typedef void(*get_sig_ptr)(lua_State*, std::string&);
-			get_sig_ptr sig;
-#endif
-			int pointer_offset;
-		};
-
-		const std::map<const char*, callback, ltstr>& properties() const;
-		typedef std::map<const char*, callback, ltstr> property_map;
 
 		int holder_alignment() const
 		{
@@ -263,16 +232,6 @@ namespace luabind { namespace detail
 			m_default_construct_const_holder = base->m_default_construct_const_holder;
 		}
 
-		struct operator_callback: public overload_rep_base
-		{
-			inline void set_fun(int (*f)(lua_State*)) { func = f; }
-			inline int call(lua_State* L) { return func(L); }
-			inline void set_arity(int arity) { m_arity = arity; }
-
-		private:
-			int(*func)(lua_State*);
-		};
-		
 	private:
 
 		void cache_operators(lua_State*);
@@ -326,10 +285,6 @@ namespace luabind { namespace detail
 		// the class' name (as given when registered to lua with class_)
 		const char* m_name;
 
-		// contains signatures and construction functions
-		// for all constructors
-		construct_rep m_constructor;
-
 		// a reference to this structure itself. Since this struct
 		// is kept inside lua (to let lua collect it when lua_close()
 		// is called) we need to lock it to prevent collection.
@@ -356,13 +311,6 @@ namespace luabind { namespace detail
 		int m_instance_metatable;
 
 		// ***** the maps below contains all members in this class *****
-
-		// datamembers, some members may be readonly, and
-		// only have a getter function
-		std::map<const char*, callback, ltstr> m_getters;
-		std::map<const char*, callback, ltstr> m_setters;
-
-		std::vector<operator_callback> m_operators[number_of_operators]; // the operators in lua
 
 		void(*m_destructor)(void*);
 		void(*m_const_holder_destructor)(void*);

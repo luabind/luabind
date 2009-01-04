@@ -49,16 +49,6 @@ namespace luabind
 		
 		result.attributes = newtable(L);
 
-		typedef detail::class_rep::property_map map_type;
-		
-		std::size_t index = 1;
-		
-		for (map_type::const_iterator i = obj->crep()->properties().begin();
-				i != obj->crep()->properties().end(); ++i, ++index)
-		{
-			result.attributes[index] = i->first;
-		}
-
 		return result;
 	}
 

@@ -107,7 +107,6 @@
 #include <luabind/detail/typetraits.hpp>
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/call.hpp>
-#include <luabind/detail/construct_rep.hpp>
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/calc_arity.hpp>
 #include <luabind/detail/call_member.hpp>
@@ -737,40 +736,7 @@ namespace luabind
 				, int holder_size
 				, int holder_alignment);
 
-			void add_getter(
-				const char* name
-				, const boost::function2<int, lua_State*, int>& g);
-
-#ifdef LUABIND_NO_ERROR_CHECKING
-			void add_setter(
-				const char* name
-				, const boost::function2<int, lua_State*, int>& s);
-#else
-			void add_setter(
-				const char* name
-				, const boost::function2<int, lua_State*, int>& s
-				, int (*match)(lua_State*, int)
-				, void (*get_sig_ptr)(lua_State*, std::string&));
-#endif
-
 			void add_base(const base_desc& b);
-			void add_constructor(const detail::construct_rep::overload_t& o);	
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-			void add_operator(
-				int op_id
-				,  int(*func)(lua_State*)
-				, int(*matcher)(lua_State*)
-				, void(*sig)(lua_State*
-				, std::string&)
-				, int arity);
-#else
-			void add_operator(
-				int op_id
-				,  int(*func)(lua_State*)
-				, int(*matcher)(lua_State*)
-				, int arity);
-#endif
 
 			void add_member(registration* member);
 			void add_default_member(registration* member);
@@ -1213,97 +1179,6 @@ namespace luabind
 			);
 		}
 
-/*
-		template<class op_id, class Left, class Right, class Policies>
-		class_& def(detail::operator_<op_id, Left, Right>, const Policies& policies)
-		{
-			typedef typename detail::operator_unwrapper<Policies, op_id, T, Left, Right> op_type;
-#ifndef LUABIND_NO_ERROR_CHECKING
-			add_operator(op_type::get_id()
-									, &op_type::execute
-									, &op_type::match
-									, &detail::get_signature<constructor<typename op_type::left_t, typename op_type::right_t> >::apply
-									, detail::is_unary(op_type::get_id()) ? 1 : 2);
-#else
-			add_operator(op_type::get_id()
-									, &op_type::execute
-									, &op_type::match
-									, detail::is_unary(op_type::get_id()) ? 1 : 2);
-#endif
-			return *this;
-		}
-
-		template<class op_id, class Left, class Right>
-		class_& def(detail::operator_<op_id, Left, Right>)
-		{
-			typedef typename detail::operator_unwrapper<detail::null_type, op_id, T, Left, Right> op_type;
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-			add_operator(op_type::get_id()
-									, &op_type::execute
-									, &op_type::match
-									, &detail::get_signature<constructor<LUABIND_MSVC_TYPENAME op_type::left_t, LUABIND_MSVC_TYPENAME op_type::right_t> >::apply
-									, detail::is_unary(op_type::get_id()) ? 1 : 2);
-#else
-			add_operator(op_type::get_id()
-									, &op_type::execute
-									, &op_type::match
-									, detail::is_unary(op_type::get_id()) ? 1 : 2);
-#endif
-			return *this;
-		}
-
-		template<class Signature, bool Constant>
-		class_& def(detail::application_operator<Signature, Constant>*)
-		{
-			typedef detail::application_operator<Signature, Constant, detail::null_type> op_t;
-
-			int arity = detail::calc_arity<Signature::arity>::apply(
-				Signature(), static_cast<detail::null_type*>(0));
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-			add_operator(
-				detail::op_call
-				, &op_t::template apply<T>::execute
-				, &op_t::match
-				, &detail::get_signature<Signature>::apply
-				, arity + 1);
-#else
-			add_operator(
-				detail::op_call
-				, &op_t::template apply<T>::execute
-				, &op_t::match
-				, arity + 1);
-#endif
-
-			return *this;
-		}
-
-		template<class Signature, bool Constant, class Policies>
-		class_& def(detail::application_operator<Signature, Constant>*, const Policies& policies)
-		{
-			typedef detail::application_operator<Signature, Constant, Policies> op_t;
-
-			int arity = detail::calc_arity<Signature::arity>::apply(Signature(), static_cast<Policies*>(0));
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-			add_operator(
-				detail::op_call
-				, &op_t::template apply<T>::execute
-				, &op_t::match
-				, &detail::get_signature<Signature>::apply
-				, arity + 1);
-#else
-			add_operator(
-				detail::op_call
-				, &op_t::template apply<T>::execute
-				, &op_t::match
-				, arity + 1);
-#endif
-
-			return *this;
-		}
-*/
 		detail::enum_maker<self_t> enum_(const char*)
 		{
 			return detail::enum_maker<self_t>(*this);
