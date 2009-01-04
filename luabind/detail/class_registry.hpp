@@ -24,11 +24,11 @@
 #ifndef LUABIND_CLASS_REGISTRY_HPP_INCLUDED
 #define LUABIND_CLASS_REGISTRY_HPP_INCLUDED
 
-#include <typeinfo>
 #include <map>
 
 #include <luabind/config.hpp>
 #include <luabind/open.hpp>
+#include <luabind/typeid.hpp>
 
 namespace luabind { namespace detail
 {
@@ -47,27 +47,13 @@ namespace luabind { namespace detail
 		int lua_class() const { return m_lua_class_metatable; }
 		int lua_function() const { return m_lua_function_metatable; }
 
-		void add_class(LUABIND_TYPE_INFO info, class_rep* crep);
+		void add_class(type_id const& info, class_rep* crep);
 
-		struct cmp
-		{
-			bool operator()(const std::type_info* a, const std::type_info* b) const
-			{
-				return a->before(*b) != 0;
-			}
-
-			template<class T>
-			bool operator()(const T& a, const T& b) const
-			{
-				return a < b;
-			}
-		};
-		
-		class_rep* find_class(LUABIND_TYPE_INFO info) const;
+		class_rep* find_class(type_id const& info) const;
 
 	private:
 
-		std::map<LUABIND_TYPE_INFO, class_rep*, cmp> m_classes;
+		std::map<type_id, class_rep*> m_classes;
 
 		// this is a lua reference that points to the lua table
 		// that is to be used as meta table for all C++ class 

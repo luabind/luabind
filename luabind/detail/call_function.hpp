@@ -142,10 +142,10 @@ namespace luabind
 					if (converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) < 0)
 					{
 #ifndef LUABIND_NO_EXCEPTIONS
-						throw cast_failed(L, LUABIND_TYPEID(Ret));
+						throw cast_failed(L, typeid(Ret));
 #else
 						cast_failed_callback_fun e = get_cast_failed_callback();
-						if (e) e(L, LUABIND_TYPEID(Ret));
+						if (e) e(L, typeid(Ret));
 
 						assert(0 && "the lua function's return value could not be converted."
 									" If you want to handle the error you can use luabind::set_error_callback()");
@@ -192,10 +192,10 @@ namespace luabind
 					if (converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) < 0)
 					{
 #ifndef LUABIND_NO_EXCEPTIONS
-						throw cast_failed(L, LUABIND_TYPEID(Ret));
+						throw cast_failed(L, typeid(Ret));
 #else
 						cast_failed_callback_fun e = get_cast_failed_callback();
-						if (e) e(L, LUABIND_TYPEID(Ret));
+						if (e) e(L, typeid(Ret));
 
 						assert(0 && "the lua function's return value could not be converted."
 									" If you want to handle the error you can use luabind::set_error_callback()");

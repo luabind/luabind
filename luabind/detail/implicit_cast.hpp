@@ -26,6 +26,7 @@
 
 #include <luabind/config.hpp>
 #include <luabind/detail/class_rep.hpp>
+#include <luabind/typeid.hpp>
 
 namespace luabind { namespace detail
 {
@@ -43,7 +44,7 @@ namespace luabind { namespace detail
 	// the this-pointer is const, there's no problem, since the non-const function
 	// will not match at all.
 
-	LUABIND_API int implicit_cast(const class_rep*, LUABIND_TYPE_INFO const&, int&);
+	LUABIND_API int implicit_cast(const class_rep*, type_id const&, int&);
 
 }}
 

@@ -50,7 +50,7 @@ namespace luabind { namespace detail
 			assert((obj != 0) && "internal error, please report");
 			const class_rep* crep = obj->crep();
 
-			int steps = implicit_cast(crep, LUABIND_TYPEID(T), offset);
+			int steps = implicit_cast(crep, typeid(T), offset);
 			(void)steps;
 
 			assert((steps >= 0) && "adopt_pointer used with type that cannot be converted");
@@ -69,7 +69,7 @@ namespace luabind { namespace detail
 			if (obj->flags() & object_rep::constant) return -1;
 			if (!(obj->flags() & object_rep::owner)) return -1;
 			int d;
-			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
+			return implicit_cast(obj->crep(), typeid(T), d);
 		}
 
 		template<class T>
@@ -101,7 +101,7 @@ namespace luabind { namespace detail
 			}
 
 			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->find_class(LUABIND_TYPEID(T));
+			class_rep* crep = registry->find_class(typeid(T));
 
 /*			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));

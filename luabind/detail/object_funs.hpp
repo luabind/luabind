@@ -48,11 +48,11 @@ namespace luabind
 			if (obj.lua_state() == 0) 
 			{
 #ifndef LUABIND_NO_EXCEPTIONS
-				throw cast_failed(0, LUABIND_TYPEID(T));
+				throw cast_failed(0, typeid(T));
 #else
 				lua_State* L = obj.lua_state();
 				cast_failed_callback_fun e = get_cast_failed_callback();
-				if (e) e(L, LUABIND_TYPEID(T));
+				if (e) e(L, typeid(T));
 
 				assert(0 && "object_cast failed. If you want to handle this error use luabind::set_error_callback()");
 				std::terminate();
@@ -74,10 +74,10 @@ namespace luabind
 			if (converter.match(L, LUABIND_DECORATE_TYPE(T), -1) < 0)
 			{
 #ifndef LUABIND_NO_EXCEPTIONS
-				throw cast_failed(L, LUABIND_TYPEID(T));
+				throw cast_failed(L, typeid(T));
 #else
 				cast_failed_callback_fun e = get_cast_failed_callback();
-				if (e) e(L, LUABIND_TYPEID(T));
+				if (e) e(L, typeid(T));
 
 				assert(0 && "object_cast failed. If you want to handle this error use luabind::set_error_callback()");
 				std::terminate();

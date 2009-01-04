@@ -38,6 +38,7 @@
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/stack_utils.hpp>
 #include <luabind/detail/convert_to_lua.hpp> // REFACTOR
+#include <luabind/typeid.hpp>
 
 #include <boost/iterator/iterator_facade.hpp> // iterator
 
@@ -948,7 +949,7 @@ namespace detail
 
 #ifndef LUABIND_NO_ERROR_CHECKING
       if (!interpreter) 
-          return ErrorPolicy::handle_error(interpreter, LUABIND_TYPEID(void));
+          return ErrorPolicy::handle_error(interpreter, typeid(void));
 #endif
 
       value_wrapper_traits<ValueWrapper>::unwrap(interpreter, value_wrapper);
@@ -965,7 +966,7 @@ namespace detail
 #ifndef LUABIND_NO_ERROR_CHECKING
       if (cv.match(interpreter, LUABIND_DECORATE_TYPE(T), -1) < 0)
       {
-          return ErrorPolicy::handle_error(interpreter, LUABIND_TYPEID(T));
+          return ErrorPolicy::handle_error(interpreter, typeid(T));
       }
 #endif
 
@@ -975,7 +976,7 @@ namespace detail
   template<class T>
   struct throw_error_policy
   {
-      static T handle_error(lua_State* interpreter, LUABIND_TYPE_INFO type_info)
+      static T handle_error(lua_State* interpreter, type_id const& type_info)
       {
 #ifndef LUABIND_NO_EXCEPTIONS
           throw cast_failed(interpreter, type_info);
@@ -994,7 +995,7 @@ namespace detail
   template<class T>
   struct nothrow_error_policy
   {
-      static boost::optional<T> handle_error(lua_State*, LUABIND_TYPE_INFO)
+      static boost::optional<T> handle_error(lua_State*, type_id const&)
       {
           return boost::optional<T>();
       }

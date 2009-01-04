@@ -112,6 +112,7 @@
 #include <luabind/detail/operator_id.hpp>
 #include <luabind/detail/pointee_typeid.hpp>
 #include <luabind/detail/link_compatibility.hpp>
+#include <luabind/typeid.hpp>
 
 // to remove the 'this' used in initialization list-warning
 #ifdef _MSC_VER
@@ -358,21 +359,11 @@ namespace luabind
 		template<class HeldType>
 		struct internal_holder_type
 		{
-			static LUABIND_TYPE_INFO apply()
+			static type_id apply()
 			{
-				return LUABIND_TYPEID(HeldType);
+				return typeid(HeldType);
 			}
 		};
-
-		template<>
-		struct internal_holder_type<detail::null_type>
-		{
-			static LUABIND_TYPE_INFO apply()
-			{
-				return LUABIND_INVALID_TYPE_INFO;
-			}
-		};
-
 
 		// this is the actual held_type constructor
 		template<class HeldType, class T>
@@ -661,14 +652,14 @@ namespace luabind
 
 			struct base_desc
 			{
-				LUABIND_TYPE_INFO type;
+				type_id type;
 				int ptr_offset;
 			};
 
 			void init(
-				LUABIND_TYPE_INFO type
-				, LUABIND_TYPE_INFO holder_type
-				, LUABIND_TYPE_INFO const_holder_type
+				type_id const& type
+				, type_id const& holder_type
+				, type_id const& const_holder_type
 				, void*(*extractor)(void*)
 				, const void*(*const_extractor)(void*)
 				, void(*const_converter)(void*,void*)
@@ -928,7 +919,7 @@ namespace luabind
 			// cast we need this pointer offset.
 			// store the information in this class' base class-vector
 			base_desc base;
-			base.type = LUABIND_TYPEID(To);
+			base.type = typeid(To);
 			base.ptr_offset = detail::ptr_offset(detail::type_<T>(), detail::type_<To>());
 			add_base(base);
 		}
@@ -1152,7 +1143,7 @@ namespace luabind
 					,	bases<bases_t>
 				>::type Base;
 	
-			class_base::init(LUABIND_TYPEID(T)
+			class_base::init(typeid(T)
 				, detail::internal_holder_type<HeldType>::apply()
 				, detail::pointee_typeid(
 					get_const_holder(static_cast<HeldType*>(0)))

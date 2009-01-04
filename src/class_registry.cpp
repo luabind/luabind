@@ -221,7 +221,7 @@ namespace luabind { namespace detail {
         return p;
     }
 
-    void class_registry::add_class(LUABIND_TYPE_INFO info, class_rep* crep)
+    void class_registry::add_class(type_id const& info, class_rep* crep)
     {
         // class is already registered
         assert((m_classes.find(info) == m_classes.end()) 
@@ -229,9 +229,9 @@ namespace luabind { namespace detail {
         m_classes[info] = crep;
     }
 
-    class_rep* class_registry::find_class(LUABIND_TYPE_INFO info) const
+    class_rep* class_registry::find_class(type_id const& info) const
     {
-        std::map<LUABIND_TYPE_INFO, class_rep*, cmp>::const_iterator i(
+        std::map<type_id, class_rep*>::const_iterator i(
             m_classes.find(info));
 
         if (i == m_classes.end()) return 0; // the type is not registered

@@ -69,9 +69,9 @@ namespace luabind { namespace detail {
         int m_holder_size;
         int m_holder_alignment;
 
-        LUABIND_TYPE_INFO m_type;
-        LUABIND_TYPE_INFO m_holder_type;
-        LUABIND_TYPE_INFO m_const_holder_type;
+        type_id m_type;
+        type_id m_holder_type;
+        type_id m_const_holder_type;
 
         scope m_scope;
         scope m_members;
@@ -125,7 +125,7 @@ namespace luabind { namespace detail {
 
         // register this new type in the class registry
         r->add_class(m_type, crep);
-        if (!(LUABIND_TYPE_INFO_EQUAL(m_holder_type, LUABIND_INVALID_TYPE_INFO)))
+        if (m_holder_type != typeid(null_type))
         {
             // if we have a held type
             // we have to register it in the class-table
@@ -229,9 +229,9 @@ namespace luabind { namespace detail {
     }
 
     void class_base::init(
-        LUABIND_TYPE_INFO type_id
-        , LUABIND_TYPE_INFO holder_type
-        , LUABIND_TYPE_INFO const_holder_type
+        type_id const& type_id
+        , type_id const& holder_type
+        , type_id const& const_holder_type
         , void*(*extractor)(void*)
         , const void*(*const_extractor)(void*)
         , void(*const_converter_)(void*,void*)
@@ -294,17 +294,14 @@ namespace luabind { namespace detail {
         m_registration->m_scope.operator,(s);
     }
 
-	template<class T>
-	void add_custom_name(T i, std::string& s) {}
-
-	void add_custom_name(std::type_info const* i, std::string& s)
+	void add_custom_name(type_id const& i, std::string& s)
 	{
 		s += " [";
-		s += i->name();
+		s += i.name();
 		s += "]";
 	}
 
-    std::string get_class_name(lua_State* L, LUABIND_TYPE_INFO i)
+    std::string get_class_name(lua_State* L, type_id const& i)
     {
         std::string ret;
 
@@ -320,13 +317,13 @@ namespace luabind { namespace detail {
         }
         else
         {
-            if (LUABIND_TYPE_INFO_EQUAL(i, crep->holder_type()))
+            if (i == crep->holder_type())
             {
                 ret += "smart_ptr<";
                 ret += crep->name();
                 ret += ">";
             }
-            else if (LUABIND_TYPE_INFO_EQUAL(i, crep->const_holder_type()))
+            else if (i == crep->const_holder_type())
             {
                 ret += "smart_ptr<const ";
                 ret += crep->name();

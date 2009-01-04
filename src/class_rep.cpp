@@ -42,13 +42,13 @@ namespace luabind { namespace detail
 	}
 }}
 
-luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO type
+luabind::detail::class_rep::class_rep(type_id const& type
 	, const char* name
 	, lua_State* L
 	,  void(*destructor)(void*)
 	,  void(*const_holder_destructor)(void*)
-	, LUABIND_TYPE_INFO holder_type
-	, LUABIND_TYPE_INFO const_holder_type
+	, type_id const& holder_type
+	, type_id const& const_holder_type
 	, void*(*extractor)(void*)
 	, const void*(*const_extractor)(void*)
 	, void(*const_converter)(void*,void*)
@@ -100,9 +100,9 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO type
 }
 
 luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
-	: m_type(LUABIND_INVALID_TYPE_INFO)
-	, m_holder_type(LUABIND_INVALID_TYPE_INFO)
-	, m_const_holder_type(LUABIND_INVALID_TYPE_INFO)
+	: m_type(typeid(null_type))
+	, m_holder_type(typeid(null_type))
+	, m_const_holder_type(typeid(null_type))
 	, m_extractor(0)
 	, m_const_extractor(0)
 	, m_const_converter(0)
@@ -650,7 +650,7 @@ void luabind::detail::finalize(lua_State* L, class_rep* crep)
 }
 
 void* luabind::detail::class_rep::convert_to(
-	LUABIND_TYPE_INFO target_type
+	type_id const& target_type
 	, const object_rep* obj
 	, conversion_storage& storage) const
 {
@@ -661,8 +661,7 @@ void* luabind::detail::class_rep::convert_to(
 
 	int steps = 0;
 	int offset = 0;
-	if (!(LUABIND_TYPE_INFO_EQUAL(holder_type(), target_type))
-		&& !(LUABIND_TYPE_INFO_EQUAL(const_holder_type(), target_type)))
+	if (holder_type() != target_type && const_holder_type() != target_type)
 	{
 		steps = implicit_cast(this, target_type, offset);
 	}
@@ -670,7 +669,7 @@ void* luabind::detail::class_rep::convert_to(
 	// should never be called with a type that can't be cast
 	assert((steps >= 0) && "internal error, please report");
 
-	if (LUABIND_TYPE_INFO_EQUAL(target_type, holder_type()))
+	if (target_type == holder_type())
 	{
 		if (obj == 0)
 		{
@@ -687,7 +686,7 @@ void* luabind::detail::class_rep::convert_to(
 		return obj->ptr();
 	}
 
-	if (LUABIND_TYPE_INFO_EQUAL(target_type, const_holder_type()))
+	if (target_type == const_holder_type())
 	{
 		if (obj == 0)
 		{

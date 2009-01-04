@@ -63,6 +63,7 @@
 
 #include <luabind/value_wrapper.hpp>
 #include <luabind/from_stack.hpp>
+#include <luabind/typeid.hpp>
 
 namespace luabind
 {
@@ -95,7 +96,7 @@ namespace luabind
 	namespace detail
 	{
 
-		LUABIND_API int implicit_cast(const class_rep* crep, LUABIND_TYPE_INFO const&, int& pointer_offset);
+		LUABIND_API int implicit_cast(const class_rep* crep, type_id const&, int& pointer_offset);
 	}
 
 //	 template<class T> class functor;
@@ -218,7 +219,7 @@ namespace luabind { namespace detail
 			assert((obj != 0) && "internal error, please report"); // internal error
 			const class_rep* crep = obj->crep();
 
-			return static_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, storage));
+			return static_cast<T*>(crep->convert_to(typeid(T), obj, storage));
 		}
 
 		template<class T>
@@ -230,13 +231,13 @@ namespace luabind { namespace detail
 			// cannot cast a constant object to nonconst
 			if (obj->flags() & object_rep::constant) return -1;
 
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
+			if (obj->crep()->holder_type() == typeid(T))
 				return (obj->flags() & object_rep::constant)?-1:0;
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
+			if (obj->crep()->const_holder_type() == typeid(T))
 				return (obj->flags() & object_rep::constant)?0:1;
 
 			int d;
-			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
+			return implicit_cast(obj->crep(), typeid(T), d);
 		}
 
 		template<class T>
@@ -274,21 +275,21 @@ namespace luabind { namespace detail
 			int flags = object_rep::owner;
 			if (crep->has_holder())
 			{
-				if (LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->const_holder_type()))
+				if (crep->const_holder_type() == typeid(T))
 				{
 					new(held) T(ref);
 					object_ptr = held;
 					flags |= object_rep::constant;
 					destructor = crep->const_holder_destructor();
 				}
-				else if (LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->holder_type()))
+				else if (crep->holder_type()== typeid(T))
 				{
 					new(held) T(ref);
 					object_ptr = held;
 				}
 				else
 				{
-					assert(LUABIND_TYPE_INFO_EQUAL(LUABIND_TYPEID(T), crep->type()));
+					assert(crep->type() == typeid(T));
 					std::auto_ptr<T> obj(new T(ref));
 					crep->construct_holder()(held, obj.get());
 					object_ptr = held;
@@ -333,7 +334,7 @@ namespace luabind { namespace detail
 			}
 			assert(crep);
 
-			return *static_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, storage));
+			return *static_cast<T*>(crep->convert_to(typeid(T), obj, storage));
 		}
 
 		template<class T>
@@ -344,9 +345,9 @@ namespace luabind { namespace detail
 			{
 				class_rep* crep = get_class_rep<T>(L);
 				if (crep == 0) return -1;
-				if ((LUABIND_TYPE_INFO_EQUAL(crep->holder_type(), LUABIND_TYPEID(T))))
+				if (crep->holder_type() == typeid(T))
 					return 0;
-				if ((LUABIND_TYPE_INFO_EQUAL(crep->const_holder_type(), LUABIND_TYPEID(T))))
+				if (crep->const_holder_type() == typeid(T))
 					return 0;
 				return -1;
 			}
@@ -355,12 +356,12 @@ namespace luabind { namespace detail
 			if (obj == 0) return -1;
 			int d;
 
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
+			if (obj->crep()->holder_type() == typeid(T))
 				return (obj->flags() & object_rep::constant)?-1:0;
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
+			if (obj->crep()->const_holder_type() == typeid(T))
 				return (obj->flags() & object_rep::constant)?0:1;
 
-			return implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);	
+			return implicit_cast(obj->crep(), typeid(T), d);
 		}
 
 		template<class T>
@@ -415,14 +416,14 @@ namespace luabind { namespace detail
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
 
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
+			if (obj->crep()->holder_type() == typeid(T))
 				return (obj->flags() & object_rep::constant)?-1:0;
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
+			if (obj->crep()->const_holder_type() == typeid(T))
 				return (obj->flags() & object_rep::constant)?0:1;
 
             bool const_ = obj->flags() & object_rep::constant;
 			int d;
-			int points = implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
+			int points = implicit_cast(obj->crep(), typeid(T), d);
 			return points == -1 ? -1 : points + !const_;
 		}
 
@@ -535,7 +536,7 @@ namespace luabind { namespace detail
 			}
 			assert(crep);
 
-			return *static_cast<T*>(crep->convert_to(LUABIND_TYPEID(T), obj, storage));
+			return *static_cast<T*>(crep->convert_to(typeid(T), obj, storage));
 		}
 
 		template<class T>
@@ -546,9 +547,9 @@ namespace luabind { namespace detail
 			{
 				class_rep* crep = get_class_rep<T>(L);
 				if (crep == 0) return -1;
-				if ((LUABIND_TYPE_INFO_EQUAL(crep->holder_type(), LUABIND_TYPEID(T))))
+				if (crep->holder_type() == typeid(T))
 					return 0;
-				if ((LUABIND_TYPE_INFO_EQUAL(crep->const_holder_type(), LUABIND_TYPEID(T))))
+				if (crep->const_holder_type() == typeid(T))
 					return 0;
 				return -1;
 			}
@@ -556,14 +557,14 @@ namespace luabind { namespace detail
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
 
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->holder_type(), LUABIND_TYPEID(T))))
+			if (obj->crep()->holder_type() == typeid(T))
 				return (obj->flags() & object_rep::constant)?-1:0;
-			if ((LUABIND_TYPE_INFO_EQUAL(obj->crep()->const_holder_type(), LUABIND_TYPEID(T))))
+			if (obj->crep()->const_holder_type() == typeid(T))
 				return (obj->flags() & object_rep::constant)?0:1;
 
             bool const_ = obj->flags() & object_rep::constant;
 			int d;
-			int points = implicit_cast(obj->crep(), LUABIND_TYPEID(T), d);
+			int points = implicit_cast(obj->crep(), typeid(T), d);
 			return points == -1 ? -1 : points + !const_;
 		}
 

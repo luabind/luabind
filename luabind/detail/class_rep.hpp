@@ -39,6 +39,7 @@
 #include <luabind/error.hpp>
 #include <luabind/handle.hpp>
 #include <luabind/detail/primitives.hpp>
+#include <luabind/typeid.hpp>
 
 namespace luabind { namespace detail
 {
@@ -85,13 +86,13 @@ namespace luabind { namespace detail
 		// EXPECTS THE TOP VALUE ON THE LUA STACK TO
 		// BE THE USER DATA WHERE THIS CLASS IS BEING
 		// INSTANTIATED!
-		class_rep(LUABIND_TYPE_INFO type
+		class_rep(type_id const& type
 			, const char* name
 			, lua_State* L
 			, void(*destructor)(void*)
 			, void(*const_holder_destructor)(void*)
-			, LUABIND_TYPE_INFO holder_type
-			, LUABIND_TYPE_INFO const_holder_type
+			, type_id const& holder_type
+			, type_id const& const_holder_type
 			, void*(*extractor)(void*)
 			, const void*(*const_extractor)(void*)
 			, void(*const_converter)(void*,void*)
@@ -141,10 +142,10 @@ namespace luabind { namespace detail
 
 		const std::vector<base_info>& bases() const throw() { return m_bases; }
 
-		void set_type(LUABIND_TYPE_INFO t) { m_type = t; }
-		LUABIND_TYPE_INFO type() const throw() { return m_type; }
-		LUABIND_TYPE_INFO holder_type() const throw() { return m_holder_type; }
-		LUABIND_TYPE_INFO const_holder_type() const throw() { return m_const_holder_type; }
+		void set_type(type_id const& t) { m_type = t; }
+		type_id const& type() const throw() { return m_type; }
+		type_id const& holder_type() const throw() { return m_holder_type; }
+		type_id const& const_holder_type() const throw() { return m_const_holder_type; }
 		bool has_holder() const throw() { return m_construct_holder != 0; }
 
 		const char* name() const throw() { return m_name; }
@@ -183,7 +184,7 @@ namespace luabind { namespace detail
 		static int static_class_gettable(lua_State* L);
 
 		void* convert_to(
-			LUABIND_TYPE_INFO target_type
+			type_id const& target_type
 		  , const object_rep* obj, conversion_storage&) const;
 
 		bool has_operator_in_lua(lua_State*, int id);
@@ -233,9 +234,9 @@ namespace luabind { namespace detail
 		// warning: this may be a problem when using dll:s, since
 		// typeid() may actually return different pointers for the same
 		// type.
-		LUABIND_TYPE_INFO m_type;
-		LUABIND_TYPE_INFO m_holder_type;
-		LUABIND_TYPE_INFO m_const_holder_type;
+		type_id m_type;
+		type_id m_holder_type;
+		type_id m_const_holder_type;
 
 		// this function pointer is used if the type is held by
 		// a smart pointer. This function takes the type we are holding
