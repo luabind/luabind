@@ -26,16 +26,16 @@ void inject_backref(lua_State* L, T* p, wrap_base*)
     weak_ref(L, 1).swap(wrap_access::ref(*p));
 }
 
-template <std::size_t Arity, class T, class Signature>
+template <std::size_t Arity, class T, class Pointer, class Signature>
 struct construct_aux;
 
-template <class T, class Signature>
+template <class T, class Pointer, class Signature>
 struct construct
-  : construct_aux<mpl::size<Signature>::value - 2, T, Signature>
+  : construct_aux<mpl::size<Signature>::value - 2, T, Pointer, Signature>
 {};
 
-template <class T, class Signature>
-struct construct_aux<0, T, Signature>
+template <class T, class Pointer, class Signature>
+struct construct_aux<0, T, Pointer, Signature>
 {
     void operator()(argument const& self_) const
     {
@@ -45,17 +45,8 @@ struct construct_aux<0, T, Signature>
         std::auto_ptr<T> instance(new T);
         inject_backref(self_.interpreter(), instance.get(), instance.get());
 
-        if (cls->has_holder())
-        {
-            cls->construct_holder()(self->ptr(), instance.get());
-        }
-        else
-        {
-            self->set_object(instance.get());
-        }
-
-        self->set_destructor(cls->destructor());
-        instance.release();
+        Pointer ptr(instance.release());
+        self->set_instance(new pointer_holder<Pointer, T>(ptr, cls));
     }
 };
 
@@ -71,8 +62,8 @@ struct construct_aux<0, T, Signature>
 
 # define N BOOST_PP_ITERATION()
 
-template <class T, class Signature>
-struct construct_aux<N, T, Signature>
+template <class T, class Pointer, class Signature>
+struct construct_aux<N, T, Pointer, Signature>
 {
     typedef typename mpl::begin<Signature>::type first;
     typedef typename mpl::next<first>::type iter0;
@@ -93,17 +84,8 @@ struct construct_aux<N, T, Signature>
         std::auto_ptr<T> instance(new T(BOOST_PP_ENUM_PARAMS(N,_)));
         inject_backref(self_.interpreter(), instance.get(), instance.get());
 
-        if (cls->has_holder())
-        {
-            cls->construct_holder()(self->ptr(), instance.get());
-        }
-        else
-        {
-            self->set_object(instance.get());
-        }
-
-        self->set_destructor(cls->destructor());
-        instance.release();
+        Pointer ptr(instance.release());
+        self->set_instance(new pointer_holder<Pointer, T>(ptr, cls));
     }
 };
 

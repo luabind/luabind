@@ -27,49 +27,50 @@
 #include <luabind/config.hpp>
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/implicit_cast.hpp>
-#include <boost/mpl/bool.hpp>
 #include <luabind/back_reference_fwd.hpp>
+#include <boost/type_traits/is_polymorphic.hpp>
 
 namespace luabind { namespace detail 
 {
+    template <class T>
+    void adjust_backref_ownership(T* ptr, mpl::true_)
+    {
+        if (wrap_base* p = dynamic_cast<wrap_base*>(ptr))
+        {
+            wrapped_self_t& wrapper = wrap_access::ref(*p);
+            wrapper.get(wrapper.state());
+            wrapper.m_strong_ref.set(wrapper.state());
+        }
+    }
+
+    inline void adjust_backref_ownership(void*, mpl::false_)
+    {}
+
 	template<class Direction = lua_to_cpp>
-	struct adopt_pointer
+    struct adopt_pointer : pointer_converter
 	{
 		typedef adopt_pointer type;
 
 		template<class T>
 		T* apply(lua_State* L, by_pointer<T>, int index)
 		{
-			// preconditions:
-			//	lua_isuserdata(L, index);
-			// getmetatable().__lua_class is true
-			// object_rep->flags() & object_rep::constant == 0
+            T* ptr = pointer_converter::apply(
+                L, LUABIND_DECORATE_TYPE(T*), index);
 
-			int offset = 0;
-			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
-			assert((obj != 0) && "internal error, please report");
-			const class_rep* crep = obj->crep();
+            object_rep* obj = static_cast<object_rep*>(
+                lua_touserdata(L, index));
+            obj->release();
 
-			int steps = implicit_cast(crep, typeid(T), offset);
-			(void)steps;
+            adjust_backref_ownership(ptr, boost::is_polymorphic<T>());
 
-			assert((steps >= 0) && "adopt_pointer used with type that cannot be converted");
-			obj->remove_ownership();
-			T* ptr = reinterpret_cast<T*>(obj->ptr(offset));
-
-			return ptr;
+            return ptr;
 		}
 
 		template<class T>
 		static int match(lua_State* L, by_pointer<T>, int index)
 		{
-			object_rep* obj = is_class_object(L, index);
-			if (obj == 0) return -1;
-			// cannot cast a constant object to nonconst
-			if (obj->flags() & object_rep::constant) return -1;
-			if (!(obj->flags() & object_rep::owner)) return -1;
-			int d;
-			return implicit_cast(obj->crep(), typeid(T), d);
+            return pointer_converter::match(
+                L, LUABIND_DECORATE_TYPE(T*), index);
 		}
 
 		template<class T>
@@ -94,11 +95,7 @@ namespace luabind { namespace detail
 			// ownership will be removed from the
 			// back reference and put on the lua stack.
 			if (luabind::move_back_reference(L, ptr))
-			{
-				object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, -1));
-				obj->set_flags(obj->flags() | object_rep::owner);
 				return;
-			}
 
 			class_registry* registry = class_registry::get_registry(L);
 			class_rep* crep = registry->find_class(typeid(T));
@@ -113,7 +110,10 @@ namespace luabind { namespace detail
 
 			boost::tie(obj,held) = crep->allocate(L);
 
-			new(obj) object_rep(ptr, crep, object_rep::owner, delete_s<T>::apply);
+			std::auto_ptr<instance_holder> holder(
+				new pointer_holder<std::auto_ptr<T> >(std::auto_ptr<T>(ptr), crep));
+
+			new(obj) object_rep(holder.release(), crep);
 
 			// set the meta table
 			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());

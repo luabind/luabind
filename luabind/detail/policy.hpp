@@ -54,6 +54,7 @@
 #include <luabind/detail/debug.hpp>
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/conversion_storage.hpp>
+#include <luabind/detail/has_get_pointer.hpp>
 
 #include <boost/type_traits/add_reference.hpp>
 
@@ -170,6 +171,26 @@ namespace luabind { namespace detail
 
 // ********** pointer converter ***********
 
+    template <class P>
+    void install_instance(P ptr, object_rep& instance)
+    {
+        typedef pointer_holder<P> holder_type;
+
+        void* storage = instance.allocate(sizeof(holder_type));
+
+        try
+        {
+            new (storage) holder_type(ptr, instance.crep());
+        }
+        catch (...)
+        {
+            instance.deallocate(storage);
+            throw;
+        }
+
+        instance.set_instance((holder_type*)storage);
+    }
+
 	struct pointer_converter
 	{
 		typedef pointer_converter type;
@@ -196,7 +217,9 @@ namespace luabind { namespace detail
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));
 			//new(obj) object_rep(ptr, crep, object_rep::owner, destructor_s<T>::apply);
-			new(obj) object_rep(ptr, crep, 0, 0);
+
+			new(obj) object_rep(0, crep);
+            install_instance(ptr, *static_cast<object_rep*>(obj));
 
 			// set the meta table
 			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
@@ -211,15 +234,13 @@ namespace luabind { namespace detail
 			// preconditions:
 			//	lua_isuserdata(L, index);
 			// getmetatable().__lua_class is true
-			// object_rep->flags() & object_rep::constant == 0
 
 			if (lua_isnil(L, index)) return 0;
 			
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
 			assert((obj != 0) && "internal error, please report"); // internal error
-			const class_rep* crep = obj->crep();
 
-			return static_cast<T*>(crep->convert_to(typeid(T), obj, storage));
+			return static_cast<T*>(obj->get_instance(typeid(T)).first);
 		}
 
 		template<class T>
@@ -228,16 +249,11 @@ namespace luabind { namespace detail
 			if (lua_isnil(L, index)) return 0;
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1;
-			// cannot cast a constant object to nonconst
-			if (obj->flags() & object_rep::constant) return -1;
 
-			if (obj->crep()->holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?-1:0;
-			if (obj->crep()->const_holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?0:1;
+            if (obj->is_const())
+                return -1;
 
-			int d;
-			return implicit_cast(obj->crep(), typeid(T), d);
+            return obj->get_instance(typeid(T)).second;
 		}
 
 		template<class T>
@@ -252,13 +268,38 @@ namespace luabind { namespace detail
 		typedef value_converter type;
         typedef mpl::false_ is_native;
 
-		template<class T>
-		void apply(lua_State* L, const T& ref)
+        template <class T>
+        void install(T& x, object_rep& instance, mpl::false_)
+        {
+            std::auto_ptr<T> ptr(new T(x));
+            install_instance(ptr, instance);
+        }
+
+        template <class T>
+        void install(T& x, object_rep& instance, mpl::true_)
+        {
+            install_instance(x, instance);
+        }
+
+		template <class T>
+		class_rep* get_class(T const*, lua_State* L, mpl::false_)
 		{
-			if (luabind::get_back_reference(L, ref))
+			return get_class_rep<T>(L);
+		}
+
+		template <class T>
+		class_rep* get_class(T const* x, lua_State* L, mpl::true_)
+		{
+			return get_class(get_pointer(*x), L, mpl::false_());
+		}
+
+		template<class T>
+		void apply(lua_State* L, T x)
+		{
+			if (luabind::get_back_reference(L, x))
 				return;
 
-			class_rep* crep = get_class_rep<T>(L);
+			class_rep* crep = get_class(&x, L, has_get_pointer<T>());
 
 			// if you get caught in this assert you are
 			// trying to use an unregistered type
@@ -269,38 +310,8 @@ namespace luabind { namespace detail
 
 			boost::tie(obj_rep,held) = crep->allocate(L);
 
-			void* object_ptr;
-			void(*destructor)(void*);
-			destructor = crep->destructor();
-			int flags = object_rep::owner;
-			if (crep->has_holder())
-			{
-				if (crep->const_holder_type() == typeid(T))
-				{
-					new(held) T(ref);
-					object_ptr = held;
-					flags |= object_rep::constant;
-					destructor = crep->const_holder_destructor();
-				}
-				else if (crep->holder_type()== typeid(T))
-				{
-					new(held) T(ref);
-					object_ptr = held;
-				}
-				else
-				{
-					assert(crep->type() == typeid(T));
-					std::auto_ptr<T> obj(new T(ref));
-					crep->construct_holder()(held, obj.get());
-					object_ptr = held;
-					obj.release();
-				}
-			}
-			else
-			{
-				object_ptr = new T(ref);
-			}
-			new(obj_rep) object_rep(object_ptr, crep, flags, destructor);
+			new(obj_rep) object_rep(0, crep);
+            install(x, *static_cast<object_rep*>(obj_rep), has_get_pointer<T>());
 
 			// set the meta table
 			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
@@ -315,26 +326,11 @@ namespace luabind { namespace detail
 			// preconditions:
 			//	lua_isuserdata(L, index);
 			// getmetatable().__lua_class is true
-			// object_rep->flags() & object_rep::constant == 0
 
-			object_rep* obj = 0;
-			const class_rep* crep = 0;
+			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
+			assert((obj != 0) && "internal error, please report"); // internal error
 
-			// special case if we get nil in, try to convert the holder type
-			if (lua_isnil(L, index))
-			{
-				crep = get_class_rep<T>(L);
-				assert(crep);
-			}
-			else
-			{
-				obj = static_cast<object_rep*>(lua_touserdata(L, index));
-				assert((obj != 0) && "internal error, please report"); // internal error
-				crep = obj->crep();
-			}
-			assert(crep);
-
-			return *static_cast<T*>(crep->convert_to(typeid(T), obj, storage));
+			return *static_cast<T*>(obj->get_instance(typeid(T)).first);
 		}
 
 		template<class T>
@@ -342,26 +338,12 @@ namespace luabind { namespace detail
 		{
 			// special case if we get nil in, try to match the holder type
 			if (lua_isnil(L, index))
-			{
-				class_rep* crep = get_class_rep<T>(L);
-				if (crep == 0) return -1;
-				if (crep->holder_type() == typeid(T))
-					return 0;
-				if (crep->const_holder_type() == typeid(T))
-					return 0;
 				return -1;
-			}
 
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1;
-			int d;
 
-			if (obj->crep()->holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?-1:0;
-			if (obj->crep()->const_holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?0:1;
-
-			return implicit_cast(obj->crep(), typeid(T), d);
+			return obj->get_instance(typeid(T)).second;
 		}
 
 		template<class T>
@@ -395,8 +377,9 @@ namespace luabind { namespace detail
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));
 			assert(obj && "internal error, please report");
-			// we send 0 as destructor since we know it will never be called
-			new(obj) object_rep(const_cast<T*>(ptr), crep, object_rep::constant, 0);
+
+			new(obj) object_rep(0, crep);
+            install_instance(ptr, *static_cast<object_rep*>(obj));
 
 			// set the meta table
 			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
@@ -415,16 +398,12 @@ namespace luabind { namespace detail
 			if (lua_isnil(L, index)) return 0;
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
+			int score = obj->get_instance(typeid(T)).second;
 
-			if (obj->crep()->holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?-1:0;
-			if (obj->crep()->const_holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?0:1;
+            if (score >= 0 && !obj->is_const())
+                score += 10;
 
-            bool const_ = obj->flags() & object_rep::constant;
-			int d;
-			int points = implicit_cast(obj->crep(), typeid(T), d);
-			return points == -1 ? -1 : points + !const_;
+            return score;
 		}
 
 		template<class T>
@@ -453,12 +432,12 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			T* ptr = &ref;
-
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));
 			assert(obj && "internal error, please report");
-			new(obj) object_rep(ptr, crep, 0, 0);
+
+			new(obj) object_rep(0, crep);
+            install_instance(&ref, *static_cast<object_rep*>(obj));
 
 			// set the meta table
 			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
@@ -502,12 +481,12 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			T const* ptr = &ref;
-
 			// create the struct to hold the object
 			void* obj = lua_newuserdata(L, sizeof(object_rep));
 			assert(obj && "internal error, please report");
-			new(obj) object_rep(const_cast<T*>(ptr), crep, object_rep::constant, 0);
+
+			new(obj) object_rep(0, crep);
+            install_instance(&ref, *static_cast<object_rep*>(obj));
 
 			// set the meta table
 			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
@@ -519,53 +498,23 @@ namespace luabind { namespace detail
 		template<class T>
 		T const& apply(lua_State* L, by_const_reference<T>, int index)
 		{
-			object_rep* obj = 0;
-			class_rep const * crep = 0;
+			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
+			assert((obj != 0) && "internal error, please report"); // internal error
 
-			// special case if we get nil in, try to convert the holder type
-			if (lua_isnil(L, index))
-			{
-				crep = get_class_rep<T>(L);
-				assert(crep);
-			}
-			else
-			{
-				obj = static_cast<object_rep*>(lua_touserdata(L, index));
-				assert((obj != 0) && "internal error, please report"); // internal error
-				crep = obj->crep();
-			}
-			assert(crep);
-
-			return *static_cast<T*>(crep->convert_to(typeid(T), obj, storage));
+			return *static_cast<T*>(obj->get_instance(typeid(T)).first);
 		}
 
 		template<class T>
 		static int match(lua_State* L, by_const_reference<T>, int index)
 		{
-			// special case if we get nil in, try to match the holder type
-			if (lua_isnil(L, index))
-			{
-				class_rep* crep = get_class_rep<T>(L);
-				if (crep == 0) return -1;
-				if (crep->holder_type() == typeid(T))
-					return 0;
-				if (crep->const_holder_type() == typeid(T))
-					return 0;
-				return -1;
-			}
-
 			object_rep* obj = is_class_object(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
+			int score = obj->get_instance(typeid(T)).second;
 
-			if (obj->crep()->holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?-1:0;
-			if (obj->crep()->const_holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?0:1;
+            if (score >= 0 && !obj->is_const())
+                score += 10;
 
-            bool const_ = obj->flags() & object_rep::constant;
-			int d;
-			int points = implicit_cast(obj->crep(), typeid(T), d);
-			return points == -1 ? -1 : points + !const_;
+            return score;
 		}
 
 		template<class T>

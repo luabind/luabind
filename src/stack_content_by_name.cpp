@@ -43,7 +43,7 @@ std::string luabind::detail::stack_content_by_name(lua_State* L, int start_index
 		}
 		else if (obj)
 		{
-			if (obj->flags() & object_rep::constant) ret += "const ";
+			if (obj->is_const()) ret += "const ";
 			ret += obj->crep()->name();
 		}
 		else if (crep)
