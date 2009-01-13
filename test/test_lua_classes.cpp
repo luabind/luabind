@@ -269,7 +269,7 @@ void test_main(lua_State* L)
 	{
 		LUABIND_CHECK_STACK(L);
 
-		try { call_function<void*>(L, "gen_error") [ adopt(result) ]; }
+		try { call_function<void>(L, "gen_error") [ adopt(result) ]; }
 		catch (luabind::error&)
 		{
             bool result(
