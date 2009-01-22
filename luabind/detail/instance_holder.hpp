@@ -79,7 +79,7 @@ public:
     std::pair<void*, int> get(type_id const& target) const
     {
         if (target == typeid(P))
-            return std::pair<void*, int>(const_cast<void*>(&this->p), 0);
+            return std::pair<void*, int>(&this->p, 0);
 
         int offset = 0;
         int steps = implicit_cast(get_class(), target, offset);
@@ -101,7 +101,7 @@ public:
     }
 
 private:
-    P p;
+    mutable P p;
 };
 
 }} // namespace luabind::detail

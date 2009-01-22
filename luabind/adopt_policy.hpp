@@ -100,24 +100,8 @@ namespace luabind { namespace detail
 			class_registry* registry = class_registry::get_registry(L);
 			class_rep* crep = registry->find_class(typeid(T));
 
-/*			// create the struct to hold the object
-			void* obj = lua_newuserdata(L, sizeof(object_rep));
-			// we send 0 as destructor since we know it will never be called
-			new(obj) object_rep(ptr, crep, object_rep::owner, delete_s<T>::apply);*/
-
-			void* obj;
-			void* held;
-
-			boost::tie(obj,held) = crep->allocate(L);
-
-			std::auto_ptr<instance_holder> holder(
-				new pointer_holder<std::auto_ptr<T> >(std::auto_ptr<T>(ptr), crep));
-
-			new(obj) object_rep(holder.release(), crep);
-
-			// set the meta table
-			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
-			lua_setmetatable(L, -2);
+            object_rep* instance = push_new_instance(L, crep);
+            install_instance(std::auto_ptr<T>(ptr), *instance);
 		}
 	};
 

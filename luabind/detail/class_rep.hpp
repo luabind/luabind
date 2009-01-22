@@ -96,21 +96,6 @@ namespace luabind { namespace detail
 
 		std::pair<void*,void*> allocate(lua_State* L) const;
 
-		// called from the metamethod for __index
-		// the object pointer is passed on the lua stack
-		int gettable(lua_State* L);
-
-		// called from the metamethod for __newindex
-		// the object pointer is passed on the lua stack
-		bool settable(lua_State* L);
-
-		// this is called as __index metamethod on every instance of this class
-		static int gettable_dispatcher(lua_State* L);
-
-		// this is called as __newindex metamethod on every instance of this class
-		static int settable_dispatcher(lua_State* L);
-		static int operator_dispatcher(lua_State* L);
-
 		// this is called as metamethod __call on the class_rep.
 		static int constructor_dispatcher(lua_State* L);
 

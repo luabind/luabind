@@ -40,10 +40,10 @@ namespace luabind { namespace detail
 
 		static class_registry* get_registry(lua_State* L);
 
-		int cpp_instance() const { return m_cpp_instance_metatable; }
+		int cpp_instance() const { return m_instance_metatable; }
 		int cpp_class() const { return m_cpp_class_metatable; }
 
-		int lua_instance() const { return m_lua_instance_metatable; }
+		int lua_instance() const { return m_instance_metatable; }
 		int lua_class() const { return m_lua_class_metatable; }
 		int lua_function() const { return m_lua_function_metatable; }
 
@@ -58,16 +58,11 @@ namespace luabind { namespace detail
 		// this is a lua reference that points to the lua table
 		// that is to be used as meta table for all C++ class 
 		// instances. It is a kind of v-table.
-		int m_cpp_instance_metatable;
+		int m_instance_metatable;
 
 		// this is a lua reference to the metatable to be used
 		// for all classes defined in C++.
 		int m_cpp_class_metatable;
-
-		// this is a lua reference that points to the lua table
-		// that is to be used as meta table for all lua class
-		// instances. It is a kind of v-table.
-		int m_lua_instance_metatable;
 
 		// this is a lua reference to the metatable to be used
 		// for all classes defined in lua

@@ -45,7 +45,6 @@ namespace luabind { namespace detail
 
 		// dest is a function that is called to delete the c++ object this struct holds
 		object_rep(instance_holder* instance, class_rep* crep);
-		object_rep(class_rep* crep, detail::lua_reference const& table_ref);
 		~object_rep();
 
 		const class_rep* crep() const { return m_classrep; }
@@ -57,8 +56,6 @@ namespace luabind { namespace detail
 		void set_instance(instance_holder* instance) { m_instance = instance; }
 
 		void add_dependency(lua_State* L, int index);
-
-		static int garbage_collector(lua_State* L);
 
 		std::pair<void*, int> get_instance(type_id const& target) const
 		{
@@ -140,6 +137,10 @@ namespace luabind { namespace detail
 		return obj;
 
 	}
+
+    LUABIND_API object_rep* get_instance(lua_State* L, int index);
+    LUABIND_API void push_instance_metatable(lua_State* L);
+    LUABIND_API object_rep* push_new_instance(lua_State* L, class_rep* cls);
 
 }}
 

@@ -214,16 +214,8 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			// create the struct to hold the object
-			void* obj = lua_newuserdata(L, sizeof(object_rep));
-			//new(obj) object_rep(ptr, crep, object_rep::owner, destructor_s<T>::apply);
-
-			new(obj) object_rep(0, crep);
-            install_instance(ptr, *static_cast<object_rep*>(obj));
-
-			// set the meta table
-			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
-			lua_setmetatable(L, -2);
+            object_rep* instance = push_new_instance(L, crep);
+            install_instance(ptr, *instance);
 		}
 
 		conversion_storage storage;
@@ -247,7 +239,7 @@ namespace luabind { namespace detail
 		static int match(lua_State* L, by_pointer<T>, int index)
 		{
 			if (lua_isnil(L, index)) return 0;
-			object_rep* obj = is_class_object(L, index);
+			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1;
 
             if (obj->is_const())
@@ -305,17 +297,8 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			void* obj_rep;
-			void* held;
-
-			boost::tie(obj_rep,held) = crep->allocate(L);
-
-			new(obj_rep) object_rep(0, crep);
-            install(x, *static_cast<object_rep*>(obj_rep), has_get_pointer<T>());
-
-			// set the meta table
-			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
-			lua_setmetatable(L, -2);
+            object_rep* instance = push_new_instance(L, crep);
+            install(x, *instance, has_get_pointer<T>());
 		}
 
         conversion_storage storage;
@@ -340,7 +323,7 @@ namespace luabind { namespace detail
 			if (lua_isnil(L, index))
 				return -1;
 
-			object_rep* obj = is_class_object(L, index);
+			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1;
 
 			return obj->get_instance(typeid(T)).second;
@@ -374,16 +357,8 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			// create the struct to hold the object
-			void* obj = lua_newuserdata(L, sizeof(object_rep));
-			assert(obj && "internal error, please report");
-
-			new(obj) object_rep(0, crep);
-            install_instance(ptr, *static_cast<object_rep*>(obj));
-
-			// set the meta table
-			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
-			lua_setmetatable(L, -2);
+            object_rep* instance = push_new_instance(L, crep);
+            install_instance(ptr, *instance);
 		}
 
 		template<class T>
@@ -396,7 +371,7 @@ namespace luabind { namespace detail
 		static int match(lua_State* L, by_const_pointer<T>, int index)
 		{
 			if (lua_isnil(L, index)) return 0;
-			object_rep* obj = is_class_object(L, index);
+			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
 			int score = obj->get_instance(typeid(T)).second;
 
@@ -432,16 +407,8 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			// create the struct to hold the object
-			void* obj = lua_newuserdata(L, sizeof(object_rep));
-			assert(obj && "internal error, please report");
-
-			new(obj) object_rep(0, crep);
-            install_instance(&ref, *static_cast<object_rep*>(obj));
-
-			// set the meta table
-			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
-			lua_setmetatable(L, -2);
+            object_rep* instance = push_new_instance(L, crep);
+            install_instance(&ref, *instance);
 		}
 
 		template<class T>
@@ -482,15 +449,8 @@ namespace luabind { namespace detail
 			assert(crep && "you are trying to use an unregistered type");
 
 			// create the struct to hold the object
-			void* obj = lua_newuserdata(L, sizeof(object_rep));
-			assert(obj && "internal error, please report");
-
-			new(obj) object_rep(0, crep);
-            install_instance(&ref, *static_cast<object_rep*>(obj));
-
-			// set the meta table
-			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
-			lua_setmetatable(L, -2);
+            object_rep* instance = push_new_instance(L, crep);
+            install_instance(&ref, *instance);
 		}
 
 		conversion_storage storage;
@@ -507,7 +467,7 @@ namespace luabind { namespace detail
 		template<class T>
 		static int match(lua_State* L, by_const_reference<T>, int index)
 		{
-			object_rep* obj = is_class_object(L, index);
+			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
 			int score = obj->get_instance(typeid(T)).second;
 
