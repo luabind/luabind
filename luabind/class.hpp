@@ -81,7 +81,6 @@
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_member_object_pointer.hpp>
-#include <boost/mpl/list.hpp>
 #include <boost/mpl/apply.hpp>
 #include <boost/mpl/lambda.hpp>
 #include <boost/mpl/logical.hpp>
@@ -881,15 +880,17 @@ namespace luabind
 
 	public:
 
+        typedef boost::mpl::vector3<X1, X2, X3> parameters_type;
+
 		// WrappedType MUST inherit from T
 		typedef typename detail::extract_parameter<
-		    boost::mpl::vector3<X1,X2,X3>
+		    parameters_type
 		  , boost::is_base_and_derived<T, boost::mpl::_>
 		  , detail::null_type
 		>::type WrappedType;
 
 		typedef typename detail::extract_parameter<
-		    boost::mpl::list3<X1,X2,X3>
+		    parameters_type
 		  , boost::mpl::not_<
 		        boost::mpl::or_<
 				    boost::mpl::or_<
@@ -1128,7 +1129,7 @@ namespace luabind
 		void init()
 		{
 			typedef typename detail::extract_parameter<
-					boost::mpl::list3<X1,X2,X3>
+					parameters_type
 				,	boost::mpl::or_<
 							detail::is_bases<boost::mpl::_>
 						,	boost::is_base_and_derived<boost::mpl::_, T>
