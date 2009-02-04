@@ -154,6 +154,15 @@ namespace luabind
 		return 0;
 	}
 
+    template <
+        BOOST_PP_ENUM_PARAMS_WITH_A_DEFAULT(
+            LUABIND_MAX_BASES, class A, detail::null_type)
+    >
+    struct bases
+    {};
+
+    typedef bases<detail::null_type> no_bases;
+
 	namespace detail
 	{
         template <class T>
