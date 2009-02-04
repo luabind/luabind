@@ -156,25 +156,15 @@ namespace luabind
 
 	namespace detail
 	{
-		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, class A)>
-		double is_bases_helper(const bases<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, A)>&);
+        template <class T>
+        struct is_bases
+          : mpl::false_
+        {};
 
-#ifndef BOOST_MSVC
-		template<class T>
-		char is_bases_helper(const T&);
-#else
-		char is_bases_helper(...);
-#endif
-
-		template<class T>
-		struct is_bases
-		{
-			static const T& t;
-
-			BOOST_STATIC_CONSTANT(bool, value = sizeof(is_bases_helper(t)) == sizeof(double));
-			typedef boost::mpl::bool_<value> type;
-			BOOST_MPL_AUX_LAMBDA_SUPPORT(1,is_bases,(T))
-		};
+        template <BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, class A)>
+        struct is_bases<bases<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, A)> >
+          : mpl::true_
+        {};
 
         template <class T, class P>
         struct is_unspecified
