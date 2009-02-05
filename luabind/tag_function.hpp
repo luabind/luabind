@@ -40,10 +40,11 @@ namespace detail
 
   template <class Signature, class F, class Policies>
   int invoke(
-      lua_State* L, tagged_function<Signature, F> const& tagged
+      lua_State* L, function_object const& self, invoke_context& ctx
+    , tagged_function<Signature, F> const& tagged
     , Signature, Policies const& policies)
   {
-      return invoke(L, tagged.f, Signature(), policies);
+      return invoke(L, self, ctx, tagged.f, Signature(), policies);
   }
 
   template <class Function>
