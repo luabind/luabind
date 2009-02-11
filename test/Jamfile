@@ -34,6 +34,7 @@ SOURCES =
     test_class_info.cpp
     test_table.cpp
     test_automatic_smart_ptr.cpp
+    test_shared_ptr.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;
