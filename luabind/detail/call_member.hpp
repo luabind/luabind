@@ -37,6 +37,7 @@
 
 #include <boost/preprocessor/control/if.hpp>
 #include <boost/preprocessor/facilities/expand.hpp>
+#include <boost/preprocessor/repetition/enum.hpp>
 
 #include <boost/mpl/apply_wrap.hpp>
 

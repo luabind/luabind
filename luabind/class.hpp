@@ -176,39 +176,51 @@ namespace luabind
 			BOOST_MPL_AUX_LAMBDA_SUPPORT(1,is_bases,(T))
 		};
 
-		double is_not_unspecified_helper(const unspecified*);
-		char is_not_unspecified_helper(...);
+        template <class T, class P>
+        struct is_unspecified
+          : mpl::apply1<P, T>
+        {};
 
-		template<class T>
-		struct is_not_unspecified
-		{
-			BOOST_STATIC_CONSTANT(bool, value = sizeof(is_not_unspecified_helper(static_cast<T*>(0))) == sizeof(char));
-			typedef boost::mpl::bool_<value> type;
-			BOOST_MPL_AUX_LAMBDA_SUPPORT(1,is_not_unspecified,(T))
-		};
+        template <class P>
+        struct is_unspecified<unspecified, P>
+          : mpl::true_
+        {};
+
+        template <class P>
+        struct is_unspecified_mfn
+        {
+            template <class T>
+            struct apply
+              : is_unspecified<T, P>
+            {};
+        };
 
 		template<class Predicate>
 		struct get_predicate
 		{
-			typedef typename boost::mpl::and_<
-			  	is_not_unspecified<boost::mpl::_1>
-			  , Predicate
-			> type;
+            typedef mpl::protect<is_unspecified_mfn<Predicate> > type;
 		};
+
+        template <class Result, class Default>
+        struct result_or_default
+        {
+            typedef Result type;
+        };
+
+        template <class Default>
+        struct result_or_default<unspecified, Default>
+        {
+            typedef Default type;
+        };
 
 		template<class Parameters, class Predicate, class DefaultValue>
 		struct extract_parameter
 		{
 			typedef typename get_predicate<Predicate>::type pred;
 			typedef typename boost::mpl::find_if<Parameters, pred>::type iterator;
-			typedef typename boost::mpl::eval_if<
-				boost::is_same<
-					iterator
-				  , typename boost::mpl::end<Parameters>::type
-				>
-			  , boost::mpl::identity<DefaultValue>
-			  , boost::mpl::deref<iterator>
-			>::type type;
+            typedef typename result_or_default<
+                typename iterator::type, DefaultValue
+            >::type type;
 		};
 
 		// prints the types of the values on the stack, in the
@@ -880,7 +892,7 @@ namespace luabind
 
 	public:
 
-        typedef boost::mpl::vector3<X1, X2, X3> parameters_type;
+        typedef boost::mpl::vector4<X1, X2, X3, detail::unspecified> parameters_type;
 
 		// WrappedType MUST inherit from T
 		typedef typename detail::extract_parameter<
@@ -893,11 +905,9 @@ namespace luabind
 		    parameters_type
 		  , boost::mpl::not_<
 		        boost::mpl::or_<
-				    boost::mpl::or_<
-					    detail::is_bases<boost::mpl::_>
-					  , boost::is_base_and_derived<boost::mpl::_, T>
-					>
-				  , boost::is_base_and_derived<T, boost::mpl::_>
+                    detail::is_bases<boost::mpl::_>
+                  , boost::is_base_and_derived<boost::mpl::_, T>
+                  , boost::is_base_and_derived<T, boost::mpl::_>
 				>
 			>
 		  , detail::null_type
