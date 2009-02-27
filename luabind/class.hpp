@@ -75,16 +75,12 @@
 #include <vector>
 #include <cassert>
 
-#include <boost/static_assert.hpp>
-#include <boost/type_traits.hpp>
 #include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_member_object_pointer.hpp>
-#include <boost/mpl/list.hpp>
 #include <boost/mpl/apply.hpp>
 #include <boost/mpl/lambda.hpp>
 #include <boost/mpl/logical.hpp>
@@ -158,122 +154,72 @@ namespace luabind
 		return 0;
 	}
 
+    template <
+        BOOST_PP_ENUM_PARAMS_WITH_A_DEFAULT(
+            LUABIND_MAX_BASES, class A, detail::null_type)
+    >
+    struct bases
+    {};
+
+    typedef bases<detail::null_type> no_bases;
+
 	namespace detail
 	{
-		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, class A)>
-		double is_bases_helper(const bases<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, A)>&);
+        template <class T>
+        struct is_bases
+          : mpl::false_
+        {};
 
-#ifndef BOOST_MSVC
-		template<class T>
-		char is_bases_helper(const T&);
-#else
-		char is_bases_helper(...);
-#endif
+        template <BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, class A)>
+        struct is_bases<bases<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, A)> >
+          : mpl::true_
+        {};
 
-		template<class T>
-		struct is_bases
-		{
-			static const T& t;
+        template <class T, class P>
+        struct is_unspecified
+          : mpl::apply1<P, T>
+        {};
 
-			BOOST_STATIC_CONSTANT(bool, value = sizeof(is_bases_helper(t)) == sizeof(double));
-			typedef boost::mpl::bool_<value> type;
-			BOOST_MPL_AUX_LAMBDA_SUPPORT(1,is_bases,(T))
-		};
+        template <class P>
+        struct is_unspecified<unspecified, P>
+          : mpl::true_
+        {};
 
-		double is_not_unspecified_helper(const unspecified*);
-		char is_not_unspecified_helper(...);
-
-		template<class T>
-		struct is_not_unspecified
-		{
-			BOOST_STATIC_CONSTANT(bool, value = sizeof(is_not_unspecified_helper(static_cast<T*>(0))) == sizeof(char));
-			typedef boost::mpl::bool_<value> type;
-			BOOST_MPL_AUX_LAMBDA_SUPPORT(1,is_not_unspecified,(T))
-		};
+        template <class P>
+        struct is_unspecified_mfn
+        {
+            template <class T>
+            struct apply
+              : is_unspecified<T, P>
+            {};
+        };
 
 		template<class Predicate>
 		struct get_predicate
 		{
-			typedef typename boost::mpl::and_<
-			  	is_not_unspecified<boost::mpl::_1>
-			  , Predicate
-			> type;
+            typedef mpl::protect<is_unspecified_mfn<Predicate> > type;
 		};
+
+        template <class Result, class Default>
+        struct result_or_default
+        {
+            typedef Result type;
+        };
+
+        template <class Default>
+        struct result_or_default<unspecified, Default>
+        {
+            typedef Default type;
+        };
 
 		template<class Parameters, class Predicate, class DefaultValue>
 		struct extract_parameter
 		{
 			typedef typename get_predicate<Predicate>::type pred;
 			typedef typename boost::mpl::find_if<Parameters, pred>::type iterator;
-			typedef typename boost::mpl::eval_if<
-				boost::is_same<
-					iterator
-				  , typename boost::mpl::end<Parameters>::type
-				>
-			  , boost::mpl::identity<DefaultValue>
-			  , boost::mpl::deref<iterator>
-			>::type type;
-		};
-
-		template<class Fn, class Class, class Policies>
-		struct mem_fn_callback
-		{
-			typedef int result_type;
-
-			int operator()(lua_State* L) const
-			{
-				return invoke(L, fn, deduce_signature(fn, (Class*)0), Policies());
-			}
-
-			mem_fn_callback(Fn fn_)
-				: fn(fn_)
-			{
-			}
-
-			Fn fn;
-		};
-
-		template<class Fn, class Class, class Policies>
-		struct mem_fn_matcher
-		{
-			typedef int result_type;
-
-			int operator()(lua_State* L) const
-			{
-				return compute_score(L, deduce_signature(fn, (Class*)0), Policies());
-			}
-
-			mem_fn_matcher(Fn fn_)
-				: fn(fn_)
-			{
-			}
-
-			Fn fn;
-		};
-
-		struct pure_virtual_tag
-		{
-			static void precall(lua_State*, index_map const&) {}
-			static void postcall(lua_State*, index_map const&) {}
-		};
-
-		template<class Policies>
-		struct has_pure_virtual
-		{
-			typedef typename boost::mpl::eval_if<
-				boost::is_same<pure_virtual_tag, typename Policies::head>
-			  , boost::mpl::true_
-			  , has_pure_virtual<typename Policies::tail>
-			>::type type;
-
-			BOOST_STATIC_CONSTANT(bool, value = type::value);
-		};
-
-		template<>
-		struct has_pure_virtual<null_type>
-		{
-			BOOST_STATIC_CONSTANT(bool, value = false);
-			typedef boost::mpl::bool_<value> type;
+            typedef typename result_or_default<
+                typename iterator::type, DefaultValue
+            >::type type;
 		};
 
 		// prints the types of the values on the stack, in the
@@ -945,22 +891,22 @@ namespace luabind
 
 	public:
 
+        typedef boost::mpl::vector4<X1, X2, X3, detail::unspecified> parameters_type;
+
 		// WrappedType MUST inherit from T
 		typedef typename detail::extract_parameter<
-		    boost::mpl::vector3<X1,X2,X3>
+		    parameters_type
 		  , boost::is_base_and_derived<T, boost::mpl::_>
 		  , detail::null_type
 		>::type WrappedType;
 
 		typedef typename detail::extract_parameter<
-		    boost::mpl::list3<X1,X2,X3>
+		    parameters_type
 		  , boost::mpl::not_<
 		        boost::mpl::or_<
-				    boost::mpl::or_<
-					    detail::is_bases<boost::mpl::_>
-					  , boost::is_base_and_derived<boost::mpl::_, T>
-					>
-				  , boost::is_base_and_derived<T, boost::mpl::_>
+                    detail::is_bases<boost::mpl::_>
+                  , boost::is_base_and_derived<boost::mpl::_, T>
+                  , boost::is_base_and_derived<T, boost::mpl::_>
 				>
 			>
 		  , detail::null_type
@@ -1192,7 +1138,7 @@ namespace luabind
 		void init()
 		{
 			typedef typename detail::extract_parameter<
-					boost::mpl::list3<X1,X2,X3>
+					parameters_type
 				,	boost::mpl::or_<
 							detail::is_bases<boost::mpl::_>
 						,	boost::is_base_and_derived<boost::mpl::_, T>
@@ -1318,16 +1264,6 @@ namespace luabind
 		}
 	};
 
-	detail::policy_cons<
-		detail::pure_virtual_tag, detail::null_type> const pure_virtual = {};
-
-    namespace detail
-    {
-      inline void ignore_unused_pure_virtual()
-      {
-          (void)pure_virtual;
-      }
-    }
 }
 
 #ifdef _MSC_VER

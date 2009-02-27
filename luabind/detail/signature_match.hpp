@@ -26,22 +26,14 @@
 #include <luabind/config.hpp>
 
 #include <boost/config.hpp>
-#include <boost/preprocessor/repeat.hpp>
-#include <boost/preprocessor/iteration/iterate.hpp>
-#include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
-#include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
-#include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
 
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/remove.hpp>
-
-#include <luabind/detail/policy.hpp>
-#include <luabind/detail/compute_score.hpp>
 
 namespace luabind
 {
@@ -61,30 +53,9 @@ namespace luabind
 
 		typedef typename boost::mpl::remove<
 			signature0, detail::null_type>::type signature;
-
-		BOOST_STATIC_CONSTANT(int, arity = boost::mpl::size<signature>::value - 1);
 	};
 
 }
-
-namespace luabind { namespace detail
-{
-
-	template<class Sig, int StartIndex, class Policies>
-	struct constructor_match
-	{
-		inline static int apply(lua_State* L)
-		{
-			typedef typename Sig::signature signature_type;
-
-			if (lua_gettop(L) != compute_arity(signature_type(), Policies()))
-				return -1;
-
-			return compute_score(L, signature_type(), Policies());
-		}
-	};
-
-}} // namespace luabind::detail
 
 #endif // LUABIND_SIGNATURE_MATCH_HPP_INCLUDED
 
