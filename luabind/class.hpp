@@ -75,8 +75,6 @@
 #include <vector>
 #include <cassert>
 
-#include <boost/static_assert.hpp>
-#include <boost/type_traits.hpp>
 #include <boost/bind.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
@@ -212,67 +210,6 @@ namespace luabind
 			  , boost::mpl::identity<DefaultValue>
 			  , boost::mpl::deref<iterator>
 			>::type type;
-		};
-
-		template<class Fn, class Class, class Policies>
-		struct mem_fn_callback
-		{
-			typedef int result_type;
-
-			int operator()(lua_State* L) const
-			{
-				return invoke(L, fn, deduce_signature(fn, (Class*)0), Policies());
-			}
-
-			mem_fn_callback(Fn fn_)
-				: fn(fn_)
-			{
-			}
-
-			Fn fn;
-		};
-
-		template<class Fn, class Class, class Policies>
-		struct mem_fn_matcher
-		{
-			typedef int result_type;
-
-			int operator()(lua_State* L) const
-			{
-				return compute_score(L, deduce_signature(fn, (Class*)0), Policies());
-			}
-
-			mem_fn_matcher(Fn fn_)
-				: fn(fn_)
-			{
-			}
-
-			Fn fn;
-		};
-
-		struct pure_virtual_tag
-		{
-			static void precall(lua_State*, index_map const&) {}
-			static void postcall(lua_State*, index_map const&) {}
-		};
-
-		template<class Policies>
-		struct has_pure_virtual
-		{
-			typedef typename boost::mpl::eval_if<
-				boost::is_same<pure_virtual_tag, typename Policies::head>
-			  , boost::mpl::true_
-			  , has_pure_virtual<typename Policies::tail>
-			>::type type;
-
-			BOOST_STATIC_CONSTANT(bool, value = type::value);
-		};
-
-		template<>
-		struct has_pure_virtual<null_type>
-		{
-			BOOST_STATIC_CONSTANT(bool, value = false);
-			typedef boost::mpl::bool_<value> type;
 		};
 
 		// prints the types of the values on the stack, in the
@@ -1317,16 +1254,6 @@ namespace luabind
 		}
 	};
 
-	detail::policy_cons<
-		detail::pure_virtual_tag, detail::null_type> const pure_virtual = {};
-
-    namespace detail
-    {
-      inline void ignore_unused_pure_virtual()
-      {
-          (void)pure_virtual;
-      }
-    }
 }
 
 #ifdef _MSC_VER
