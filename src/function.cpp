@@ -17,15 +17,10 @@ namespace
   struct function
   {
       function(
-          int arity
-        , function_callback const& call
-        , function_callback const& score
-        , signature_callback const& signature
+          int arity, function_base* impl
       )
         : m_arity(arity)
-        , m_call(call)
-        , m_score(score)
-        , m_signature(signature)
+        , m_impl(impl)
         , m_next(0)
       {}
 
@@ -33,9 +28,7 @@ namespace
 
       std::string m_name;
       int m_arity;
-      function_callback m_call;
-      function_callback m_score;
-      signature_callback m_signature;
+      std::auto_ptr<function_base> m_impl;
       function const* m_next;
       object m_keep_alive;
   };
@@ -59,7 +52,7 @@ namespace
           if (args != f->m_arity)
               continue;
 
-          int score = f->m_score(L);
+          int score = f->m_impl->compute_score(L);
 
           if (score < 0)
               continue;
@@ -89,7 +82,7 @@ namespace
               {
                   if (i != 0)
                       lua_pushstring(L, "\n");
-                  candidates[i]->m_signature(L, function_name);
+                  candidates[i]->m_impl->format_signature(L, function_name);
               }
               lua_concat(L, candidate_idx * 2);
           }
@@ -102,7 +95,7 @@ namespace
               {
                   if (count != 0)
                       lua_pushstring(L, "\n");
-                  f->m_signature(L, function_name);
+                  f->m_impl->format_signature(L, function_name);
                   ++count;
               }
               lua_concat(L, count * 2);
@@ -111,7 +104,7 @@ namespace
           return -2;
       }
 
-      return best->m_call(L);
+      return best->m_impl->call(L);
   }
 
   int function_dispatcher(lua_State* L)
@@ -190,15 +183,12 @@ LUABIND_API void add_overload(
 }
 
 LUABIND_API object make_function_aux(
-    lua_State* L, int arity
-  , function_callback const& call
-  , function_callback const& score
-  , signature_callback const& signature
+    lua_State* L, int arity, function_base* impl
 )
 {
     void* storage = lua_newuserdata(L, sizeof(function));
     push_function_metatable(L);
-    new (storage) function(arity, call, score, signature);
+    new (storage) function(arity, impl);
     lua_setmetatable(L, -2);
 
     lua_pushcclosure(L, &function_dispatcher, 1);

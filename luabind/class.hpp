@@ -78,7 +78,6 @@
 #include <boost/static_assert.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
