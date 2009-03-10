@@ -2,7 +2,11 @@ import docutils ;
 import os ;
 import errors ;
 import notfile ;
+import package ;
+import path ;
+import virtual-target ;
 
+VERSION = 0.8.1 ;
 BOOST_ROOT = [ os.environ BOOST_ROOT ] ;
 
 rule debug-message ( txt * )
@@ -109,6 +113,26 @@ else if [ os.name ] in LINUX MACOSX FREEBSD
     lib lua : m dl : <name>$(lib-name) <search>$(library:D) : : <include>$(includes) ;
 }
 
+rule tag-names ( name : type ? : property-set )
+{
+    if $(type) in STATIC_LIB SHARED_LIB IMPORT_LIB &&
+        [ $(property-set).get <variant> ] = debug
+    {
+        name = $(name)d ;
+    }
+
+    local result = [ virtual-target.add-prefix-and-suffix $(name) : $(type) : $(property-set) ] ;
+
+    if $(type) = SHARED_LIB &&
+        ( ! ( [ $(property-set).get <target-os> ] in windows cygwin darwin aix ) &&
+          ! ( [ $(property-set).get <toolset> ] in pgi ) )
+    {
+        result = $(result).$(VERSION) ;
+    }
+
+    return $(result) ;
+}
+
 SOURCES =
     class.cpp
     class_info.cpp
@@ -132,7 +156,8 @@ SOURCES =
 usage-requirements =
     <library>lua
     <toolset>msvc,<link>shared:<cxxflags>/wd4251
-    <link>shared:<define>LUABIND_DYNAMIC_LINK ;
+    <link>shared:<define>LUABIND_DYNAMIC_LINK
+    <tag>@tag-names ;
 
 lib luabind
     : src/$(SOURCES)
@@ -199,3 +224,26 @@ html docs.html
 stage docs : docs.html : <location>doc ;
 explicit docs docs.html make-version-file ;
 
+headers = [ path.glob-tree luabind : *.hpp ] ;
+
+package.install install
+  : <install-header-subdir>luabind
+    <install-source-root>luabind
+    <install-no-version-symlinks>on
+  :
+  : luabind
+  : $(headers)
+  ;
+
+local stage-locate = [ MATCH "^--stagedir=(.*)" : [ modules.peek : ARGV ] ] ;
+stage-locate ?= stage ;
+
+install stage
+  : luabind
+  : <location>$(stage-locate)
+    <install-no-version-symlinks>on
+    <install-dependencies>on
+    <install-type>LIB
+  ;
+
+explicit stage ;
