@@ -29,6 +29,7 @@
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/implicit_cast.hpp>
 #include <luabind/back_reference_fwd.hpp>
+#include <luabind/wrapper_base.hpp>
 #include <boost/type_traits/is_polymorphic.hpp>
 
 namespace luabind { namespace detail 
