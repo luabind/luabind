@@ -75,7 +75,6 @@ namespace luabind { namespace detail {
         class_id m_id;
         class_id m_wrapper_id;
         type_id m_wrapper_type;
-        cast_function m_wrapper_cast;
         std::vector<cast_entry> m_casts;
 
         scope m_scope;
@@ -126,10 +125,10 @@ namespace luabind { namespace detail {
 
         classes.put(m_id, crep);
 
-        if (m_wrapper_cast)
-        {
+        bool const has_wrapper = m_wrapper_id != registered_class<null_type>::id;
+
+        if (has_wrapper)
             classes.put(m_wrapper_id, crep);
-        }
 
         crep->m_static_constants.swap(m_static_constants);
 
@@ -158,11 +157,8 @@ namespace luabind { namespace detail {
 
         class_ids->put(m_id, m_type);
 
-        if (m_wrapper_cast)
-        {
+        if (has_wrapper)
             class_ids->put(m_wrapper_id, m_wrapper_type);
-            casts->insert(m_wrapper_id, m_id, m_wrapper_cast);
-        }
 
         BOOST_FOREACH(cast_entry const& e, m_casts)
         {
@@ -247,14 +243,12 @@ namespace luabind { namespace detail {
 
     void class_base::init(
         type_id const& type_id, class_id id
-      , class_id wrapper_id, type_id const& wrapper_type
-      , cast_function wrapper_cast)
+      , type_id const& wrapper_type, class_id wrapper_id)
     {
         m_registration->m_type = type_id;
         m_registration->m_id = id;
-        m_registration->m_wrapper_id = wrapper_id;
         m_registration->m_wrapper_type = wrapper_type;
-        m_registration->m_wrapper_cast = wrapper_cast;
+        m_registration->m_wrapper_id = wrapper_id;
     }
 
     void class_base::add_base(type_id const& base, cast_function cast)

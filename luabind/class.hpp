@@ -273,8 +273,7 @@ namespace luabind
 
 			void init(
                 type_id const& type, class_id id
-              , class_id wrapper_id, type_id const& wrapped_type
-              , cast_function wrapper_cast);
+              , type_id const& wrapped_type, class_id wrapper_id);
 
             void add_base(type_id const& base, cast_function cast);
 
@@ -739,15 +738,19 @@ namespace luabind
 	private:
 		void operator=(class_ const&);
 
-        detail::cast_function get_wrapper_cast(detail::null_type*)
-        {
-            return 0;
-        }
+        void add_wrapper_cast(detail::null_type*)
+        {}
 
         template <class U>
-        detail::cast_function get_wrapper_cast(U*)
+        void add_wrapper_cast(U*)
         {
-            return &detail::static_cast_<U,T>::execute;
+            add_cast(
+                detail::registered_class<U>::id
+              , detail::registered_class<T>::id
+              , detail::static_cast_<U,T>::execute
+            );
+
+            add_downcast((T*)0, (U*)0, boost::is_polymorphic<T>());
         }
 
 		void init()
@@ -770,10 +773,11 @@ namespace luabind
             class_base::init(
                 typeid(T)
               , detail::registered_class<T>::id
-              , detail::registered_class<WrappedType>::id
               , typeid(WrappedType)
-              , get_wrapper_cast((WrappedType*)0)
+              , detail::registered_class<WrappedType>::id
             );
+
+            add_wrapper_cast((WrappedType*)0);
 
 			generate_baseclass_list(detail::type_<Base>());
 		}
