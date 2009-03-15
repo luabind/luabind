@@ -15,6 +15,9 @@
 
 namespace luabind { namespace detail {
 
+class_id const class_id_map::local_id_base =
+    std::numeric_limits<class_id>::max() / 2;
+
 namespace
 {
 

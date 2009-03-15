@@ -41,10 +41,15 @@ private:
     std::auto_ptr<impl> m_impl;
 };
 
-// Maps a type_id to a class_id. Note that this..
+// Maps a type_id to a class_id. Note that this actually partitions the
+// id-space into two, using one half for "local" ids; ids that are used only as
+// keys into the conversion cache. This is needed because we need a unique key
+// even for types that hasn't been registered explicitly.
 class class_id_map
 {
 public:
+    class_id_map();
+
     class_id get(type_id const& type) const;
     class_id get_local(type_id const& type);
     void put(class_id id, type_id const& type);
@@ -52,12 +57,19 @@ public:
 private:
     typedef std::map<type_id, class_id> map_type;
     map_type m_classes;
+    class_id m_local_id;
+
+    static class_id const local_id_base;
 };
+
+inline class_id_map::class_id_map()
+  : m_local_id(local_id_base)
+{}
 
 inline class_id class_id_map::get(type_id const& type) const
 {
     map_type::const_iterator i = m_classes.find(type);
-    if (i == m_classes.end() || i->second > unknown_class / 2)
+    if (i == m_classes.end() || i->second >= local_id_base)
         return unknown_class;
     return i->second;
 }
@@ -68,17 +80,33 @@ inline class_id class_id_map::get_local(type_id const& type)
         std::make_pair(type, 0));
 
     if (result.second)
-        result.first->second = unknown_class - m_classes.size();
+        result.first->second = m_local_id++;
+
+    assert(m_local_id >= local_id_base);
 
     return result.first->second;
 }
 
 inline void class_id_map::put(class_id id, type_id const& type)
 {
+    assert(id < local_id_base);
+
     std::pair<map_type::iterator, bool> result = m_classes.insert(
-        std::make_pair(type, id));
-    assert(result.second || result.first->second == id);
-    (void)result;
+        std::make_pair(type, 0));
+
+    assert(
+        result.second
+        || result.first->second == id
+        || result.first->second >= local_id_base
+    );
+
+    if (!result.second)
+    {
+        result.first->second = id;
+        --m_local_id;
+    }
+
+    assert(m_local_id >= local_id_base);
 }
 
 class class_map
