@@ -4,7 +4,7 @@
 
 #include "test.hpp"
 #include <luabind/luabind.hpp>
-#include <luabind/detail/shared_ptr_converter.hpp>
+#include <luabind/shared_ptr_converter.hpp>
 
 struct X
 {
@@ -20,6 +20,11 @@ int get_value(boost::shared_ptr<X> const& p)
     return p->value;
 }
 
+boost::shared_ptr<X> filter(boost::shared_ptr<X> const& p)
+{
+    return p;
+}
+
 void test_main(lua_State* L)
 {
     using namespace luabind;
@@ -27,11 +32,16 @@ void test_main(lua_State* L)
     module(L) [
         class_<X>("X")
             .def(constructor<int>()),
-        def("get_value", &get_value)
+        def("get_value", &get_value),
+        def("filter", &filter)
     ];
 
     DOSTRING(L,
         "x = X(1)\n"
         "assert(get_value(x) == 1)\n"
+    );
+
+    DOSTRING(L,
+        "assert(x == filter(x))\n"
     );
 }
