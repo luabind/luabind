@@ -21,7 +21,9 @@ namespace detail
       {}
 
       void operator()(void const*)
-      {}
+      {
+          handle().swap(life_support);
+      }
 
       handle life_support;
   };
@@ -54,7 +56,15 @@ struct default_converter<boost::shared_ptr<T> >
 
     void apply(lua_State* L, boost::shared_ptr<T> const& p)
     {
-        detail::value_converter().apply(L, p);
+        if (detail::shared_ptr_deleter* d =
+                boost::get_deleter<detail::shared_ptr_deleter>(p))
+        {
+            d->life_support.push(L);
+        }
+        else
+        {
+            detail::value_converter().apply(L, p);
+        }
     }
 
     template <class U>
