@@ -53,7 +53,6 @@
 #include <luabind/detail/class_cache.hpp>
 #include <luabind/detail/debug.hpp>
 #include <luabind/detail/class_rep.hpp>
-#include <luabind/detail/conversion_storage.hpp>
 #include <luabind/detail/has_get_pointer.hpp>
 #include <luabind/detail/make_instance.hpp>
 
@@ -203,8 +202,6 @@ namespace luabind { namespace detail
             make_instance(L, ptr);
 		}
 
-		conversion_storage storage;
-
 		template<class T>
 		T* apply(lua_State* L, by_pointer<T>, int index)
 		{
@@ -271,8 +268,6 @@ namespace luabind { namespace detail
 
             make(L, x, has_get_pointer<T>());
 		}
-
-        conversion_storage storage;
 
 		template<class T>
 		T apply(lua_State* L, by_value<T>, int index)
@@ -426,8 +421,6 @@ namespace luabind { namespace detail
 
             make_instance(L, &ref);
 		}
-
-		conversion_storage storage;
 
 		template<class T>
 		T const& apply(lua_State* L, by_const_reference<T>, int index)
