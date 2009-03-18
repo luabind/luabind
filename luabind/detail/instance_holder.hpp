@@ -85,6 +85,7 @@ public:
     )
       : instance_holder(cls, check_const_pointer(get_pointer(p)))
       , p(p)
+      , weak(0)
       , dynamic_id(dynamic_id)
       , dynamic_ptr(dynamic_ptr)
     {}
@@ -95,14 +96,14 @@ public:
             return std::pair<void*, int>(&this->p, 0);
 
         void* naked_ptr = const_cast<void*>(static_cast<void const*>(
-            get_pointer(p)));
+            weak ? weak : get_pointer(p)));
 
         if (!naked_ptr)
             return std::pair<void*, int>(0, 0);
 
         return get_class()->casts().cast(
             naked_ptr
-          , static_class_id(get_pointer(p))
+          , static_class_id(false ? get_pointer(p) : 0)
           , target
           , dynamic_id
           , dynamic_ptr
@@ -111,11 +112,17 @@ public:
 
     void release()
     {
+        weak = const_cast<void*>(static_cast<void const*>(
+            get_pointer(p)));
         release_ownership(p);
     }
 
 private:
     mutable P p;
+    // weak will hold a possibly stale pointer to the object owned
+    // by p once p has released it's owership. This is a workaround
+    // to make adopt() work with virtual function wrapper classes.
+    void* weak;
     class_id dynamic_id;
     void* dynamic_ptr;
 };
