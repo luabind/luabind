@@ -253,7 +253,14 @@ namespace luabind { namespace detail
         template <class T>
         void make(lua_State* L, T& x, mpl::true_)
         {
-            make_instance(L, x);
+            if (get_pointer(x))
+            {
+                make_instance(L, x);
+            }
+            else
+            {
+                lua_pushnil(L);
+            }
         }
 
 		template<class T>
