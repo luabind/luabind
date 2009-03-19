@@ -83,7 +83,7 @@ public:
     pointer_holder(
         P p, class_id dynamic_id, void* dynamic_ptr, class_rep* cls
     )
-      : instance_holder(cls, check_const_pointer(get_pointer(p)))
+      : instance_holder(cls, check_const_pointer(false ? get_pointer(p) : 0))
       , p(p)
       , weak(0)
       , dynamic_id(dynamic_id)
