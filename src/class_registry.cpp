@@ -75,7 +75,7 @@ namespace luabind { namespace detail {
             lua_pushcclosure(L, &class_rep::lua_settable_dispatcher, 0);
             lua_rawset(L, -3);
 
-            return detail::ref(L);
+            return luaL_ref(L, LUA_REGISTRYINDEX);
         }
 
         int create_cpp_instance_metatable(lua_State* L)
@@ -115,7 +115,7 @@ namespace luabind { namespace detail {
             assert((lua_type(L, -1) == LUA_TTABLE) 
                 && "internal error, please report");
 
-            return detail::ref(L);
+            return luaL_ref(L, LUA_REGISTRYINDEX);
         }
 
         int create_lua_class_metatable(lua_State* L)
@@ -148,7 +148,7 @@ namespace luabind { namespace detail {
             lua_pushcclosure(L, &class_rep::static_class_gettable, 0);
             lua_rawset(L, -3);
 
-            return detail::ref(L);
+            return luaL_ref(L, LUA_REGISTRYINDEX);
         }
 
         int create_lua_instance_metatable(lua_State* L)
@@ -177,7 +177,7 @@ namespace luabind { namespace detail {
                 add_operator_to_metatable(L, i);
 
             // store a reference to the instance-metatable in our class_rep
-            return detail::ref(L);
+            return luaL_ref(L, LUA_REGISTRYINDEX);
         }
 
     } // namespace unnamed

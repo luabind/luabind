@@ -116,7 +116,7 @@ namespace luabind { namespace detail
 			new(obj) object_rep(ptr, crep, object_rep::owner, delete_s<T>::apply);
 
 			// set the meta table
-			detail::getref(L, crep->metatable_ref());
+			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
 			lua_setmetatable(L, -2);
 		}
 	};

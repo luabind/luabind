@@ -198,7 +198,7 @@ namespace luabind { namespace detail
 			new(obj) object_rep(ptr, crep, 0, 0);
 
 			// set the meta table
-			detail::getref(L, crep->metatable_ref());
+			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
 			lua_setmetatable(L, -2);
 		}
 
@@ -302,7 +302,7 @@ namespace luabind { namespace detail
 			new(obj_rep) object_rep(object_ptr, crep, flags, destructor);
 
 			// set the meta table
-			detail::getref(L, crep->metatable_ref());
+			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
 			lua_setmetatable(L, -2);
 		}
 
@@ -398,7 +398,7 @@ namespace luabind { namespace detail
 			new(obj) object_rep(const_cast<T*>(ptr), crep, object_rep::constant, 0);
 
 			// set the meta table
-			detail::getref(L, crep->metatable_ref());
+			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
 			lua_setmetatable(L, -2);
 		}
 
@@ -460,7 +460,7 @@ namespace luabind { namespace detail
 			new(obj) object_rep(ptr, crep, 0, 0);
 
 			// set the meta table
-			detail::getref(L, crep->metatable_ref());
+			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
 			lua_setmetatable(L, -2);
 		}
 
@@ -509,7 +509,7 @@ namespace luabind { namespace detail
 			new(obj) object_rep(const_cast<T*>(ptr), crep, object_rep::constant, 0);
 
 			// set the meta table
-			detail::getref(L, crep->metatable_ref());
+			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
 			lua_setmetatable(L, -2);
 		}
 

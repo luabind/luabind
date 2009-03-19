@@ -90,7 +90,7 @@ luabind::detail::class_rep::class_rep(LUABIND_TYPE_INFO type
 	class_registry* r = class_registry::get_registry(L);
 	assert((r->cpp_class() != LUA_NOREF) && "you must call luabind::open()");
 
-	detail::getref(L, r->cpp_class());
+	lua_rawgeti(L, LUA_REGISTRYINDEX, r->cpp_class());
 	lua_setmetatable(L, -2);
 
 	lua_pushvalue(L, -1); // duplicate our user data
@@ -128,7 +128,7 @@ luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	class_registry* r = class_registry::get_registry(L);
 	assert((r->cpp_class() != LUA_NOREF) && "you must call luabind::open()");
 
-	detail::getref(L, r->lua_class());
+	lua_rawgeti(L, LUA_REGISTRYINDEX, r->lua_class());
 	lua_setmetatable(L, -2);
 	lua_pushvalue(L, -1); // duplicate our user data
 	m_self_ref.set(L);
@@ -405,7 +405,7 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
     boost::tie(obj_ptr, held_storage) = cls->allocate(L);
     (new(obj_ptr) object_rep(cls, flags, ref))->set_object(held_storage);
 
-    detail::getref(L, cls->metatable_ref());
+    lua_rawgeti(L, LUA_REGISTRYINDEX, cls->metatable_ref());
     lua_setmetatable(L, -2);
 
     if (cls->get_class_type() == class_rep::lua_class

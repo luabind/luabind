@@ -25,7 +25,6 @@
 
 #include <luabind/lua_include.hpp>
 #include <luabind/value_wrapper.hpp>
-#include <luabind/detail/ref.hpp>
 
 namespace luabind {
 
@@ -63,8 +62,8 @@ inline handle::handle(handle const& other)
   , m_index(LUA_NOREF)
 {
     if (m_interpreter == 0) return;
-    detail::getref(m_interpreter, other.m_index);
-    m_index = detail::ref(m_interpreter);
+    lua_rawgeti(m_interpreter, LUA_REGISTRYINDEX, other.m_index);
+    m_index = luaL_ref(m_interpreter, LUA_REGISTRYINDEX);
 }
 
 inline handle::handle(lua_State* interpreter, int stack_index)
@@ -72,13 +71,13 @@ inline handle::handle(lua_State* interpreter, int stack_index)
   , m_index(LUA_NOREF)
 {
     lua_pushvalue(interpreter, stack_index);
-    m_index = detail::ref(interpreter);
+    m_index = luaL_ref(interpreter, LUA_REGISTRYINDEX);
 }
 
 inline handle::~handle()
 {
     if (m_interpreter && m_index != LUA_NOREF)
-        detail::unref(m_interpreter, m_index);
+        luaL_unref(m_interpreter, LUA_REGISTRYINDEX, m_index);
 }
 
 inline handle& handle::operator=(handle const& other)
@@ -95,7 +94,7 @@ inline void handle::swap(handle& other)
 
 inline void handle::push(lua_State* interpreter) const
 {
-    detail::getref(interpreter, m_index);
+    lua_rawgeti(interpreter, LUA_REGISTRYINDEX, m_index);
 }
 
 inline lua_State* handle::interpreter() const
