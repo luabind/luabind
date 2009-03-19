@@ -32,65 +32,40 @@
 
 namespace luabind {
 
-// allocation code from lauxlib.c
-/******************************************************************************
-* Copyright (C) 1994-2003 Tecgraf, PUC-Rio.  All rights reserved.
-*
-* Permission is hereby granted, free of charge, to any person obtaining
-* a copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, sublicense, and/or sell copies of the Software, and to
-* permit persons to whom the Software is furnished to do so, subject to
-* the following conditions:
-*
-* The above copyright notice and this permission notice shall be
-* included in all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-******************************************************************************/
-    
-    namespace {
+namespace
+{
 
-        enum
-        {
-            freelist_ref = 1, count_ref = 2
-        };
-        
-        void get_weak_table(lua_State* L)
-        {
-            lua_pushliteral(L, "__luabind_weak_refs");
-            lua_gettable(L, LUA_REGISTRYINDEX);
+  int weak_table_tag;
 
-            if (lua_isnil(L, -1))
-            {
-                lua_pop(L, 1);
-                lua_newtable(L);
-                // metatable
-                lua_newtable(L);
-                lua_pushliteral(L, "__mode");
-                lua_pushliteral(L, "v");
-                lua_rawset(L, -3);
-                // set metatable
-                lua_setmetatable(L, -2);
-                lua_pushnumber(L, 0);
-                lua_rawseti(L, -2, freelist_ref);
-                lua_pushnumber(L, 2);
-                lua_rawseti(L, -2, count_ref);
+} // namespace unnamed
 
-                lua_pushliteral(L, "__luabind_weak_refs");
-                lua_pushvalue(L, -2);
-                lua_settable(L, LUA_REGISTRYINDEX);
-            }
-        }
+LUABIND_API void get_weak_table(lua_State* L)
+{
+    lua_pushlightuserdata(L, &weak_table_tag);
+    lua_rawget(L, LUA_REGISTRYINDEX);
 
-    } // namespace unnamed
+    if (lua_isnil(L, -1))
+    {
+        lua_pop(L, 1);
+        lua_newtable(L);
+        // metatable
+        lua_newtable(L);
+        lua_pushliteral(L, "__mode");
+        lua_pushliteral(L, "v");
+        lua_rawset(L, -3);
+        // set metatable
+        lua_setmetatable(L, -2);
+
+        lua_pushlightuserdata(L, &weak_table_tag);
+        lua_pushvalue(L, -2);
+        lua_rawset(L, LUA_REGISTRYINDEX);
+    }
+}
+
+} // namespace luabind
+
+namespace luabind
+{
 
     struct weak_ref::impl
     {
@@ -99,39 +74,16 @@ namespace luabind {
             , state(s)
             , ref(0)
         {
-            lua_pushvalue(s, index);
             get_weak_table(s);
-
-            lua_rawgeti(s, -1, freelist_ref);
-            ref = (int)lua_tonumber(s, -1);
+            lua_pushvalue(s, index);
+            ref = luaL_ref(s, -2);
             lua_pop(s, 1);
-
-            if (ref == 0)
-            {
-                lua_rawgeti(s, -1, count_ref);
-                ref = (int)lua_tonumber(s, -1) + 1;
-                lua_pop(s, 1);
-                lua_pushnumber(s, ref);
-                lua_rawseti(s, -2, count_ref);
-            }
-            else
-            {
-                lua_rawgeti(s, -1, ref);
-                lua_rawseti(s, -2, freelist_ref);
-            }
-
-            lua_pushvalue(s, -2); // duplicate value
-            lua_rawseti(s, -2, ref);
-            lua_pop(s, 2); // pop weakref table and value
         }
 
         ~impl()
         {
             get_weak_table(state);
-            lua_rawgeti(state, -1, freelist_ref);
-            lua_rawseti(state, -2, ref);
-            lua_pushnumber(state, ref);
-            lua_rawseti(state, -2, freelist_ref);
+            luaL_unref(state, -1, ref);
             lua_pop(state, 1);
         }
 
