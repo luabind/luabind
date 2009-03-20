@@ -51,7 +51,7 @@ namespace
 
 } // namespace unnamed
 
-    void open(lua_State* L)
+    LUABIND_API void open(lua_State* L)
     {
         // get the global class registry, or create one if it doesn't exist
         // (it's global within a lua state)
