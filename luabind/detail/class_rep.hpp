@@ -40,6 +40,7 @@
 #include <luabind/handle.hpp>
 #include <luabind/detail/primitives.hpp>
 #include <luabind/typeid.hpp>
+#include <luabind/detail/ref.hpp>
 
 namespace luabind { namespace detail
 {
