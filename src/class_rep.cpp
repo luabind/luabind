@@ -28,6 +28,7 @@
 #include <luabind/detail/conversion_storage.hpp>
 #include <luabind/luabind.hpp>
 #include <luabind/exception_handler.hpp>
+#include <luabind/get_main_thread.hpp>
 #include <utility>
 
 using namespace luabind::detail;
@@ -414,9 +415,11 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 
     int args = lua_gettop(L);
 
-    lua_newtable(L);
+    lua_State* main_thread = get_main_thread(L);
+
+    lua_newtable(main_thread);
     lua_reference ref;
-    ref.set(L);
+    ref.set(main_thread);
 
     void* obj_ptr;
     void* held_storage;
