@@ -252,7 +252,7 @@ namespace luabind { namespace detail
         object_rep* result = new (storage) object_rep(0, cls);
         cls->get_table(L);
         lua_setfenv(L, -2);
-        getref(L, cls->metatable_ref());
+        lua_rawgeti(L, LUA_REGISTRYINDEX, cls->metatable_ref());
         lua_setmetatable(L, -2);
         return result;
     }

@@ -113,7 +113,7 @@ namespace luabind { namespace detail {
         , m_lua_class_metatable(create_lua_class_metatable(L))
     {
         push_instance_metatable(L);
-        m_instance_metatable = ref(L);
+        m_instance_metatable = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 
     class_registry* class_registry::get_registry(lua_State* L)
