@@ -32,6 +32,7 @@ SOURCES =
     test_adopt_wrapper.cpp
     test_builtin_converters.cpp
     test_class_info.cpp
+    test_table.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;

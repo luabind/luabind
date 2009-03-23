@@ -1162,7 +1162,31 @@ namespace adl
       );
   }
 
+  // Simple value_wrapper adaptor with the sole purpose of helping with
+  // overload resolution. Use this as a function parameter type instead
+  // of "object" or "argument" to restrict the parameter to Lua tables.
+  template <class Base = object>
+  struct table : Base
+  {
+      table(from_stack const& stack_reference)
+        : Base(stack_reference)
+      {}
+  };
+
 } // namespace adl
+
+using adl::table;
+
+template <class Base>
+struct value_wrapper_traits<adl::table<Base> >
+  : value_wrapper_traits<Base>
+{
+    static bool check(lua_State* L, int idx)
+    {
+        return value_wrapper_traits<Base>::check(L, idx) &&
+            lua_istable(L, idx);
+    }
+};
 
 inline object newtable(lua_State* interpreter)
 {

@@ -17,6 +17,8 @@ namespace luabind {
 
 class object;
 class argument;
+template <class Base>
+struct table;
 
 } // namespace luabind
 
@@ -95,6 +97,15 @@ LUABIND_TYPE_TO_STRING(luabind::argument)
 
 # undef LUABIND_INTEGRAL_TYPE_TO_STRING
 # undef LUABIND_TYPE_TO_STRING
+
+template <class Base>
+struct type_to_string<table<Base> >
+{
+    static void get(lua_State* L)
+    {
+        lua_pushstring(L, "table");
+    }
+};
 
 template <class End>
 void format_signature_aux(lua_State*, bool, End, End)
