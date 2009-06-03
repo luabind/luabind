@@ -90,7 +90,6 @@
 
 #include <luabind/config.hpp>
 #include <luabind/scope.hpp>
-#include <luabind/raw_policy.hpp>
 #include <luabind/back_reference.hpp>
 #include <luabind/function.hpp>
 #include <luabind/dependency_policy.hpp>
@@ -702,7 +701,7 @@ namespace luabind
 			return this->def(
 				Derived::name()
 			  , &Derived::template apply<T, Policies>::execute
-			  , raw(_1) + policies
+			  , policies
 			);
 		}
 
@@ -712,7 +711,6 @@ namespace luabind
 			return this->def(
 				Derived::name()
 			  , &Derived::template apply<T, detail::null_type>::execute
-			  , raw(_1)
 			);
 		}
 

@@ -845,6 +845,30 @@ struct default_converter<char[N]>
   : default_converter<char const*>
 {};
 
+template <>
+struct default_converter<lua_State*>
+{
+    int const consumed_args(...)
+    {
+        return 0;
+    }
+
+    template <class U>
+    lua_State* apply(lua_State* L, U, int)
+    {
+        return L;
+    }
+
+    template <class U>
+    static int match(lua_State*, U, int)
+    {
+        return 0;
+    }
+
+    template <class U>
+    void converter_postcall(lua_State*, U, int) {}
+};
+
 namespace detail
 {
 
