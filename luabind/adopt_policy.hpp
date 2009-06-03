@@ -51,6 +51,11 @@ namespace luabind { namespace detail
 	{
 		typedef adopt_pointer type;
 
+        int const consumed_args(...)
+        {
+            return 1;
+        }
+
 		template<class T>
 		T* apply(lua_State* L, by_pointer<T>, int index)
 		{

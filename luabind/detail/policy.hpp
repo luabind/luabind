@@ -196,6 +196,11 @@ namespace luabind { namespace detail
 		typedef pointer_converter type;
         typedef mpl::false_ is_native;
 		
+        int const consumed_args(...)
+        {
+            return 1;
+        }
+
 		template<class T>
 		void apply(lua_State* L, T* ptr)
 		{
@@ -284,6 +289,11 @@ namespace luabind { namespace detail
 		{
 			return get_class(get_pointer(*x), L, mpl::false_());
 		}
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
 
 		template<class T>
 		void apply(lua_State* L, T x)
@@ -394,7 +404,12 @@ namespace luabind { namespace detail
 	{
 		typedef ref_converter type;
         typedef mpl::false_ is_native;
-		
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
+
 		template<class T>
 		void apply(lua_State* L, T& ref)
 		{
@@ -435,7 +450,12 @@ namespace luabind { namespace detail
 	{
 		typedef const_ref_converter type;
         typedef mpl::false_ is_native;
-		
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
+
 		template<class T>
 		void apply(lua_State* L, T const& ref)
 		{
@@ -489,6 +509,11 @@ namespace luabind { namespace detail
 	{
 		typedef enum_converter type;
         typedef mpl::true_ is_native;
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
 		
 		void apply(lua_State* L, int val)
 		{
@@ -528,6 +553,11 @@ namespace luabind { namespace detail
 	{
 		typedef value_wrapper_converter<U> type;
 		typedef mpl::true_ is_native;
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
 
 		template<class T>
 		T apply(lua_State* L, by_const_reference<T>, int index)
@@ -606,6 +636,11 @@ template <class T, class Derived = default_converter<T> >
 struct native_converter_base
 {
     typedef boost::mpl::true_ is_native;
+
+    int const consumed_args(...)
+    {
+        return 1;
+    }
 
     template <class U>
     void converter_postcall(lua_State*, U const&, int)
@@ -762,6 +797,11 @@ template <>
 struct default_converter<char const*>
 {
     typedef boost::mpl::true_ is_native;
+
+    int const consumed_args(...)
+    {
+        return 1;
+    }
 
     template <class U>
     static int match(lua_State* L, U, int index)

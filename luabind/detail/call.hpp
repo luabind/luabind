@@ -141,9 +141,11 @@ inline int sum_scores(int const* first, int const* last)
     BOOST_PP_IF( \
         n \
       , BOOST_PP_CAT(index,BOOST_PP_DEC(n)) + \
-            (BOOST_PP_CAT(p,BOOST_PP_DEC(n))::has_arg ? 1 : 0) \
+            BOOST_PP_CAT(c,BOOST_PP_DEC(n)).consumed_args() \
       , 1 \
     )
+
+#  define LUABIND_INVOKE_COMPUTE_ARITY(n) + BOOST_PP_CAT(c,n).consumed_args()
 
 #  define LUABIND_INVOKE_DECLARE_CONVERTER(n) \
     typedef LUABIND_INVOKE_NEXT_ITER(n) BOOST_PP_CAT(iter,n); \
@@ -154,8 +156,6 @@ inline int sum_scores(int const* first, int const* last)
     typename mpl::apply_wrap2< \
         BOOST_PP_CAT(p,n), BOOST_PP_CAT(a,n), lua_to_cpp>::type BOOST_PP_CAT(c,n); \
     int const BOOST_PP_CAT(index,n) = LUABIND_INVOKE_NEXT_INDEX(n);
-
-#  define LUABIND_INVOKE_COMPUTE_ARITY(n) + (BOOST_PP_CAT(p,n)::has_arg ? 1 : 0)
 
 #  define LUABIND_INVOKE_COMPUTE_SCORE(n)                                   \
     , BOOST_PP_CAT(c,n).match(                                              \
