@@ -648,19 +648,19 @@ struct native_converter_base
     void converter_postcall(lua_State*, U const&, int)
     {}
 
-    static int match(lua_State* L, detail::by_value<T>, int index)
+    int match(lua_State* L, detail::by_value<T>, int index)
     {
-        return Derived::compute_score(L, index);
+        return derived().compute_score(L, index);
     }
 
-    static int match(lua_State* L, detail::by_value<T const>, int index)
+    int match(lua_State* L, detail::by_value<T const>, int index)
     {
-        return Derived::compute_score(L, index);
+        return derived().compute_score(L, index);
     }
 
-    static int match(lua_State* L, detail::by_const_reference<T>, int index)
+    int match(lua_State* L, detail::by_const_reference<T>, int index)
     {
-        return Derived::compute_score(L, index);
+        return derived().compute_score(L, index);
     }
 
     T apply(lua_State* L, detail::by_value<T>, int index)
@@ -694,14 +694,17 @@ struct native_converter_base
 struct default_converter<type> \
   : native_converter_base<type> \
 { \
-    static int compute_score(lua_State* L, int index) \
+    lua_Number result; \
+ \
+    int compute_score(lua_State* L, int index) \
     { \
-        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1; \
+        result = lua_tonumber(L, index); \
+        return (result != 0 || lua_isnumber(L, index)) ? 0 : -1; \
     }; \
     \
     type from(lua_State* L, int index) \
     { \
-        return static_cast<type>(lua_tonumber(L, index)); \
+        return static_cast<type>(result); \
     } \
     \
     void to(lua_State* L, type const& value) \
