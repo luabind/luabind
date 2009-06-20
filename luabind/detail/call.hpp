@@ -67,7 +67,7 @@ struct invoke_context
 };
 
 template <class F, class Signature, class Policies, class IsVoid>
-int invoke0(
+inline int invoke0(
     lua_State* L, function_object const& self, invoke_context& ctx
   , F const& f, Signature, Policies const& policies, IsVoid, mpl::true_)
 {
@@ -78,7 +78,7 @@ int invoke0(
 }
 
 template <class F, class Signature, class Policies, class IsVoid>
-int invoke0(
+inline int invoke0(
     lua_State* L, function_object const& self, invoke_context& ctx,
     F const& f, Signature, Policies const& policies, IsVoid, mpl::false_)
 {
@@ -89,7 +89,7 @@ int invoke0(
 }
 
 template <class F, class Signature, class Policies>
-int invoke(
+inline int invoke(
     lua_State* L, function_object const& self, invoke_context& ctx
   , F const& f, Signature, Policies const& policies)
 {
@@ -202,7 +202,7 @@ inline int sum_scores(int const* first, int const* last)
 # endif
 
 template <class F, class Signature, class Policies>
-int
+inline int
 # ifdef LUABIND_INVOKE_MEMBER
 invoke_member
 # else
