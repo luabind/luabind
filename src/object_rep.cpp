@@ -235,8 +235,7 @@ namespace luabind { namespace detail
         if (!result || !lua_getmetatable(L, index))
             return 0;
 
-        lua_pushnumber(L, 1);
-        lua_rawget(L, -2);
+        lua_rawgeti(L, -1, 1);
 
         if (lua_tocfunction(L, -1) != &get_instance_value)
             result = 0;
