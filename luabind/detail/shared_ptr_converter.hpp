@@ -35,7 +35,7 @@ struct default_converter<boost::shared_ptr<T> >
     typedef boost::mpl::false_ is_native;
 
     template <class U>
-    static int match(lua_State* L, U, int index)
+    int match(lua_State* L, U, int index)
     {
         return default_converter<T*>::match(
             L, LUABIND_DECORATE_TYPE(T*), index);
