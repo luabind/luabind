@@ -20,9 +20,9 @@ template <>
 struct default_converter<X>
   : native_converter_base<X>
 {
-    static int compute_score(lua_State* L, int index)
+    int compute_score(lua_State* L, int index)
     {
-        return default_converter<int>::compute_score(L, index);
+        return cv.compute_score(L, index);
     }
 
     X from(lua_State* L, int index)
@@ -34,6 +34,8 @@ struct default_converter<X>
     {
         lua_pushnumber(L, x.value);
     }
+
+    default_converter<int> cv;
 };
 
 } // namespace luabind
