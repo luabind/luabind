@@ -344,9 +344,21 @@ namespace luabind { namespace detail
 
 // ******* const pointer converter *******
 
-    struct const_pointer_converter : pointer_converter
+    struct const_pointer_converter
 	{
 		typedef const_pointer_converter type;
+        typedef mpl::false_ is_native;
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
+
+        const_pointer_converter()
+          : result(0)
+        {}
+
+        void* result;
 
 		template<class T>
 		void apply(lua_State* L, const T* ptr)
@@ -373,28 +385,24 @@ namespace luabind { namespace detail
 		template<class T>
 		T const* apply(lua_State* L, by_const_pointer<T>, int index)
 		{
-			return pointer_converter::apply(L, by_pointer<T>(), index);
+			return static_cast<T const*>(result);
 		}
 
 		template<class T>
-		static int match(lua_State* L, by_const_pointer<T>, int index)
+		int match(lua_State* L, by_const_pointer<T>, int index)
 		{
 			if (lua_isnil(L, index)) return 0;
 			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
-			int score = obj->get_instance(typeid(T)).second;
-
-            if (score >= 0 && !obj->is_const())
-                score += 10;
-
-            return score;
+            std::pair<void*, int> s = obj->get_instance(typeid(T));
+            if (s.second >= 0 && !obj->is_const())
+                s.second += 10;
+            result = s.first;
+            return s.second;
 		}
 
-		template<class T>
-		void converter_postcall(lua_State* L, by_const_pointer<T>, int index) 
-		{
-			pointer_converter::converter_postcall(L, by_pointer<T>(), index);
-		}
+        template<class T>
+        void converter_postcall(lua_State*, T, int) {}
 	};
 
 // ******* reference converter *******
