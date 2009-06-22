@@ -25,6 +25,7 @@
 #define LUABIND_ADOPT_POLICY_HPP_INCLUDED
 
 #include <luabind/config.hpp>
+#include <luabind/wrapper_base.hpp>
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/implicit_cast.hpp>
 #include <luabind/back_reference_fwd.hpp>
@@ -72,7 +73,7 @@ namespace luabind { namespace detail
 		}
 
 		template<class T>
-		static int match(lua_State* L, by_pointer<T>, int index)
+		int match(lua_State* L, by_pointer<T>, int index)
 		{
             return pointer_converter::match(
                 L, LUABIND_DECORATE_TYPE(T*), index);
