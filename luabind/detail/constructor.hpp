@@ -9,6 +9,7 @@
 
 #  include <luabind/object.hpp>
 #  include <luabind/wrapper_base.hpp>
+#  include <luabind/detail/inheritance.hpp>
 
 #  include <boost/preprocessor/iteration/iterate.hpp>
 #  include <boost/preprocessor/iteration/local.hpp>
@@ -45,8 +46,11 @@ struct construct_aux<0, T, Pointer, Signature>
         std::auto_ptr<T> instance(new T);
         inject_backref(self_.interpreter(), instance.get(), instance.get());
 
+        void* naked_ptr = instance.get();
         Pointer ptr(instance.release());
-        self->set_instance(new pointer_holder<Pointer, T>(ptr, cls));
+
+        self->set_instance(new pointer_holder<Pointer, T>(
+            ptr, registered_class<T>::id, naked_ptr, cls));
     }
 };
 
@@ -84,8 +88,11 @@ struct construct_aux<N, T, Pointer, Signature>
         std::auto_ptr<T> instance(new T(BOOST_PP_ENUM_PARAMS(N,_)));
         inject_backref(self_.interpreter(), instance.get(), instance.get());
 
+        void* naked_ptr = instance.get();
         Pointer ptr(instance.release());
-        self->set_instance(new pointer_holder<Pointer, T>(ptr, cls));
+
+        self->set_instance(new pointer_holder<Pointer, T>(
+            ptr, registered_class<T>::id, naked_ptr, cls));
     }
 };
 

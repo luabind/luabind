@@ -55,6 +55,7 @@
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/conversion_storage.hpp>
 #include <luabind/detail/has_get_pointer.hpp>
+#include <luabind/detail/make_instance.hpp>
 
 #include <boost/type_traits/add_reference.hpp>
 
@@ -171,26 +172,6 @@ namespace luabind { namespace detail
 
 // ********** pointer converter ***********
 
-    template <class P>
-    void install_instance(P ptr, object_rep& instance)
-    {
-        typedef pointer_holder<P> holder_type;
-
-        void* storage = instance.allocate(sizeof(holder_type));
-
-        try
-        {
-            new (storage) holder_type(ptr, instance.crep());
-        }
-        catch (...)
-        {
-            instance.deallocate(storage);
-            throw;
-        }
-
-        instance.set_instance((holder_type*)storage);
-    }
-
 	struct pointer_converter
 	{
 		typedef pointer_converter type;
@@ -219,14 +200,7 @@ namespace luabind { namespace detail
 			if (luabind::get_back_reference(L, ptr))
 				return;
 
-			class_rep* crep = get_class_rep<T>(L);
-
-			// if you get caught in this assert you are
-			// trying to use an unregistered type
-			assert(crep && "you are trying to use an unregistered type");
-
-            object_rep* instance = push_new_instance(L, crep);
-            install_instance(ptr, *instance);
+            make_instance(L, ptr);
 		}
 
 		conversion_storage storage;
@@ -247,7 +221,7 @@ namespace luabind { namespace detail
             if (obj->is_const())
                 return -1;
 
-            std::pair<void*, int> s = obj->get_instance(typeid(T));
+            std::pair<void*, int> s = obj->get_instance(registered_class<T>::id);
             result = s.first;
             return s.second;
 		}
@@ -264,34 +238,22 @@ namespace luabind { namespace detail
 		typedef value_converter type;
         typedef mpl::false_ is_native;
 
-        template <class T>
-        void install(T& x, object_rep& instance, mpl::false_)
-        {
-            std::auto_ptr<T> ptr(new T(x));
-            install_instance(ptr, instance);
-        }
-
-        template <class T>
-        void install(T& x, object_rep& instance, mpl::true_)
-        {
-            install_instance(x, instance);
-        }
-
-		template <class T>
-		class_rep* get_class(T const*, lua_State* L, mpl::false_)
-		{
-			return get_class_rep<T>(L);
-		}
-
-		template <class T>
-		class_rep* get_class(T const* x, lua_State* L, mpl::true_)
-		{
-			return get_class(get_pointer(*x), L, mpl::false_());
-		}
-
         int const consumed_args(...)
         {
             return 1;
+        }
+
+        template <class T>
+        void make(lua_State* L, T& x, mpl::false_)
+        {
+            std::auto_ptr<T> ptr(new T(x));
+            make_instance(L, ptr);
+        }
+
+        template <class T>
+        void make(lua_State* L, T& x, mpl::true_)
+        {
+            make_instance(L, x);
         }
 
 		template<class T>
@@ -300,14 +262,7 @@ namespace luabind { namespace detail
 			if (luabind::get_back_reference(L, x))
 				return;
 
-			class_rep* crep = get_class(&x, L, has_get_pointer<T>());
-
-			// if you get caught in this assert you are
-			// trying to use an unregistered type
-			assert(crep && "you are trying to use an unregistered type");
-
-            object_rep* instance = push_new_instance(L, crep);
-            install(x, *instance, has_get_pointer<T>());
+            make(L, x, has_get_pointer<T>());
 		}
 
         conversion_storage storage;
@@ -322,7 +277,8 @@ namespace luabind { namespace detail
 			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
 			assert((obj != 0) && "internal error, please report"); // internal error
 
-			return *static_cast<T*>(obj->get_instance(typeid(T)).first);
+			return *static_cast<T*>(obj->get_instance(
+                registered_class<T>::id).first);
 		}
 
 		template<class T>
@@ -335,7 +291,7 @@ namespace luabind { namespace detail
 			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1;
 
-			return obj->get_instance(typeid(T)).second;
+			return obj->get_instance(registered_class<T>::id).second;
 		}
 
 		template<class T>
@@ -372,14 +328,7 @@ namespace luabind { namespace detail
 			if (luabind::get_back_reference(L, ptr))
 				return;
 
-			class_rep* crep = get_class_rep<T>(L);
-
-			// if you get caught in this assert you are
-			// trying to use an unregistered type
-			assert(crep && "you are trying to use an unregistered type");
-
-            object_rep* instance = push_new_instance(L, crep);
-            install_instance(ptr, *instance);
+            make_instance(L, ptr);
 		}
 
 		template<class T>
@@ -394,7 +343,7 @@ namespace luabind { namespace detail
 			if (lua_isnil(L, index)) return 0;
 			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
-            std::pair<void*, int> s = obj->get_instance(typeid(T));
+            std::pair<void*, int> s = obj->get_instance(registered_class<T>::id);
             if (s.second >= 0 && !obj->is_const())
                 s.second += 10;
             result = s.first;
@@ -423,14 +372,7 @@ namespace luabind { namespace detail
 			if (luabind::get_back_reference(L, ref))
 				return;
 
-			class_rep* crep = get_class_rep<T>(L);
-
-			// if you get caught in this assert you are
-			// trying to use an unregistered type
-			assert(crep && "you are trying to use an unregistered type");
-
-            object_rep* instance = push_new_instance(L, crep);
-            install_instance(&ref, *instance);
+            make_instance(L, &ref);
 		}
 
 		template<class T>
@@ -475,15 +417,7 @@ namespace luabind { namespace detail
 			if (luabind::get_back_reference(L, ref))
 				return;
 
-			class_rep* crep = get_class_rep<T>(L);
-
-			// if you get caught in this assert you are
-			// trying to use an unregistered type
-			assert(crep && "you are trying to use an unregistered type");
-
-			// create the struct to hold the object
-            object_rep* instance = push_new_instance(L, crep);
-            install_instance(&ref, *instance);
+            make_instance(L, &ref);
 		}
 
 		conversion_storage storage;
@@ -500,7 +434,7 @@ namespace luabind { namespace detail
 			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
 
-            std::pair<void*, int> s = obj->get_instance(typeid(T));
+            std::pair<void*, int> s = obj->get_instance(registered_class<T>::id);
             if (s.second >= 0 && !obj->is_const())
                 s.second += 10;
             result = s.first;

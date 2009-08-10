@@ -57,7 +57,7 @@ namespace luabind { namespace detail
 
 		void add_dependency(lua_State* L, int index);
 
-		std::pair<void*, int> get_instance(type_id const& target) const
+		std::pair<void*, int> get_instance(class_id target) const
 		{
 			if (m_instance == 0)
 				return std::pair<void*, int>(0, -1);

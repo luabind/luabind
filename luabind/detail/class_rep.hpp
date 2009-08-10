@@ -32,6 +32,7 @@
 #include <vector>
 
 #include <luabind/config.hpp>
+#include <luabind/lua_include.hpp>
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/garbage_collector.hpp>
 #include <luabind/detail/operator_id.hpp>
@@ -62,6 +63,9 @@ namespace luabind { namespace detail
 	// to determine possible implicit casts
 	// it is also used when finding the best match for overloaded
 	// methods
+
+    class cast_graph;
+    class class_id_map;
 
 	class LUABIND_API class_rep
 	{
@@ -135,6 +139,16 @@ namespace luabind { namespace detail
 
 		bool has_operator_in_lua(lua_State*, int id);
 
+        cast_graph const& casts() const
+        {
+            return *m_casts;
+        }
+
+        class_id_map const& classes() const
+        {
+            return *m_classes;
+        }
+
 	private:
 
 		void cache_operators(lua_State*);
@@ -185,6 +199,9 @@ namespace luabind { namespace detail
 		// we check the associated lua table
 		// and cache the result
 		int m_operator_cache;
+
+        cast_graph* m_casts;
+        class_id_map* m_classes;
 	};
 
 	bool is_class_rep(lua_State* L, int index);

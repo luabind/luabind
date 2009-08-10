@@ -67,6 +67,16 @@ luabind::detail::class_rep::class_rep(type_id const& type
 	m_self_ref.set(L);
 
 	m_instance_metatable = r->cpp_instance();
+
+    lua_pushstring(L, "__luabind_cast_graph");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    m_casts = static_cast<cast_graph*>(lua_touserdata(L, -1));
+    lua_pop(L, 1);
+
+    lua_pushstring(L, "__luabind_class_id_map");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    m_classes = static_cast<class_id_map*>(lua_touserdata(L, -1));
+    lua_pop(L, 1);
 }
 
 luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
@@ -90,6 +100,16 @@ luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
 	m_self_ref.set(L);
 
 	m_instance_metatable = r->lua_instance();
+
+    lua_pushstring(L, "__luabind_cast_graph");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    m_casts = static_cast<cast_graph*>(lua_touserdata(L, -1));
+    lua_pop(L, 1);
+
+    lua_pushstring(L, "__luabind_class_id_map");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    m_classes = static_cast<class_id_map*>(lua_touserdata(L, -1));
+    lua_pop(L, 1);
 }
 
 luabind::detail::class_rep::~class_rep()

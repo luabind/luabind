@@ -103,11 +103,7 @@ namespace luabind { namespace detail
 			if (luabind::move_back_reference(L, ptr))
 				return;
 
-			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->find_class(typeid(T));
-
-            object_rep* instance = push_new_instance(L, crep);
-            install_instance(std::auto_ptr<T>(ptr), *instance);
+            make_instance(L, std::auto_ptr<T>(ptr));
 		}
 	};
 

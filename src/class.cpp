@@ -22,6 +22,8 @@
 
 #define LUABIND_BUILDING
 
+#include <boost/foreach.hpp>
+
 #include <luabind/lua_include.hpp>
 
 #include <luabind/config.hpp>
@@ -38,6 +40,24 @@ namespace luabind
 
 namespace luabind { namespace detail {
     
+
+    namespace
+    {
+      struct cast_entry
+      {
+          cast_entry(class_id src, class_id target, cast_function cast)
+            : src(src)
+            , target(target)
+            , cast(cast)
+          {}
+
+          class_id src;
+          class_id target;
+          cast_function cast;
+      };
+
+    } // namespace unnamed
+
     struct class_registration : registration
     {   
         class_registration(char const* name);
@@ -48,9 +68,15 @@ namespace luabind { namespace detail {
 
         mutable std::map<const char*, int, detail::ltstr> m_static_constants;
 
-        mutable std::vector<class_base::base_desc> m_bases;
+        typedef std::pair<type_id, cast_function> base_desc;
+        mutable std::vector<base_desc> m_bases;
 
         type_id m_type;
+        class_id m_id;
+        class_id m_wrapper_id;
+        type_id m_wrapper_type;
+        cast_function m_wrapper_cast;
+        std::vector<cast_entry> m_casts;
 
         scope m_scope;
         scope m_members;
@@ -92,6 +118,19 @@ namespace luabind { namespace detail {
         // register this new type in the class registry
         r->add_class(m_type, crep);
 
+        lua_pushstring(L, "__luabind_class_map");
+        lua_rawget(L, LUA_REGISTRYINDEX);
+        class_map& classes = *static_cast<class_map*>(
+            lua_touserdata(L, -1));
+        lua_pop(L, 1);
+
+        classes.put(m_id, crep);
+
+        if (m_wrapper_cast)
+        {
+            classes.put(m_wrapper_id, crep);
+        }
+
         crep->m_static_constants.swap(m_static_constants);
 
 		detail::class_registry* registry = detail::class_registry::get_registry(L);
@@ -105,16 +144,41 @@ namespace luabind { namespace detail {
         m_members.register_(L);
         lua_pop(L, 1);
 
-        for (std::vector<class_base::base_desc>::iterator i = m_bases.begin();
+        lua_pushstring(L, "__luabind_cast_graph");
+        lua_gettable(L, LUA_REGISTRYINDEX);
+        cast_graph* const casts = static_cast<cast_graph*>(
+            lua_touserdata(L, -1));
+        lua_pop(L, 1);
+
+        lua_pushstring(L, "__luabind_class_id_map");
+        lua_gettable(L, LUA_REGISTRYINDEX);
+        class_id_map* const class_ids = static_cast<class_id_map*>(
+            lua_touserdata(L, -1));
+        lua_pop(L, 1);
+
+        class_ids->put(m_id, m_type);
+
+        if (m_wrapper_cast)
+        {
+            class_ids->put(m_wrapper_id, m_wrapper_type);
+            casts->insert(m_wrapper_id, m_id, m_wrapper_cast);
+        }
+
+        BOOST_FOREACH(cast_entry const& e, m_casts)
+        {
+            casts->insert(e.src, e.target, e.cast);
+        }
+
+        for (std::vector<base_desc>::iterator i = m_bases.begin();
             i != m_bases.end(); ++i)
         {
             LUABIND_CHECK_STACK(L);
 
             // the baseclass' class_rep structure
-            detail::class_rep* bcrep = registry->find_class(i->type);
+            detail::class_rep* bcrep = registry->find_class(i->first);
 
             detail::class_rep::base_info base;
-            base.pointer_offset = i->ptr_offset;
+            base.pointer_offset = 0;
             base.base = bcrep;
 
             crep->add_base_class(base);
@@ -181,14 +245,21 @@ namespace luabind { namespace detail {
     {
     }
 
-    void class_base::init(type_id const& type_id)
+    void class_base::init(
+        type_id const& type_id, class_id id
+      , class_id wrapper_id, type_id const& wrapper_type
+      , cast_function wrapper_cast)
     {
         m_registration->m_type = type_id;
+        m_registration->m_id = id;
+        m_registration->m_wrapper_id = wrapper_id;
+        m_registration->m_wrapper_type = wrapper_type;
+        m_registration->m_wrapper_cast = wrapper_cast;
     }
 
-    void class_base::add_base(const base_desc& b)
+    void class_base::add_base(type_id const& base, cast_function cast)
     {
-        m_registration->m_bases.push_back(b);
+        m_registration->m_bases.push_back(std::make_pair(base, cast));
     }
 
 	void class_base::add_member(registration* member)
@@ -216,6 +287,12 @@ namespace luabind { namespace detail {
     void class_base::add_inner_scope(scope& s)
     {
         m_registration->m_scope.operator,(s);
+    }
+
+    void class_base::add_cast(
+        class_id src, class_id target, cast_function cast)
+    {
+        m_registration->m_casts.push_back(cast_entry(src, target, cast));
     }
 
 	void add_custom_name(type_id const& i, std::string& s)

@@ -111,6 +111,7 @@
 #include <luabind/detail/operator_id.hpp>
 #include <luabind/detail/pointee_typeid.hpp>
 #include <luabind/detail/link_compatibility.hpp>
+#include <luabind/detail/inheritance.hpp>
 #include <luabind/typeid.hpp>
 
 // to remove the 'this' used in initialization list-warning
@@ -270,9 +271,12 @@ namespace luabind
 				int ptr_offset;
 			};
 
-			void init(type_id const& type);
+			void init(
+                type_id const& type, class_id id
+              , class_id wrapper_id, type_id const& wrapped_type
+              , cast_function wrapper_cast);
 
-			void add_base(const base_desc& b);
+            void add_base(type_id const& base, cast_function cast);
 
 			void add_member(registration* member);
 			void add_default_member(registration* member);
@@ -281,6 +285,8 @@ namespace luabind
 
 			void add_static_constant(const char* name, int val);
 			void add_inner_scope(scope& s);
+
+            void add_cast(class_id src, class_id target, cast_function cast);
 
 		private:
 			class_registration* m_registration;
@@ -502,25 +508,34 @@ namespace luabind
 		  , detail::null_type
 		>::type HeldType;
 
+        template <class Src, class Target>
+        void add_downcast(Src*, Target*, boost::mpl::true_)
+        {
+            add_cast(
+                detail::registered_class<Src>::id
+              , detail::registered_class<Target>::id
+              , detail::dynamic_cast_<Src, Target>::execute
+            );
+        }
+
+        template <class Src, class Target>
+        void add_downcast(Src*, Target*, boost::mpl::false_)
+        {}
+
 		// this function generates conversion information
 		// in the given class_rep structure. It will be able
 		// to implicitly cast to the given template type
 		template<class To>
 		void gen_base_info(detail::type_<To>)
 		{
-			// fist, make sure the given base class is registered.
-			// if it's not registered we can't push it's lua table onto
-			// the stack because it doesn't have a table
+            add_base(typeid(To), detail::static_cast_<T, To>::execute);
+            add_cast(
+                detail::registered_class<T>::id
+              , detail::registered_class<To>::id
+              , detail::static_cast_<T, To>::execute
+            );
 
-			// try to cast this type to the base type and remember
-			// the pointer offset. For multiple inheritance the pointer
-			// may change when casting. Since we need to be able to
-			// cast we need this pointer offset.
-			// store the information in this class' base class-vector
-			base_desc base;
-			base.type = typeid(To);
-			base.ptr_offset = detail::ptr_offset(detail::type_<T>(), detail::type_<To>());
-			add_base(base);
+            add_downcast((To*)0, (T*)0, boost::is_polymorphic<To>());
 		}
 
 		void gen_base_info(detail::type_<detail::null_type>)
@@ -724,6 +739,17 @@ namespace luabind
 	private:
 		void operator=(class_ const&);
 
+        detail::cast_function get_wrapper_cast(detail::null_type*)
+        {
+            return 0;
+        }
+
+        template <class U>
+        detail::cast_function get_wrapper_cast(U*)
+        {
+            return &detail::static_cast_<U,T>::execute;
+        }
+
 		void init()
 		{
 			typedef typename detail::extract_parameter<
@@ -741,7 +767,13 @@ namespace luabind
 					,	bases<bases_t>
 				>::type Base;
 	
-			class_base::init(typeid(T));
+            class_base::init(
+                typeid(T)
+              , detail::registered_class<T>::id
+              , detail::registered_class<WrappedType>::id
+              , typeid(WrappedType)
+              , get_wrapper_cast((WrappedType*)0)
+            );
 
 			generate_baseclass_list(detail::type_<Base>());
 		}

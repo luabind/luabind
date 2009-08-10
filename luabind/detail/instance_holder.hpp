@@ -6,8 +6,11 @@
 # define LUABIND_INSTANCE_HOLDER_081024_HPP
 
 # include <luabind/detail/implicit_cast.hpp>
+# include <luabind/detail/inheritance.hpp>
+# include <luabind/detail/class_rep.hpp> // TODO
 # include <luabind/get_pointer.hpp>
 # include <luabind/typeid.hpp>
+# include <boost/type_traits/is_polymorphic.hpp>
 # include <stdexcept>
 
 namespace luabind { namespace detail {
@@ -23,7 +26,7 @@ public:
     virtual ~instance_holder()
     {}
 
-    virtual std::pair<void*, int> get(type_id const&) const = 0;
+    virtual std::pair<void*, int> get(class_id target) const = 0;
 
     virtual void release() = 0;
 
@@ -67,32 +70,43 @@ void release_ownership(P const&)
         "luabind: smart pointer does not allow ownership transfer");
 }
 
+template <class T>
+class_id static_class_id(T*)
+{
+    return registered_class<T>::id;
+}
+
 template <class P, class Pointee = void const>
 class pointer_holder : public instance_holder
 {
 public:
-    pointer_holder(P p, class_rep* cls)
+    pointer_holder(
+        P p, class_id dynamic_id, void* dynamic_ptr, class_rep* cls
+    )
       : instance_holder(cls, check_const_pointer(get_pointer(p)))
       , p(p)
+      , dynamic_id(dynamic_id)
+      , dynamic_ptr(dynamic_ptr)
     {}
 
-    std::pair<void*, int> get(type_id const& target) const
+    std::pair<void*, int> get(class_id target) const
     {
-        if (target == typeid(P))
+        if (target == registered_class<P>::id)
             return std::pair<void*, int>(&this->p, 0);
 
-        int offset = 0;
-        int steps = implicit_cast(get_class(), target, offset);
+        void* naked_ptr = const_cast<void*>(static_cast<void const*>(
+            get_pointer(p)));
 
-        if (steps < 0)
-            return std::pair<void*, int>(0, -1);
+        if (!naked_ptr)
+            return std::pair<void*, int>(0, 0);
 
-        void* ptr = const_cast<void*>(
-            static_cast<void const*>(
-                reinterpret_cast<char const*>(
-                    static_cast<Pointee*>(get_pointer(p))) + offset));
-
-        return std::pair<void*, int>(ptr, steps);
+        return get_class()->casts().cast(
+            naked_ptr
+          , static_class_id(get_pointer(p))
+          , target
+          , dynamic_id
+          , dynamic_ptr
+        );
     }
 
     void release()
@@ -102,6 +116,8 @@ public:
 
 private:
     mutable P p;
+    class_id dynamic_id;
+    void* dynamic_ptr;
 };
 
 }} // namespace luabind::detail

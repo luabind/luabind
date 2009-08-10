@@ -143,6 +143,7 @@ SOURCES =
     exception_handler.cpp
     function.cpp
     implicit_cast.cpp
+    inheritance.cpp
     link_compatibility.cpp
     object_rep.cpp
     open.cpp
