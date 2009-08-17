@@ -8,7 +8,9 @@
 
 #define LUABIND_TEST_BUILTIN(type, value) \
     default_converter<type>().to(L, value); \
-    TEST_CHECK(default_converter<type>().from(L, -1) == value); \
+    default_converter<type> BOOST_PP_CAT(cv, __LINE__); \
+    TEST_CHECK(BOOST_PP_CAT(cv, __LINE__).compute_score(L, -1) >= 0); \
+    TEST_CHECK(BOOST_PP_CAT(cv, __LINE__).from(L, -1) == value); \
     lua_pop(L, 1)
 
 void test_main(lua_State* L)

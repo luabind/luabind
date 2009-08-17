@@ -26,33 +26,75 @@
 
 namespace luabind { namespace detail {
 
+struct invoke_context;
+
+struct LUABIND_API function_object
+{
+    function_object(lua_CFunction entry)
+      : entry(entry)
+      , next(0)
+    {}
+
+    virtual ~function_object()
+    {}
+
+    virtual int call(
+        lua_State* L, invoke_context& ctx) const = 0;
+    virtual void format_signature(lua_State* L, char const* function) const = 0;
+
+    lua_CFunction entry;
+    std::string name;
+    function_object* next;
+};
+
+struct invoke_context
+{
+    invoke_context()
+      : best_score(std::numeric_limits<int>::max())
+      , candidate_index(0)
+    {}
+
+    operator bool() const
+    {
+        return candidate_index == 1;
+    }
+
+    void format_error(lua_State* L, function_object const* overloads) const;
+
+    int best_score;
+    function_object const* candidates[10];
+    int candidate_index;
+};
+
 template <class F, class Signature, class Policies, class IsVoid>
-int invoke0(
-    lua_State* L, F const& f, Signature
-  , Policies const& policies, IsVoid, mpl::true_)
+inline int invoke0(
+    lua_State* L, function_object const& self, invoke_context& ctx
+  , F const& f, Signature, Policies const& policies, IsVoid, mpl::true_)
 {
     return invoke_member(
-        L, f, Signature(), policies
+        L, self, ctx, f, Signature(), policies
       , mpl::long_<mpl::size<Signature>::value - 1>(), IsVoid()
     );
 }
 
 template <class F, class Signature, class Policies, class IsVoid>
-int invoke0(
-    lua_State* L, F const& f, Signature
-  , Policies const& policies, IsVoid, mpl::false_)
+inline int invoke0(
+    lua_State* L, function_object const& self, invoke_context& ctx,
+    F const& f, Signature, Policies const& policies, IsVoid, mpl::false_)
 {
     return invoke_normal(
-        L, f, Signature(), policies
+        L, self, ctx, f, Signature(), policies
       , mpl::long_<mpl::size<Signature>::value - 1>(), IsVoid()
     );
 }
 
 template <class F, class Signature, class Policies>
-int invoke(lua_State* L, F const& f, Signature, Policies const& policies)
+inline int invoke(
+    lua_State* L, function_object const& self, invoke_context& ctx
+  , F const& f, Signature, Policies const& policies)
 {
     return invoke0(
-        L, f, Signature(), policies
+        L, self, ctx, f, Signature(), policies
       , boost::is_void<typename mpl::front<Signature>::type>()
       , boost::is_member_function_pointer<F>()
    );
@@ -75,6 +117,20 @@ int maybe_yield(lua_State* L, int results, Policies*)
         L, results, mpl::bool_<has_yield<Policies>::value>());
 }
 
+inline int sum_scores(int const* first, int const* last)
+{
+    int result = 0;
+
+    for (; first != last; ++first)
+    {
+        if (*first < 0)
+            return *first;
+        result += *first;
+    }
+
+    return result;
+}
+
 #  define LUABIND_INVOKE_NEXT_ITER(n) \
     typename mpl::next< \
         BOOST_PP_IF( \
@@ -85,9 +141,11 @@ int maybe_yield(lua_State* L, int results, Policies*)
     BOOST_PP_IF( \
         n \
       , BOOST_PP_CAT(index,BOOST_PP_DEC(n)) + \
-            (BOOST_PP_CAT(p,BOOST_PP_DEC(n))::has_arg ? 1 : 0) \
+            BOOST_PP_CAT(c,BOOST_PP_DEC(n)).consumed_args() \
       , 1 \
     )
+
+#  define LUABIND_INVOKE_COMPUTE_ARITY(n) + BOOST_PP_CAT(c,n).consumed_args()
 
 #  define LUABIND_INVOKE_DECLARE_CONVERTER(n) \
     typedef LUABIND_INVOKE_NEXT_ITER(n) BOOST_PP_CAT(iter,n); \
@@ -98,6 +156,10 @@ int maybe_yield(lua_State* L, int results, Policies*)
     typename mpl::apply_wrap2< \
         BOOST_PP_CAT(p,n), BOOST_PP_CAT(a,n), lua_to_cpp>::type BOOST_PP_CAT(c,n); \
     int const BOOST_PP_CAT(index,n) = LUABIND_INVOKE_NEXT_INDEX(n);
+
+#  define LUABIND_INVOKE_COMPUTE_SCORE(n)                                   \
+    , BOOST_PP_CAT(c,n).match(                                              \
+        L, LUABIND_DECORATE_TYPE(BOOST_PP_CAT(a,n)), BOOST_PP_CAT(index,n))
 
 #  define LUABIND_INVOKE_ARG(z, n, base) \
     BOOST_PP_CAT(c,base(n)).apply( \
@@ -140,14 +202,15 @@ int maybe_yield(lua_State* L, int results, Policies*)
 # endif
 
 template <class F, class Signature, class Policies>
-int
+inline int
 # ifdef LUABIND_INVOKE_MEMBER
 invoke_member
 # else
 invoke_normal
 # endif
 (
-    lua_State* L, F const& f, Signature, Policies const&, mpl::long_<N>
+    lua_State* L, function_object const& self, invoke_context& ctx
+  , F const& f, Signature, Policies const&, mpl::long_<N>
 # ifdef LUABIND_INVOKE_VOID
   , mpl::true_
 # else
@@ -169,27 +232,71 @@ invoke_normal
 #  include BOOST_PP_LOCAL_ITERATE()
 # endif
 
+    int const arity = 0
+# if N > 0
+#  define BOOST_PP_LOCAL_MACRO(n) LUABIND_INVOKE_COMPUTE_ARITY(n)
+#  define BOOST_PP_LOCAL_LIMITS (0,N-1)
+#  include BOOST_PP_LOCAL_ITERATE()
+# endif
+    ;
+
     int const arguments = lua_gettop(L);
 
+    int score = -1;
+
+    if (arity == arguments)
+    {
+        int const scores[] = {
+            0
+# if N > 0
+#  define BOOST_PP_LOCAL_MACRO(n) LUABIND_INVOKE_COMPUTE_SCORE(n)
+#  define BOOST_PP_LOCAL_LIMITS (0,N-1)
+#  include BOOST_PP_LOCAL_ITERATE()
+# endif
+        };
+
+        score = sum_scores(scores + 1, scores + 1 + N);
+    }
+
+    if (score >= 0 && score < ctx.best_score)
+    {
+        ctx.best_score = score;
+        ctx.candidates[0] = &self;
+        ctx.candidate_index = 1;
+    }
+    else if (score == ctx.best_score)
+    {
+        ctx.candidates[ctx.candidate_index++] = &self;
+    }
+
+    int results = 0;
+
+    if (self.next)
+    {
+        results = self.next->call(L, ctx);
+    }
+
+    if (score == ctx.best_score && ctx.candidate_index == 1)
+    {
 # ifndef LUABIND_INVOKE_VOID
-    result_converter.apply(
-        L,
+        result_converter.apply(
+            L,
 # endif
 # ifdef LUABIND_INVOKE_MEMBER
-        (c0.apply(L, LUABIND_DECORATE_TYPE(a0), index0).*f)(
-            BOOST_PP_ENUM(BOOST_PP_DEC(N), LUABIND_INVOKE_ARG, BOOST_PP_INC)
-        )
+            (c0.apply(L, LUABIND_DECORATE_TYPE(a0), index0).*f)(
+                BOOST_PP_ENUM(BOOST_PP_DEC(N), LUABIND_INVOKE_ARG, BOOST_PP_INC)
+            )
 # else
 #  define LUABIND_INVOKE_IDENTITY(x) x
-        f(
-            BOOST_PP_ENUM(N, LUABIND_INVOKE_ARG, LUABIND_INVOKE_IDENTITY)
-        )
+            f(
+                BOOST_PP_ENUM(N, LUABIND_INVOKE_ARG, LUABIND_INVOKE_IDENTITY)
+            )
 #  undef LUABIND_INVOKE_IDENTITY
 # endif
 # ifndef LUABIND_INVOKE_VOID
-    )
+        )
 # endif
-    ;
+        ;
 
 # if N > 0
 #  define BOOST_PP_LOCAL_MACRO(n) LUABIND_INVOKE_CONVERTER_POSTCALL(n)
@@ -197,15 +304,16 @@ invoke_normal
 #  include BOOST_PP_LOCAL_ITERATE()
 # endif
 
-    int const results = lua_gettop(L) - arguments;
+        results = maybe_yield(L, lua_gettop(L) - arguments, (Policies*)0);
 
-    int const indices[] = {
-        arguments + results BOOST_PP_ENUM_TRAILING_PARAMS(N, index)
-    };
+        int const indices[] = {
+            arguments + results BOOST_PP_ENUM_TRAILING_PARAMS(N, index)
+        };
 
-    policy_list_postcall<Policies>::apply(L, indices);
+        policy_list_postcall<Policies>::apply(L, indices);
+    }
 
-    return maybe_yield(L, results, (Policies*)0);
+    return results;
 }
 
 # undef N

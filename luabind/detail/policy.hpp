@@ -54,6 +54,7 @@
 #include <luabind/detail/debug.hpp>
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/conversion_storage.hpp>
+#include <luabind/detail/has_get_pointer.hpp>
 
 #include <boost/type_traits/add_reference.hpp>
 
@@ -170,11 +171,42 @@ namespace luabind { namespace detail
 
 // ********** pointer converter ***********
 
+    template <class P>
+    void install_instance(P ptr, object_rep& instance)
+    {
+        typedef pointer_holder<P> holder_type;
+
+        void* storage = instance.allocate(sizeof(holder_type));
+
+        try
+        {
+            new (storage) holder_type(ptr, instance.crep());
+        }
+        catch (...)
+        {
+            instance.deallocate(storage);
+            throw;
+        }
+
+        instance.set_instance((holder_type*)storage);
+    }
+
 	struct pointer_converter
 	{
 		typedef pointer_converter type;
         typedef mpl::false_ is_native;
-		
+
+        pointer_converter()
+          : result(0)
+        {}
+
+        void* result;
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
+
 		template<class T>
 		void apply(lua_State* L, T* ptr)
 		{
@@ -193,14 +225,8 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			// create the struct to hold the object
-			void* obj = lua_newuserdata(L, sizeof(object_rep));
-			//new(obj) object_rep(ptr, crep, object_rep::owner, destructor_s<T>::apply);
-			new(obj) object_rep(ptr, crep, 0, 0);
-
-			// set the meta table
-			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
-			lua_setmetatable(L, -2);
+            object_rep* instance = push_new_instance(L, crep);
+            install_instance(ptr, *instance);
 		}
 
 		conversion_storage storage;
@@ -208,36 +234,22 @@ namespace luabind { namespace detail
 		template<class T>
 		T* apply(lua_State* L, by_pointer<T>, int index)
 		{
-			// preconditions:
-			//	lua_isuserdata(L, index);
-			// getmetatable().__lua_class is true
-			// object_rep->flags() & object_rep::constant == 0
-
-			if (lua_isnil(L, index)) return 0;
-			
-			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
-			assert((obj != 0) && "internal error, please report"); // internal error
-			const class_rep* crep = obj->crep();
-
-			return static_cast<T*>(crep->convert_to(typeid(T), obj, storage));
+            return static_cast<T*>(result);
 		}
 
 		template<class T>
-		static int match(lua_State* L, by_pointer<T>, int index)
+		int match(lua_State* L, by_pointer<T>, int index)
 		{
 			if (lua_isnil(L, index)) return 0;
-			object_rep* obj = is_class_object(L, index);
+			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1;
-			// cannot cast a constant object to nonconst
-			if (obj->flags() & object_rep::constant) return -1;
 
-			if (obj->crep()->holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?-1:0;
-			if (obj->crep()->const_holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?0:1;
+            if (obj->is_const())
+                return -1;
 
-			int d;
-			return implicit_cast(obj->crep(), typeid(T), d);
+            std::pair<void*, int> s = obj->get_instance(typeid(T));
+            result = s.first;
+            return s.second;
 		}
 
 		template<class T>
@@ -252,59 +264,50 @@ namespace luabind { namespace detail
 		typedef value_converter type;
         typedef mpl::false_ is_native;
 
-		template<class T>
-		void apply(lua_State* L, const T& ref)
+        template <class T>
+        void install(T& x, object_rep& instance, mpl::false_)
+        {
+            std::auto_ptr<T> ptr(new T(x));
+            install_instance(ptr, instance);
+        }
+
+        template <class T>
+        void install(T& x, object_rep& instance, mpl::true_)
+        {
+            install_instance(x, instance);
+        }
+
+		template <class T>
+		class_rep* get_class(T const*, lua_State* L, mpl::false_)
 		{
-			if (luabind::get_back_reference(L, ref))
+			return get_class_rep<T>(L);
+		}
+
+		template <class T>
+		class_rep* get_class(T const* x, lua_State* L, mpl::true_)
+		{
+			return get_class(get_pointer(*x), L, mpl::false_());
+		}
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
+
+		template<class T>
+		void apply(lua_State* L, T x)
+		{
+			if (luabind::get_back_reference(L, x))
 				return;
 
-			class_rep* crep = get_class_rep<T>(L);
+			class_rep* crep = get_class(&x, L, has_get_pointer<T>());
 
 			// if you get caught in this assert you are
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			void* obj_rep;
-			void* held;
-
-			boost::tie(obj_rep,held) = crep->allocate(L);
-
-			void* object_ptr;
-			void(*destructor)(void*);
-			destructor = crep->destructor();
-			int flags = object_rep::owner;
-			if (crep->has_holder())
-			{
-				if (crep->const_holder_type() == typeid(T))
-				{
-					new(held) T(ref);
-					object_ptr = held;
-					flags |= object_rep::constant;
-					destructor = crep->const_holder_destructor();
-				}
-				else if (crep->holder_type()== typeid(T))
-				{
-					new(held) T(ref);
-					object_ptr = held;
-				}
-				else
-				{
-					assert(crep->type() == typeid(T));
-					std::auto_ptr<T> obj(new T(ref));
-					crep->construct_holder()(held, obj.get());
-					object_ptr = held;
-					obj.release();
-				}
-			}
-			else
-			{
-				object_ptr = new T(ref);
-			}
-			new(obj_rep) object_rep(object_ptr, crep, flags, destructor);
-
-			// set the meta table
-			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
-			lua_setmetatable(L, -2);
+            object_rep* instance = push_new_instance(L, crep);
+            install(x, *instance, has_get_pointer<T>());
 		}
 
         conversion_storage storage;
@@ -315,26 +318,11 @@ namespace luabind { namespace detail
 			// preconditions:
 			//	lua_isuserdata(L, index);
 			// getmetatable().__lua_class is true
-			// object_rep->flags() & object_rep::constant == 0
 
-			object_rep* obj = 0;
-			const class_rep* crep = 0;
+			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
+			assert((obj != 0) && "internal error, please report"); // internal error
 
-			// special case if we get nil in, try to convert the holder type
-			if (lua_isnil(L, index))
-			{
-				crep = get_class_rep<T>(L);
-				assert(crep);
-			}
-			else
-			{
-				obj = static_cast<object_rep*>(lua_touserdata(L, index));
-				assert((obj != 0) && "internal error, please report"); // internal error
-				crep = obj->crep();
-			}
-			assert(crep);
-
-			return *static_cast<T*>(crep->convert_to(typeid(T), obj, storage));
+			return *static_cast<T*>(obj->get_instance(typeid(T)).first);
 		}
 
 		template<class T>
@@ -342,26 +330,12 @@ namespace luabind { namespace detail
 		{
 			// special case if we get nil in, try to match the holder type
 			if (lua_isnil(L, index))
-			{
-				class_rep* crep = get_class_rep<T>(L);
-				if (crep == 0) return -1;
-				if (crep->holder_type() == typeid(T))
-					return 0;
-				if (crep->const_holder_type() == typeid(T))
-					return 0;
 				return -1;
-			}
 
-			object_rep* obj = is_class_object(L, index);
+			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1;
-			int d;
 
-			if (obj->crep()->holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?-1:0;
-			if (obj->crep()->const_holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?0:1;
-
-			return implicit_cast(obj->crep(), typeid(T), d);
+			return obj->get_instance(typeid(T)).second;
 		}
 
 		template<class T>
@@ -370,9 +344,21 @@ namespace luabind { namespace detail
 
 // ******* const pointer converter *******
 
-    struct const_pointer_converter : pointer_converter
+    struct const_pointer_converter
 	{
 		typedef const_pointer_converter type;
+        typedef mpl::false_ is_native;
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
+
+        const_pointer_converter()
+          : result(0)
+        {}
+
+        void* result;
 
 		template<class T>
 		void apply(lua_State* L, const T* ptr)
@@ -392,55 +378,45 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			// create the struct to hold the object
-			void* obj = lua_newuserdata(L, sizeof(object_rep));
-			assert(obj && "internal error, please report");
-			// we send 0 as destructor since we know it will never be called
-			new(obj) object_rep(const_cast<T*>(ptr), crep, object_rep::constant, 0);
-
-			// set the meta table
-			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
-			lua_setmetatable(L, -2);
+            object_rep* instance = push_new_instance(L, crep);
+            install_instance(ptr, *instance);
 		}
 
 		template<class T>
 		T const* apply(lua_State* L, by_const_pointer<T>, int index)
 		{
-			return pointer_converter::apply(L, by_pointer<T>(), index);
+			return static_cast<T const*>(result);
 		}
 
 		template<class T>
-		static int match(lua_State* L, by_const_pointer<T>, int index)
+		int match(lua_State* L, by_const_pointer<T>, int index)
 		{
 			if (lua_isnil(L, index)) return 0;
-			object_rep* obj = is_class_object(L, index);
+			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
-
-			if (obj->crep()->holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?-1:0;
-			if (obj->crep()->const_holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?0:1;
-
-            bool const_ = obj->flags() & object_rep::constant;
-			int d;
-			int points = implicit_cast(obj->crep(), typeid(T), d);
-			return points == -1 ? -1 : points + !const_;
+            std::pair<void*, int> s = obj->get_instance(typeid(T));
+            if (s.second >= 0 && !obj->is_const())
+                s.second += 10;
+            result = s.first;
+            return s.second;
 		}
 
-		template<class T>
-		void converter_postcall(lua_State* L, by_const_pointer<T>, int index) 
-		{
-			pointer_converter::converter_postcall(L, by_pointer<T>(), index);
-		}
+        template<class T>
+        void converter_postcall(lua_State*, T, int) {}
 	};
 
 // ******* reference converter *******
 
-	struct ref_converter
+    struct ref_converter : pointer_converter
 	{
 		typedef ref_converter type;
         typedef mpl::false_ is_native;
-		
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
+
 		template<class T>
 		void apply(lua_State* L, T& ref)
 		{
@@ -453,27 +429,19 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			T* ptr = &ref;
-
-			// create the struct to hold the object
-			void* obj = lua_newuserdata(L, sizeof(object_rep));
-			assert(obj && "internal error, please report");
-			new(obj) object_rep(ptr, crep, 0, 0);
-
-			// set the meta table
-			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
-			lua_setmetatable(L, -2);
+            object_rep* instance = push_new_instance(L, crep);
+            install_instance(&ref, *instance);
 		}
 
 		template<class T>
 		T& apply(lua_State* L, by_reference<T>, int index)
 		{
 			assert(!lua_isnil(L, index));
-			return *pointer_converter().apply(L, by_pointer<T>(), index);
+            return *pointer_converter::apply(L, by_pointer<T>(), index);
 		}
 
 		template<class T>
-		static int match(lua_State* L, by_reference<T>, int index)
+		int match(lua_State* L, by_reference<T>, int index)
 		{
 			if (lua_isnil(L, index)) return -1;
 			return pointer_converter::match(L, by_pointer<T>(), index);
@@ -489,7 +457,18 @@ namespace luabind { namespace detail
 	{
 		typedef const_ref_converter type;
         typedef mpl::false_ is_native;
-		
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
+
+        const_ref_converter()
+          : result(0)
+        {}
+
+        void* result;
+
 		template<class T>
 		void apply(lua_State* L, T const& ref)
 		{
@@ -502,16 +481,9 @@ namespace luabind { namespace detail
 			// trying to use an unregistered type
 			assert(crep && "you are trying to use an unregistered type");
 
-			T const* ptr = &ref;
-
 			// create the struct to hold the object
-			void* obj = lua_newuserdata(L, sizeof(object_rep));
-			assert(obj && "internal error, please report");
-			new(obj) object_rep(const_cast<T*>(ptr), crep, object_rep::constant, 0);
-
-			// set the meta table
-			lua_rawgeti(L, LUA_REGISTRYINDEX, crep->metatable_ref());
-			lua_setmetatable(L, -2);
+            object_rep* instance = push_new_instance(L, crep);
+            install_instance(&ref, *instance);
 		}
 
 		conversion_storage storage;
@@ -519,53 +491,20 @@ namespace luabind { namespace detail
 		template<class T>
 		T const& apply(lua_State* L, by_const_reference<T>, int index)
 		{
-			object_rep* obj = 0;
-			class_rep const * crep = 0;
-
-			// special case if we get nil in, try to convert the holder type
-			if (lua_isnil(L, index))
-			{
-				crep = get_class_rep<T>(L);
-				assert(crep);
-			}
-			else
-			{
-				obj = static_cast<object_rep*>(lua_touserdata(L, index));
-				assert((obj != 0) && "internal error, please report"); // internal error
-				crep = obj->crep();
-			}
-			assert(crep);
-
-			return *static_cast<T*>(crep->convert_to(typeid(T), obj, storage));
+			return *static_cast<T*>(result);
 		}
 
 		template<class T>
-		static int match(lua_State* L, by_const_reference<T>, int index)
+		int match(lua_State* L, by_const_reference<T>, int index)
 		{
-			// special case if we get nil in, try to match the holder type
-			if (lua_isnil(L, index))
-			{
-				class_rep* crep = get_class_rep<T>(L);
-				if (crep == 0) return -1;
-				if (crep->holder_type() == typeid(T))
-					return 0;
-				if (crep->const_holder_type() == typeid(T))
-					return 0;
-				return -1;
-			}
-
-			object_rep* obj = is_class_object(L, index);
+			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1; // if the type is not one of our own registered types, classify it as a non-match
 
-			if (obj->crep()->holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?-1:0;
-			if (obj->crep()->const_holder_type() == typeid(T))
-				return (obj->flags() & object_rep::constant)?0:1;
-
-            bool const_ = obj->flags() & object_rep::constant;
-			int d;
-			int points = implicit_cast(obj->crep(), typeid(T), d);
-			return points == -1 ? -1 : points + !const_;
+            std::pair<void*, int> s = obj->get_instance(typeid(T));
+            if (s.second >= 0 && !obj->is_const())
+                s.second += 10;
+            result = s.first;
+            return s.second;
 		}
 
 		template<class T>
@@ -580,6 +519,11 @@ namespace luabind { namespace detail
 	{
 		typedef enum_converter type;
         typedef mpl::true_ is_native;
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
 		
 		void apply(lua_State* L, int val)
 		{
@@ -619,6 +563,11 @@ namespace luabind { namespace detail
 	{
 		typedef value_wrapper_converter<U> type;
 		typedef mpl::true_ is_native;
+
+        int const consumed_args(...)
+        {
+            return 1;
+        }
 
 		template<class T>
 		T apply(lua_State* L, by_const_reference<T>, int index)
@@ -698,23 +647,28 @@ struct native_converter_base
 {
     typedef boost::mpl::true_ is_native;
 
+    int const consumed_args(...)
+    {
+        return 1;
+    }
+
     template <class U>
     void converter_postcall(lua_State*, U const&, int)
     {}
 
-    static int match(lua_State* L, detail::by_value<T>, int index)
+    int match(lua_State* L, detail::by_value<T>, int index)
     {
-        return Derived::compute_score(L, index);
+        return derived().compute_score(L, index);
     }
 
-    static int match(lua_State* L, detail::by_value<T const>, int index)
+    int match(lua_State* L, detail::by_value<T const>, int index)
     {
-        return Derived::compute_score(L, index);
+        return derived().compute_score(L, index);
     }
 
-    static int match(lua_State* L, detail::by_const_reference<T>, int index)
+    int match(lua_State* L, detail::by_const_reference<T>, int index)
     {
-        return Derived::compute_score(L, index);
+        return derived().compute_score(L, index);
     }
 
     T apply(lua_State* L, detail::by_value<T>, int index)
@@ -748,14 +702,17 @@ struct native_converter_base
 struct default_converter<type> \
   : native_converter_base<type> \
 { \
-    static int compute_score(lua_State* L, int index) \
+    lua_Number result; \
+ \
+    int compute_score(lua_State* L, int index) \
     { \
-        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1; \
+        result = lua_tonumber(L, index); \
+        return (result != 0 || lua_isnumber(L, index)) ? 0 : -1; \
     }; \
     \
     type from(lua_State* L, int index) \
     { \
-        return static_cast<type>(lua_tonumber(L, index)); \
+        return static_cast<type>(result); \
     } \
     \
     void to(lua_State* L, type const& value) \
@@ -854,6 +811,11 @@ struct default_converter<char const*>
 {
     typedef boost::mpl::true_ is_native;
 
+    int const consumed_args(...)
+    {
+        return 1;
+    }
+
     template <class U>
     static int match(lua_State* L, U, int index)
     {
@@ -895,6 +857,30 @@ template <std::size_t N>
 struct default_converter<char[N]>
   : default_converter<char const*>
 {};
+
+template <>
+struct default_converter<lua_State*>
+{
+    int const consumed_args(...)
+    {
+        return 0;
+    }
+
+    template <class U>
+    lua_State* apply(lua_State* L, U, int)
+    {
+        return L;
+    }
+
+    template <class U>
+    static int match(lua_State*, U, int)
+    {
+        return 0;
+    }
+
+    template <class U>
+    void converter_postcall(lua_State*, U, int) {}
+};
 
 namespace detail
 {

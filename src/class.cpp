@@ -50,28 +50,7 @@ namespace luabind { namespace detail {
 
         mutable std::vector<class_base::base_desc> m_bases;
 
-        void(*m_destructor)(void*);
-        void(*m_const_holder_destructor)(void*);
-
-        void*(*m_extractor)(void*);
-        const void*(*m_const_extractor)(void*);
-
-        void(*m_const_converter)(void*,void*);
-
-        void(*m_construct_holder)(void*, void*);
-        void(*m_construct_const_holder)(void*, void*);
-
-        void(*m_default_construct_holder)(void*);
-        void(*m_default_construct_const_holder)(void*);
-
-		void(*m_adopt_fun)(void*);
-
-        int m_holder_size;
-        int m_holder_alignment;
-
         type_id m_type;
-        type_id m_holder_type;
-        type_id m_const_holder_type;
 
         scope m_scope;
         scope m_members;
@@ -108,36 +87,10 @@ namespace luabind { namespace detail {
             m_type
             , m_name
             , L
-            , m_destructor
-            , m_const_holder_destructor
-            , m_holder_type
-            , m_const_holder_type
-            , m_extractor
-            , m_const_extractor
-            , m_const_converter
-            , m_construct_holder
-            , m_construct_const_holder
-            , m_default_construct_holder
-            , m_default_construct_const_holder
-			, m_adopt_fun
-            , m_holder_size
-            , m_holder_alignment);
+		);
 
         // register this new type in the class registry
         r->add_class(m_type, crep);
-        if (m_holder_type != typeid(null_type))
-        {
-            // if we have a held type
-            // we have to register it in the class-table
-            // but only for the base class, if it already
-            // exists, we don't have to register it
-            detail::class_rep* c = r->find_class(m_holder_type);
-            if (c == 0)
-            {
-                r->add_class(m_holder_type, crep);
-                r->add_class(m_const_holder_type, crep);
-            }
-        }
 
         crep->m_static_constants.swap(m_static_constants);
 
@@ -228,38 +181,9 @@ namespace luabind { namespace detail {
     {
     }
 
-    void class_base::init(
-        type_id const& type_id
-        , type_id const& holder_type
-        , type_id const& const_holder_type
-        , void*(*extractor)(void*)
-        , const void*(*const_extractor)(void*)
-        , void(*const_converter_)(void*,void*)
-        , void(*holder_constructor_)(void*,void*)
-        , void(*const_holder_constructor_)(void*,void*)
-        , void(*holder_default_constructor_)(void*)
-        , void(*const_holder_default_constructor_)(void*)
-		, void(*adopt_fun)(void*)
-        , void(*destructor)(void*)
-        , void(*const_holder_destructor)(void*)
-        , int holder_size
-        , int holder_alignment)
+    void class_base::init(type_id const& type_id)
     {
         m_registration->m_type = type_id;
-        m_registration->m_holder_type = holder_type;
-        m_registration->m_const_holder_type = const_holder_type;
-        m_registration->m_extractor = extractor;
-        m_registration->m_const_extractor = const_extractor;
-        m_registration->m_const_converter = const_converter_;
-        m_registration->m_construct_holder = holder_constructor_;
-        m_registration->m_construct_const_holder = const_holder_constructor_;
-        m_registration->m_default_construct_holder = holder_default_constructor_;
-        m_registration->m_default_construct_const_holder = const_holder_default_constructor_;
-        m_registration->m_destructor = destructor;
-        m_registration->m_const_holder_destructor = const_holder_destructor;
-		m_registration->m_adopt_fun = adopt_fun;
-        m_registration->m_holder_size = holder_size;
-        m_registration->m_holder_alignment = holder_alignment;
     }
 
     void class_base::add_base(const base_desc& b)
@@ -317,6 +241,7 @@ namespace luabind { namespace detail {
         }
         else
         {
+            /* TODO reimplement this?
             if (i == crep->holder_type())
             {
                 ret += "smart_ptr<";
@@ -329,7 +254,7 @@ namespace luabind { namespace detail {
                 ret += crep->name();
                 ret += ">";
             }
-            else
+            else*/
             {
                 ret += crep->name();
             }

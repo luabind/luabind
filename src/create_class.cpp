@@ -86,10 +86,6 @@ namespace luabind { namespace detail
 		binfo.base = base;
 		crep->add_base_class(binfo);
 
-		// set holder size and alignment so that we can class_rep::allocate
-		// can return the correctly sized buffers
-		crep->derived_from(base);
-		
 		// copy base class members
 
 		crep->get_table(L);
