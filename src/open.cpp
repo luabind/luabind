@@ -86,18 +86,21 @@ namespace
         lua_pushstring(L, "__luabind_class_id_map");
         void* classes_storage = lua_newuserdata(L, sizeof(detail::class_id_map));
         detail::class_id_map* class_ids = new (classes_storage) detail::class_id_map;
+        (void)class_ids;
         lua_settable(L, LUA_REGISTRYINDEX);
 
         lua_pushstring(L, "__luabind_cast_graph");
         void* cast_graph_storage = lua_newuserdata(
             L, sizeof(detail::cast_graph));
         detail::cast_graph* graph = new (cast_graph_storage) detail::cast_graph;
+        (void)graph;
         lua_settable(L, LUA_REGISTRYINDEX);
 
         lua_pushstring(L, "__luabind_class_map");
         void* class_map_storage = lua_newuserdata(
             L, sizeof(detail::class_map));
         detail::class_map* classes = new (class_map_storage) detail::class_map;
+        (void)classes;
         lua_settable(L, LUA_REGISTRYINDEX);
 
         // add functions (class, cast etc...)
