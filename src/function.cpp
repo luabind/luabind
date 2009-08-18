@@ -78,6 +78,7 @@ LUABIND_API void add_overload(
         if (is_luabind_function(overloads) && is_luabind_function(fn))
         {
             f->next = *touserdata<function_object*>(getupvalue(overloads, 1));
+            f->keepalive = overloads;
         }
     }
 

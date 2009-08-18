@@ -45,6 +45,7 @@ struct LUABIND_API function_object
     lua_CFunction entry;
     std::string name;
     function_object* next;
+    object keepalive;
 };
 
 struct invoke_context
