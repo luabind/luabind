@@ -50,9 +50,6 @@ namespace luabind { namespace detail
 		const class_rep* crep() const { return m_classrep; }
 		class_rep* crep() { return m_classrep; }
 
-		detail::lua_reference& get_lua_table() { return m_lua_table_ref; }
-		detail::lua_reference const& get_lua_table() const { return m_lua_table_ref; }
-
 		void set_instance(instance_holder* instance) { m_instance = instance; }
 
 		void add_dependency(lua_State* L, int index);
@@ -93,7 +90,6 @@ namespace luabind { namespace detail
         instance_holder* m_instance;
         boost::aligned_storage<32> m_instance_buffer;
 		class_rep* m_classrep; // the class information about this object's type
-		detail::lua_reference m_lua_table_ref; // reference to lua table if this is a lua class
 		int m_dependency_cnt; // counts dependencies
 		detail::lua_reference m_dependency_ref; // reference to lua table holding dependency references
 	};
