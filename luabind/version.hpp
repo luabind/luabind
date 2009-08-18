@@ -5,7 +5,7 @@
 #ifndef LUABIND_VERSION_090216_HPP
 # define LUABIND_VERSION_090216_HPP
 
-# define LUABIND_VERSION 801
+# define LUABIND_VERSION 900
 
 // Each component uses two digits, so:
 //
