@@ -37,6 +37,8 @@ SOURCES =
     test_shared_ptr.cpp
     test_implicit_raw.cpp
     test_collapse_converter.cpp
+    test_dynamic_type.cpp
+    test_virtual_inheritance.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;

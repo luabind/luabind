@@ -39,6 +39,11 @@ void take_ownership(Base* p)
     adopted = p;
 }
 
+void not_null(Base* p)
+{
+    TEST_CHECK(p);
+}
+
 void test_main(lua_State* L)
 {
     using namespace luabind;
@@ -49,7 +54,8 @@ void test_main(lua_State* L)
         class_<Base, Base_wrap>("Base")
             .def(constructor<>()),
 
-        def("take_ownership", &take_ownership, adopt(_1))
+        def("take_ownership", &take_ownership, adopt(_1)),
+        def("not_null", &not_null)
     ];
 
     DOSTRING(L,
@@ -158,6 +164,21 @@ void test_main(lua_State* L)
 
     DOSTRING(L,
         "collectgarbage('collect')\n"
+        "collectgarbage('collect')\n"
+    );
+
+    TEST_CHECK(Base::count == 0);
+
+    DOSTRING(L,
+        "x = Derived()\n"
+        "take_ownership(x)\n"
+        "not_null(x)\n"
+    );
+
+    delete adopted;
+
+    DOSTRING(L,
+        "x = nil\n"
         "collectgarbage('collect')\n"
     );
 

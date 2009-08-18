@@ -29,6 +29,7 @@
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/implicit_cast.hpp>
 #include <luabind/back_reference_fwd.hpp>
+#include <luabind/wrapper_base.hpp>
 #include <boost/type_traits/is_polymorphic.hpp>
 
 namespace luabind { namespace detail 
@@ -103,11 +104,7 @@ namespace luabind { namespace detail
 			if (luabind::move_back_reference(L, ptr))
 				return;
 
-			class_registry* registry = class_registry::get_registry(L);
-			class_rep* crep = registry->find_class(typeid(T));
-
-            object_rep* instance = push_new_instance(L, crep);
-            install_instance(std::auto_ptr<T>(ptr), *instance);
+            make_instance(L, std::auto_ptr<T>(ptr));
 		}
 	};
 
