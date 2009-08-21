@@ -6,7 +6,7 @@ import package ;
 import path ;
 import virtual-target ;
 
-VERSION = 0.8.1 ;
+VERSION = 0.9.0 ;
 BOOST_ROOT = [ os.environ BOOST_ROOT ] ;
 
 rule debug-message ( txt * )
