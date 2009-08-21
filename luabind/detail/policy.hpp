@@ -240,6 +240,12 @@ namespace luabind { namespace detail
             return 1;
         }
 
+        value_converter()
+          : result(0)
+        {}
+
+        void* result;
+
         template <class T>
         void make(lua_State* L, T& x, mpl::false_)
         {
@@ -272,19 +278,11 @@ namespace luabind { namespace detail
 		template<class T>
 		T apply(lua_State* L, by_value<T>, int index)
 		{
-			// preconditions:
-			//	lua_isuserdata(L, index);
-			// getmetatable().__lua_class is true
-
-			object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, index));
-			assert((obj != 0) && "internal error, please report"); // internal error
-
-			return *static_cast<T*>(obj->get_instance(
-                registered_class<T>::id).first);
+            return *static_cast<T*>(result);
 		}
 
 		template<class T>
-		static int match(lua_State* L, by_value<T>, int index)
+		int match(lua_State* L, by_value<T>, int index)
 		{
 			// special case if we get nil in, try to match the holder type
 			if (lua_isnil(L, index))
@@ -293,7 +291,9 @@ namespace luabind { namespace detail
 			object_rep* obj = get_instance(L, index);
 			if (obj == 0) return -1;
 
-			return obj->get_instance(registered_class<T>::id).second;
+            std::pair<void*, int> s = obj->get_instance(registered_class<T>::id);
+            result = s.first;
+            return s.second;
 		}
 
 		template<class T>
