@@ -39,6 +39,7 @@ SOURCES =
     test_collapse_converter.cpp
     test_dynamic_type.cpp
     test_virtual_inheritance.cpp
+    test_create_in_thread.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;

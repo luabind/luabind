@@ -26,6 +26,7 @@
 
 #include <luabind/luabind.hpp>
 #include <luabind/function.hpp>
+#include <luabind/get_main_thread.hpp>
 
 namespace luabind {
 
@@ -49,10 +50,36 @@ namespace
       return 1;
   }
 
+  int main_thread_tag;
+
 } // namespace unnamed
 
-    void open(lua_State* L)
+    LUABIND_API lua_State* get_main_thread(lua_State* L)
     {
+        lua_pushlightuserdata(L, &main_thread_tag);
+        lua_rawget(L, LUA_REGISTRYINDEX);
+        lua_State* result = static_cast<lua_State*>(lua_touserdata(L, -1));
+        lua_pop(L, 1);
+
+        if (!result)
+            throw std::runtime_error("Unable to get main thread, luabind::open() not called?");
+
+        return result;
+    }
+
+    LUABIND_API void open(lua_State* L)
+    {
+        bool is_main_thread = lua_pushthread(L);
+        lua_pop(L, 1);
+
+        if (!is_main_thread)
+        {
+            throw std::runtime_error(
+                "luabind::open() must be called with the main thread "
+                "lua_State*"
+            );
+        }
+
         // get the global class registry, or create one if it doesn't exist
         // (it's global within a lua state)
         detail::class_registry* r = 0;
@@ -111,6 +138,10 @@ namespace
         lua_pushstring(L, "property");
         lua_pushcclosure(L, &make_property, 0);
         lua_settable(L, LUA_GLOBALSINDEX);
+
+        lua_pushlightuserdata(L, &main_thread_tag);
+        lua_pushlightuserdata(L, L);
+        lua_rawset(L, LUA_REGISTRYINDEX);
     }
 
 } // namespace luabind
