@@ -40,6 +40,7 @@ SOURCES =
     test_dynamic_type.cpp
     test_virtual_inheritance.cpp
     test_create_in_thread.cpp
+    test_extend_class_in_lua.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;
