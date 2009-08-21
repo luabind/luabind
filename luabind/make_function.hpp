@@ -45,7 +45,7 @@ namespace detail
 
           invoke_context ctx;
 
-          int results;
+          int results = 0;
 
           try
           {
