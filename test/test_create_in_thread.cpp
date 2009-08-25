@@ -20,7 +20,14 @@ struct X
     }
 };
 
-#include <iostream>
+struct Y
+{
+    virtual ~Y()
+    {}
+};
+
+struct Y_wrap : Y, luabind::wrap_base
+{};
 
 void test_main(lua_State* L)
 {
@@ -28,8 +35,18 @@ void test_main(lua_State* L)
 
     module(L) [
         class_<X>("X")
+            .def(constructor<>()),
+
+        class_<Y, Y_wrap>("Y")
             .def(constructor<>())
     ];
+
+    DOSTRING(L,
+        "class 'Y_lua' (Y)\n"
+        "  function Y_lua.__init(self)\n"
+        "      Y.__init(self)\n"
+        "  end\n"
+    );
 
     for (int i = 0; i < 100; ++i)
     {
@@ -38,6 +55,10 @@ void test_main(lua_State* L)
 
         DOSTRING(thread,
             "local x = X()\n"
+        );
+
+        DOSTRING(thread,
+            "local y = Y_lua()\n"
         );
 
         luaL_unref(L, LUA_REGISTRYINDEX, ref);

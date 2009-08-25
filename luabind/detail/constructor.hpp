@@ -7,6 +7,7 @@
 # ifndef LUABIND_DETAIL_CONSTRUCTOR_081018_HPP
 #  define LUABIND_DETAIL_CONSTRUCTOR_081018_HPP
 
+#  include <luabind/get_main_thread.hpp>
 #  include <luabind/object.hpp>
 #  include <luabind/wrapper_base.hpp>
 #  include <luabind/detail/inheritance.hpp>
@@ -24,7 +25,7 @@ inline void inject_backref(lua_State* L, void*, void*)
 template <class T>
 void inject_backref(lua_State* L, T* p, wrap_base*)
 {
-    weak_ref(L, 1).swap(wrap_access::ref(*p));
+    weak_ref(get_main_thread(L), 1).swap(wrap_access::ref(*p));
 }
 
 template <std::size_t Arity, class T, class Pointer, class Signature>
