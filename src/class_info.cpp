@@ -35,7 +35,18 @@ namespace luabind
 	
 		o.push(L);
         detail::object_rep* obj = detail::is_class_object(L, -1);
-		lua_pop(L, 1);
+
+        if (!obj)
+        {
+            class_info result;
+            result.name = lua_typename(L, -1);
+            lua_pop(L, 1);
+            result.methods = newtable(L);
+            result.attributes = newtable(L);
+            return result;
+        }
+
+        lua_pop(L, 1);
 
         obj->crep()->get_table(L);
         object table(from_stack(L, -1));
