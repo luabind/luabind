@@ -540,10 +540,10 @@ namespace luabind
 		void gen_base_info(detail::type_<detail::null_type>)
 		{}
 
-#define LUABIND_GEN_BASE_INFO(z, n, text) gen_base_info(detail::type_<B##n>());
+#define LUABIND_GEN_BASE_INFO(z, n, text) gen_base_info(detail::type_<BaseClass##n>());
 
-		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, class B)>
-		void generate_baseclass_list(detail::type_<bases<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, B)> >)
+		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, class BaseClass)>
+		void generate_baseclass_list(detail::type_<bases<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, BaseClass)> >)
 		{
 			BOOST_PP_REPEAT(LUABIND_MAX_BASES, LUABIND_GEN_BASE_INFO, _)
 		}
