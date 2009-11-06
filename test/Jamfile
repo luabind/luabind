@@ -41,6 +41,7 @@ SOURCES =
     test_virtual_inheritance.cpp
     test_create_in_thread.cpp
     test_extend_class_in_lua.cpp
+    test_smart_ptr_attributes.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;

@@ -169,6 +169,38 @@ namespace luabind { namespace detail
 
     namespace mpl = boost::mpl;
 
+    template <class T, class Clone>
+    void make_pointee_instance(lua_State* L, T& x, mpl::true_, Clone)
+    {
+        if (get_pointer(x))
+        {
+            make_instance(L, x);
+        }
+        else
+        {
+            lua_pushnil(L);
+        }
+    }
+
+    template <class T>
+    void make_pointee_instance(lua_State* L, T& x, mpl::false_, mpl::true_)
+    {
+        std::auto_ptr<T> ptr(new T(x));
+        make_instance(L, ptr);
+    }
+
+    template <class T>
+    void make_pointee_instance(lua_State* L, T& x, mpl::false_, mpl::false_)
+    {
+        make_instance(L, &x);
+    }
+
+    template <class T, class Clone>
+    void make_pointee_instance(lua_State* L, T& x, Clone)
+    {
+        make_pointee_instance(L, x, has_get_pointer<T>(), Clone());
+    }
+
 // ********** pointer converter ***********
 
 	struct pointer_converter
@@ -246,33 +278,13 @@ namespace luabind { namespace detail
 
         void* result;
 
-        template <class T>
-        void make(lua_State* L, T& x, mpl::false_)
-        {
-            std::auto_ptr<T> ptr(new T(x));
-            make_instance(L, ptr);
-        }
-
-        template <class T>
-        void make(lua_State* L, T& x, mpl::true_)
-        {
-            if (get_pointer(x))
-            {
-                make_instance(L, x);
-            }
-            else
-            {
-                lua_pushnil(L);
-            }
-        }
-
 		template<class T>
 		void apply(lua_State* L, T x)
 		{
 			if (luabind::get_back_reference(L, x))
 				return;
 
-            make(L, x, has_get_pointer<T>());
+            make_pointee_instance(L, x, mpl::true_());
 		}
 
 		template<class T>
@@ -374,7 +386,7 @@ namespace luabind { namespace detail
 			if (luabind::get_back_reference(L, ref))
 				return;
 
-            make_instance(L, &ref);
+            make_pointee_instance(L, ref, mpl::false_());
 		}
 
 		template<class T>
@@ -419,7 +431,7 @@ namespace luabind { namespace detail
 			if (luabind::get_back_reference(L, ref))
 				return;
 
-            make_instance(L, &ref);
+            make_pointee_instance(L, ref, mpl::false_());
 		}
 
 		template<class T>
