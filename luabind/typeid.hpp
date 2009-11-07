@@ -35,7 +35,7 @@ public:
 
     bool operator<(type_id const& other) const
     {
-        return id->before(*other.id);
+        return id->before(*other.id) != 0;
     }
 
     char const* name() const

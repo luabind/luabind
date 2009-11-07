@@ -69,7 +69,7 @@ namespace
 
     LUABIND_API void open(lua_State* L)
     {
-        bool is_main_thread = lua_pushthread(L);
+        bool is_main_thread = lua_pushthread(L) == 1;
         lua_pop(L, 1);
 
         if (!is_main_thread)
