@@ -101,14 +101,7 @@ inline void class_id_map::put(class_id id, type_id const& type)
         || result.first->second >= local_id_base
     );
 
-    if (!result.second && result.first->second >= local_id_base)
-    {
-        --m_local_id;
-    }
-
     result.first->second = id;
-
-    assert(m_local_id >= local_id_base);
 }
 
 class class_map
