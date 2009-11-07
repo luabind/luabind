@@ -48,7 +48,7 @@ struct LUABIND_API function_object
     object keepalive;
 };
 
-struct invoke_context
+struct LUABIND_API invoke_context
 {
     invoke_context()
       : best_score(std::numeric_limits<int>::max())
