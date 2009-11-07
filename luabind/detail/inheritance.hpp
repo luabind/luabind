@@ -46,7 +46,7 @@ private:
 // id-space into two, using one half for "local" ids; ids that are used only as
 // keys into the conversion cache. This is needed because we need a unique key
 // even for types that hasn't been registered explicitly.
-class class_id_map
+class LUABIND_API class_id_map
 {
 public:
     class_id_map();
