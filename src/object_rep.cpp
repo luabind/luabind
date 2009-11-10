@@ -58,7 +58,7 @@ namespace luabind { namespace detail
 
     void object_rep::release_dependency_refs(lua_State* L)
     {
-        for (int i = 0; i < m_dependency_cnt; ++i)
+        for (std::size_t i = 0; i < m_dependency_cnt; ++i)
         {
             void* key = (char*)this + i;
             lua_pushlightuserdata(L, key);

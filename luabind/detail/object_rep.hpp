@@ -88,7 +88,7 @@ namespace luabind { namespace detail
         instance_holder* m_instance;
         boost::aligned_storage<32> m_instance_buffer;
 		class_rep* m_classrep; // the class information about this object's type
-		int m_dependency_cnt; // counts dependencies
+        std::size_t m_dependency_cnt; // counts dependencies
 	};
 
 	template<class T>
