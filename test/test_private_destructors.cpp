@@ -93,26 +93,6 @@ void g4(ptr<X> const*)
     TEST_CHECK(ptr_count == 1);
 }
 
-void h1(ptr<X const>)
-{
-    TEST_CHECK(ptr_count == 3);
-}
-
-void h2(ptr<X const> const&)
-{
-    TEST_CHECK(ptr_count == 2);
-}
-
-void h3(ptr<X const>*)
-{
-    TEST_CHECK(ptr_count == 2);
-}
-
-void h4(ptr<X const> const*)
-{
-    TEST_CHECK(ptr_count == 2);
-}
-
 ptr<X> get()
 {
     return ptr<X>(new X);
@@ -135,12 +115,7 @@ void test_main(lua_State* L)
         def("g1", &g1),
         def("g2", &g2),
         def("g3", &g3),
-        def("g4", &g4),
-
-        def("h1", &h1),
-        def("h2", &h2),
-        def("h3", &h3),
-        def("h4", &h4)
+        def("g4", &g4)
     ];
 
     DOSTRING(L, "x = get()\n");
@@ -170,33 +145,9 @@ void test_main(lua_State* L)
     DOSTRING(L, "g4(x)\n");
     TEST_CHECK(ptr_count == 1);
 
-    DOSTRING(L, "h1(x)\n");
-    TEST_CHECK(ptr_count == 1);
-
-    DOSTRING(L, "h2(x)\n");
-    TEST_CHECK(ptr_count == 1);
-
-    DOSTRING(L, "h3(x)\n");
-    TEST_CHECK(ptr_count == 1);
-
-    DOSTRING(L, "h4(x)\n");
-    TEST_CHECK(ptr_count == 1);
-
     DOSTRING(L,
         "x = nil\n"
     );
-
-    DOSTRING(L, "g1(x)\n");
-    TEST_CHECK(ptr_count == 1);
-
-    DOSTRING(L, "g2(x)\n");
-    TEST_CHECK(ptr_count == 1);
-
-    DOSTRING(L, "h1(x)\n");
-    TEST_CHECK(ptr_count == 1);
-
-    DOSTRING(L, "h2(x)\n");
-    TEST_CHECK(ptr_count == 1);
 
     lua_gc(L, LUA_GCCOLLECT, 0);
     TEST_CHECK(ptr_count == 0);
