@@ -643,27 +643,27 @@ struct native_converter_base
     }
 };
 
-# define LUABIND_NUMBER_CONVERTER(type) \
+# define LUABIND_NUMBER_CONVERTER(type, kind) \
     template <> \
 struct default_converter<type> \
   : native_converter_base<type> \
 { \
-    lua_Number result; \
+    type result; \
  \
     int compute_score(lua_State* L, int index) \
     { \
-        result = lua_tonumber(L, index); \
+        result = BOOST_PP_CAT(lua_to, kind)(L, index); \
         return (result != 0 || lua_isnumber(L, index)) ? 0 : -1; \
     }; \
     \
     type from(lua_State* L, int index) \
     { \
-        return static_cast<type>(result); \
+        return result; \
     } \
     \
     void to(lua_State* L, type const& value) \
     { \
-        lua_pushnumber(L, static_cast<lua_Number>(value)); \
+        BOOST_PP_CAT(lua_push, kind)(L, value); \
     } \
 }; \
 \
@@ -677,18 +677,18 @@ struct default_converter<type const&> \
   : default_converter<type> \
 {};
 
-LUABIND_NUMBER_CONVERTER(char)
-LUABIND_NUMBER_CONVERTER(signed char)
-LUABIND_NUMBER_CONVERTER(unsigned char)
-LUABIND_NUMBER_CONVERTER(signed short)
-LUABIND_NUMBER_CONVERTER(unsigned short)
-LUABIND_NUMBER_CONVERTER(signed int)
-LUABIND_NUMBER_CONVERTER(unsigned int)
-LUABIND_NUMBER_CONVERTER(signed long)
-LUABIND_NUMBER_CONVERTER(unsigned long)
-LUABIND_NUMBER_CONVERTER(float)
-LUABIND_NUMBER_CONVERTER(double)
-LUABIND_NUMBER_CONVERTER(long double)
+LUABIND_NUMBER_CONVERTER(char, integer)
+LUABIND_NUMBER_CONVERTER(signed char, integer)
+LUABIND_NUMBER_CONVERTER(unsigned char, integer)
+LUABIND_NUMBER_CONVERTER(signed short, integer)
+LUABIND_NUMBER_CONVERTER(unsigned short, integer)
+LUABIND_NUMBER_CONVERTER(signed int, integer)
+LUABIND_NUMBER_CONVERTER(unsigned int, integer)
+LUABIND_NUMBER_CONVERTER(signed long, integer)
+LUABIND_NUMBER_CONVERTER(unsigned long, integer)
+LUABIND_NUMBER_CONVERTER(float, number)
+LUABIND_NUMBER_CONVERTER(double, number)
+LUABIND_NUMBER_CONVERTER(long double, number)
 
 # undef LUABIND_NUMBER_CONVERTER
 
