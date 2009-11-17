@@ -27,6 +27,7 @@
 #include <luabind/detail/pcall.hpp>
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/stack_utils.hpp>
+#include <luabind/error.hpp>
 #include <luabind/from_stack.hpp>
 #include <luabind/handle.hpp>
 #include <luabind/nil.hpp>

@@ -44,7 +44,6 @@ struct construct_aux<0, T, Pointer, Signature>
     void operator()(argument const& self_) const
     {
         object_rep* self = touserdata<object_rep>(self_);
-        class_rep* cls = self->crep();
 
         std::auto_ptr<T> instance(new T);
         inject_backref(self_.interpreter(), instance.get(), instance.get());
@@ -55,7 +54,7 @@ struct construct_aux<0, T, Pointer, Signature>
         void* storage = self->allocate(sizeof(holder_type));
 
         self->set_instance(new (storage) holder_type(
-            ptr, registered_class<T>::id, naked_ptr, cls));
+            ptr, registered_class<T>::id, naked_ptr));
     }
 };
 
@@ -90,7 +89,6 @@ struct construct_aux<N, T, Pointer, Signature>
     void operator()(argument const& self_, BOOST_PP_ENUM_BINARY_PARAMS(N,a,_)) const
     {
         object_rep* self = touserdata<object_rep>(self_);
-        class_rep* cls = self->crep();
 
         std::auto_ptr<T> instance(new T(BOOST_PP_ENUM_PARAMS(N,_)));
         inject_backref(self_.interpreter(), instance.get(), instance.get());
@@ -101,7 +99,7 @@ struct construct_aux<N, T, Pointer, Signature>
         void* storage = self->allocate(sizeof(holder_type));
 
         self->set_instance(new (storage) holder_type(
-            ptr, registered_class<T>::id, naked_ptr, cls));
+            ptr, registered_class<T>::id, naked_ptr));
     }
 };
 

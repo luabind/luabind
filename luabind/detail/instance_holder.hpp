@@ -5,7 +5,6 @@
 #ifndef LUABIND_INSTANCE_HOLDER_081024_HPP
 # define LUABIND_INSTANCE_HOLDER_081024_HPP
 
-# include <luabind/detail/class_rep.hpp> // TODO
 # include <luabind/detail/inheritance.hpp>
 # include <luabind/get_pointer.hpp>
 # include <luabind/typeid.hpp>
@@ -19,22 +18,17 @@ namespace luabind { namespace detail {
 class instance_holder
 {
 public:
-    instance_holder(class_rep* cls, bool is_pointee_const)
-      : m_cls(cls)
-      , m_pointee_const(is_pointee_const)
+    instance_holder(bool is_pointee_const)
+      : m_pointee_const(is_pointee_const)
     {}
 
     virtual ~instance_holder()
     {}
 
-    virtual std::pair<void*, int> get(class_id target) const = 0;
+    virtual std::pair<void*, int> get(
+        cast_graph const& casts, class_id target) const = 0;
 
     virtual void release() = 0;
-
-    class_rep* get_class() const
-    {
-        return m_cls;
-    }
 
     bool pointee_const() const
     {
@@ -42,7 +36,6 @@ public:
     }
 
 private:
-    class_rep* m_cls;
     bool m_pointee_const;
 };
 
@@ -82,16 +75,16 @@ class pointer_holder : public instance_holder
 {
 public:
     pointer_holder(
-        P p, class_id dynamic_id, void* dynamic_ptr, class_rep* cls
+        P p, class_id dynamic_id, void* dynamic_ptr
     )
-      : instance_holder(cls, check_const_pointer(false ? get_pointer(p) : 0))
+      : instance_holder(check_const_pointer(false ? get_pointer(p) : 0))
       , m_p(p)
       , m_weak(0)
       , m_dynamic_id(dynamic_id)
       , m_dynamic_ptr(dynamic_ptr)
     {}
 
-    std::pair<void*, int> get(class_id target) const
+    std::pair<void*, int> get(cast_graph const& casts, class_id target) const
     {
         if (target == registered_class<P>::id)
             return std::pair<void*, int>(&this->m_p, 0);
@@ -102,7 +95,7 @@ public:
         if (!naked_ptr)
             return std::pair<void*, int>(static_cast<void*>(0), 0);
 
-        return get_class()->casts().cast(
+        return casts.cast(
             naked_ptr
           , static_class_id(false ? get_pointer(m_p) : 0)
           , target
