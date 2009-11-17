@@ -33,7 +33,6 @@
 
 #include <luabind/config.hpp>
 #include <luabind/lua_include.hpp>
-#include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/garbage_collector.hpp>
 #include <luabind/detail/operator_id.hpp>
 #include <luabind/detail/class_registry.hpp>

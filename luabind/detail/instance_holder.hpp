@@ -7,7 +7,6 @@
 
 # include <luabind/detail/implicit_cast.hpp>
 # include <luabind/detail/inheritance.hpp>
-# include <luabind/detail/class_rep.hpp> // TODO
 # include <luabind/get_pointer.hpp>
 # include <luabind/typeid.hpp>
 # include <boost/type_traits/is_polymorphic.hpp>
@@ -18,22 +17,17 @@ namespace luabind { namespace detail {
 class instance_holder
 {
 public:
-    instance_holder(class_rep* cls, bool pointee_const)
-      : m_cls(cls)
-      , m_pointee_const(pointee_const)
+    instance_holder(bool pointee_const)
+      : m_pointee_const(pointee_const)
     {}
 
     virtual ~instance_holder()
     {}
 
-    virtual std::pair<void*, int> get(class_id target) const = 0;
+    virtual std::pair<void*, int> get(
+        cast_graph const& casts, class_id target) const = 0;
 
     virtual void release() = 0;
-
-    class_rep* get_class() const
-    {
-        return m_cls;
-    }
 
     bool pointee_const() const
     {
@@ -41,7 +35,6 @@ public:
     }
 
 private:
-    class_rep* m_cls;
     bool m_pointee_const;
 };
 
@@ -81,16 +74,16 @@ class pointer_holder : public instance_holder
 {
 public:
     pointer_holder(
-        P p, class_id dynamic_id, void* dynamic_ptr, class_rep* cls
+        P p, class_id dynamic_id, void* dynamic_ptr
     )
-      : instance_holder(cls, check_const_pointer(false ? get_pointer(p) : 0))
+      : instance_holder(check_const_pointer(false ? get_pointer(p) : 0))
       , p(p)
       , weak(0)
       , dynamic_id(dynamic_id)
       , dynamic_ptr(dynamic_ptr)
     {}
 
-    std::pair<void*, int> get(class_id target) const
+    std::pair<void*, int> get(cast_graph const& casts, class_id target) const
     {
         if (target == registered_class<P>::id)
             return std::pair<void*, int>(&this->p, 0);
@@ -101,7 +94,7 @@ public:
         if (!naked_ptr)
             return std::pair<void*, int>(0, 0);
 
-        return get_class()->casts().cast(
+        return casts.cast(
             naked_ptr
           , static_class_id(false ? get_pointer(p) : 0)
           , target
