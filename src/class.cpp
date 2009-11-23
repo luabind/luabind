@@ -242,10 +242,10 @@ namespace luabind { namespace detail {
     }
 
     void class_base::init(
-        type_id const& type_id, class_id id
+        type_id const& type_id_, class_id id
       , type_id const& wrapper_type, class_id wrapper_id)
     {
-        m_registration->m_type = type_id;
+        m_registration->m_type = type_id_;
         m_registration->m_id = id;
         m_registration->m_wrapper_type = wrapper_type;
         m_registration->m_wrapper_id = wrapper_id;
