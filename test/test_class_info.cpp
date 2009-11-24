@@ -37,5 +37,10 @@ void test_main(lua_State* L)
         "assert(info.methods['__init'] == x.__init)\n"
         "assert(info.attributes[1] == 'y')\n"
         "assert(info.attributes[2] == 'x')\n"
+        "names = class_names()\n"
+        "assert(type(names) == 'table')\n"
+        "assert(#names == 2)\n"
+        "assert(names[1] == 'X' or names[2] == 'X')\n"
+        "assert(names[1] == 'class_info_data' or names[2] == 'class_info_data')\n"
     );
 }

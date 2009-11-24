@@ -51,6 +51,11 @@ namespace luabind { namespace detail
 
 		class_rep* find_class(type_id const& info) const;
 
+        std::map<type_id, class_rep*> const& get_classes() const
+        {
+            return m_classes;
+        }
+
 	private:
 
 		std::map<type_id, class_rep*> m_classes;
