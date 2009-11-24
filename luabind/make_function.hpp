@@ -83,8 +83,7 @@ namespace detail
 # endif
 
   LUABIND_API object make_function_aux(
-      lua_State*, int
-    , function_object* impl
+      lua_State* L, function_object* impl
   );
 
   LUABIND_API void add_overload(object const&, char const*, object const&);
@@ -96,7 +95,6 @@ object make_function(lua_State* L, F f, Signature, Policies)
 {
     return detail::make_function_aux(
         L
-      , detail::compute_arity(Signature(), Policies())
       , new detail::function_object_impl<F, Signature, Policies>(
             f, Policies()
         )

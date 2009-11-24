@@ -68,39 +68,6 @@ int compute_score(lua_State* L, Signature, Policies const& policies)
     );
 }
 
-template <class Iter, class End, class Idx, class Policies>
-int compute_arity_aux(Iter, End end, Idx, Policies const& policies)
-{
-    typedef typename find_conversion_policy<Idx::value, Policies>::type
-        conversion_policy;
-
-    int next = compute_arity_aux(
-        typename mpl::next<Iter>::type()
-      , end
-      , typename mpl::next<Idx>::type()
-      , policies
-    );
-
-    return (conversion_policy::has_arg ? 1 : 0) + next;
-}
-
-template <class End, class Idx, class Policies>
-int compute_arity_aux(End, End, Idx, Policies const&)
-{
-    return 0;
-}
-
-template <class Signature, class Policies>
-int compute_arity(Signature, Policies const& policies)
-{
-    return compute_arity_aux(
-        typename mpl::next<typename mpl::begin<Signature>::type>::type()
-      , typename mpl::end<Signature>::type()
-      , mpl::int_<1>()
-      , policies
-    );
-}
-
 }} // namespace luabind::detail
 
 #endif // LUABIND_COMPUTE_RANK_081006_HPP

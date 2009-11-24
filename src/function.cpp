@@ -85,7 +85,7 @@ LUABIND_API void add_overload(
     context[name] = fn;
 }
 
-LUABIND_API object make_function_aux(lua_State* L, int arity, function_object* impl)
+LUABIND_API object make_function_aux(lua_State* L, function_object* impl)
 {
     void* storage = lua_newuserdata(L, sizeof(function_object*));
     push_function_metatable(L);
