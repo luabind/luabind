@@ -660,17 +660,14 @@ lua_Number as_lua_number(T v)
 struct default_converter<type> \
   : native_converter_base<type> \
 { \
-    type result; \
- \
     int compute_score(lua_State* L, int index) \
     { \
-        result = static_cast<type>(BOOST_PP_CAT(lua_to, kind)(L, index)); \
-        return (result != 0 || lua_isnumber(L, index)) ? 0 : -1; \
+        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1; \
     }; \
     \
-    type from(lua_State*, int) \
+    type from(lua_State* L, int index) \
     { \
-        return result; \
+        return static_cast<type>(BOOST_PP_CAT(lua_to, kind)(L, index)); \
     } \
     \
     void to(lua_State* L, type const& value) \
