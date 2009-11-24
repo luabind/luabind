@@ -841,7 +841,7 @@ struct value_wrapper_traits<adl::call_proxy_tag>
     }
 
     template<class W, class A>
-    static void unwrap(lua_State* interpreter, adl::call_proxy<W,A> const& proxy)
+    static void unwrap(lua_State*, adl::call_proxy<W,A> const& proxy)
     {
         object result = const_cast<adl::call_proxy<W,A>&>(proxy);
         result.push(result.interpreter());

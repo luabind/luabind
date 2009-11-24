@@ -174,14 +174,14 @@ namespace luabind { namespace detail
         }
 
         template<class T>
-		T& apply(lua_State* L, by_reference<T>, int index)
+		T& apply(lua_State*, by_reference<T>, int)
 		{
 			new (m_storage) T();
 			return *reinterpret_cast<T*>(m_storage);
 		}
 
 		template<class T>
-		static int match(lua_State* L, by_reference<T>, int index)
+		static int match(lua_State*, by_reference<T>, int)
 		{
 			return 0;
 		}
@@ -196,14 +196,14 @@ namespace luabind { namespace detail
 		}
 
 		template<class T>
-		T* apply(lua_State* L, by_pointer<T>, int index)
+		T* apply(lua_State*, by_pointer<T>, int)
 		{
 			new (m_storage) T();
 			return reinterpret_cast<T*>(m_storage);
 		}
 
 		template<class T>
-		static int match(lua_State* L, by_pointer<T>, int index)
+		static int match(lua_State*, by_pointer<T>, int)
 		{
 			return 0;
 		}

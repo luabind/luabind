@@ -44,7 +44,7 @@ namespace detail
   }
 
   template<class T>
-  wrap_base const* get_back_reference_aux0(T const* p, mpl::false_)
+  wrap_base const* get_back_reference_aux0(T const*, mpl::false_)
   {
       return 0;
   }

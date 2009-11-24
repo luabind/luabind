@@ -19,7 +19,7 @@
 
 namespace luabind { namespace detail {
 
-inline void inject_backref(lua_State* L, void*, void*)
+inline void inject_backref(lua_State*, void*, void*)
 {}
 
 template <class T>

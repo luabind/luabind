@@ -235,7 +235,7 @@ namespace luabind { namespace detail
 		}
 
 		template<class T>
-		T* apply(lua_State* L, by_pointer<T>, int index)
+		T* apply(lua_State*, by_pointer<T>, int)
 		{
             return static_cast<T*>(result);
 		}
@@ -288,7 +288,7 @@ namespace luabind { namespace detail
 		}
 
 		template<class T>
-		T apply(lua_State* L, by_value<T>, int index)
+		T apply(lua_State*, by_value<T>, int)
 		{
             return *static_cast<T*>(result);
 		}
@@ -346,7 +346,7 @@ namespace luabind { namespace detail
 		}
 
 		template<class T>
-		T const* apply(lua_State* L, by_const_pointer<T>, int index)
+		T const* apply(lua_State*, by_const_pointer<T>, int)
 		{
 			return static_cast<T const*>(result);
 		}
@@ -435,7 +435,7 @@ namespace luabind { namespace detail
 		}
 
 		template<class T>
-		T const& apply(lua_State* L, by_const_reference<T>, int index)
+		T const& apply(lua_State*, by_const_reference<T>, int)
 		{
 			return *static_cast<T*>(result);
 		}
@@ -454,7 +454,7 @@ namespace luabind { namespace detail
 		}
 
 		template<class T>
-		void converter_postcall(lua_State* L, by_const_reference<T>, int index) 
+		void converter_postcall(lua_State*, by_const_reference<T>, int)
 		{
 		}
 	};

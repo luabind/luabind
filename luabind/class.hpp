@@ -458,7 +458,7 @@ namespace luabind
             }
 
             void register_aux(
-                lua_State* L, object const& context
+                lua_State*, object const& context
               , object const& get_, null_type) const
             {
                 context[name] = property(get_);
