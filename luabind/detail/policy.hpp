@@ -643,6 +643,18 @@ struct native_converter_base
     }
 };
 
+template <class T>
+lua_Integer as_lua_integer(T v)
+{
+    return static_cast<lua_Integer>(v);
+}
+
+template <class T>
+lua_Number as_lua_number(T v)
+{
+    return static_cast<lua_Number>(v);
+}
+
 # define LUABIND_NUMBER_CONVERTER(type, kind) \
     template <> \
 struct default_converter<type> \
@@ -652,18 +664,18 @@ struct default_converter<type> \
  \
     int compute_score(lua_State* L, int index) \
     { \
-        result = BOOST_PP_CAT(lua_to, kind)(L, index); \
+        result = static_cast<type>(BOOST_PP_CAT(lua_to, kind)(L, index)); \
         return (result != 0 || lua_isnumber(L, index)) ? 0 : -1; \
     }; \
     \
-    type from(lua_State* L, int index) \
+    type from(lua_State*, int) \
     { \
         return result; \
     } \
     \
     void to(lua_State* L, type const& value) \
     { \
-        BOOST_PP_CAT(lua_push, kind)(L, value); \
+        BOOST_PP_CAT(lua_push, kind)(L, BOOST_PP_CAT(as_lua_, kind)(value)); \
     } \
 }; \
 \
