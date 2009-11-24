@@ -290,7 +290,14 @@ namespace luabind
 		private:
 			class_registration* m_registration;
 		};
-	
+
+// MSVC complains about member being sensitive to alignment (C4121)
+// when F is a pointer to member of a class with virtual bases.
+# ifdef BOOST_MSVC
+#  pragma pack(push)
+#  pragma pack(16)
+# endif
+
 		template <class Class, class F, class Policies>
 		struct memfun_registration : registration
 		{
@@ -316,6 +323,10 @@ namespace luabind
 			F f;
 			Policies policies;
 		};
+
+# ifdef BOOST_MSVC
+#  pragma pack(pop)
+# endif
 
         template <class P, class T>
         struct default_pointer

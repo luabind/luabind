@@ -19,6 +19,13 @@ namespace detail
 
   LUABIND_API void handle_exception_aux(lua_State* L);
 
+// MSVC complains about member being sensitive to alignment (C4121)
+// when F is a pointer to member of a class with virtual bases.
+# ifdef BOOST_MSVC
+#  pragma pack(push)
+#  pragma pack(16)
+# endif
+
   template <class F, class Signature, class Policies>
   struct function_object_impl : function_object
   {
@@ -70,6 +77,10 @@ namespace detail
       F f;
       Policies policies;
   };
+
+# ifdef BOOST_MSVC
+#  pragma pack(pop)
+# endif
 
   LUABIND_API object make_function_aux(
       lua_State*, int
