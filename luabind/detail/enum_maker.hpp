@@ -114,6 +114,7 @@ namespace luabind
 			From& from_;
 
 		private:
+            void operator=(enum_maker const&); // C4512, assignment operator could not be generated
 			template<class T> void operator,(T const&) const;
 		};
 	}
