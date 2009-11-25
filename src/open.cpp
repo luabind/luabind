@@ -52,6 +52,18 @@ namespace
 
   int main_thread_tag;
 
+  int deprecated_super(lua_State* L)
+  {
+      lua_pushstring(L,
+          "DEPRECATION: 'super' has been deprecated in favor of "
+          "directly calling the base class __init() function. "
+          "This error can be disabled by calling 'luabind::disable_super_deprecation()'."
+      );
+      lua_error(L);
+
+      return 0;
+  }
+
 } // namespace unnamed
 
     LUABIND_API lua_State* get_main_thread(lua_State* L)
@@ -142,6 +154,10 @@ namespace
         lua_pushlightuserdata(L, &main_thread_tag);
         lua_pushlightuserdata(L, L);
         lua_rawset(L, LUA_REGISTRYINDEX);
+
+        lua_pushstring(L, "super");
+        lua_pushcclosure(L, &deprecated_super, 0);
+        lua_settable(L, LUA_GLOBALSINDEX);
     }
 
 } // namespace luabind

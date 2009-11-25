@@ -42,6 +42,7 @@ SOURCES =
     test_create_in_thread.cpp
     test_extend_class_in_lua.cpp
     test_smart_ptr_attributes.cpp
+    test_super_leak.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;
