@@ -40,7 +40,7 @@ namespace luabind
         if (!obj)
         {
             class_info result;
-            result.name = lua_typename(L, -1);
+            result.name = lua_typename(L, lua_type(L, -1));
             lua_pop(L, 1);
             result.methods = newtable(L);
             result.attributes = newtable(L);
