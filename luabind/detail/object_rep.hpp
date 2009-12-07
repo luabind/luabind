@@ -122,22 +122,6 @@ namespace luabind { namespace detail
 		}
 	};
 
-
-	inline object_rep* is_class_object(lua_State* L, int index)
-	{
-		object_rep* obj = static_cast<detail::object_rep*>(lua_touserdata(L, index));
-		if (!obj) return 0;
-		if (lua_getmetatable(L, index) == 0) return 0;
-
-		lua_pushstring(L, "__luabind_class");
-		lua_gettable(L, -2);
-		bool confirmation = lua_toboolean(L, -1) != 0;
-		lua_pop(L, 2);
-		if (!confirmation) return 0;
-		return obj;
-
-	}
-
     LUABIND_API object_rep* get_instance(lua_State* L, int index);
     LUABIND_API void push_instance_metatable(lua_State* L);
     LUABIND_API object_rep* push_new_instance(lua_State* L, class_rep* cls);

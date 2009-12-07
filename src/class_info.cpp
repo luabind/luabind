@@ -35,7 +35,7 @@ namespace luabind
 		lua_State* L = o.interpreter();
 	
 		o.push(L);
-        detail::object_rep* obj = detail::is_class_object(L, -1);
+        detail::object_rep* obj = detail::get_instance(L, -1);
 
         if (!obj)
         {
