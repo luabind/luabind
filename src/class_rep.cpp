@@ -163,7 +163,7 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
     lua_replace(L, 1);
 
     cls->get_table(L);
-    lua_pushstring(L, "__init");
+    lua_pushliteral(L, "__init");
     lua_gettable(L, -2);
 
     lua_insert(L, 1);
@@ -353,7 +353,7 @@ void luabind::detail::finalize(lua_State* L, class_rep* crep)
 
 //	lua_pushvalue(L, -1); // copy the object ref
 	crep->get_table(L);
-	lua_pushstring(L, "__finalize");
+    lua_pushliteral(L, "__finalize");
 	lua_gettable(L, -2);
 	lua_remove(L, -2);
 
