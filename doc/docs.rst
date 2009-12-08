@@ -39,6 +39,8 @@ corrections/spelling corrections.
     :backlinks: none
 .. section-numbering::
 
+.. |...| unicode:: U+02026
+
 Introduction
 ============
 
@@ -813,99 +815,65 @@ Note that you can omit ``bases<>`` when using single inheritance.
 Smart pointers
 --------------
 
-When you register a class you can tell luabind that all instances of that class
-should be held by some kind of smart pointer (boost::shared_ptr for instance).
-You do this by giving the holder type as an extra template parameter to
-the ``class_`` you are constructing, like this::
+When registering a class you can tell luabind to hold all instances
+explicitly created in Lua in a specific smart pointer type, rather than
+the default raw pointer. This is done by passing an additional template
+parameter to ``class_``:
 
-    module(L)
-    [
-        class_<A, boost::shared_ptr<A> >("A")
-    ];
+.. parsed-literal::
 
-You also have to supply two functions for your smart pointer. One that returns
-the type of const version of the smart pointer type (boost::shared_ptr<const A>
-in this case). And one function that extracts the raw pointer from the smart
-pointer. The first function is needed because luabind has to allow the
-non-const -> conversion when passing values from Lua to C++. The second
-function is needed when Lua calls member functions on held types, the this
-pointer must be a raw pointer, it is also needed to allow the smart_pointer ->
-raw_pointer conversion from Lua to C++. They look like this::
+    class_<X, P>(|...|)
 
-    namespace luabind {
+Where the requirements of ``P`` are:
 
-        template<class T>
-        T* get_pointer(boost::shared_ptr<T>& p) 
-        {
-            return p.get(); 
-        }
+======================== =======================================
+Expression               Returns
+======================== =======================================
+``P(raw)``
+``get_pointer(p)``       Convertible to ``X*``
+======================== =======================================
 
-        template<class A>
-        boost::shared_ptr<const A>* 
-        get_const_holder(boost::shared_ptr<A>*)
-        {
-            return 0;
-        }
-    }
+where:
 
-The second function will only be used to get a compile time mapping
-of ``boost::shared_ptr<A>`` to its const version,
-``boost::shared_ptr<const A>``. It will never be called, so the
-return value doesn't matter (only the return type).
+* ``raw`` is of type ``X*``
+* ``p`` is an instance of ``P``
 
-The conversion that works are (given that B is a base class of A):
+``get_pointer()`` overloads are provided for the smart pointers in
+Boost, and ``std::auto_ptr<>``. Should you need to provide your own
+overload, note that it is called unqualified and is expected to be found
+by *argument dependent lookup*. Thus it should be defined in the same
+namespace as the pointer type it operates on.
 
-.. topic:: From Lua to C++
+For example:
 
-    ========================= ========================
-    Source                    Target
-    ========================= ========================
-    ``holder_type<A>``        ``A*``
-    ``holder_type<A>``        ``B*``
-    ``holder_type<A>``        ``A const*``
-    ``holder_type<A>``        ``B const*``
-    ``holder_type<A>``        ``holder_type<A>``
-    ``holder_type<A>``        ``holder_type<A const>``
-    ``holder_type<A const>``  ``A const*``
-    ``holder_type<A const>``  ``B const*``
-    ``holder_type<A const>``  ``holder_type<A const>``
-    ========================= ========================
+.. parsed-literal::
 
-.. topic:: From C++ to Lua
+    class_<X, **boost::scoped_ptr<X>** >("X")
+      .def(constructor<>())
 
-    =============================== ========================
-    Source                          Target
-    =============================== ========================
-    ``holder_type<A>``              ``holder_type<A>``
-    ``holder_type<A const>``        ``holder_type<A const>``
-    ``holder_type<A> const&``       ``holder_type<A>``
-    ``holder_type<A const> const&`` ``holder_type<A const>``
-    =============================== ========================
+Will cause luabind to hold any instance created on the Lua side in a
+``boost::scoped_ptr<X>``.
 
-When using a holder type, it can be useful to know if the pointer is valid
-(i.e. not null). For example when using std::auto_ptr, the holder will be
-invalidated when passed as a parameter to a function. For this purpose there
-is a member of all object instances in luabind: ``__ok``. ::
+.. important::
 
-    struct X {};
-    void f(std::auto_ptr<X>);
+    ``get_const_holder()`` has been removed. Automatic conversions
+    between ``smart_ptr<X>`` and ``smart_ptr<X const>`` no longer work.
 
-    module(L)
-    [
-        class_<X, std::auto_ptr<X> >("X")
-            .def(constructor<>()),
+.. important::
 
-        def("f", &f)
-    ];
+    ``__ok``  has been removed. Similar functionality can be implemented
+    for specific pointer types by doing something along the lines of:
 
-::
-    
-    Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
-    > a = X()
-    > f(a)
-    > print a.__ok
-    false
+    .. parsed-literal::
 
+      bool is_non_null(std::auto_ptr<X> const& p)
+      {
+          return p.get();
+      }
+
+      |...|
+
+      def("is_non_null", &is_non_null)
 
 When registering a hierarchy of classes, where all instances are to be held
 by a smart pointer, all the classes should have the baseclass' holder type.
