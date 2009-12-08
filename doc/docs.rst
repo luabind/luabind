@@ -30,10 +30,6 @@
 .. _MIT license: http://www.opensource.org/licenses/mit-license.php
 .. _Boost: http://www.boost.org
 
-Note: This library is currently in public beta phase. This documentation
-should be considered beta as well. Please report any grammatical 
-corrections/spelling corrections.
-
 .. contents::
     :depth: 2
     :backlinks: none
@@ -822,7 +818,7 @@ parameter to ``class_``:
 
 .. parsed-literal::
 
-    class_<X, P>(|...|)
+    class_<X, **P**>(|...|)
 
 Where the requirements of ``P`` are:
 
