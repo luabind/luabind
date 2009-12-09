@@ -692,9 +692,14 @@ LUABIND_NUMBER_CONVERTER(unsigned char, integer)
 LUABIND_NUMBER_CONVERTER(signed short, integer)
 LUABIND_NUMBER_CONVERTER(unsigned short, integer)
 LUABIND_NUMBER_CONVERTER(signed int, integer)
+# ifdef _MSC_VER
+LUABIND_NUMBER_CONVERTER(unsigned int, number)
+LUABIND_NUMBER_CONVERTER(unsigned long, number)
+# else
 LUABIND_NUMBER_CONVERTER(unsigned int, integer)
-LUABIND_NUMBER_CONVERTER(signed long, integer)
 LUABIND_NUMBER_CONVERTER(unsigned long, integer)
+# endif
+LUABIND_NUMBER_CONVERTER(signed long, integer)
 LUABIND_NUMBER_CONVERTER(float, number)
 LUABIND_NUMBER_CONVERTER(double, number)
 LUABIND_NUMBER_CONVERTER(long double, number)
