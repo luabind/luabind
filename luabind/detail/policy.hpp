@@ -779,7 +779,8 @@ struct default_converter<char const*>
     template <class U>
     static int match(lua_State* L, U, int index)
     {
-        return lua_type(L, index) == LUA_TSTRING ? 0 : -1;
+        int type = lua_type(L, index);
+        return (type == LUA_TSTRING || type == LUA_TNIL) ? 0 : -1;
     }
 
     template <class U>
