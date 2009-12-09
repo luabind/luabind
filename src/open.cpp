@@ -64,6 +64,30 @@ namespace
       return 0;
   }
 
+  int destroy_class_id_map(lua_State* L)
+  {
+      detail::class_id_map* m =
+          (detail::class_id_map*)lua_touserdata(L, 1);
+      m->~class_id_map();
+      return 0;
+  };
+
+  int destroy_cast_graph(lua_State* L)
+  {
+      detail::cast_graph* g =
+          (detail::cast_graph*)lua_touserdata(L, 1);
+      g->~cast_graph();
+      return 0;
+  };
+
+  int destroy_class_map(lua_State* L)
+  {
+      detail::class_map* m =
+          (detail::class_map*)lua_touserdata(L, 1);
+      m->~class_map();
+      return 0;
+  };
+
 } // namespace unnamed
 
     LUABIND_API lua_State* get_main_thread(lua_State* L)
@@ -121,11 +145,16 @@ namespace
         new(r) detail::class_registry(L);
         lua_settable(L, LUA_REGISTRYINDEX);
 
-        // TODO this leaks.
         lua_pushstring(L, "__luabind_class_id_map");
         void* classes_storage = lua_newuserdata(L, sizeof(detail::class_id_map));
         detail::class_id_map* class_ids = new (classes_storage) detail::class_id_map;
         (void)class_ids;
+
+        lua_newtable(L);
+        lua_pushcclosure(L, &destroy_class_id_map, 0);
+        lua_setfield(L, -2, "__gc");
+        lua_setmetatable(L, -2);
+
         lua_settable(L, LUA_REGISTRYINDEX);
 
         lua_pushstring(L, "__luabind_cast_graph");
@@ -133,6 +162,12 @@ namespace
             L, sizeof(detail::cast_graph));
         detail::cast_graph* graph = new (cast_graph_storage) detail::cast_graph;
         (void)graph;
+
+        lua_newtable(L);
+        lua_pushcclosure(L, &destroy_cast_graph, 0);
+        lua_setfield(L, -2, "__gc");
+        lua_setmetatable(L, -2);
+
         lua_settable(L, LUA_REGISTRYINDEX);
 
         lua_pushstring(L, "__luabind_class_map");
@@ -140,6 +175,12 @@ namespace
             L, sizeof(detail::class_map));
         detail::class_map* classes = new (class_map_storage) detail::class_map;
         (void)classes;
+
+        lua_newtable(L);
+        lua_pushcclosure(L, &destroy_class_map, 0);
+        lua_setfield(L, -2, "__gc");
+        lua_setmetatable(L, -2);
+
         lua_settable(L, LUA_REGISTRYINDEX);
 
         // add functions (class, cast etc...)
