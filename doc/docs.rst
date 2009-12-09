@@ -848,7 +848,15 @@ For example:
       .def(constructor<>())
 
 Will cause luabind to hold any instance created on the Lua side in a
-``boost::scoped_ptr<X>``.
+``boost::scoped_ptr<X>``. Note that this doesn't mean **all** instances
+will be held by a ``boost::scoped_ptr<X>``. If, for example, you
+register a function::
+
+    std::auto_ptr<X> make_X();
+
+the instance returned by that will be held in ``std::auto_ptr<X>``. This
+is handled automatically for all smart pointers that implement a
+``get_pointer()`` overload.
 
 .. important::
 
