@@ -94,12 +94,6 @@ namespace luabind
 		const int* m_map;
 	};
 
-	namespace detail
-	{
-
-		LUABIND_API int implicit_cast(const class_rep* crep, type_id const&, int& pointer_offset);
-	}
-
 //	 template<class T> class functor;
 	 class weak_ref;
 }
