@@ -32,7 +32,7 @@ public:
     // for a polymorphic type, the pointer must be cast with
     // dynamic_cast<void*> before being passed in here, and `src` has to
     // match typeid(*p).
-    std::pair<void*, std::size_t> cast(
+    std::pair<void*, int> cast(
         void* p, class_id src, class_id target
       , class_id dynamic_id, void const* dynamic_ptr) const;
     void insert(class_id src, class_id target, cast_function cast);
