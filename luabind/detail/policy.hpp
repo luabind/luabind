@@ -989,8 +989,10 @@ namespace detail
 
 namespace luabind { namespace
 {
-#if defined(__GNUC__) && \
-  (__GNUC__ * 100 + __GNUC_MINOR__ < 400 || BOOST_VERSION <= 103401)
+#if defined(__GNUC__) && ( \
+    (BOOST_VERSION < 103500) \
+ || (BOOST_VERSION < 103900 && (__GNUC__ * 100 + __GNUC_MINOR__ <= 400)) \
+ || (__GNUC__ * 100 + __GNUC_MINOR__ < 400))
   static inline boost::arg<0> return_value()
   {
 	  return boost::arg<0>();
@@ -1001,7 +1003,9 @@ namespace luabind { namespace
 	  return boost::arg<0>();
   }
 # define LUABIND_PLACEHOLDER_ARG(N) boost::arg<N>(*)()
-#elif defined(BOOST_MSVC) || defined(__MWERKS__)
+#elif defined(BOOST_MSVC) || defined(__MWERKS__) \
+  || (BOOST_VERSION >= 103900 && defined(__GNUC__) \
+        && (__GNUC__ * 100 + __GNUC_MINOR__ == 400))
   static boost::arg<0> return_value;
   static boost::arg<0> result;
 # define LUABIND_PLACEHOLDER_ARG(N) boost::arg<N>
