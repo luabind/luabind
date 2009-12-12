@@ -18,7 +18,7 @@ namespace luabind { namespace detail {
 typedef void*(*cast_function)(void*);
 typedef std::size_t class_id;
 
-class_id const unknown_class = std::numeric_limits<class_id>::max();
+class_id const unknown_class = (std::numeric_limits<class_id>::max)();
 
 class class_rep;
 

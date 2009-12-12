@@ -51,7 +51,7 @@ struct LUABIND_API function_object
 struct LUABIND_API invoke_context
 {
     invoke_context()
-      : best_score(std::numeric_limits<int>::max())
+      : best_score((std::numeric_limits<int>::max)())
       , candidate_index(0)
     {}
 
