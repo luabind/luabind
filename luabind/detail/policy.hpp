@@ -393,8 +393,15 @@ namespace luabind { namespace detail
 		template<class T>
 		int match(lua_State* L, by_reference<T>, int index)
 		{
-			if (lua_isnil(L, index)) return -1;
-			return pointer_converter::match(L, by_pointer<T>(), index);
+            object_rep* obj = get_instance(L, index);
+            if (obj == 0) return -1;
+
+            if (obj->is_const())
+                return -1;
+
+            std::pair<void*, int> s = obj->get_instance(registered_class<T>::id);
+            result = s.first;
+            return s.second;
 		}
 
 		template<class T>
