@@ -239,10 +239,20 @@ cast_graph::cast_graph()
 cast_graph::~cast_graph()
 {}
 
-LUABIND_API class_id allocate_class_id()
+LUABIND_API class_id allocate_class_id(type_id const& cls)
 {
+    typedef std::map<type_id, class_id> map_type;
+
+    static map_type registered;
     static class_id id = 0;
-    return id++;
+
+    std::pair<map_type::iterator, bool> inserted = registered.insert(
+        std::make_pair(cls, id));
+
+    if (inserted.second)
+        ++id;
+
+    return inserted.first->second;
 }
 
 }} // namespace luabind::detail

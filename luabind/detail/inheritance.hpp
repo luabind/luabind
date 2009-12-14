@@ -147,7 +147,7 @@ struct dynamic_cast_
 };
 
 // Thread safe class_id allocation.
-LUABIND_API class_id allocate_class_id();
+LUABIND_API class_id allocate_class_id(type_id const& cls);
 
 template <class T>
 struct registered_class
@@ -156,7 +156,7 @@ struct registered_class
 };
 
 template <class T>
-class_id const registered_class<T>::id = allocate_class_id();
+class_id const registered_class<T>::id = allocate_class_id(typeid(T));
 
 template <class T>
 struct registered_class<T const>
