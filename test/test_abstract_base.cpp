@@ -109,4 +109,12 @@ void test_main(lua_State* L)
         "y:hello()\n");
 
     DOSTRING(L, "call_hello(y)\n");
+
+    DOSTRING(L,
+        "x = abstract()\n"
+        "x.hello = function(self) return 'hello from instance' end\n"
+        "print(x.hello)\n"
+        "assert(x:hello() == 'hello from instance')\n"
+        "assert(call_hello(x) == 'hello from instance')\n"
+    );
 }
