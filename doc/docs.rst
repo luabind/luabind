@@ -94,8 +94,6 @@ Portability
 Luabind has been tested to work on the following compilers:
 
  - Visual Studio 7.1 
- - Visual Studio 7.0 
- - Visual Studio 6.0 (sp 5) 
  - Intel C++ 6.0 (Windows) 
  - GCC 2.95.3 (cygwin) 
  - GCC 3.0.4 (Debian/Linux) 
