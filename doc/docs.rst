@@ -2447,53 +2447,13 @@ LUA_API
     this should be ``__declspec(dllimport)`` if you want to link against Lua 
     as a dll.
 
-LUABIND_EXPORT, LUABIND_IMPORT
-    If you want to link against luabind as a dll (in Visual Studio), you can 
-    define ``LUABIND_EXPORT`` to ``__declspec(dllexport)`` and 
-    ``LUABIND_IMPORT`` to ``__declspec(dllimport)`` or
-    ``__attribute__ ((visibility("default")))`` on GCC 4. 
-    Note that you have to link against Lua as a dll aswell, to make it work.
+LUABIND_DYNAMIC_LINK
+    Must be defined if you intend to link against the luabind shared
+    library.
 
 LUABIND_NO_RTTI
     You can define this if you don't want luabind to use ``dynamic_cast<>``.
     It will disable `Object identity`_.
-
-LUABIND_TYPE_INFO, LUABIND_TYPE_INFO_EQUAL(i1,i2), LUABIND_TYPEID(t), LUABIND_INVALID_TYPE_INFO
-    If you don't want to use the RTTI supplied by C++ you can supply your own 
-    type-info structure with the ``LUABIND_TYPE_INFO`` define. Your type-info 
-    structure must be copyable and must be able to compare itself against 
-    other type-info structures. You supply the compare function through the 
-    ``LUABIND_TYPE_INFO_EQUAL()`` define. It should compare the two type-info 
-    structures it is given and return true if they represent the same type and
-    false otherwise. You also have to supply a function to generate your 
-    type-info structure. You do this through the ``LUABIND_TYPEID()`` define. 
-    It should return your type-info structure and it takes a type as its 
-    parameter. That is, a compile time parameter. 
-    ``LUABIND_INVALID_TYPE_INFO`` macro should be defined to an invalid type. 
-    No other type should be able to produce this type info. To use it you 
-    probably have to make a traits class with specializations for all classes 
-    that you have type-info for. Like this::
-
-        class A;
-        class B;
-        class C;
-
-        template<class T> struct typeinfo_trait;
-
-        template<> struct typeinfo_trait<A> { enum { type_id = 0 }; };
-        template<> struct typeinfo_trait<B> { enum { type_id = 1 }; };
-        template<> struct typeinfo_trait<C> { enum { type_id = 2 }; };
-
-    If you have set up your own RTTI system like this (by using integers to
-    identify types) you can have luabind use it with the following defines::
-
-        #define LUABIND_TYPE_INFO const std::type_info*
-        #define LUABIND_TYPEID(t) &typeid(t)
-        #define LUABIND_TYPE_INFO_EQUAL(i1, i2) *i1 == *i2
-        #define LUABIND_INVALID_TYPE_INFO &typeid(detail::null_type)
-
-    Currently the type given through ``LUABIND_TYPE_INFO`` must be less-than 
-    comparable!
 
 NDEBUG
     This define will disable all asserts and should be defined in a release 
