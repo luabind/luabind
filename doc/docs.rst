@@ -514,7 +514,7 @@ one overload of an overloaded member function, you have to disambiguate
 the member function pointer you pass to ``def``. To do this, you can use an
 ordinary C-style cast, to cast it to the right overload. To do this, you have
 to know how to express member function types in C++, here's a short tutorial
-(for more info, refer to your favourite book on C++).
+(for more info, refer to your favorite book on C++).
 
 The syntax for member function pointer follows:
 
@@ -692,7 +692,7 @@ hitch; it will not be called if the references are equal. This means that the
 
 Lua does not support operators such as ``!=``, ``>`` or ``>=``. That's why you
 can only register the operators listed above. When you invoke one of the
-mentioned operators, lua will define it in terms of one of the avaliable
+mentioned operators, lua will define it in terms of one of the available
 operators.
 
 In the above example the other operand type is instantiated by writing
@@ -770,7 +770,7 @@ to wrap a nested class, or a static function.
 In this example, ``f`` will behave like a static member function of the class
 ``foo``, and the class ``nested`` will behave like a nested class of ``foo``.
 
-It's also possible to add namespace's to classes using the same syntax.
+It's also possible to add namespaces to classes using the same syntax.
 
 
 Derived classes
@@ -2344,7 +2344,7 @@ in-depth explanation.
     the attribute '*class-name.attribute-name*' is of type: (*class-name*) and does not match (*class_name*)
 
   This error is generated if you try to assign an attribute with a value 
-  of a type that cannot be converted to the attribute's type.
+  of a type that cannot be converted to the attributes type.
 
 
 - .. parsed-literal:: 
@@ -2566,7 +2566,7 @@ Internal structure overflow in VC
     `Splitting class registrations`_.
 
 What's wrong with precompiled headers in VC?
-    Visual Studio doesn't like anonymous namespace's in its precompiled 
+    Visual Studio doesn't like anonymous namespaces in its precompiled
     headers. If you encounter this problem you can disable precompiled 
     headers for the compilation unit (cpp-file) that uses luabind.
 
