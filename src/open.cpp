@@ -116,17 +116,11 @@ namespace
             );
         }
 
-        // get the global class registry, or create one if it doesn't exist
-        // (it's global within a lua state)
-        detail::class_registry* r = 0;
-
-        // If you hit this assert it's because you have called luabind::open()
-        // twice on the same lua_State.
-        assert((detail::class_registry::get_registry(L) == 0) 
-            && "you cannot call luabind::open() twice");
+        if (detail::class_registry::get_registry(L))
+            return;
 
         lua_pushstring(L, "__luabind_classes");
-        r = static_cast<detail::class_registry*>(
+        detail::class_registry* r = static_cast<detail::class_registry*>(
             lua_newuserdata(L, sizeof(detail::class_registry)));
 
         // set gc metatable
