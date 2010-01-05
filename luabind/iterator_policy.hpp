@@ -34,8 +34,7 @@ struct iterator
 
     static int destroy(lua_State* L)
     {
-        iterator* self = static_cast<iterator*>(
-            lua_touserdata(L, lua_upvalueindex(1)));
+        iterator* self = static_cast<iterator*>(lua_touserdata(L, 1));
         self->~iterator();
         return 0;
     }

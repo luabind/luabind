@@ -5,6 +5,7 @@
 #ifndef LUABIND_SHARED_PTR_CONVERTER_090211_HPP
 # define LUABIND_SHARED_PTR_CONVERTER_090211_HPP
 
+# include <luabind/get_main_thread.hpp>
 # include <luabind/handle.hpp>
 # include <luabind/detail/policy.hpp>
 # include <boost/shared_ptr.hpp>
@@ -17,7 +18,7 @@ namespace detail
   struct shared_ptr_deleter
   {
       shared_ptr_deleter(lua_State* L, int index)
-        : life_support(L, index)
+        : life_support(get_main_thread(L), index)
       {}
 
       void operator()(void const*)

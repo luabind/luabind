@@ -102,6 +102,8 @@ namespace luabind { namespace detail
           {
               lua_pushvalue(L, 2);
               lua_rawget(L, -2);
+              lua_replace(L, -3);
+              lua_pop(L, 1);
           }
 
           if (lua_tocfunction(L, -1) == &property_tag)

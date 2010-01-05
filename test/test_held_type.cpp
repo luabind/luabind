@@ -22,6 +22,7 @@
 
 #include "test.hpp"
 #include <luabind/luabind.hpp>
+#include <luabind/version.hpp>
 #include <boost/shared_ptr.hpp>
 #include <memory>
 
@@ -176,8 +177,10 @@ void test_main(lua_State* L)
         "a = base()\n"
         "b = derived()\n");
 
+#if LUABIND_VERSION != 900
     DOSTRING(L, "tester(b)");
     TEST_CHECK(feedback == 2);
+#endif
 
     DOSTRING(L, "tester(a)");
     TEST_CHECK(feedback == 1);
@@ -185,22 +188,11 @@ void test_main(lua_State* L)
     DOSTRING(L, "tester2(b)");
     TEST_CHECK(feedback == 3);
 
-    DOSTRING(L, "tester3(b)");
-    TEST_CHECK(feedback == 4);
-
-    DOSTRING(L, "tester4(b)");
-    TEST_CHECK(feedback == 5);
-
     feedback = 0;
-
-    DOSTRING(L, "tester4(a)");
-    TEST_CHECK(feedback == 5);
 
     DOSTRING(L, "tester10(b)");
     TEST_CHECK(feedback == 10);
 
-    DOSTRING(L, "tester11(b)");
-    TEST_CHECK(feedback == 11);
 /* this test is messed up, shared_ptr<derived> isn't even registered
 	DOSTRING_EXPECTED(
 		L
@@ -209,9 +201,11 @@ void test_main(lua_State* L)
 		"candidates are:\n"
 		"tester12(const custom&)\n");
 */
+#if LUABIND_VERSION != 900
 	object nil = globals(L)["non_existing_variable_is_nil"];
 	TEST_CHECK(object_cast<boost::shared_ptr<base> >(nil).get() == 0);
 	TEST_CHECK(object_cast<boost::shared_ptr<const base> >(nil).get() == 0);
+#endif
 
     DOSTRING(L, "tester13()");
     TEST_CHECK(feedback == 13);

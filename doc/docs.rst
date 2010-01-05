@@ -30,14 +30,12 @@
 .. _MIT license: http://www.opensource.org/licenses/mit-license.php
 .. _Boost: http://www.boost.org
 
-Note: This library is currently in public beta phase. This documentation
-should be considered beta as well. Please report any grammatical 
-corrections/spelling corrections.
-
 .. contents::
     :depth: 2
     :backlinks: none
 .. section-numbering::
+
+.. |...| unicode:: U+02026
 
 Introduction
 ============
@@ -96,8 +94,6 @@ Portability
 Luabind has been tested to work on the following compilers:
 
  - Visual Studio 7.1 
- - Visual Studio 7.0 
- - Visual Studio 6.0 (sp 5) 
  - Intel C++ 6.0 (Windows) 
  - GCC 2.95.3 (cygwin) 
  - GCC 3.0.4 (Debian/Linux) 
@@ -518,7 +514,7 @@ one overload of an overloaded member function, you have to disambiguate
 the member function pointer you pass to ``def``. To do this, you can use an
 ordinary C-style cast, to cast it to the right overload. To do this, you have
 to know how to express member function types in C++, here's a short tutorial
-(for more info, refer to your favourite book on C++).
+(for more info, refer to your favorite book on C++).
 
 The syntax for member function pointer follows:
 
@@ -696,7 +692,7 @@ hitch; it will not be called if the references are equal. This means that the
 
 Lua does not support operators such as ``!=``, ``>`` or ``>=``. That's why you
 can only register the operators listed above. When you invoke one of the
-mentioned operators, lua will define it in terms of one of the avaliable
+mentioned operators, lua will define it in terms of one of the available
 operators.
 
 In the above example the other operand type is instantiated by writing
@@ -774,7 +770,7 @@ to wrap a nested class, or a static function.
 In this example, ``f`` will behave like a static member function of the class
 ``foo``, and the class ``nested`` will behave like a nested class of ``foo``.
 
-It's also possible to add namespace's to classes using the same syntax.
+It's also possible to add namespaces to classes using the same syntax.
 
 
 Derived classes
@@ -813,99 +809,73 @@ Note that you can omit ``bases<>`` when using single inheritance.
 Smart pointers
 --------------
 
-When you register a class you can tell luabind that all instances of that class
-should be held by some kind of smart pointer (boost::shared_ptr for instance).
-You do this by giving the holder type as an extra template parameter to
-the ``class_`` you are constructing, like this::
+When registering a class you can tell luabind to hold all instances
+explicitly created in Lua in a specific smart pointer type, rather than
+the default raw pointer. This is done by passing an additional template
+parameter to ``class_``:
 
-    module(L)
-    [
-        class_<A, boost::shared_ptr<A> >("A")
-    ];
+.. parsed-literal::
 
-You also have to supply two functions for your smart pointer. One that returns
-the type of const version of the smart pointer type (boost::shared_ptr<const A>
-in this case). And one function that extracts the raw pointer from the smart
-pointer. The first function is needed because luabind has to allow the
-non-const -> conversion when passing values from Lua to C++. The second
-function is needed when Lua calls member functions on held types, the this
-pointer must be a raw pointer, it is also needed to allow the smart_pointer ->
-raw_pointer conversion from Lua to C++. They look like this::
+    class_<X, **P**>(|...|)
 
-    namespace luabind {
+Where the requirements of ``P`` are:
 
-        template<class T>
-        T* get_pointer(boost::shared_ptr<T>& p) 
-        {
-            return p.get(); 
-        }
+======================== =======================================
+Expression               Returns
+======================== =======================================
+``P(raw)``
+``get_pointer(p)``       Convertible to ``X*``
+======================== =======================================
 
-        template<class A>
-        boost::shared_ptr<const A>* 
-        get_const_holder(boost::shared_ptr<A>*)
-        {
-            return 0;
-        }
-    }
+where:
 
-The second function will only be used to get a compile time mapping
-of ``boost::shared_ptr<A>`` to its const version,
-``boost::shared_ptr<const A>``. It will never be called, so the
-return value doesn't matter (only the return type).
+* ``raw`` is of type ``X*``
+* ``p`` is an instance of ``P``
 
-The conversion that works are (given that B is a base class of A):
+``get_pointer()`` overloads are provided for the smart pointers in
+Boost, and ``std::auto_ptr<>``. Should you need to provide your own
+overload, note that it is called unqualified and is expected to be found
+by *argument dependent lookup*. Thus it should be defined in the same
+namespace as the pointer type it operates on.
 
-.. topic:: From Lua to C++
+For example:
 
-    ========================= ========================
-    Source                    Target
-    ========================= ========================
-    ``holder_type<A>``        ``A*``
-    ``holder_type<A>``        ``B*``
-    ``holder_type<A>``        ``A const*``
-    ``holder_type<A>``        ``B const*``
-    ``holder_type<A>``        ``holder_type<A>``
-    ``holder_type<A>``        ``holder_type<A const>``
-    ``holder_type<A const>``  ``A const*``
-    ``holder_type<A const>``  ``B const*``
-    ``holder_type<A const>``  ``holder_type<A const>``
-    ========================= ========================
+.. parsed-literal::
 
-.. topic:: From C++ to Lua
+    class_<X, **boost::scoped_ptr<X>** >("X")
+      .def(constructor<>())
 
-    =============================== ========================
-    Source                          Target
-    =============================== ========================
-    ``holder_type<A>``              ``holder_type<A>``
-    ``holder_type<A const>``        ``holder_type<A const>``
-    ``holder_type<A> const&``       ``holder_type<A>``
-    ``holder_type<A const> const&`` ``holder_type<A const>``
-    =============================== ========================
+Will cause luabind to hold any instance created on the Lua side in a
+``boost::scoped_ptr<X>``. Note that this doesn't mean **all** instances
+will be held by a ``boost::scoped_ptr<X>``. If, for example, you
+register a function::
 
-When using a holder type, it can be useful to know if the pointer is valid
-(i.e. not null). For example when using std::auto_ptr, the holder will be
-invalidated when passed as a parameter to a function. For this purpose there
-is a member of all object instances in luabind: ``__ok``. ::
+    std::auto_ptr<X> make_X();
 
-    struct X {};
-    void f(std::auto_ptr<X>);
+the instance returned by that will be held in ``std::auto_ptr<X>``. This
+is handled automatically for all smart pointers that implement a
+``get_pointer()`` overload.
 
-    module(L)
-    [
-        class_<X, std::auto_ptr<X> >("X")
-            .def(constructor<>()),
+.. important::
 
-        def("f", &f)
-    ];
+    ``get_const_holder()`` has been removed. Automatic conversions
+    between ``smart_ptr<X>`` and ``smart_ptr<X const>`` no longer work.
 
-::
-    
-    Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
-    > a = X()
-    > f(a)
-    > print a.__ok
-    false
+.. important::
 
+    ``__ok``  has been removed. Similar functionality can be implemented
+    for specific pointer types by doing something along the lines of:
+
+    .. parsed-literal::
+
+      bool is_non_null(std::auto_ptr<X> const& p)
+      {
+          return p.get();
+      }
+
+      |...|
+
+      def("is_non_null", &is_non_null)
 
 When registering a hierarchy of classes, where all instances are to be held
 by a smart pointer, all the classes should have the baseclass' holder type.
@@ -2374,7 +2344,7 @@ in-depth explanation.
     the attribute '*class-name.attribute-name*' is of type: (*class-name*) and does not match (*class_name*)
 
   This error is generated if you try to assign an attribute with a value 
-  of a type that cannot be converted to the attribute's type.
+  of a type that cannot be converted to the attributes type.
 
 
 - .. parsed-literal:: 
@@ -2477,53 +2447,13 @@ LUA_API
     this should be ``__declspec(dllimport)`` if you want to link against Lua 
     as a dll.
 
-LUABIND_EXPORT, LUABIND_IMPORT
-    If you want to link against luabind as a dll (in Visual Studio), you can 
-    define ``LUABIND_EXPORT`` to ``__declspec(dllexport)`` and 
-    ``LUABIND_IMPORT`` to ``__declspec(dllimport)`` or
-    ``__attribute__ ((visibility("default")))`` on GCC 4. 
-    Note that you have to link against Lua as a dll aswell, to make it work.
+LUABIND_DYNAMIC_LINK
+    Must be defined if you intend to link against the luabind shared
+    library.
 
 LUABIND_NO_RTTI
     You can define this if you don't want luabind to use ``dynamic_cast<>``.
     It will disable `Object identity`_.
-
-LUABIND_TYPE_INFO, LUABIND_TYPE_INFO_EQUAL(i1,i2), LUABIND_TYPEID(t), LUABIND_INVALID_TYPE_INFO
-    If you don't want to use the RTTI supplied by C++ you can supply your own 
-    type-info structure with the ``LUABIND_TYPE_INFO`` define. Your type-info 
-    structure must be copyable and must be able to compare itself against 
-    other type-info structures. You supply the compare function through the 
-    ``LUABIND_TYPE_INFO_EQUAL()`` define. It should compare the two type-info 
-    structures it is given and return true if they represent the same type and
-    false otherwise. You also have to supply a function to generate your 
-    type-info structure. You do this through the ``LUABIND_TYPEID()`` define. 
-    It should return your type-info structure and it takes a type as its 
-    parameter. That is, a compile time parameter. 
-    ``LUABIND_INVALID_TYPE_INFO`` macro should be defined to an invalid type. 
-    No other type should be able to produce this type info. To use it you 
-    probably have to make a traits class with specializations for all classes 
-    that you have type-info for. Like this::
-
-        class A;
-        class B;
-        class C;
-
-        template<class T> struct typeinfo_trait;
-
-        template<> struct typeinfo_trait<A> { enum { type_id = 0 }; };
-        template<> struct typeinfo_trait<B> { enum { type_id = 1 }; };
-        template<> struct typeinfo_trait<C> { enum { type_id = 2 }; };
-
-    If you have set up your own RTTI system like this (by using integers to
-    identify types) you can have luabind use it with the following defines::
-
-        #define LUABIND_TYPE_INFO const std::type_info*
-        #define LUABIND_TYPEID(t) &typeid(t)
-        #define LUABIND_TYPE_INFO_EQUAL(i1, i2) *i1 == *i2
-        #define LUABIND_INVALID_TYPE_INFO &typeid(detail::null_type)
-
-    Currently the type given through ``LUABIND_TYPE_INFO`` must be less-than 
-    comparable!
 
 NDEBUG
     This define will disable all asserts and should be defined in a release 
@@ -2596,7 +2526,7 @@ Internal structure overflow in VC
     `Splitting class registrations`_.
 
 What's wrong with precompiled headers in VC?
-    Visual Studio doesn't like anonymous namespace's in its precompiled 
+    Visual Studio doesn't like anonymous namespaces in its precompiled
     headers. If you encounter this problem you can disable precompiled 
     headers for the compilation unit (cpp-file) that uses luabind.
 

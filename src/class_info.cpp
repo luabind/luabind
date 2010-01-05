@@ -35,12 +35,12 @@ namespace luabind
 		lua_State* L = o.interpreter();
 	
 		o.push(L);
-        detail::object_rep* obj = detail::is_class_object(L, -1);
+        detail::object_rep* obj = detail::get_instance(L, -1);
 
         if (!obj)
         {
             class_info result;
-            result.name = lua_typename(L, -1);
+            result.name = lua_typename(L, lua_type(L, -1));
             lua_pop(L, 1);
             result.methods = newtable(L);
             result.attributes = newtable(L);

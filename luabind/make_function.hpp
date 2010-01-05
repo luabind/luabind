@@ -16,8 +16,9 @@ namespace luabind {
 
 namespace detail
 {
-
+# ifndef LUABIND_NO_EXCEPTIONS
   LUABIND_API void handle_exception_aux(lua_State* L);
+# endif
 
 // MSVC complains about member being sensitive to alignment (C4121)
 // when F is a pointer to member of a class with virtual bases.
@@ -54,6 +55,7 @@ namespace detail
 
           int results = 0;
 
+# ifndef LUABIND_NO_EXCEPTIONS
           try
           {
               results = invoke(
@@ -64,6 +66,9 @@ namespace detail
               handle_exception_aux(L);
               lua_error(L);
           }
+# else
+          results = invoke(L, *impl, ctx, impl->f, Signature(), impl->policies);
+# endif
 
           if (!ctx)
           {

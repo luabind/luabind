@@ -49,7 +49,7 @@ namespace
       std::vector<edge> edges;
   };
 
-  typedef std::pair<std::ptrdiff_t, std::size_t> cache_entry;
+  typedef std::pair<std::ptrdiff_t, int> cache_entry;
 
   class cache
   {
@@ -108,7 +108,7 @@ namespace
 class cast_graph::impl
 {
 public:
-    std::pair<void*, std::size_t> cast(
+    std::pair<void*, int> cast(
         void* p, class_id src, class_id target
       , class_id dynamic_id, void const* dynamic_ptr) const;
     void insert(class_id src, class_id target, cast_function cast);
@@ -136,7 +136,7 @@ namespace
 
 } // namespace unnamed
 
-std::pair<void*, std::size_t> cast_graph::impl::cast(
+std::pair<void*, int> cast_graph::impl::cast(
     void* const p, class_id src, class_id target
   , class_id dynamic_id, void const* dynamic_ptr) const
 {
@@ -144,7 +144,7 @@ std::pair<void*, std::size_t> cast_graph::impl::cast(
         return std::make_pair(p, 0);
 
     if (src >= m_vertices.size() || target >= m_vertices.size())
-        return std::pair<void*, std::size_t>(0, -1);
+        return std::pair<void*, int>(0, -1);
 
     std::ptrdiff_t const object_offset =
         (char const*)dynamic_ptr - (char const*)p;
@@ -154,7 +154,7 @@ std::pair<void*, std::size_t> cast_graph::impl::cast(
     if (cached.first != cache::unknown)
     {
         if (cached.first == cache::invalid)
-            return std::pair<void*, std::size_t>(0, -1);
+            return std::pair<void*, int>(0, -1);
         return std::make_pair((char*)p + cached.first, cached.second);
     }
 
@@ -192,7 +192,7 @@ std::pair<void*, std::size_t> cast_graph::impl::cast(
 
     m_cache.put(src, target, dynamic_id, object_offset, cache::invalid, -1);
 
-    return std::pair<void*, std::size_t>(0, -1);
+    return std::pair<void*, int>(0, -1);
 }
 
 void cast_graph::impl::insert(
@@ -220,7 +220,7 @@ void cast_graph::impl::insert(
     }
 }
 
-std::pair<void*, std::size_t> cast_graph::cast(
+std::pair<void*, int> cast_graph::cast(
     void* p, class_id src, class_id target
   , class_id dynamic_id, void const* dynamic_ptr) const
 {
@@ -239,10 +239,20 @@ cast_graph::cast_graph()
 cast_graph::~cast_graph()
 {}
 
-LUABIND_API class_id allocate_class_id()
+LUABIND_API class_id allocate_class_id(type_id const& cls)
 {
+    typedef std::map<type_id, class_id> map_type;
+
+    static map_type registered;
     static class_id id = 0;
-    return id++;
+
+    std::pair<map_type::iterator, bool> inserted = registered.insert(
+        std::make_pair(cls, id));
+
+    if (inserted.second)
+        ++id;
+
+    return inserted.first->second;
 }
 
 }} // namespace luabind::detail

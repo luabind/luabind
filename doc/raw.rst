@@ -1,6 +1,11 @@
 raw
 ---
 
+.. note::
+
+    ``raw()`` has been deprecated. ``lua_State*`` parameters are
+    automatically handled by luabind.
+
 Motivation
 ~~~~~~~~~~
 

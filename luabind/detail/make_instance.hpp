@@ -15,7 +15,7 @@ template <class T>
 std::pair<class_id, void*> get_dynamic_class_aux(
     lua_State* L, T const* p, mpl::true_)
 {
-    lua_pushstring(L, "__luabind_class_id_map");
+    lua_pushliteral(L, "__luabind_class_id_map");
     lua_rawget(L, LUA_REGISTRYINDEX);
 
     class_id_map& class_ids = *static_cast<class_id_map*>(
@@ -51,7 +51,7 @@ class_rep* get_pointee_class(class_map const& classes, T*)
 template <class P>
 class_rep* get_pointee_class(lua_State* L, P const& p, class_id dynamic_id)
 {
-    lua_pushstring(L, "__luabind_class_map");
+    lua_pushliteral(L, "__luabind_class_map");
     lua_rawget(L, LUA_REGISTRYINDEX);
 
     class_map const& classes = *static_cast<class_map*>(

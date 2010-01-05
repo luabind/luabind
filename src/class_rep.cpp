@@ -126,6 +126,12 @@ luabind::detail::class_rep::allocate(lua_State* L) const
 	return std::pair<void*,void*>(mem, 0);
 }
 
+namespace
+{
+
+  bool super_deprecation_disabled = false;
+
+} // namespace unnamed
 
 // this is called as metamethod __call on the class_rep.
 int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
@@ -142,8 +148,9 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
     lua_rawgeti(L, LUA_REGISTRYINDEX, cls->metatable_ref());
     lua_setmetatable(L, -2);
 
-    if (cls->get_class_type() == class_rep::lua_class
-     && !cls->bases().empty())
+    if (super_deprecation_disabled
+        && cls->get_class_type() == class_rep::lua_class
+        && !cls->bases().empty())
     {
         lua_pushstring(L, "super");
         lua_pushvalue(L, 1);
@@ -156,7 +163,7 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
     lua_replace(L, 1);
 
     cls->get_table(L);
-    lua_pushstring(L, "__init");
+    lua_pushliteral(L, "__init");
     lua_gettable(L, -2);
 
     lua_insert(L, 1);
@@ -165,6 +172,13 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
     lua_insert(L, 1);
 
     lua_call(L, args, 0);
+
+    if (super_deprecation_disabled)
+    {
+        lua_pushstring(L, "super");
+        lua_pushnil(L);
+        lua_settable(L, LUA_GLOBALSINDEX);
+    }
 
     return 1;
 }
@@ -192,13 +206,6 @@ void luabind::detail::class_rep::add_base_class(const luabind::detail::class_rep
 	m_bases.push_back(binfo);
 }
 
-namespace
-{
-
-  bool super_deprecation_disabled = false;
-
-} // namespace unnamed
-
 LUABIND_API void luabind::disable_super_deprecation()
 {
     super_deprecation_disabled = true;
@@ -206,16 +213,6 @@ LUABIND_API void luabind::disable_super_deprecation()
 
 int luabind::detail::class_rep::super_callback(lua_State* L)
 {
-	if (!super_deprecation_disabled)
-	{
-		lua_pushstring(L,
-			"DEPRECATION: 'super' has been deprecated in favor of "
-			"directly calling the base class __init() function. "
-			"This error can be disabled by calling 'luabind::disable_super_deprecation()'."
-		);
-		lua_error(L);
-	}
-
 	int args = lua_gettop(L);
 		
 	class_rep* crep = static_cast<class_rep*>(lua_touserdata(L, lua_upvalueindex(1)));
@@ -356,7 +353,7 @@ void luabind::detail::finalize(lua_State* L, class_rep* crep)
 
 //	lua_pushvalue(L, -1); // copy the object ref
 	crep->get_table(L);
-	lua_pushstring(L, "__finalize");
+    lua_pushliteral(L, "__finalize");
 	lua_gettable(L, -2);
 	lua_remove(L, -2);
 

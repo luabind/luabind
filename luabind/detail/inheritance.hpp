@@ -18,7 +18,7 @@ namespace luabind { namespace detail {
 typedef void*(*cast_function)(void*);
 typedef std::size_t class_id;
 
-class_id const unknown_class = std::numeric_limits<class_id>::max();
+class_id const unknown_class = (std::numeric_limits<class_id>::max)();
 
 class class_rep;
 
@@ -32,7 +32,7 @@ public:
     // for a polymorphic type, the pointer must be cast with
     // dynamic_cast<void*> before being passed in here, and `src` has to
     // match typeid(*p).
-    std::pair<void*, std::size_t> cast(
+    std::pair<void*, int> cast(
         void* p, class_id src, class_id target
       , class_id dynamic_id, void const* dynamic_ptr) const;
     void insert(class_id src, class_id target, cast_function cast);
@@ -147,7 +147,7 @@ struct dynamic_cast_
 };
 
 // Thread safe class_id allocation.
-LUABIND_API class_id allocate_class_id();
+LUABIND_API class_id allocate_class_id(type_id const& cls);
 
 template <class T>
 struct registered_class
@@ -156,7 +156,7 @@ struct registered_class
 };
 
 template <class T>
-class_id const registered_class<T>::id = allocate_class_id();
+class_id const registered_class<T>::id = allocate_class_id(typeid(T));
 
 template <class T>
 struct registered_class<T const>

@@ -94,12 +94,6 @@ namespace luabind
 		const int* m_map;
 	};
 
-	namespace detail
-	{
-
-		LUABIND_API int implicit_cast(const class_rep* crep, type_id const&, int& pointer_offset);
-	}
-
 //	 template<class T> class functor;
 	 class weak_ref;
 }
@@ -399,8 +393,15 @@ namespace luabind { namespace detail
 		template<class T>
 		int match(lua_State* L, by_reference<T>, int index)
 		{
-			if (lua_isnil(L, index)) return -1;
-			return pointer_converter::match(L, by_pointer<T>(), index);
+            object_rep* obj = get_instance(L, index);
+            if (obj == 0) return -1;
+
+            if (obj->is_const())
+                return -1;
+
+            std::pair<void*, int> s = obj->get_instance(registered_class<T>::id);
+            result = s.first;
+            return s.second;
 		}
 
 		template<class T>
@@ -692,9 +693,11 @@ LUABIND_NUMBER_CONVERTER(unsigned char, integer)
 LUABIND_NUMBER_CONVERTER(signed short, integer)
 LUABIND_NUMBER_CONVERTER(unsigned short, integer)
 LUABIND_NUMBER_CONVERTER(signed int, integer)
-LUABIND_NUMBER_CONVERTER(unsigned int, integer)
+
+LUABIND_NUMBER_CONVERTER(unsigned int, number)
+LUABIND_NUMBER_CONVERTER(unsigned long, number)
+
 LUABIND_NUMBER_CONVERTER(signed long, integer)
-LUABIND_NUMBER_CONVERTER(unsigned long, integer)
 LUABIND_NUMBER_CONVERTER(float, number)
 LUABIND_NUMBER_CONVERTER(double, number)
 LUABIND_NUMBER_CONVERTER(long double, number)
@@ -774,7 +777,8 @@ struct default_converter<char const*>
     template <class U>
     static int match(lua_State* L, U, int index)
     {
-        return lua_type(L, index) == LUA_TSTRING ? 0 : -1;
+        int type = lua_type(L, index);
+        return (type == LUA_TSTRING || type == LUA_TNIL) ? 0 : -1;
     }
 
     template <class U>
@@ -986,8 +990,10 @@ namespace detail
 
 namespace luabind { namespace
 {
-#if defined(__GNUC__) && \
-  (__GNUC__ * 100 + __GNUC_MINOR__ < 400 || BOOST_VERSION <= 103401)
+#if defined(__GNUC__) && ( \
+    (BOOST_VERSION < 103500) \
+ || (BOOST_VERSION < 103900 && (__GNUC__ * 100 + __GNUC_MINOR__ <= 400)) \
+ || (__GNUC__ * 100 + __GNUC_MINOR__ < 400))
   static inline boost::arg<0> return_value()
   {
 	  return boost::arg<0>();
@@ -998,7 +1004,9 @@ namespace luabind { namespace
 	  return boost::arg<0>();
   }
 # define LUABIND_PLACEHOLDER_ARG(N) boost::arg<N>(*)()
-#elif defined(BOOST_MSVC) || defined(__MWERKS__)
+#elif defined(BOOST_MSVC) || defined(__MWERKS__) \
+  || (BOOST_VERSION >= 103900 && defined(__GNUC__) \
+        && (__GNUC__ * 100 + __GNUC_MINOR__ == 400))
   static boost::arg<0> return_value;
   static boost::arg<0> result;
 # define LUABIND_PLACEHOLDER_ARG(N) boost::arg<N>

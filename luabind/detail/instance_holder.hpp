@@ -5,7 +5,6 @@
 #ifndef LUABIND_INSTANCE_HOLDER_081024_HPP
 # define LUABIND_INSTANCE_HOLDER_081024_HPP
 
-# include <luabind/detail/implicit_cast.hpp>
 # include <luabind/detail/inheritance.hpp>
 # include <luabind/get_pointer.hpp>
 # include <luabind/typeid.hpp>
