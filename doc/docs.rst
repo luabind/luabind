@@ -887,7 +887,7 @@ Like this:
         [
             class_<base, boost::shared_ptr<base> >("base")
                 .def(constructor<>()),
-            class_<derived, base, **boost::shared_ptr<base>** >("base")
+            class_<derived, base, **boost::shared_ptr<base>** >("derived")
                 .def(constructor<>())
         ];
 
