@@ -50,7 +50,6 @@
 #include <luabind/detail/primitives.hpp>
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/typetraits.hpp>
-#include <luabind/detail/class_cache.hpp>
 #include <luabind/detail/debug.hpp>
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/has_get_pointer.hpp>
