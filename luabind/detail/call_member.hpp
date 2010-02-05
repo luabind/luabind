@@ -133,8 +133,6 @@ namespace luabind
 					// pops the return values from the function
 					stack_pop pop(L, lua_gettop(L) - top);
 
-#ifndef LUABIND_NO_ERROR_CHECKING
-
 					if (converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) < 0)
 					{
 						assert(lua_gettop(L) == top + 1);
@@ -149,7 +147,7 @@ namespace luabind
 						std::terminate();
 #endif
 					}
-#endif
+
 					return converter.apply(L, LUABIND_DECORATE_TYPE(Ret), -1);
 				}
 
@@ -187,8 +185,6 @@ namespace luabind
 					// pops the return values from the function
 					stack_pop pop(L, lua_gettop(L) - top);
 
-#ifndef LUABIND_NO_ERROR_CHECKING
-
 					if (converter.match(L, LUABIND_DECORATE_TYPE(Ret), -1) < 0)
 					{
 						assert(lua_gettop(L) == top + 1);
@@ -203,7 +199,7 @@ namespace luabind
 						std::terminate();
 #endif
 					}
-#endif
+
 					return converter.apply(L, LUABIND_DECORATE_TYPE(Ret), -1);
 				}
 

@@ -963,12 +963,10 @@ namespace detail
 
       typename mpl::apply_wrap2<converter_generator, T, lua_to_cpp>::type cv;
 
-#ifndef LUABIND_NO_ERROR_CHECKING
       if (cv.match(interpreter, LUABIND_DECORATE_TYPE(T), -1) < 0)
       {
           return ErrorPolicy::handle_error(interpreter, typeid(T));
       }
-#endif
 
       return cv.apply(interpreter, LUABIND_DECORATE_TYPE(T), -1);
   }
