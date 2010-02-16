@@ -55,7 +55,7 @@ namespace luabind { namespace detail
 		std::pair<void*, int> get_instance(class_id target) const
 		{
 			if (m_instance == 0)
-				return std::pair<void*, int>(0, -1);
+				return std::pair<void*, int>((void*)0, -1);
 			return m_instance->get(target);
 		}
 

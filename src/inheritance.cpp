@@ -144,7 +144,7 @@ std::pair<void*, int> cast_graph::impl::cast(
         return std::make_pair(p, 0);
 
     if (src >= m_vertices.size() || target >= m_vertices.size())
-        return std::pair<void*, int>(0, -1);
+        return std::pair<void*, int>((void*)0, -1);
 
     std::ptrdiff_t const object_offset =
         (char const*)dynamic_ptr - (char const*)p;
@@ -154,7 +154,7 @@ std::pair<void*, int> cast_graph::impl::cast(
     if (cached.first != cache::unknown)
     {
         if (cached.first == cache::invalid)
-            return std::pair<void*, int>(0, -1);
+            return std::pair<void*, int>((void*)0, -1);
         return std::make_pair((char*)p + cached.first, cached.second);
     }
 
@@ -192,7 +192,7 @@ std::pair<void*, int> cast_graph::impl::cast(
 
     m_cache.put(src, target, dynamic_id, object_offset, cache::invalid, -1);
 
-    return std::pair<void*, int>(0, -1);
+    return std::pair<void*, int>((void*)0, -1);
 }
 
 void cast_graph::impl::insert(
