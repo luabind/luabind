@@ -257,7 +257,7 @@ LUABIND_BINARY_OP_DEF(<, lua_lessthan)
   typename enable_binary<bool,LHS,RHS>::type 
   operator!=(LHS const& lhs, RHS const& rhs)
   {
-      return !(lhs < rhs);
+      return !(lhs == rhs);
   }
 
   template<class ValueWrapper, class Arguments>
