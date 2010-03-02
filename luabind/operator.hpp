@@ -335,7 +335,7 @@ namespace luabind {
         s << x;
 #endif
         return s.str();
-    };
+    }
     
     LUABIND_UNARY_OPERATOR(tostring, tostring_operator, tostring)
     LUABIND_UNARY_OPERATOR(unm, -, operator-)

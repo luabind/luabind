@@ -331,7 +331,7 @@ namespace luabind { namespace detail {
             }
         }
         return ret;
-    };
+    }
 
 }} // namespace luabind::detail
 

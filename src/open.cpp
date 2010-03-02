@@ -70,7 +70,7 @@ namespace
           (detail::class_id_map*)lua_touserdata(L, 1);
       m->~class_id_map();
       return 0;
-  };
+  }
 
   int destroy_cast_graph(lua_State* L)
   {
@@ -78,7 +78,7 @@ namespace
           (detail::cast_graph*)lua_touserdata(L, 1);
       g->~cast_graph();
       return 0;
-  };
+  }
 
   int destroy_class_map(lua_State* L)
   {
@@ -86,7 +86,7 @@ namespace
           (detail::class_map*)lua_touserdata(L, 1);
       m->~class_map();
       return 0;
-  };
+  }
 
 } // namespace unnamed
 
