@@ -123,7 +123,7 @@ namespace
 
   struct queue_entry
   {
-      queue_entry(void* p, class_id vertex_id, std::size_t distance)
+      queue_entry(void* p, class_id vertex_id, int distance)
         : p(p)
         , vertex_id(vertex_id)
         , distance(distance)
@@ -131,7 +131,7 @@ namespace
 
       void* p;
       class_id vertex_id;
-      std::size_t distance;
+      int distance;
   };
 
 } // namespace unnamed
