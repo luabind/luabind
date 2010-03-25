@@ -109,6 +109,7 @@
 #include <luabind/detail/pointee_typeid.hpp>
 #include <luabind/detail/link_compatibility.hpp>
 #include <luabind/detail/inheritance.hpp>
+#include <luabind/no_dependency.hpp>
 #include <luabind/typeid.hpp>
 
 // to remove the 'this' used in initialization list-warning
@@ -387,7 +388,10 @@ namespace luabind
         template <class T, class Policies>
         struct inject_dependency_policy
           : mpl::if_<
-                is_primitive<T>
+                mpl::or_<
+                    is_primitive<T>
+                  , has_policy<Policies, detail::no_dependency_policy>
+                >
               , Policies
               , policy_cons<dependency_policy<0, 1>, Policies>
             >
