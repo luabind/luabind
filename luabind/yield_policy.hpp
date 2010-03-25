@@ -34,20 +34,6 @@ namespace luabind { namespace detail
 		static void precall(lua_State*, const index_map&) {}
 		static void postcall(lua_State*, const index_map&) {}
 	};
-
-	template<class T>
-	struct has_yield
-	{
-		BOOST_STATIC_CONSTANT(bool,
-			value = (boost::is_same<yield_policy, typename T::head>::value ||
-					  has_yield<typename T::tail>::value));
-	};
-
-	template<>
-	struct has_yield<null_type>
-	{
-		BOOST_STATIC_CONSTANT(bool, value = false);
-	};
 }}
 
 namespace luabind

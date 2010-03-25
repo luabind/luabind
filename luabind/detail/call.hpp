@@ -115,7 +115,7 @@ template <class Policies>
 int maybe_yield(lua_State* L, int results, Policies*)
 {
     return maybe_yield_aux(
-        L, results, mpl::bool_<has_yield<Policies>::value>());
+        L, results, has_policy<Policies, yield_policy>());
 }
 
 inline int sum_scores(int const* first, int const* last)
