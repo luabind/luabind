@@ -1071,6 +1071,20 @@ namespace detail
         static void apply(lua_State*, int) {}
     };
 
+    template <class Policies, class Sought>
+    struct has_policy
+      : mpl::if_<
+            boost::is_same<typename Policies::head, Sought>
+          , mpl::true_
+          , has_policy<typename Policies::tail, Sought>
+        >::type
+    {};
+
+    template <class Sought>
+    struct has_policy<null_type, Sought>
+      : mpl::false_
+    {};
+
 }} // namespace luabind::detail
 
 
