@@ -88,6 +88,7 @@
 #include <luabind/detail/signature_match.hpp>
 #include <luabind/detail/typetraits.hpp>
 #include <luabind/function.hpp>
+#include <luabind/no_dependency.hpp>
 #include <luabind/scope.hpp>
 #include <luabind/typeid.hpp>
 
@@ -373,7 +374,10 @@ namespace luabind
         template <class T, class Policies>
         struct inject_dependency_policy
           : mpl::if_<
-                is_primitive<T>
+                mpl::or_<
+                    is_primitive<T>
+                  , has_policy<Policies, detail::no_dependency_policy>
+                >
               , Policies
               , policy_cons<dependency_policy<0, 1>, Policies>
             >

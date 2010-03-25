@@ -50,6 +50,7 @@ set(luabind_HDRS
     ../luabind/lua_include.hpp
     ../luabind/make_function.hpp
     ../luabind/nil.hpp
+    ../luabind/no_dependency.hpp
     ../luabind/object.hpp
     ../luabind/object_fwd.hpp
     ../luabind/open.hpp

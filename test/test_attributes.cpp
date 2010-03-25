@@ -76,6 +76,18 @@ int free_getter(const property_test& p)
 { return p.get(); }
 
 } // namespace unnamed
+struct borrowed_attribute : counted_type<borrowed_attribute>
+{
+};
+
+struct attribute_holder : counted_type<attribute_holder>
+{
+    attribute_holder(borrowed_attribute* b)
+      : borrowed(b)
+    {}
+
+    borrowed_attribute* borrowed;
+};
 
 void test_main(lua_State* L)
 {
@@ -132,6 +144,40 @@ void test_main(lua_State* L)
         "test.str = 'foobar'\n"
         "assert(test.str == 'foobar')\n");
 
+    module(L) [
+        class_<borrowed_attribute>("borrowed_attribute")
+            .def(constructor<>()),
+
+        class_<attribute_holder>("attribute_holder")
+            .def(constructor<borrowed_attribute*>())
+            .def_readwrite(
+                "borrowed", &attribute_holder::borrowed, no_dependency)
+    ];
+
+    DOSTRING(L, "test = property()\n");
+
+    DOSTRING(L,
+        "test.a = 5\n"
+        "assert(test.a == 5)");
+
+    DOSTRING(L, "assert(test.o == 6)");
+
+    DOSTRING(L,
+        "test.new_member = 'foo'\n"
+        "assert(test.new_member == 'foo')");
+
+    DOSTRING(L,
+        "property.new_member2 = 'bar'\n"
+        "assert(property.new_member2 == 'bar')");
+
+    DOSTRING(L,
+        "b = property()\n"
+        "assert(b.new_member2 == 'bar')");
+
+    DOSTRING(L,
+        "test.str = 'foobar'\n"
+        "assert(test.str == 'foobar')\n");
+
     DOSTRING(L,
         "test.free = 6\n"
         "assert(test.free == 6)\n");
@@ -162,4 +208,22 @@ void test_main(lua_State* L)
 
     DOSTRING(L,
         "assert(a.x == 5)\n");
+
+    DOSTRING(L,
+        "borrowed = borrowed_attribute()\n"
+        "holder = attribute_holder(borrowed)\n"
+    );
+
+    TEST_CHECK(borrowed_attribute::count == 1);
+    TEST_CHECK(attribute_holder::count == 1);
+
+    DOSTRING(L,
+        "holder.borrowed = borrowed\n"
+        "borrowed2 = holder.borrowed\n"
+        "holder = nil\n"
+        "collectgarbage()\n"
+    );
+
+    TEST_CHECK(borrowed_attribute::count == 1);
+    TEST_CHECK(attribute_holder::count == 0);
 }
