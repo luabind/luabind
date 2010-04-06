@@ -142,12 +142,6 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
 
     push_new_instance(L, cls);
 
-    cls->get_table(L);
-    lua_setfenv(L, -2);
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, cls->metatable_ref());
-    lua_setmetatable(L, -2);
-
     if (super_deprecation_disabled
         && cls->get_class_type() == class_rep::lua_class
         && !cls->bases().empty())
