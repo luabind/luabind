@@ -56,6 +56,8 @@ namespace detail
           int results = 0;
 
 # ifndef LUABIND_NO_EXCEPTIONS
+          bool exception_caught = false;
+
           try
           {
               results = invoke(
@@ -63,9 +65,12 @@ namespace detail
           }
           catch (...)
           {
+              exception_caught = true;
               handle_exception_aux(L);
-              lua_error(L);
           }
+
+          if (exception_caught)
+              lua_error(L);
 # else
           results = invoke(L, *impl, ctx, impl->f, Signature(), impl->policies);
 # endif
