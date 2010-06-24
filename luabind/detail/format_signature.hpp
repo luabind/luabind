@@ -139,7 +139,7 @@ void format_signature(lua_State* L, char const* function, Signature)
     );
     lua_pushstring(L, ")");
 
-    lua_concat(L, mpl::size<Signature>() * 2 + 2);
+    lua_concat(L, static_cast<int>(mpl::size<Signature>()) * 2 + 2);
 }
 
 }} // namespace luabind::detail
