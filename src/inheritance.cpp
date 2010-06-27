@@ -93,7 +93,7 @@ namespace
     , std::ptrdiff_t object_offset, std::size_t distance, std::ptrdiff_t offset)
   {
       m_cache.insert(std::make_pair(
-          key_type(src, target, dynamic_id, offset)
+          key_type(src, target, dynamic_id, object_offset)
         , cache_entry(offset, distance)
       ));
   }
