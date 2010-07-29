@@ -25,7 +25,7 @@ inline void inject_backref(lua_State*, void*, void*)
 template <class T>
 void inject_backref(lua_State* L, T* p, wrap_base*)
 {
-    weak_ref(get_main_thread(L), 1).swap(wrap_access::ref(*p));
+    weak_ref(get_main_thread(L), L, 1).swap(wrap_access::ref(*p));
 }
 
 template <std::size_t Arity, class T, class Pointer, class Signature>

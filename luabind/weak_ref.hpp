@@ -33,7 +33,7 @@ namespace luabind {
     {
     public:
         weak_ref();
-        weak_ref(lua_State*, int);
+        weak_ref(lua_State* main, lua_State* L, int index);
         weak_ref(weak_ref const&);
         ~weak_ref();
 
