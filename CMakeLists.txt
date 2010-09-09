@@ -1,0 +1,27 @@
+# Embedded build for LuaBind
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu>
+# http://academic.cleardefinition.com/
+# Iowa State University HCI Graduate Program/VRAC
+
+cmake_minimum_required(VERSION 2.8)
+project(LuaBind)
+
+if(NOT Boost_FOUND)
+	find_package(Boost REQUIRED)
+endif()
+
+if(NOT LUA_FOUND)
+	find_package(Lua51 REQUIRED)
+	set(LUA_INCLUDE_DIRS "${LUA_INCLUDE_DIR}")
+endif()
+
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+	# We are the top-level project
+	option(INSTALL_LUABIND "Install the LuaBind library and headers" ON)
+endif()
+
+include_directories(${Boost_INCLUDE_DIRS}
+	"${CMAKE_CURRENT_SOURCE_DIR}"
+	${LUA_INCLUDE_DIRS})
+
+add_subdirectory(src)
