@@ -123,7 +123,7 @@ luabind::detail::class_rep::allocate(lua_State* L) const
 {
 	const int size = sizeof(object_rep);
 	char* mem = static_cast<char*>(lua_newuserdata(L, size));
-	return std::pair<void*,void*>(mem, 0);
+	return std::pair<void*,void*>(mem, (void*)0);
 }
 
 namespace
@@ -141,12 +141,6 @@ int luabind::detail::class_rep::constructor_dispatcher(lua_State* L)
     int args = lua_gettop(L);
 
     push_new_instance(L, cls);
-
-    cls->get_table(L);
-    lua_setfenv(L, -2);
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, cls->metatable_ref());
-    lua_setmetatable(L, -2);
 
     if (super_deprecation_disabled
         && cls->get_class_type() == class_rep::lua_class

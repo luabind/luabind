@@ -93,7 +93,7 @@ namespace
     , std::ptrdiff_t object_offset, std::size_t distance, std::ptrdiff_t offset)
   {
       m_cache.insert(std::make_pair(
-          key_type(src, target, dynamic_id, offset)
+          key_type(src, target, dynamic_id, object_offset)
         , cache_entry(offset, distance)
       ));
   }
@@ -123,7 +123,7 @@ namespace
 
   struct queue_entry
   {
-      queue_entry(void* p, class_id vertex_id, std::size_t distance)
+      queue_entry(void* p, class_id vertex_id, int distance)
         : p(p)
         , vertex_id(vertex_id)
         , distance(distance)
@@ -131,7 +131,7 @@ namespace
 
       void* p;
       class_id vertex_id;
-      std::size_t distance;
+      int distance;
   };
 
 } // namespace unnamed
@@ -144,7 +144,7 @@ std::pair<void*, int> cast_graph::impl::cast(
         return std::make_pair(p, 0);
 
     if (src >= m_vertices.size() || target >= m_vertices.size())
-        return std::pair<void*, int>(0, -1);
+        return std::pair<void*, int>((void*)0, -1);
 
     std::ptrdiff_t const object_offset =
         (char const*)dynamic_ptr - (char const*)p;
@@ -154,7 +154,7 @@ std::pair<void*, int> cast_graph::impl::cast(
     if (cached.first != cache::unknown)
     {
         if (cached.first == cache::invalid)
-            return std::pair<void*, int>(0, -1);
+            return std::pair<void*, int>((void*)0, -1);
         return std::make_pair((char*)p + cached.first, cached.second);
     }
 
@@ -192,7 +192,7 @@ std::pair<void*, int> cast_graph::impl::cast(
 
     m_cache.put(src, target, dynamic_id, object_offset, cache::invalid, -1);
 
-    return std::pair<void*, int>(0, -1);
+    return std::pair<void*, int>((void*)0, -1);
 }
 
 void cast_graph::impl::insert(

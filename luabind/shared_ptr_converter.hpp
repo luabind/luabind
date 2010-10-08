@@ -18,7 +18,7 @@ namespace detail
   struct shared_ptr_deleter
   {
       shared_ptr_deleter(lua_State* L, int index)
-        : life_support(get_main_thread(L), index)
+        : life_support(get_main_thread(L), L, index)
       {}
 
       void operator()(void const*)

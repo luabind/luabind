@@ -104,7 +104,6 @@
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/call_member.hpp>
 #include <luabind/detail/enum_maker.hpp>
-#include <luabind/detail/get_signature.hpp>
 #include <luabind/detail/operator_id.hpp>
 #include <luabind/detail/pointee_typeid.hpp>
 #include <luabind/detail/link_compatibility.hpp>

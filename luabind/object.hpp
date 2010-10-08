@@ -225,7 +225,7 @@ LUABIND_BINARY_OP_DEF(<, lua_lessthan)
       value_wrapper_traits<ValueWrapper>::unwrap(interpreter
         , static_cast<ValueWrapper const&>(v));
 		char const* p = lua_tostring(interpreter, -1);
-		int len = lua_strlen(interpreter, -1);
+        std::size_t len = lua_strlen(interpreter, -1);
 		std::copy(p, p + len, std::ostream_iterator<char>(os));
 		return os;
 	}
@@ -257,7 +257,7 @@ LUABIND_BINARY_OP_DEF(<, lua_lessthan)
   typename enable_binary<bool,LHS,RHS>::type 
   operator!=(LHS const& lhs, RHS const& rhs)
   {
-      return !(lhs < rhs);
+      return !(lhs == rhs);
   }
 
   template<class ValueWrapper, class Arguments>
