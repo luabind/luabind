@@ -45,6 +45,7 @@ set(LUABIND_API
 	../luabind/lua_include.hpp
 	../luabind/make_function.hpp
 	../luabind/nil.hpp
+	../luabind/no_dependency.hpp
 	../luabind/object.hpp
 	../luabind/open.hpp
 	../luabind/operator.hpp
@@ -78,7 +79,6 @@ set(LUABIND_DETAIL_API
 	../luabind/detail/enum_maker.hpp
 	../luabind/detail/format_signature.hpp
 	../luabind/detail/garbage_collector.hpp
-	../luabind/detail/get_signature.hpp
 	../luabind/detail/has_get_pointer.hpp
 	../luabind/detail/inheritance.hpp
 	../luabind/detail/instance_holder.hpp
