@@ -69,9 +69,9 @@ namespace luabind
 
     struct weak_ref::impl
     {
-        impl(lua_State* s, int index)
+        impl(lua_State* main, lua_State* s, int index)
             : count(0)
-            , state(s)
+            , state(main)
             , ref(0)
         {
             get_weak_table(s);
@@ -97,8 +97,8 @@ namespace luabind
     {
     }
     
-    weak_ref::weak_ref(lua_State* L, int index)
-        : m_impl(new impl(L, index))
+    weak_ref::weak_ref(lua_State* main, lua_State* L, int index)
+        : m_impl(new impl(main, L, index))
     {
         m_impl->count = 1;
     }

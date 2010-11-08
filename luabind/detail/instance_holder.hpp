@@ -91,7 +91,7 @@ public:
             weak ? weak : get_pointer(p)));
 
         if (!naked_ptr)
-            return std::pair<void*, int>(0, 0);
+            return std::pair<void*, int>((void*)0, 0);
 
         return casts.cast(
             naked_ptr

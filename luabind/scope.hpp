@@ -60,6 +60,8 @@ namespace luabind {
         scope(scope const& other_);
         ~scope();
 
+        scope& operator=(scope const& other_);
+
         scope& operator,(scope s);
 
         void register_(lua_State* L) const;

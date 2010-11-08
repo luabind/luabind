@@ -13,12 +13,19 @@
 # include <boost/mpl/next.hpp>
 # include <boost/mpl/size.hpp>
 
-namespace luabind {
+namespace luabind { namespace adl
+{
 
-class object;
-class argument;
-template <class Base>
-struct table;
+  class object;
+  class argument;
+  template <class Base>
+  struct table;
+
+} // namespace adl
+
+using adl::object;
+using adl::argument;
+using adl::table;
 
 } // namespace luabind
 
@@ -139,7 +146,7 @@ void format_signature(lua_State* L, char const* function, Signature)
     );
     lua_pushstring(L, ")");
 
-    lua_concat(L, mpl::size<Signature>() * 2 + 2);
+    lua_concat(L, static_cast<int>(mpl::size<Signature>()) * 2 + 2);
 }
 
 }} // namespace luabind::detail

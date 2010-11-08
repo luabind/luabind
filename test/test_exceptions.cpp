@@ -23,9 +23,10 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
-struct ex : public std::exception
+struct ex : public std::exception, public counted_type<ex>
 {
     ex(const char* m): msg(m) {}
+    virtual ~ex() throw() {}
     virtual const char* what() const throw() { return msg; }
     const char* msg;
 };
@@ -48,6 +49,8 @@ void test_main(lua_State* L)
     using namespace luabind;
 
 #ifndef LUABIND_NO_EXCEPTIONS
+
+    const int start_count = ex::count;
 
     module(L)
     [
@@ -76,6 +79,9 @@ void test_main(lua_State* L)
         "void __init(luabind::argument const&,int,int)\n"
         "void __init(luabind::argument const&,int)\n"
         "void __init(luabind::argument const&)");
+
+    const int end_count = ex::count;
+    TEST_CHECK( start_count == end_count );
 
 #endif
 }

@@ -35,6 +35,7 @@ class handle
 public:
     handle();
     handle(lua_State* interpreter, int stack_index);
+    handle(lua_State* main, lua_State* interpreter, int stack_index);
     handle(handle const& other);
     ~handle();
 
@@ -68,6 +69,14 @@ inline handle::handle(handle const& other)
 
 inline handle::handle(lua_State* interpreter, int stack_index)
   : m_interpreter(interpreter)
+  , m_index(LUA_NOREF)
+{
+    lua_pushvalue(interpreter, stack_index);
+    m_index = luaL_ref(interpreter, LUA_REGISTRYINDEX);
+}
+
+inline handle::handle(lua_State* main, lua_State* interpreter, int stack_index)
+  : m_interpreter(main)
   , m_index(LUA_NOREF)
 {
     lua_pushvalue(interpreter, stack_index);

@@ -59,6 +59,14 @@ namespace luabind { namespace detail {
         const_cast<scope&>(other).m_chain = 0;
     }
 
+    scope& scope::operator=(scope const& other_)
+    {
+        delete m_chain;
+        m_chain = other_.m_chain;
+        const_cast<scope&>(other_).m_chain = 0;
+        return *this;
+    }
+
     scope::~scope()
     {
         delete m_chain;
