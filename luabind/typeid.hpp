@@ -6,6 +6,7 @@
 # define LUABIND_TYPEID_081227_HPP
 
 # include <boost/operators.hpp>
+# include <cstring>
 # include <typeinfo>
 # include <luabind/detail/primitives.hpp>
 
@@ -33,17 +34,17 @@ public:
 
     bool operator!=(type_id const& other) const
     {
-        return *id != *other.id;
+        return std::strcmp(id->name(), other.id->name()) != 0;
     }
 
     bool operator==(type_id const& other) const
     {
-        return *id == *other.id;
+        return std::strcmp(id->name(), other.id->name()) == 0;
     }
 
     bool operator<(type_id const& other) const
     {
-        return id->before(*other.id);
+        return std::strcmp(id->name(), other.id->name()) < 0;
     }
 
     char const* name() const
