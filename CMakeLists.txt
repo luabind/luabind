@@ -6,6 +6,12 @@
 cmake_minimum_required(VERSION 2.8)
 project(LuaBind)
 
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "9")
+set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_PACKAGE_VERSION
+	"${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+
 if(NOT Boost_FOUND)
 	find_package(Boost REQUIRED)
 endif()
@@ -37,4 +43,5 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 	if(BUILD_TESTING)
 		add_subdirectory(test)
 	endif()
+	add_subdirectory(doc)
 endif()
