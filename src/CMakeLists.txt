@@ -42,6 +42,7 @@ set(LUABIND_API
 	../luabind/handle.hpp
 	../luabind/iterator_policy.hpp
 	../luabind/luabind.hpp
+	../luabind/lua_state_fwd.hpp
 	../luabind/lua_include.hpp
 	../luabind/make_function.hpp
 	../luabind/nil.hpp

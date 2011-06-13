@@ -1,4 +1,4 @@
-// Copyright (c) 2003 Daniel Wallin and Arvid Norberg
+// Copyright (c) 2005 Daniel Wallin and Arvid Norberg
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,19 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
+#ifndef LUABIND_STATE_FWD_110613_HPP
+#define LUABIND_STATE_FWD_110613_HPP
 
-#ifndef LUABIND_OPEN_HPP_INCLUDED
-#define LUABIND_OPEN_HPP_INCLUDED
+struct lua_State;
 
-#include <luabind/config.hpp>
-
-#include <luabind/lua_state_fwd.hpp>
-
-namespace luabind {
-
-	LUABIND_API void open(lua_State* L);
-
-}
-
-#endif // LUABIND_OPEN_HPP_INCLUDED
+#endif // LUABIND_STATE_FWD_110613_HPP
 

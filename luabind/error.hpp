@@ -28,7 +28,7 @@
 #include <luabind/config.hpp>
 #include <luabind/typeid.hpp>
 
-struct lua_State;
+#include <luabind/lua_state_fwd.hpp>
 
 namespace luabind
 {

@@ -17,6 +17,8 @@
 #  include <boost/preprocessor/repetition/enum_params.hpp>
 #  include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 
+#include <luabind/lua_state_fwd.hpp>
+
 namespace luabind {
 
 namespace detail
