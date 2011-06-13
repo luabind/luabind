@@ -18,7 +18,13 @@ endif()
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 	# We are the top-level project
 	option(INSTALL_LUABIND "Install the LuaBind library and headers" ON)
+	option(BUILD_SHARED_LUABIND "Build luabind as a shared library?" OFF)
 	include(CTest)
+endif()
+
+set(BUILD_SHARED_LIBS ${BUILD_SHARED_LUABIND})
+if(BUILD_SHARED_LIBS)
+	add_definitions(-DLUABIND_DYNAMIC_LINK)
 endif()
 
 include_directories(${Boost_INCLUDE_DIRS}
