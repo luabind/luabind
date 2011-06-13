@@ -26,6 +26,7 @@
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/identity.hpp>
 #include <boost/mpl/apply_wrap.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -62,6 +63,8 @@ namespace luabind { namespace detail {
 #endif
 
 }} // namespace luabind
+
+#include <boost/preprocessor/iteration/iterate.hpp>
 
 namespace luabind { namespace operators {
 
