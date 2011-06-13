@@ -23,6 +23,8 @@
 #ifndef LUABIND_RETURN_REFERENCE_TO_POLICY_HPP_INCLUDED
 #define LUABIND_RETURN_REFERENCE_TO_POLICY_HPP_INCLUDED
 
+#include <luabind/detail/policy.hpp>
+
 namespace luabind { namespace detail
 {
     template<class T>
