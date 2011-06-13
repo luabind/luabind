@@ -1,4 +1,4 @@
-// Copyright (c) 2004 Daniel Wallin and Arvid Norberg
+// Copyright (c) 2005 Daniel Wallin and Arvid Norberg
 
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,19 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef LUABIND_BACK_REFERENCE_FWD_040510_HPP
-#define LUABIND_BACK_REFERENCE_FWD_040510_HPP
+#ifndef LUABIND_STATE_FWD_110613_HPP
+#define LUABIND_STATE_FWD_110613_HPP
 
-#include <luabind/lua_state_fwd.hpp>
+struct lua_State;
 
-namespace luabind {
+#endif // LUABIND_STATE_FWD_110613_HPP
 
-template<class T>
-bool get_back_reference(lua_State* L, T const& x);
-
-template<class T>
-bool move_back_reference(lua_State* L, T const& x);
-
-} // namespace luabind
-
-#endif // LUABIND_BACK_REFERENCE_FWD_040510_HPP
