@@ -116,3 +116,6 @@ target_link_libraries(luabind ${LUA_LIBRARIES})
 install(TARGETS luabind
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
+
+set(ALLHEADERS ${luabind_HDRS} ${luabind_detail_HDRS} PARENT_SCOPE)
+set(APIHEADERS ${luabind_HDRS} PARENT_SCOPE)
