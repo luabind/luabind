@@ -63,6 +63,7 @@ set(LUABIND_API
 	../luabind/weak_ref.hpp
 	../luabind/wrapper_base.hpp
 	../luabind/yield_policy.hpp)
+source_group(API FILES ${LUABIND_API})
 
 set(LUABIND_DETAIL_API
 	../luabind/detail/call_function.hpp
@@ -102,6 +103,7 @@ set(LUABIND_DETAIL_API
 	../luabind/detail/stack_utils.hpp
 	../luabind/detail/typetraits.hpp
 	../luabind/detail/yes_no.hpp)
+source_group(Internal FILES ${LUABIND_DETAIL_API})
 
 set(LUABIND_EXTRA_LIBS)
 if(MSVC)
@@ -110,7 +112,7 @@ elseif(CMAKE_COMPILER_IS_GNUCXX)
 	list(APPEND LUABIND_EXTRA_LIBS m)
 endif()
 
-add_library(luabind ${LUABIND_SRCS})
+add_library(luabind ${LUABIND_SRCS} ${LUABIND_API} ${LUABIND_DETAIL_API})
 target_link_libraries(luabind ${LUA_LIBRARIES} ${LUABIND_EXTRA_LIBS})
 
 set_property(TARGET
