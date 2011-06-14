@@ -63,7 +63,7 @@ struct copy_me
 {
 };
 
-void take_by_value(copy_me m)
+void take_by_value(copy_me /*m*/)
 {
 }
 
