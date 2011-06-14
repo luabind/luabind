@@ -35,7 +35,7 @@ namespace luabind { namespace detail {
 	template<class Policies>
 	struct container_converter_lua_to_cpp
 	{
-        int const consumed_args(...)
+        int consumed_args(...) const
         {
             return 1;
         }
