@@ -42,6 +42,7 @@ set(TESTS
     "lua_classes"
     "null_pointer"
     "object"
+    "object_identity"
     "operators"
     "policies"
     "private_destructors"
