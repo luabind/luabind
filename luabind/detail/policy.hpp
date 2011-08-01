@@ -602,7 +602,7 @@ namespace luabind { namespace detail
 
 // *********** default_policy *****************
 
-template <class T>
+template <class T, class Enable = void>
 struct default_converter
   : detail::default_converter_generator<T>::type
 {};
