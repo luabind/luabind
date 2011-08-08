@@ -71,14 +71,13 @@
 #include <luabind/config.hpp>
 
 #include <string>
-#include <map>
-#include <vector>
 #include <cassert>
 
-#include <boost/bind.hpp>
+#ifndef LUABIND_CPP0x
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
+#endif
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_member_object_pointer.hpp>
 #include <boost/mpl/apply.hpp>
@@ -87,6 +86,7 @@
 #include <boost/mpl/find_if.hpp>
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/logical.hpp>
+#include <boost/mpl/vector/vector10.hpp>
 
 #include <luabind/config.hpp>
 #include <luabind/scope.hpp>
@@ -153,6 +153,16 @@ namespace luabind
 		return 0;
 	}
 
+# ifdef LUABIND_CPP0x
+
+    template <class... Args>
+    struct bases
+    {};
+
+    typedef bases<> no_bases;
+
+# else
+
     template <
         BOOST_PP_ENUM_PARAMS_WITH_A_DEFAULT(
             LUABIND_MAX_BASES, class A, detail::null_type)
@@ -162,6 +172,8 @@ namespace luabind
 
     typedef bases<detail::null_type> no_bases;
 
+# endif // LUABIND_CPP0x
+
 	namespace detail
 	{
         template <class T>
@@ -169,10 +181,17 @@ namespace luabind
           : mpl::false_
         {};
 
+# ifdef LUABIND_CPP0x
+        template <class... Args>
+        struct is_bases<bases<Args...> >
+          : mpl::true_
+        {};
+# else
         template <BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, class A)>
         struct is_bases<bases<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, A)> >
           : mpl::true_
         {};
+# endif
 
         template <class T, class P>
         struct is_unspecified
@@ -565,6 +584,8 @@ namespace luabind
 		void gen_base_info(detail::type_<detail::null_type>)
 		{}
 
+# ifndef LUABIND_CPP0x
+
 #define LUABIND_GEN_BASE_INFO(z, n, text) gen_base_info(detail::type_<BaseClass##n>());
 
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_BASES, class BaseClass)>
@@ -574,6 +595,20 @@ namespace luabind
 		}
 
 #undef LUABIND_GEN_BASE_INFO
+
+# else // !LUABIND_CPP0x
+
+        template <class... Args>
+        void ignore(Args&&...)
+        {}
+
+        template <class... Bases>
+        void generate_baseclass_list(detail::type_<bases<Bases...> >)
+        {
+            ignore((gen_base_info(detail::type_<Bases>()), 0)...);
+        }
+
+# endif // !LUABIND_CPP0x
 
 		class_(const char* name): class_base(name), scope(*this)
 		{
@@ -609,6 +644,16 @@ namespace luabind
 			  , policies, boost::mpl::false_());
 		}
 
+# ifdef LUABIND_CPP0x
+
+        template <class... Args, class Policies = detail::null_type>
+        class_& def(constructor<Args...>, Policies const& policies = Policies())
+        {
+            return this->def_constructor((constructor<Args...>*)0, policies);
+        }
+
+# else
+
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig)
 		{
@@ -620,6 +665,8 @@ namespace luabind
 		{
             return this->def_constructor(&sig, policies);
 		}
+
+# endif // LUABIND_CPP0x
 
         template <class Getter>
         class_& property(const char* name, Getter g)

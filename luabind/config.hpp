@@ -118,6 +118,15 @@ namespace std
 # define LUABIND_API
 #endif
 
+#if !defined(LUABIND_CPP0x) \
+ && !defined(BOOST_NO_DECLTYPE) \
+ && !defined(BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS) \
+ && !defined(BOOST_NO_VARIADIC_TEMPLATES)
+
+# define LUABIND_CPP0x
+
+#endif
+
 namespace luabind {
 
 LUABIND_API void disable_super_deprecation();

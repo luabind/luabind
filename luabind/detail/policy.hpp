@@ -42,6 +42,7 @@
 #include <boost/type_traits/is_pointer.hpp>
 #include <boost/type_traits/is_base_and_derived.hpp>
 #include <boost/bind/arg.hpp>
+#include <boost/bind/placeholders.hpp>
 #include <boost/limits.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/version.hpp>

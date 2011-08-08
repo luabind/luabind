@@ -45,6 +45,7 @@ SOURCES =
     test_super_leak.cpp
     test_set_instance_value.cpp
     test_unsigned_int.cpp
+    test_def_function_object.cpp
  ;
 
 obj main : main.cpp : <library>..//luabind : : <library>..//luabind ;
