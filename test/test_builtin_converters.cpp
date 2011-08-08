@@ -31,6 +31,8 @@ void test_main(lua_State* L)
     LUABIND_TEST_BUILTIN(long, -1);
     LUABIND_TEST_BUILTIN(unsigned long, 1);
     LUABIND_TEST_BUILTIN(unsigned long, 2);
+    LUABIND_TEST_BUILTIN(unsigned long long, 1);
+    LUABIND_TEST_BUILTIN(unsigned long long, 2);
 
     LUABIND_TEST_BUILTIN(char, 1);
     LUABIND_TEST_BUILTIN(char, 2);
