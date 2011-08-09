@@ -27,7 +27,11 @@
 #include <boost/ref.hpp> // detail::push()
 #include <boost/mpl/bool.hpp> // value_wrapper_traits specializations
 #include <boost/mpl/apply_wrap.hpp>
-#include <boost/tuple/tuple.hpp>
+#ifdef LUABIND_CPP0x
+# include <tuple>
+#else
+# include <boost/tuple/tuple.hpp>
+#endif
 #include <boost/optional.hpp>
 
 #include <luabind/nil.hpp>

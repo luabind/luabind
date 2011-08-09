@@ -39,6 +39,8 @@
 # include <boost/preprocessor/control/if.hpp>
 # include <boost/preprocessor/facilities/expand.hpp>
 # include <boost/preprocessor/repetition/enum.hpp>
+#else
+# include <tuple>
 #endif
 
 #include <boost/mpl/apply_wrap.hpp>
