@@ -655,68 +655,6 @@ struct native_converter_base
     }
 };
 
-template <class T>
-inline lua_Integer as_lua_integer(T v)
-{
-    return static_cast<lua_Integer>(v);
-}
-
-template <class T>
-inline lua_Number as_lua_number(T v)
-{
-    return static_cast<lua_Number>(v);
-}
-
-# define LUABIND_NUMBER_CONVERTER(type, kind) \
-    template <> \
-struct default_converter<type> \
-  : native_converter_base<type> \
-{ \
-    int compute_score(lua_State* L, int index) \
-    { \
-        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1; \
-    }; \
-    \
-    type from(lua_State* L, int index) \
-    { \
-        return static_cast<type>(BOOST_PP_CAT(lua_to, kind)(L, index)); \
-    } \
-    \
-    void to(lua_State* L, type const& value) \
-    { \
-        BOOST_PP_CAT(lua_push, kind)(L, BOOST_PP_CAT(as_lua_, kind)(value)); \
-    } \
-}; \
-\
-template <> \
-struct default_converter<type const> \
-  : default_converter<type> \
-{}; \
-\
-template <> \
-struct default_converter<type const&> \
-  : default_converter<type> \
-{};
-/*
-LUABIND_NUMBER_CONVERTER(char, integer)
-LUABIND_NUMBER_CONVERTER(signed char, integer)
-LUABIND_NUMBER_CONVERTER(unsigned char, integer)
-LUABIND_NUMBER_CONVERTER(signed short, integer)
-LUABIND_NUMBER_CONVERTER(unsigned short, integer)
-LUABIND_NUMBER_CONVERTER(signed int, integer)
-LUABIND_NUMBER_CONVERTER(signed long, integer)
-LUABIND_NUMBER_CONVERTER(unsigned int, number)
-LUABIND_NUMBER_CONVERTER(unsigned long, number)
-
-
-LUABIND_NUMBER_CONVERTER(float, number)
-LUABIND_NUMBER_CONVERTER(double, number)
-LUABIND_NUMBER_CONVERTER(long double, number)
-
-*/
-# undef LUABIND_NUMBER_CONVERTER
-
-
 template <typename QualifiedT>
 struct integer_converter
   : native_converter_base<typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type>
