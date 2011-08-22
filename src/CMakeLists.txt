@@ -87,6 +87,7 @@ set(LUABIND_DETAIL_API
 	../luabind/detail/link_compatibility.hpp
 	../luabind/detail/make_instance.hpp
 	../luabind/detail/most_derived.hpp
+	../luabind/detail/object.hpp
 	../luabind/detail/object_call.hpp
 	../luabind/detail/object_rep.hpp
 	../luabind/detail/open.hpp
@@ -129,6 +130,18 @@ set(ALLHEADERS ${LUABIND_API} ${LUABIND_DETAIL_API} PARENT_SCOPE)
 set(APIHEADERS ${LUABIND_API} PARENT_SCOPE)
 
 if(INSTALL_LUABIND)
+	if(NOT INCLUDE_DIR)
+		set(INCLUDE_DIR include)
+	endif()
+	if(NOT LIB_DIR)
+		set(LIB_DIR lib)
+	endif()
+	if(NOT ARCH_DIR)
+		set(ARCH_DIR lib)
+	endif()
+	if(NOT BIN_DIR)
+		set(BIN_DIR bin)
+	endif()
 	install(FILES ${LUABIND_API}
 		DESTINATION ${INCLUDE_DIR}/luabind
 		COMPONENT sdk)
