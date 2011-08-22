@@ -33,6 +33,7 @@
 #include <string>
 #include <memory>
 
+#include <boost/call_traits.hpp>
 #include <boost/type_traits/is_enum.hpp>
 #include <boost/type_traits/is_array.hpp>
 #include <boost/mpl/bool.hpp>
@@ -610,6 +611,8 @@ template <class T, class Derived = default_converter<T> >
 struct native_converter_base
 {
     typedef boost::mpl::true_ is_native;
+    typedef typename boost::call_traits<T>::value_type value_type;
+    typedef typename boost::call_traits<T>::param_type param_type;
 
     int consumed_args(...) const
     {
@@ -635,22 +638,22 @@ struct native_converter_base
         return derived().compute_score(L, index);
     }
 
-    T apply(lua_State* L, detail::by_value<T>, int index)
+    value_type apply(lua_State* L, detail::by_value<T>, int index)
     {
         return derived().from(L, index);
     }
 
-    T apply(lua_State* L, detail::by_value<T const>, int index)
+    value_type apply(lua_State* L, detail::by_value<T const>, int index)
     {
         return derived().from(L, index);
     }
 
-    T apply(lua_State* L, detail::by_const_reference<T>, int index)
+    value_type apply(lua_State* L, detail::by_const_reference<T>, int index)
     {
         return derived().from(L, index);
     }
 
-    void apply(lua_State* L, T const& value)
+    void apply(lua_State* L, param_type value)
     {
         derived().to(L, value);
     }
