@@ -47,6 +47,7 @@
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/is_pointer.hpp>
 #include <boost/type_traits/is_base_and_derived.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/is_const.hpp>
 #include <boost/type_traits/is_reference.hpp>
@@ -704,7 +705,6 @@ LUABIND_NUMBER_CONVERTER(signed short, integer)
 LUABIND_NUMBER_CONVERTER(unsigned short, integer)
 LUABIND_NUMBER_CONVERTER(signed int, integer)
 LUABIND_NUMBER_CONVERTER(signed long, integer)
-*/
 LUABIND_NUMBER_CONVERTER(unsigned int, number)
 LUABIND_NUMBER_CONVERTER(unsigned long, number)
 
@@ -713,6 +713,7 @@ LUABIND_NUMBER_CONVERTER(float, number)
 LUABIND_NUMBER_CONVERTER(double, number)
 LUABIND_NUMBER_CONVERTER(long double, number)
 
+*/
 # undef LUABIND_NUMBER_CONVERTER
 
 
@@ -747,48 +748,11 @@ struct default_converter<T,
 	>
 	: integer_converter<T> {};
 
-/*
-template <typename T>
-struct default_converter<T,
-	typename boost::enable_if<
-		boost::mpl::and_<
-			boost::is_integral<T>::type,
-			mpl::and_<
-				is_const<T>,
-				mpl::not_<is_reference<T> >
-			>
-		>::type
-	>
-  : default_converter<typename remove_const<T>::type > {};
-
-template <typename T>
-struct default_converter<T,
-	typename enable_if<
-		mpl::and_<
-			is_integral<T> >::type,
-			mpl::and_<
-				is_const<T>,
-				is_reference<T>
-			>
-		>::type
-	>
-  : default_converter<typename remove_reference<typename remove_const<T>::type>::type > {};
-*/
-/*
-template <typename T>
-struct default_converter<T,
-	typename enable_if<
-		mpl::and_<
-			is_floating_point<T> >::type,
-			mpl::and_<
-				mpl::not_<is_const<T> >,
-				mpl::not_<is_reference<T> >
-			>
-		>::type
-	>
-  : native_converter_base<T>
+template <typename QualifiedT>
+struct number_converter
+  : native_converter_base<typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type>
 {
-
+	typedef typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type T;
 	typedef typename native_converter_base<T>::param_type param_type;
 	typedef typename native_converter_base<T>::value_type value_type;
 
@@ -810,31 +774,10 @@ struct default_converter<T,
 
 template <typename T>
 struct default_converter<T,
-	typename enable_if<
-		mpl::and_<
-			is_floating_point<T> >::type,
-			mpl::and_<
-				is_const<T>,
-				mpl::not_<is_reference<T> >
-			>
-		>::type
+	typename boost::enable_if<boost::is_floating_point<T> >::type
 	>
-  : default_converter<typename remove_const<T>::type > {};
+	: number_converter<T> {};
 
-template <typename T>
-struct default_converter<T,
-	typename enable_if<
-		mpl::and_<
-			is_floating_point<T> >::type,
-			mpl::and_<
-				is_const<T>,
-				is_reference<T>
-			>
-		>::type
-	>
-  : default_converter<typename remove_reference<typename remove_const<T>::type>::type > {};
-
-*/
 template <>
 struct default_converter<bool>
   : native_converter_base<bool>
