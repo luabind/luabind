@@ -31,6 +31,9 @@
 #include <memory>
 
 #include <boost/call_traits.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/remove_const.hpp>
+#include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/is_enum.hpp>
 #include <boost/type_traits/is_array.hpp>
 #include <boost/mpl/bool.hpp>
@@ -38,10 +41,15 @@
 #include <boost/mpl/equal_to.hpp>
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/or.hpp>
+#include <boost/mpl/and.hpp>
+#include <boost/mpl/not.hpp>
 #include <boost/type_traits/add_reference.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/is_pointer.hpp>
 #include <boost/type_traits/is_base_and_derived.hpp>
+#include <boost/type_traits/is_integral.hpp>
+#include <boost/type_traits/is_const.hpp>
+#include <boost/type_traits/is_reference.hpp>
 #include <boost/bind/arg.hpp>
 #include <boost/limits.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -688,24 +696,84 @@ template <> \
 struct default_converter<type const&> \
   : default_converter<type> \
 {};
-
+/*
 LUABIND_NUMBER_CONVERTER(char, integer)
 LUABIND_NUMBER_CONVERTER(signed char, integer)
 LUABIND_NUMBER_CONVERTER(unsigned char, integer)
 LUABIND_NUMBER_CONVERTER(signed short, integer)
 LUABIND_NUMBER_CONVERTER(unsigned short, integer)
 LUABIND_NUMBER_CONVERTER(signed int, integer)
-
+LUABIND_NUMBER_CONVERTER(signed long, integer)
+*/
 LUABIND_NUMBER_CONVERTER(unsigned int, number)
 LUABIND_NUMBER_CONVERTER(unsigned long, number)
 
-LUABIND_NUMBER_CONVERTER(signed long, integer)
+
 LUABIND_NUMBER_CONVERTER(float, number)
 LUABIND_NUMBER_CONVERTER(double, number)
 LUABIND_NUMBER_CONVERTER(long double, number)
 
 # undef LUABIND_NUMBER_CONVERTER
 
+template <typename T>
+struct default_converter<T,
+	typename boost::enable_if<
+		boost::mpl::and_<
+			typename boost::is_integral<T>::type,
+			boost::mpl::and_<
+				boost::mpl::not_<boost::is_const<T> >,
+				boost::mpl::not_<boost::is_reference<T> >
+			>
+			>
+		>::type
+>
+  : native_converter_base<T>
+{
+	typedef typename native_converter_base<T>::param_type param_type;
+	typedef typename native_converter_base<T>::value_type value_type;
+
+    int compute_score(lua_State* L, int index)
+    {
+        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1;
+    }
+
+    value_type from(lua_State* L, int index)
+    {
+        return static_cast<T>(lua_tointeger(L, index));
+    }
+
+    void to(lua_State* L, param_type value)
+    {
+        lua_pushinteger(L, static_cast<lua_Integer>(value));
+    }
+};
+/*
+template <typename T>
+struct default_converter<T,
+	typename boost::enable_if<
+		boost::mpl::and_<
+			boost::is_integral<T>::type,
+			mpl::and_<
+				is_const<T>,
+				mpl::not_<is_reference<T> >
+			>
+		>::type
+	>
+  : default_converter<typename remove_const<T>::type > {};
+
+template <typename T>
+struct default_converter<T,
+	typename enable_if<
+		mpl::and_<
+			is_integral<T> >::type,
+			mpl::and_<
+				is_const<T>,
+				is_reference<T>
+			>
+		>::type
+	>
+  : default_converter<typename remove_reference<typename remove_const<T>::type>::type > {};
+*/
 template <>
 struct default_converter<bool>
   : native_converter_base<bool>
