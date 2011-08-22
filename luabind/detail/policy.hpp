@@ -655,6 +655,7 @@ struct native_converter_base
     }
 };
 
+// *********** converter for integer types *****************
 template <typename QualifiedT>
 struct integer_converter
   : native_converter_base<typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type>
@@ -679,13 +680,15 @@ struct integer_converter
     }
 };
 
-
+// template partial specialization for those types that boost knows to be
+// integral
 template <typename T>
 struct default_converter<T,
 	typename boost::enable_if<boost::is_integral<T> >::type
 	>
 	: integer_converter<T> {};
 
+// *********** converter for floating-point number types *****************
 template <typename QualifiedT>
 struct number_converter
   : native_converter_base<typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type>
@@ -709,13 +712,15 @@ struct number_converter
         lua_pushnumber(L, static_cast<lua_Number>(value));
     }
 };
-
+// template partial specialization for those types that boost knows to be
+// floating-point
 template <typename T>
 struct default_converter<T,
 	typename boost::enable_if<boost::is_floating_point<T> >::type
 	>
 	: number_converter<T> {};
 
+// *********** converter for bool *****************
 template <>
 struct default_converter<bool>
   : native_converter_base<bool>
@@ -746,6 +751,8 @@ struct default_converter<bool const&>
   : default_converter<bool>
 {};
 
+
+// *********** converter for string types *****************
 template <>
 struct default_converter<std::string>
   : native_converter_base<std::string>
@@ -829,6 +836,8 @@ struct default_converter<char[N]>
   : default_converter<char const*>
 {};
 
+
+// *********** converter for lua_State * arguments - consuming no explicit args *****************
 template <>
 struct default_converter<lua_State*>
 {
