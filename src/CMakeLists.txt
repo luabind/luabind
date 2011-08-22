@@ -42,8 +42,8 @@ set(LUABIND_API
 	../luabind/handle.hpp
 	../luabind/iterator_policy.hpp
 	../luabind/luabind.hpp
-	../luabind/lua_state_fwd.hpp
 	../luabind/lua_include.hpp
+	../luabind/lua_state_fwd.hpp
 	../luabind/make_function.hpp
 	../luabind/nil.hpp
 	../luabind/no_dependency.hpp
@@ -87,8 +87,8 @@ set(LUABIND_DETAIL_API
 	../luabind/detail/link_compatibility.hpp
 	../luabind/detail/make_instance.hpp
 	../luabind/detail/most_derived.hpp
-	../luabind/detail/object.hpp
 	../luabind/detail/object_call.hpp
+	../luabind/detail/object.hpp
 	../luabind/detail/object_rep.hpp
 	../luabind/detail/open.hpp
 	../luabind/detail/operator_id.hpp
