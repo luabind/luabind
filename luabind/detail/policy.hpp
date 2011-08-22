@@ -715,20 +715,12 @@ LUABIND_NUMBER_CONVERTER(long double, number)
 
 # undef LUABIND_NUMBER_CONVERTER
 
-template <typename T>
-struct default_converter<T,
-	typename boost::enable_if<
-		boost::mpl::and_<
-			typename boost::is_integral<T>::type,
-			boost::mpl::and_<
-				boost::mpl::not_<boost::is_const<T> >,
-				boost::mpl::not_<boost::is_reference<T> >
-			>
-			>
-		>::type
->
-  : native_converter_base<T>
+
+template <typename QualifiedT>
+struct integer_converter
+  : native_converter_base<typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type>
 {
+	typedef typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type T;
 	typedef typename native_converter_base<T>::param_type param_type;
 	typedef typename native_converter_base<T>::value_type value_type;
 
@@ -747,6 +739,14 @@ struct default_converter<T,
         lua_pushinteger(L, static_cast<lua_Integer>(value));
     }
 };
+
+
+template <typename T>
+struct default_converter<T,
+	typename boost::enable_if<boost::is_integral<T> >::type
+	>
+	: integer_converter<T> {};
+
 /*
 template <typename T>
 struct default_converter<T,
@@ -773,6 +773,67 @@ struct default_converter<T,
 		>::type
 	>
   : default_converter<typename remove_reference<typename remove_const<T>::type>::type > {};
+*/
+/*
+template <typename T>
+struct default_converter<T,
+	typename enable_if<
+		mpl::and_<
+			is_floating_point<T> >::type,
+			mpl::and_<
+				mpl::not_<is_const<T> >,
+				mpl::not_<is_reference<T> >
+			>
+		>::type
+	>
+  : native_converter_base<T>
+{
+
+	typedef typename native_converter_base<T>::param_type param_type;
+	typedef typename native_converter_base<T>::value_type value_type;
+
+    int compute_score(lua_State* L, int index)
+    {
+        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1;
+    }
+
+    value_type from(lua_State* L, int index)
+    {
+        return static_cast<T>(lua_tonumber(L, index));
+    }
+
+    void to(lua_State* L, param_type value)
+    {
+        lua_pushnumber(L, static_cast<lua_Number>(value));
+    }
+};
+
+template <typename T>
+struct default_converter<T,
+	typename enable_if<
+		mpl::and_<
+			is_floating_point<T> >::type,
+			mpl::and_<
+				is_const<T>,
+				mpl::not_<is_reference<T> >
+			>
+		>::type
+	>
+  : default_converter<typename remove_const<T>::type > {};
+
+template <typename T>
+struct default_converter<T,
+	typename enable_if<
+		mpl::and_<
+			is_floating_point<T> >::type,
+			mpl::and_<
+				is_const<T>,
+				is_reference<T>
+			>
+		>::type
+	>
+  : default_converter<typename remove_reference<typename remove_const<T>::type>::type > {};
+
 */
 template <>
 struct default_converter<bool>
