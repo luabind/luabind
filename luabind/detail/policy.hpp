@@ -647,13 +647,13 @@ struct native_converter_base
 };
 
 template <class T>
-lua_Integer as_lua_integer(T v)
+inline lua_Integer as_lua_integer(T v)
 {
     return static_cast<lua_Integer>(v);
 }
 
 template <class T>
-lua_Number as_lua_number(T v)
+inline lua_Number as_lua_number(T v)
 {
     return static_cast<lua_Number>(v);
 }
