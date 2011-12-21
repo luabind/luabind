@@ -41,7 +41,7 @@ int main()
 
 	using namespace luabind;
 
-	lua_State* L = lua_open();
+	lua_State* L = luaL_newstate();
 	open(L);
 	
 	class_<A>(L, "A")

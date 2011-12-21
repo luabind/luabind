@@ -1734,7 +1734,7 @@ follows::
     {
         try
         {
-            lua_state L = lua_open();
+            lua_state L = luaL_newstate();
             /* ... */
         }
         catch(luabind::error& e)
