@@ -29,6 +29,7 @@
 #if LUA_VERSION_NUM < 502
 # define lua_compare(L, index1, index2, fn) fn(L, index1, index2)
 # define LUA_OPEQ lua_equal
+# define lua_rawlen lua_objlen
 #endif
 
 namespace luabind { namespace detail
@@ -117,7 +118,7 @@ namespace luabind { namespace detail
 			lua_error(L);
 		}
 
-		if (std::strlen(lua_tostring(L, 1)) != lua_strlen(L, 1))
+		if (std::strlen(lua_tostring(L, 1)) != lua_rawlen(L, 1))
 		{
 			lua_pushstring(L, "luabind does not support class names with extra nulls");
 			lua_error(L);

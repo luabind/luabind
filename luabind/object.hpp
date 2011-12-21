@@ -49,6 +49,7 @@
 # define lua_compare(L, index1, index2, fn) fn(L, index1, index2)
 # define LUA_OPEQ lua_equal
 # define LUA_OPLT lua_lessthan
+# define lua_rawlen lua_objlen
 #endif
 
 namespace luabind {
@@ -231,7 +232,7 @@ LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
       value_wrapper_traits<ValueWrapper>::unwrap(interpreter
         , static_cast<ValueWrapper const&>(v));
 		char const* p = lua_tostring(interpreter, -1);
-        std::size_t len = lua_strlen(interpreter, -1);
+        std::size_t len = lua_rawlen(interpreter, -1);
 		std::copy(p, p + len, std::ostream_iterator<char>(os));
 		return os;
 	}
@@ -1420,6 +1421,7 @@ object property(GetValueWrapper const& get, SetValueWrapper const& set)
 # undef lua_compare
 # undef LUA_OPEQ
 # undef LUA_OPLT
+# undef lua_rawlen
 #endif
 
 #endif // LUABIND_OBJECT_050419_HPP

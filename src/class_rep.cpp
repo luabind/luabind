@@ -31,6 +31,10 @@
 #include <luabind/get_main_thread.hpp>
 #include <utility>
 
+#if LUA_VERSION_NUM < 502
+# define lua_rawlen lua_objlen
+#endif
+
 using namespace luabind::detail;
 
 namespace luabind { namespace detail
@@ -287,7 +291,7 @@ int luabind::detail::class_rep::static_class_gettable(lua_State* L)
 
 	const char* key = lua_tostring(L, 2);
 
-	if (std::strlen(key) != lua_strlen(L, 2))
+	if (std::strlen(key) != lua_rawlen(L, 2))
 	{
 		lua_pushnil(L);
 		return 1;
