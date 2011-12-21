@@ -26,6 +26,11 @@
 
 #include <luabind/luabind.hpp>
 
+#if LUA_VERSION_NUM < 502
+# define lua_compare(L, index1, index2, fn) fn(L, index1, index2)
+# define LUA_OPEQ lua_equal
+#endif
+
 namespace luabind { namespace detail
 {
 	namespace
@@ -40,7 +45,7 @@ namespace luabind { namespace detail
 			while (lua_next(L, -2))
 			{
 				lua_pushstring(L, "__init");
-				if (lua_equal(L, -1, -3))
+				if (lua_compare(L, -1, -3, LUA_OPEQ))
 				{
 					lua_pop(L, 2);
 					continue;
@@ -48,7 +53,7 @@ namespace luabind { namespace detail
 				else lua_pop(L, 1); // __init string
 
 				lua_pushstring(L, "__finalize");
-				if (lua_equal(L, -1, -3))
+				if (lua_compare(L, -1, -3, LUA_OPEQ))
 				{
 					lua_pop(L, 2);
 					continue;

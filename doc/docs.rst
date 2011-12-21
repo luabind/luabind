@@ -1116,7 +1116,7 @@ The ``interpreter()`` function returns the Lua state where this object is stored
 If you want to manipulate the object with Lua functions directly you can push
 it onto the Lua stack by calling ``push()``.
 
-The operator== will call lua_equal() on the operands and return its result.
+The operator== will call lua_compare() on the operands and return its result.
 
 The ``is_valid()`` function tells you whether the object has been initialized
 or not. When created with its default constructor, objects are invalid. To make

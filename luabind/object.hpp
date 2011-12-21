@@ -45,6 +45,12 @@
 #include <boost/preprocessor/iteration/iterate.hpp>
 #include <boost/utility/enable_if.hpp>
 
+#if LUA_VERSION_NUM < 502
+# define lua_compare(L, index1, index2, fn) fn(L, index1, index2)
+# define LUA_OPEQ lua_equal
+# define LUA_OPLT lua_lessthan
+#endif
+
 namespace luabind {
 
 namespace detail 
@@ -208,11 +214,11 @@ namespace adl
       detail::stack_pop pop2(L, 1); \
       detail::push(L, rhs); \
 \
-      return fn(L, -1, -2) != 0; \
+      return lua_compare(L, -1, -2, fn) != 0; \
   }
 
-LUABIND_BINARY_OP_DEF(==, lua_equal)
-LUABIND_BINARY_OP_DEF(<, lua_lessthan)
+LUABIND_BINARY_OP_DEF(==, LUA_OPEQ)
+LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
 
   template<class ValueWrapper>
   std::ostream& operator<<(std::ostream& os
@@ -523,7 +529,7 @@ namespace detail
           detail::stack_pop pop(m_interpreter, 2);
           m_key.push(m_interpreter);
           other.m_key.push(m_interpreter);
-          return lua_equal(m_interpreter, -2, -1) != 0;
+          return lua_compare(m_interpreter, -2, -1, LUA_OPEQ) != 0;
       }
 
       adl::iterator_proxy<AccessPolicy> dereference() const 
@@ -1405,6 +1411,12 @@ object property(GetValueWrapper const& get, SetValueWrapper const& set)
 
 
 } // namespace luabind
+
+#if LUA_VERSION_NUM < 502
+# undef lua_compare
+# undef LUA_OPEQ
+# undef LUA_OPLT
+#endif
 
 #endif // LUABIND_OBJECT_050419_HPP
 
