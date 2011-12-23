@@ -29,6 +29,10 @@
 #include <luabind/detail/stack_utils.hpp>
 #include <cassert>
 
+#if LUA_VERSION_NUM < 502
+# define lua_pushglobaltable(L) lua_pushvalue(L, LUA_GLOBALSINDEX)
+#endif
+
 namespace luabind { namespace detail {
 
     registration::registration()
@@ -149,11 +153,7 @@ namespace luabind {
         }
         else
         {
-#if LUA_VERSION_NUM >= 502
-            lua_rawgeti(m_state, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
-#else
-            lua_pushvalue(m_state, LUA_GLOBALSINDEX);
-#endif
+            lua_pushglobaltable(m_state);
         }
 
         lua_pop_stack guard(m_state);

@@ -50,6 +50,7 @@
 # define LUA_OPEQ lua_equal
 # define LUA_OPLT lua_lessthan
 # define lua_rawlen lua_objlen
+# define lua_pushglobaltable(L) lua_pushvalue(L, LUA_GLOBALSINDEX)
 #endif
 
 namespace luabind {
@@ -1214,11 +1215,7 @@ inline object newtable(lua_State* interpreter)
 // this could be optimized by returning a proxy
 inline object globals(lua_State* interpreter)
 {
-#if LUA_VERSION_NUM >= 502
-    lua_rawgeti(interpreter, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
-#else
-    lua_pushvalue(interpreter, LUA_GLOBALSINDEX);
-#endif
+    lua_pushglobaltable(interpreter);
     detail::stack_pop pop(interpreter, 1);
     return object(from_stack(interpreter, -1));
 }
@@ -1422,6 +1419,7 @@ object property(GetValueWrapper const& get, SetValueWrapper const& set)
 # undef LUA_OPEQ
 # undef LUA_OPLT
 # undef lua_rawlen
+# undef lua_pushglobaltable
 #endif
 
 #endif // LUABIND_OBJECT_050419_HPP
