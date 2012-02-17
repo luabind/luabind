@@ -46,6 +46,14 @@ void test_main(lua_State* L)
         "assert(type(names) == 'table')\n"
         "assert(#names == 2)\n"
         "assert(names[1] == 'X' or names[2] == 'X')\n"
-        "assert(names[1] == 'class_info_data' or names[2] == 'class_info_data')\n"
+        "assert(names[1] == 'class_info_data' or names[2] == 'class_info_data')\n");
+
+    DOSTRING(L,
+        "info = class_info(X)\n"
+        "assert(info.name == 'X')\n"
+        "assert(info.methods['f'] == X().f)\n"
+        "assert(info.methods['__init'] == X().__init)\n"
+        "assert(info.attributes[1] == 'y')\n"
+        "assert(info.attributes[2] == 'x')\n"
     );
 }
