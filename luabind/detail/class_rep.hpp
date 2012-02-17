@@ -149,6 +149,11 @@ namespace luabind { namespace detail
 
     private:
 
+        // Code common to both constructors
+        void shared_init(lua_State * L);
+
+        void cache_operators(lua_State*);
+
         // this is a pointer to the type_info structure for
         // this type
         // warning: this may be a problem when using dll:s, since
