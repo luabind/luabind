@@ -13,7 +13,7 @@ We have introduced a change that may break current code,
 nothing will break silently however.
 
 The change is that the previous way of writing virtual class
-wrappers was to have it contain an object that refered to
+wrappers was to have it contain an object that referred to
 the actual lua object. This would cause a dependency cycle
 and result in the object never being garbage collected until
 the whole lua state was closed. The new way is to use a newly
@@ -31,7 +31,7 @@ Changes from beta6
   * moved iterators out of the class and removed
     begin/end/raw_begin/raw_end/array_begin/array_end.
     See updated docs for how to use the iterators.
-  * removed array_iterator alltogether
+  * removed array_iterator altogether
   * renamed pushvalue() to push()
   * removed set()
   * replaced the constructor that creates an object from
@@ -111,9 +111,9 @@ policy placeholders
 
 luabind now handles member functions in a more general way.
 The self reference that is passed as first parameter to
-member functions is now refered to using the _1 placeholder
+member functions is now referred to using the _1 placeholder
 (instead of self). This means that the first argument to a
-member function is refered to with _2.
+member function is referred to with _2.
 
 
 additions

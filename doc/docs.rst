@@ -2228,7 +2228,7 @@ pcall_callback function, see ``errfunc`` under the
 For more information on how to retrieve debugging information from lua, see
 `the debug section of the lua manual`_.
 
-The message returned by the ``pcall_callback`` is accessable as the top lua
+The message returned by the ``pcall_callback`` is accessible as the top lua
 value on the stack. For example, if you would like to access it as a luabind
 object, you could do like this::
 
@@ -2309,7 +2309,7 @@ to catch all exceptions and translate them into proper lua errors (by calling
 In Visual Studio, ``catch (...)`` will not only catch C++ exceptions, it will
 also catch structured exceptions, such as segmentation fault. This means that if
 your function, that gets called from luabind, makes an invalid memory
-adressing, you won't notice it. All that will happen is that lua will return
+addressing, you won't notice it. All that will happen is that lua will return
 an error message saying "unknown exception".
 
 To remedy this, you can create your own *exception translator*::
@@ -2582,7 +2582,7 @@ Do I have to register destructors for my classes?
 .. And again, the above is irrelevant to docs. This isn't a general C++ FAQ. But it saves us support questions.
 
 Fatal Error C1063 compiler limit \: compiler stack overflow in VC
-    VC6.5 chokes on warnings, if you are getting alot of warnings from your 
+    VC6.5 chokes on warnings, if you are getting a lot of warnings from your 
     code try suppressing them with a pragma directive, this should solve the 
     problem.
 

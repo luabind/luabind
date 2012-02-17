@@ -31,7 +31,7 @@ headers reside. The recommended way to get the Lua libraries is to download the
 
   http://luabinaries.luaforge.net/download.html
 
-With these enviroment variables properly set:
+With these environment variables properly set:
 
   $ set BOOST_ROOT=...
   $ set LUA_PATH=...
