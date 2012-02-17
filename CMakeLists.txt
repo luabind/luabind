@@ -1,5 +1,5 @@
-# Embedded build for LuaBind
-# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu>
+# Build for LuaBind
+# Ryan Pavlik <rpavlik@iastate.edu>
 # http://academic.cleardefinition.com/
 # Iowa State University HCI Graduate Program/VRAC
 
