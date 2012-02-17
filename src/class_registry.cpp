@@ -35,6 +35,7 @@ namespace luabind { namespace detail {
 
     namespace {
 
+	/// @todo is this redundant with the following function? All that differs is the __gc closure
         int create_cpp_class_metatable(lua_State* L)
         {
             lua_newtable(L);
