@@ -34,6 +34,7 @@ set(LUABIND_API
 	../luabind/dependency_policy.hpp
 	../luabind/discard_result_policy.hpp
 	../luabind/error.hpp
+	../luabind/error_callback_fun.hpp
 	../luabind/exception_handler.hpp
 	../luabind/from_stack.hpp
 	../luabind/function.hpp
