@@ -24,8 +24,7 @@
 
 #include <luabind/lua_include.hpp>
 
-#include <luabind/luabind.hpp>
-#include <luabind/function.hpp>
+#include <luabind/class.hpp>
 #include <luabind/get_main_thread.hpp>
 #include <luabind/detail/garbage_collector.hpp>
 
