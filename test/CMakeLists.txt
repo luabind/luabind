@@ -34,6 +34,7 @@ set(TESTS
 	object
 	object_identity
 	operators
+	package_preload
 	policies
 	private_destructors
 	properties
