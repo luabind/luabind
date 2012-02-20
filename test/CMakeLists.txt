@@ -4,6 +4,7 @@ include_directories(
 add_executable(benchmark "benchmark.cpp")
 target_link_libraries(benchmark ${LUA_LIBRARIES} luabind)
 
+<<<<<<< HEAD
 add_library(testmain
     "main.cpp" "test.hpp"
     # These tests consist only of compile time asserts and define no test_main
@@ -44,6 +45,7 @@ set(TESTS
     "object"
     "object_identity"
     "operators"
+    "package_preload"
     "policies"
     "private_destructors"
     "properties"
