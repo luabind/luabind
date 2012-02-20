@@ -16,6 +16,7 @@ set(luabind_SRCS
     open.cpp
     pcall.cpp
     scope.cpp
+    set_package_preload.cpp
     stack_content_by_name.cpp
     weak_ref.cpp
     wrapper_base.cpp)
@@ -54,6 +55,7 @@ set(luabind_HDRS
     ../luabind/raw_policy.hpp
     ../luabind/return_reference_to_policy.hpp
     ../luabind/scope.hpp
+    ../luabind/set_package_preload.hpp
     ../luabind/shared_ptr_converter.hpp
     ../luabind/tag_function.hpp
     ../luabind/typeid.hpp
