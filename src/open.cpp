@@ -26,6 +26,8 @@
 
 #include <luabind/class.hpp>
 #include <luabind/get_main_thread.hpp>
+#include <luabind/set_package_preload.hpp>
+#include <luabind/function_introspection.hpp>
 #include <luabind/detail/garbage_collector.hpp>
 
 namespace luabind {
@@ -144,6 +146,8 @@ namespace
         lua_pushstring(L, "super");
         lua_pushcclosure(L, &deprecated_super, 0);
         lua_settable(L, LUA_GLOBALSINDEX);
+
+        set_package_preload(L, "luabind.function_introspection", &bind_function_introspection);
     }
 
 } // namespace luabind

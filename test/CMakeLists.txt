@@ -25,6 +25,7 @@ set(TESTS
 	exceptions
 	extend_class_in_lua
 	free_functions
+	function_introspection
 	held_type
 	implicit_cast
 	implicit_raw
