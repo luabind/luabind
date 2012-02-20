@@ -28,6 +28,7 @@
 #include <luabind/detail/class_registry.hpp>
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/operator_id.hpp>
+#include <luabind/detail/garbage_collector.hpp>
 
 namespace luabind { namespace detail {
 
@@ -47,12 +48,7 @@ namespace luabind { namespace detail {
             lua_rawset(L, -3);
 
             lua_pushstring(L, "__gc");
-            lua_pushcclosure(
-                L
-              , &garbage_collector_s<
-                    detail::class_rep
-                >::apply
-                , 0);
+            lua_pushcclosure(L, &garbage_collector<class_rep>, 0);
 
             lua_rawset(L, -3);
 
@@ -73,35 +69,7 @@ namespace luabind { namespace detail {
 
         int create_lua_class_metatable(lua_State* L)
         {
-            lua_newtable(L);
-
-            lua_pushstring(L, "__luabind_classrep");
-            lua_pushboolean(L, 1);
-            lua_rawset(L, -3);
-
-            lua_pushstring(L, "__gc");
-            lua_pushcclosure(
-                L
-              , &detail::garbage_collector_s<
-                    detail::class_rep
-                >::apply
-                , 0);
-
-            lua_rawset(L, -3);
-
-            lua_pushstring(L, "__newindex");
-            lua_pushcclosure(L, &class_rep::lua_settable_dispatcher, 0);
-            lua_rawset(L, -3);
-
-            lua_pushstring(L, "__call");
-            lua_pushcclosure(L, &class_rep::constructor_dispatcher, 0);
-            lua_rawset(L, -3);
-
-            lua_pushstring(L, "__index");
-            lua_pushcclosure(L, &class_rep::static_class_gettable, 0);
-            lua_rawset(L, -3);
-
-            return luaL_ref(L, LUA_REGISTRYINDEX);
+            return create_cpp_class_metatable(L);
         }
 
     } // namespace unnamed
