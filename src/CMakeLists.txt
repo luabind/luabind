@@ -10,6 +10,7 @@ set(luabind_SRCS
     error.cpp
     exception_handler.cpp
     function.cpp
+    function_introspection.cpp
     inheritance.cpp
     link_compatibility.cpp
     object_rep.cpp
@@ -38,6 +39,7 @@ set(luabind_HDRS
     ../luabind/exception_handler.hpp
     ../luabind/from_stack.hpp
     ../luabind/function.hpp
+    ../luabind/function_introspection.hpp
     ../luabind/get_main_thread.hpp
     ../luabind/get_pointer.hpp
     ../luabind/handle.hpp
