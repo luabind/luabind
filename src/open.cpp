@@ -65,30 +65,6 @@ namespace
       return 0;
   }
 
-  int destroy_class_id_map(lua_State* L)
-  {
-      detail::class_id_map* m =
-          (detail::class_id_map*)lua_touserdata(L, 1);
-      m->~class_id_map();
-      return 0;
-  }
-
-  int destroy_cast_graph(lua_State* L)
-  {
-      detail::cast_graph* g =
-          (detail::cast_graph*)lua_touserdata(L, 1);
-      g->~cast_graph();
-      return 0;
-  }
-
-  int destroy_class_map(lua_State* L)
-  {
-      detail::class_map* m =
-          (detail::class_map*)lua_touserdata(L, 1);
-      m->~class_map();
-      return 0;
-  }
-
 } // namespace unnamed
 
     LUABIND_API lua_State* get_main_thread(lua_State* L)
