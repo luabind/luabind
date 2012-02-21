@@ -31,7 +31,7 @@
 using namespace luabind;
 
 
-struct test_param : counted_type<test_param>
+struct test_param : counted_type<test_param>, wrap_base
 {
 	luabind::object obj;
 	luabind::object obj2;
