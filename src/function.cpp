@@ -116,7 +116,7 @@ void invoke_context::format_error(
             f->format_signature(L, function_name);
             ++count;
         }
-        lua_concat(L, count * 2);
+        lua_concat(L, count * 2 + 1);
     }
     else
     {
