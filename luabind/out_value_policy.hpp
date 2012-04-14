@@ -93,11 +93,12 @@ namespace luabind { namespace detail
 		{
 			typedef typename find_conversion_policy<1, Policies>::type converter_policy;
 			typename mpl::apply_wrap2<converter_policy,T,lua_to_cpp>::type converter;
-			new (m_storage) T(converter.apply(L, LUABIND_DECORATE_TYPE(T), index));
 #if defined(__GNUC__) && __GNUC__ >= 4
 			T* storage = reinterpret_cast<T*>(m_storage);
+			new (storage) T(converter.apply(L, LUABIND_DECORATE_TYPE(T), index));
 			return *storage;
 #else
+			new (m_storage) T(converter.apply(L, LUABIND_DECORATE_TYPE(T), index));
 			return *reinterpret_cast<T*>(m_storage);
 #endif
 		}
@@ -130,11 +131,12 @@ namespace luabind { namespace detail
 		{
 			typedef typename find_conversion_policy<1, Policies>::type converter_policy;
 			typename mpl::apply_wrap2<converter_policy,T,lua_to_cpp>::type converter;
-			new (m_storage) T(converter.apply(L, LUABIND_DECORATE_TYPE(T), index));
 #if defined(__GNUC__) && __GNUC__ >= 4
 			T* storage = reinterpret_cast<T*>(m_storage);
+			new (storage) T(converter.apply(L, LUABIND_DECORATE_TYPE(T), index));
 			return storage;
 #else
+			new (m_storage) T(converter.apply(L, LUABIND_DECORATE_TYPE(T), index));
 			return reinterpret_cast<T*>(m_storage);
 #endif
 		}
@@ -198,11 +200,12 @@ namespace luabind { namespace detail
         template<class T>
 		T& apply(lua_State*, by_reference<T>, int)
 		{
-			new (m_storage) T();
 #if defined(__GNUC__) && __GNUC__ >= 4
 			T* storage = reinterpret_cast<T*>(m_storage);
+			new (storage) T();
 			return *storage;
 #else
+			new (m_storage) T();
 			return *reinterpret_cast<T*>(m_storage);
 #endif
 		}
@@ -231,11 +234,12 @@ namespace luabind { namespace detail
 		template<class T>
 		T* apply(lua_State*, by_pointer<T>, int)
 		{
-			new (m_storage) T();
 #if defined(__GNUC__) && __GNUC__ >= 4
 			T* storage = reinterpret_cast<T*>(m_storage);
+			new (storage) T();
 			return storage;
 #else
+			new (m_storage) T();
 			return reinterpret_cast<T*>(m_storage);
 #endif
 		}
