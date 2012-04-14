@@ -103,7 +103,12 @@ namespace luabind { namespace detail
             typedef typename find_conversion_policy<1, Policies>::type converter_policy;
             typename mpl::apply_wrap2<converter_policy,T,lua_to_cpp>::type converter;
             new (m_storage) T(converter.apply(L, LUABIND_DECORATE_TYPE(T), index));
+#if defined(__GNUC__) && __GNUC__ >= 4
+            T* storage = reinterpret_cast<T*>(m_storage);
+            return *storage;
+#else
             return *reinterpret_cast<T*>(m_storage);
+#endif
         }
 
         template<class T>
@@ -119,8 +124,14 @@ namespace luabind { namespace detail
         {
             typedef typename find_conversion_policy<2, Policies>::type converter_policy;
             typename mpl::apply_wrap2<converter_policy,T,cpp_to_lua>::type converter;
+#if defined(__GNUC__) && __GNUC__ >= 4
+            T* storage = reinterpret_cast<T*>(m_storage);
+            converter.apply(L, *storage);
+            storage->~T();
+#else
             converter.apply(L, *reinterpret_cast<T*>(m_storage));
             reinterpret_cast<T*>(m_storage)->~T();
+#endif
         }
 
         template<class T>
@@ -129,7 +140,12 @@ namespace luabind { namespace detail
             typedef typename find_conversion_policy<1, Policies>::type converter_policy;
             typename mpl::apply_wrap2<converter_policy,T,lua_to_cpp>::type converter;
             new (m_storage) T(converter.apply(L, LUABIND_DECORATE_TYPE(T), index));
+#if defined(__GNUC__) && __GNUC__ >= 4
+            T* storage = reinterpret_cast<T*>(m_storage);
+            return storage;
+#else
             return reinterpret_cast<T*>(m_storage);
+#endif
         }
 
         template<class T>
@@ -145,8 +161,14 @@ namespace luabind { namespace detail
         {
             typedef typename find_conversion_policy<2, Policies>::type converter_policy;
             typename mpl::apply_wrap2<converter_policy,T,cpp_to_lua>::type converter;
+#if defined(__GNUC__) && __GNUC__ >= 4
+            T* storage = reinterpret_cast<T*>(m_storage);
+            converter.apply(L, *storage);
+            storage->~T();
+#else
             converter.apply(L, *reinterpret_cast<T*>(m_storage));
             reinterpret_cast<T*>(m_storage)->~T();
+#endif
         }
 
         char m_storage[Size];
@@ -177,7 +199,7 @@ namespace luabind { namespace detail
     template<int Size, class Policies = detail::null_type>
     struct pure_out_value_converter
     {
-        int const consumed_args(...) const
+        int const consumed_args(...)
         {
             return 0;
         }
@@ -186,7 +208,12 @@ namespace luabind { namespace detail
         T& apply(lua_State*, by_reference<T>, int)
         {
             new (m_storage) T();
+#if defined(__GNUC__) && __GNUC__ >= 4
+            T* storage = reinterpret_cast<T*>(m_storage);
+            return *storage;
+#else
             return *reinterpret_cast<T*>(m_storage);
+#endif
         }
 
         template<class T>
@@ -200,15 +227,26 @@ namespace luabind { namespace detail
         {
             typedef typename find_conversion_policy<1, Policies>::type converter_policy;
             typename mpl::apply_wrap2<converter_policy,T,cpp_to_lua>::type converter;
+#if defined(__GNUC__) && __GNUC__ >= 4
+            T* storage = reinterpret_cast<T*>(m_storage);
+            converter.apply(L, *storage);
+            storage->~T();
+#else
             converter.apply(L, *reinterpret_cast<T*>(m_storage));
             reinterpret_cast<T*>(m_storage)->~T();
+#endif
         }
 
         template<class T>
         T* apply(lua_State*, by_pointer<T>, int)
         {
             new (m_storage) T();
+#if defined(__GNUC__) && __GNUC__ >= 4
+            T* storage = reinterpret_cast<T*>(m_storage);
+            return storage;
+#else
             return reinterpret_cast<T*>(m_storage);
+#endif
         }
 
         template<class T>
@@ -222,8 +260,14 @@ namespace luabind { namespace detail
         {
             typedef typename find_conversion_policy<1, Policies>::type converter_policy;
             typename mpl::apply_wrap2<converter_policy,T,cpp_to_lua>::type converter;
+#if defined(__GNUC__) && __GNUC__ >= 4
+            T* storage = reinterpret_cast<T*>(m_storage);
+            converter.apply(L, *storage);
+            storage->~T();
+#else
             converter.apply(L, *reinterpret_cast<T*>(m_storage));
             reinterpret_cast<T*>(m_storage)->~T();
+#endif
         }
 
 
