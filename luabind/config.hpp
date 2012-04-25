@@ -102,9 +102,13 @@ namespace std
 
 #ifdef LUABIND_DYNAMIC_LINK
 # ifdef LUABIND_BUILDING
-#  define LUABIND_API BOOST_SYMBOL_EXPORT
+#  ifdef BOOST_SYMBOL_EXPORT
+#   define LUABIND_API BOOST_SYMBOL_EXPORT
+#  endif
 # else
-#  define LUABIND_API BOOST_SYMBOL_IMPORT
+#  ifdef BOOST_SYMBOL_IMPORT
+#   define LUABIND_API BOOST_SYMBOL_IMPORT
+#  endif
 # endif
 #endif
 
