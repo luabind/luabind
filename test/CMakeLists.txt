@@ -55,7 +55,7 @@ set(TESTS
 	virtual_inheritance
 	yield)
 
-add_library(test_main main.cpp)
+add_library(test_main STATIC main.cpp)
 
 foreach(test ${TESTS})
 	add_executable(test_${test} test_${test}.cpp)
