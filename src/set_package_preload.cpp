@@ -33,6 +33,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
+#define LUABIND_BUILDING
+
 // Internal Includes
 #include <luabind/set_package_preload.hpp>
 #include <luabind/object.hpp>
