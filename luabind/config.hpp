@@ -101,10 +101,22 @@ namespace std
 // C code has undefined behavior, lua is written in C).
 
 #ifdef LUABIND_DYNAMIC_LINK
-# ifdef LUABIND_BUILDING
-#  define LUABIND_API BOOST_SYMBOL_EXPORT
+# if defined (BOOST_WINDOWS)
+#  ifdef LUABIND_BUILDING
+#   define LUABIND_API __declspec(dllexport)
+#  else
+#   define LUABIND_API __declspec(dllimport)
+#  endif
+# elif defined (__CYGWIN__)
+#  ifdef LUABIND_BUILDING
+#   define LUABIND_API __attribute__ ((dllexport))
+#  else
+#   define LUABIND_API __attribute__ ((dllimport))
+#  endif
 # else
-#  define LUABIND_API BOOST_SYMBOL_IMPORT
+#  if defined(_GNUC_) && _GNUC_ >=4
+#   define LUABIND_API __attribute__ ((visibility("default")))
+#  endif
 # endif
 #endif
 
