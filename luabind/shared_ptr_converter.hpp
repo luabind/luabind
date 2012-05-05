@@ -81,6 +81,13 @@ struct default_converter<boost::shared_ptr<T> const&>
   : default_converter<boost::shared_ptr<T> >
 {};
 
+#ifdef BOOST_HAS_RVALUE_REFS
+template <class T>
+struct default_converter<boost::shared_ptr<T>&&>
+  : default_converter<boost::shared_ptr<T> >
+{};
+#endif
+
 } // namespace luabind
 
 #endif // LUABIND_SHARED_PTR_CONVERTER_090211_HPP

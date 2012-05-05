@@ -674,6 +674,46 @@ lua_Number as_lua_number(T v)
     return static_cast<lua_Number>(v);
 }
 
+#ifdef BOOST_HAS_RVALUE_REFS
+
+# define LUABIND_NUMBER_CONVERTER(type, kind) \
+    template <> \
+struct default_converter<type> \
+  : native_converter_base<type> \
+{ \
+    int compute_score(lua_State* L, int index) \
+    { \
+        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1; \
+    }; \
+    \
+    type from(lua_State* L, int index) \
+    { \
+        return static_cast<type>(BOOST_PP_CAT(lua_to, kind)(L, index)); \
+    } \
+    \
+    void to(lua_State* L, type const& value) \
+    { \
+        BOOST_PP_CAT(lua_push, kind)(L, BOOST_PP_CAT(as_lua_, kind)(value)); \
+    } \
+}; \
+\
+template <> \
+struct default_converter<type const> \
+  : default_converter<type> \
+{}; \
+\
+template <> \
+struct default_converter<type const&> \
+  : default_converter<type> \
+{}; \
+\
+template <> \
+struct default_converter<type&&> \
+  : default_converter<type> \
+{};
+
+#else
+
 # define LUABIND_NUMBER_CONVERTER(type, kind) \
     template <> \
 struct default_converter<type> \
@@ -704,6 +744,8 @@ template <> \
 struct default_converter<type const&> \
   : default_converter<type> \
 {};
+
+#endif
 
 LUABIND_NUMBER_CONVERTER(char, integer)
 LUABIND_NUMBER_CONVERTER(signed char, integer)
@@ -752,6 +794,13 @@ struct default_converter<bool const&>
   : default_converter<bool>
 {};
 
+#ifdef BOOST_HAS_RVALUE_REFS
+template <>
+struct default_converter<bool&&>
+  : default_converter<bool>
+{};
+#endif
+
 template <>
 struct default_converter<std::string>
   : native_converter_base<std::string>
@@ -781,6 +830,13 @@ template <>
 struct default_converter<std::string const&>
   : default_converter<std::string>
 {};
+
+#ifdef BOOST_HAS_RVALUE_REFS
+template <>
+struct default_converter<std::string&&>
+  : default_converter<std::string>
+{};
+#endif
 
 template <>
 struct default_converter<char const*>

@@ -92,6 +92,18 @@ namespace luabind { namespace detail
     template<class T>
     by_const_reference<T> decorated_type<const T&>::t;
 
+#ifdef BOOST_HAS_RVALUE_REFS
+    template<class T>
+    struct decorated_type<T&&>
+    {
+        static by_value<T> t;
+        static inline by_value<T>& get() { return /*by_value<T>()*/t; }
+    };
+
+    template<class T>
+    by_value<T> decorated_type<T&&>::t;
+#endif
+
     #define LUABIND_DECORATE_TYPE(t) luabind::detail::decorated_type<t>::get()
 
 #else

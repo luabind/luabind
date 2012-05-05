@@ -107,7 +107,11 @@ namespace luabind { namespace detail
     {
         enum
         {
+#ifdef BOOST_HAS_RVALUE_REFS
+            value = boost::is_lvalue_reference<T>::value && !is_const_reference<T>::value
+#else
             value = boost::is_reference<T>::value && !is_const_reference<T>::value
+#endif
         };
         typedef boost::mpl::bool_<value> type;
     };
