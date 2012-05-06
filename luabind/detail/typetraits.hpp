@@ -83,6 +83,16 @@ namespace luabind { namespace detail
         typedef boost::mpl::bool_<value> type;
     };
 
+    template<class T>
+    struct is_nonconst_reference
+    {
+        enum
+        {
+            value = boost::is_reference<T>::value && !is_const_reference<T>::value
+        };
+        typedef boost::mpl::bool_<value> type;
+    };
+
 #else
 
     template<class T>
@@ -99,22 +109,21 @@ namespace luabind { namespace detail
         typedef boost::mpl::bool_<value> type;
     };
 
-#endif
-
-
     template<class T>
     struct is_nonconst_reference
     {
-        enum
-        {
-#ifdef BOOST_HAS_RVALUE_REFS
-            value = boost::is_lvalue_reference<T>::value && !is_const_reference<T>::value
-#else
-            value = boost::is_reference<T>::value && !is_const_reference<T>::value
-#endif
-        };
+        enum { value = false };
         typedef boost::mpl::bool_<value> type;
     };
+
+    template<class T>
+    struct is_nonconst_reference<T&>
+    {
+        enum { value = !is_const_reference<T&>::value };
+        typedef boost::mpl::bool_<value> type;
+    };
+
+#endif
 
     template<class A>
     yes_t is_const_pointer_helper(void(*)(const A*));
