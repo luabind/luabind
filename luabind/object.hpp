@@ -1002,8 +1002,8 @@ namespace detail
           assert(0 && "object_cast failed. If you want to handle this error use "
               "luabind::set_error_callback()");
           std::terminate();
-#endif
           return *(typename boost::remove_reference<T>::type*)0;
+#endif
       }
   };
 
