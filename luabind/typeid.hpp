@@ -6,9 +6,16 @@
 # define LUABIND_TYPEID_081227_HPP
 
 # include <boost/operators.hpp>
+# include <cstdlib>
 # include <cstring>
 # include <typeinfo>
 # include <luabind/detail/primitives.hpp>
+
+// boost/units/detail/utility.hpp
+# if defined(__GLIBCXX__) || defined(__GLIBCPP__)
+#  define LUABIND_USE_DEMANGLING
+#  include <cxxabi.h>
+# endif // __GNUC__
 
 namespace luabind {
 
@@ -47,8 +54,17 @@ public:
         return std::strcmp(id->name(), other.id->name()) < 0;
     }
 
-    char const* name() const
+    std::string name() const
     {
+# ifdef LUABIND_USE_DEMANGLING
+        int status;
+        char* buf = abi::__cxa_demangle(id->name(), 0, 0, &status);
+        if (buf != 0) {
+            std::string name(buf);
+            std::free(buf);
+            return name;
+        }
+# endif
         return id->name();
     }
 
