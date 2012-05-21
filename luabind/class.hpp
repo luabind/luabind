@@ -559,7 +559,7 @@ namespace luabind
 
 #undef LUABIND_GEN_BASE_INFO
 
-        class_(const char* name): class_base(name), scope(*this)
+        class_(const char* name = 0): class_base(name), scope(*this)
         {
 #ifndef NDEBUG
             detail::check_link_compatibility();

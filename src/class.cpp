@@ -93,7 +93,9 @@ namespace luabind { namespace detail {
 
         assert(lua_type(L, -1) == LUA_TTABLE);
 
-        lua_pushstring(L, m_name);
+        if (m_name != 0) {
+            lua_pushstring(L, m_name);
+        }
 
         detail::class_rep* crep;
 
@@ -229,7 +231,12 @@ namespace luabind { namespace detail {
 
         }
 
-        lua_settable(L, -3);
+        if (m_name != 0) {
+            lua_settable(L, -3);
+        }
+        else {
+            lua_pop(L, 1);
+        }
     }
 
     // -- interface ---------------------------------------------------------
@@ -305,7 +312,7 @@ namespace luabind { namespace detail {
         class_registry* r = class_registry::get_registry(L);
         class_rep* crep = r->find_class(i);
 
-        if (crep == 0)
+        if (crep == 0 || crep->name() == 0)
         {
             ret = "custom";
             add_custom_name(i, ret);

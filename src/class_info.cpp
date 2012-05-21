@@ -74,7 +74,7 @@ namespace luabind
         lua_pop(L, 1);
 
         class_info result;
-        result.name = crep->name();
+        result.name = detail::get_class_name(L, crep->type());
         result.methods = newtable(L);
         result.attributes = newtable(L);
 
