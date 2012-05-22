@@ -56,7 +56,6 @@
 #include <luabind/detail/typetraits.hpp>
 #include <luabind/detail/class_cache.hpp>
 #include <luabind/detail/debug.hpp>
-#include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/has_get_pointer.hpp>
 #include <luabind/detail/make_instance.hpp>
 
@@ -68,7 +67,6 @@
 
 #include <luabind/value_wrapper.hpp>
 #include <luabind/from_stack.hpp>
-#include <luabind/typeid.hpp>
 
 #if LUA_VERSION_NUM < 502
 # define lua_rawlen lua_objlen
