@@ -15,6 +15,7 @@ set(luabind_SRCS
     link_compatibility.cpp
     object_rep.cpp
     open.cpp
+    operator.cpp
     pcall.cpp
     scope.cpp
     set_package_preload.cpp
