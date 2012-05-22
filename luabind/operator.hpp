@@ -345,12 +345,9 @@ namespace luabind {
 
 #undef LUABIND_BINARY_OPERATOR
 
-    namespace {
-
-        LUABIND_ANONYMOUS_FIX self_type self;
-        LUABIND_ANONYMOUS_FIX const_self_type const_self;
-
-    } // namespace unnamed
+    /// defined in operator.cpp
+    extern LUABIND_API self_type self;
+    extern LUABIND_API const_self_type const_self;
     
 } // namespace luabind
 
