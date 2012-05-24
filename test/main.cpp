@@ -20,19 +20,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <iostream>
-#include <cstring>
 
-extern "C"
-{
-    #include "lauxlib.h"
-    #include "lualib.h"
-}
-
-#include <luabind/open.hpp>
 #include "test.hpp"
 
-extern "C" struct lua_State;
+#include <luabind/lua_include.hpp>
+
+#ifndef LUABIND_CPLUSPLUS_LUA
+extern "C"
+{
+#endif
+# include <lualib.h>
+#ifndef LUABIND_CPLUSPLUS_LUA
+}
+#endif
+
+#include <luabind/open.hpp>             // for open
+
+#include <cstring>                      // for strlen
+#include <exception>                    // for exception
+#include <iostream>                     // for operator<<, basic_ostream, etc
+#include <string>                       // for string
 
 void test_main(lua_State*);
 

@@ -23,15 +23,14 @@
 #ifndef TEST_050415_HPP
 #define TEST_050415_HPP
 
-#include <boost/preprocessor/cat.hpp>
-#include <luabind/error.hpp>
 
-extern "C"
-{
-    #include "lua.h"
-    #include "lauxlib.h"
-    #include "lualib.h"
-}
+#include <luabind/error.hpp>
+#include <luabind/lua_include.hpp>
+
+#include <boost/preprocessor/cat.hpp>
+
+#include <string>
+
 
 void report_failure(char const* str, char const* file, int line);
 

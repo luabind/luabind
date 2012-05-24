@@ -22,6 +22,7 @@
 
 #include "test.hpp"
 #include <luabind/luabind.hpp>
+#include <luabind/yield_policy.hpp>     // for yield
 
 int f() { return 1; }
 int f_(int) { return 2; }
