@@ -37,10 +37,11 @@
 
 // Internal Includes
 #include <luabind/set_package_preload.hpp>
-#include <luabind/object.hpp>
+#include <luabind/config.hpp>           // for LUABIND_API
+#include <luabind/detail/object.hpp>    // for object, rawget, globals
 
 // Library/third-party includes
-// - none
+#include <luabind/lua_include.hpp>      // for lua_pushstring, lua_rawset, etc
 
 // Standard includes
 // - none
