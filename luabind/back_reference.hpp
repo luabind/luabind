@@ -25,8 +25,8 @@
 
 #include <luabind/lua_state_fwd.hpp>
 
-#ifndef LUABIND_NO_RTTI
-#include <luabind/wrapper_base.hpp>
+#if !defined(LUABIND_NO_RTTI) && !defined(LUABIND_WRAPPER_BASE_HPP_INCLUDED)
+# include <luabind/wrapper_base.hpp>
 #endif
 
 #include <luabind/detail/has_get_pointer.hpp>
