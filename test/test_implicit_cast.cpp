@@ -129,7 +129,7 @@ void test_main(lua_State* L)
         "no_convert(a)",
         ("No matching overload found, candidates:\n"
         "void no_convert(custom ["
-        + std::string(typeid(boost::shared_ptr<A>).name()) + "])").c_str());
+        + type_id(typeid(boost::shared_ptr<A>)).name() + "])").c_str());
 
     DOSTRING_EXPECTED(L,
         "a = nil\n"
