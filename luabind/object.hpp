@@ -39,6 +39,7 @@
 #include <luabind/detail/stack_utils.hpp>
 #include <luabind/detail/convert_to_lua.hpp> // REFACTOR
 #include <luabind/typeid.hpp>
+#include <luabind/lua502.hpp>
 
 #include <boost/iterator/iterator_facade.hpp> // iterator
 
@@ -1263,7 +1264,7 @@ inline object newtable(lua_State* interpreter)
 // this could be optimized by returning a proxy
 inline object globals(lua_State* interpreter)
 {
-    lua_pushvalue(interpreter, LUA_GLOBALSINDEX);
+    lua_pushglobaltable(interpreter);
     detail::stack_pop pop(interpreter, 1);
     return object(from_stack(interpreter, -1));
 }

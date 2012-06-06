@@ -27,6 +27,7 @@
 #include <luabind/scope.hpp>
 #include <luabind/detail/debug.hpp>
 #include <luabind/detail/stack_utils.hpp>
+#include <luabind/lua502.hpp>
 #include <cassert>
 
 namespace luabind { namespace detail {
@@ -149,7 +150,7 @@ namespace luabind {
         }
         else
         {
-            lua_pushvalue(m_state, LUA_GLOBALSINDEX);
+            lua_pushglobaltable(m_state);
         }
 
         lua_pop_stack guard(m_state);
