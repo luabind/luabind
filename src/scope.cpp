@@ -130,36 +130,42 @@ namespace luabind {
 
     } // namespace unnamed
 
-    module_::module_(lua_State* L, char const* name = 0)
-        : m_state(L)
-        , m_name(name)
+    module_::module_(object const& table)
+        : m_table(table)
     {
     }
 
-    void module_::operator[](scope s)
+    module_::module_(lua_State* L, char const* name)
     {
-        if (m_name)
+        if (name)
         {
-            lua_getglobal(m_state, m_name);
+            lua_getglobal(L, name);
 
-            if (!lua_istable(m_state, -1))
+            if (!lua_istable(L, -1))
             {
-                lua_pop(m_state, 1);
+                lua_pop(L, 1);
 
-                lua_newtable(m_state);
-                lua_pushvalue(m_state, -1);
-                lua_setglobal(m_state, m_name);
+                lua_newtable(L);
+                lua_pushvalue(L, -1);
+                lua_setglobal(L, name);
             }
         }
         else
         {
-            lua_pushglobaltable(m_state);
+            lua_pushglobaltable(L);
         }
 
-        lua_pop_stack guard(m_state);
-
-        s.register_(m_state);
+        m_table = object(from_stack(L, -1));
+        lua_pop(L, 1);
     }
+
+    void module_::operator[](scope s)
+    {
+        lua_State* L = m_table.interpreter();
+        m_table.push(L);
+        lua_pop_stack guard(L);
+        s.register_(L);
+     }
 
     struct namespace_::registration_ : detail::registration
     {
