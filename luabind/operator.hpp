@@ -344,8 +344,8 @@ namespace luabind {
 
     namespace {
 
-        LUABIND_ANONYMOUS_FIX self_type self;
-        LUABIND_ANONYMOUS_FIX const_self_type const_self;
+        LUABIND_ANONYMOUS_FIX self_type const self = self_type();
+        LUABIND_ANONYMOUS_FIX const_self_type const const_self = const_self_type();
 
     } // namespace unnamed
     
