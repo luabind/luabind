@@ -10,3 +10,4 @@ set (LUA_LIBRARY
     optimized "${LUABINARIES_DIR}/lua52.lib"
     debug     "${LUABINARIES_DIR}/lua52-d.lib")
 add_subdirectory("src")
+
