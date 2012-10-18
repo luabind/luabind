@@ -91,6 +91,9 @@ namespace luabind { namespace detail
 
         instance->release_dependency_refs(L);
         instance->~object_rep();
+
+        lua_pushnil(L);
+        lua_setmetatable(L, 1);
         return 0;
     }
 
