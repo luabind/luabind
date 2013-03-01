@@ -25,6 +25,11 @@
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/class_rep.hpp>
 
+#if LUA_VERSION_NUM < 502
+# define lua_getuservalue lua_getfenv
+# define lua_setuservalue lua_setfenv
+#endif
+
 namespace luabind { namespace detail
 {
 
@@ -94,7 +99,7 @@ namespace luabind { namespace detail
 
       int set_instance_value(lua_State* L)
       {
-          lua_getfenv(L, 1);
+          lua_getuservalue(L, 1);
           lua_pushvalue(L, 2);
           lua_rawget(L, -2);
 
@@ -129,7 +134,7 @@ namespace luabind { namespace detail
           {
               lua_newtable(L);
               lua_pushvalue(L, -1);
-              lua_setfenv(L, 1);
+              lua_setuservalue(L, 1);
               lua_pushvalue(L, 4);
               lua_setmetatable(L, -2);
           }
@@ -147,7 +152,7 @@ namespace luabind { namespace detail
 
       int get_instance_value(lua_State* L)
       {
-          lua_getfenv(L, 1);
+          lua_getuservalue(L, 1);
           lua_pushvalue(L, 2);
           lua_rawget(L, -2);
 
@@ -257,7 +262,7 @@ namespace luabind { namespace detail
         void* storage = lua_newuserdata(L, sizeof(object_rep));
         object_rep* result = new (storage) object_rep(0, cls);
         cls->get_table(L);
-        lua_setfenv(L, -2);
+        lua_setuservalue(L, -2);
         lua_rawgeti(L, LUA_REGISTRYINDEX, cls->metatable_ref());
         lua_setmetatable(L, -2);
         return result;

@@ -131,21 +131,18 @@ namespace
         createGarbageCollectedRegistryUserdata<detail::class_map>(L, "__luabind_class_map");
 
         // add functions (class, cast etc...)
-        lua_pushstring(L, "class");
         lua_pushcclosure(L, detail::create_class::stage1, 0);
-        lua_settable(L, LUA_GLOBALSINDEX);
+        lua_setglobal(L, "class");
 
-        lua_pushstring(L, "property");
         lua_pushcclosure(L, &make_property, 0);
-        lua_settable(L, LUA_GLOBALSINDEX);
+        lua_setglobal(L, "property");
 
         lua_pushlightuserdata(L, &main_thread_tag);
         lua_pushlightuserdata(L, L);
         lua_rawset(L, LUA_REGISTRYINDEX);
 
-        lua_pushstring(L, "super");
         lua_pushcclosure(L, &deprecated_super, 0);
-        lua_settable(L, LUA_GLOBALSINDEX);
+        lua_setglobal(L, "super");
 
         set_package_preload(L, "luabind.function_introspection", &bind_function_introspection);
     }

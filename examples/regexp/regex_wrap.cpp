@@ -44,7 +44,7 @@ void wrap_regex(lua_State* L)
 
 int main()
 {
-	lua_State* L = lua_open();
+	lua_State* L = luaL_newstate();
 	lua_baselibopen(L);
 	lua_strlibopen(L);
 	luabind::open(L);
