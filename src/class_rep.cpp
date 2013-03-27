@@ -290,14 +290,7 @@ int luabind::detail::class_rep::static_class_gettable(lua_State* L)
 
 #ifndef LUABIND_NO_ERROR_CHECKING
 
-	{
-		std::string msg = "no static '";
-		msg += key;
-		msg += "' in class '";
-		msg += crep->name();
-		msg += "'";
-		lua_pushstring(L, msg.c_str());
-	}
+	lua_pushfstring(L, "no static '%s' in class '%s'", key, crep->name());
 	lua_error(L);
 
 #endif
