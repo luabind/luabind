@@ -3,3 +3,4 @@ bin
 doc/*.html
 doc/version.rst
 nppBackup/
+build/
