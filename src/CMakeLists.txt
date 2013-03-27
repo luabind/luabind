@@ -110,3 +110,8 @@ set(CMAKE_DEBUG_POSTFIX "-d")
 add_library(luabind ${luabind_SRCS} ${luabind_HDRS} ${luabind_detail_HDRS})
 
 target_link_libraries(luabind ${LUA_LIBRARIES})
+
+install(TARGETS luabind
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+
