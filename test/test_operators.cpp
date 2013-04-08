@@ -58,6 +58,11 @@ float operator*(operator_tester const& /*lhs*/, operator_tester const& /*rhs*/)
     return 35.f;
 }
 
+float operator%(operator_tester const& /*lhs*/, operator_tester const& /*rhs*/)
+{
+    return 15.f;
+}
+
 std::string operator*(operator_tester const&, int)
 {
     return "(operator_tester, int) overload";
@@ -130,8 +135,10 @@ void test_main(lua_State* L)
             .def(self(int()))
 //          .def(const_self * other<operator_tester const&>())
             .def(const_self * const_self)
-            .def(const_self * other<int>()),
+            .def(const_self * other<int>())
+            .def(const_self % const_self)
 //          .def("clone", &clone, adopt(return_value)),
+        ,
 
         class_<operator_tester2>("operator_tester2")
             .def(constructor<>())
@@ -164,6 +171,7 @@ void test_main(lua_State* L)
 
     DOSTRING(L, "assert(-test == 46)");
     DOSTRING(L, "assert(test * test == 35)");
+    DOSTRING(L, "assert(test % test == 15)");
     DOSTRING(L, "assert(test * 3 == '(operator_tester, int) overload')")
     DOSTRING(L, "assert(test + test2 == 73)");
     DOSTRING(L, "assert(2 + test == 2 + 2)");
