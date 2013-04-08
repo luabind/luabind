@@ -293,7 +293,7 @@ namespace luabind {
     LUABIND_BINARY_OPERATOR(le, <=)
     LUABIND_BINARY_OPERATOR(eq, ==)
 
-#undef LUABIND_UNARY_OPERATOR
+#undef LUABIND_BINARY_OPERATOR
 
 #define LUABIND_UNARY_OPERATOR(name_, op, fn) \
     namespace operators { \
@@ -343,7 +343,7 @@ namespace luabind {
     LUABIND_UNARY_OPERATOR(tostring, tostring_operator, tostring)
     LUABIND_UNARY_OPERATOR(unm, -, operator-)
 
-#undef LUABIND_BINARY_OPERATOR
+#undef LUABIND_UNARY_OPERATOR
 
     // defined in operator.cpp
     extern LUABIND_API self_type self;
