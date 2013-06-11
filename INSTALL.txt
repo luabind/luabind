@@ -1,3 +1,5 @@
+Note: The information in this file is outdated. Use CMake instead.
+
 luabind installation
 ====================
 
