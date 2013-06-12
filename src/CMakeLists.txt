@@ -108,6 +108,7 @@ source_group("detail headers" FILES ${luabind_detail_HDRS})
 
 set(CMAKE_DEBUG_POSTFIX "-d")
 add_library(luabind ${luabind_SRCS} ${luabind_HDRS} ${luabind_detail_HDRS})
+set_property(TARGET luabind PROPERTY OUTPUT_NAME "luabind09")
 
 target_link_libraries(luabind ${LUA_LIBRARIES})
 
