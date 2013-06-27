@@ -902,6 +902,7 @@ template<class Next>
 inline void adl::index_proxy<Next>::push(lua_State* interpreter)
 {
     assert(interpreter == m_interpreter);
+    (void)interpreter;
 
     value_wrapper_traits<Next>::unwrap(m_interpreter, m_next);
 

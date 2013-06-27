@@ -36,6 +36,7 @@ struct iterator
     {
         iterator* self = static_cast<iterator*>(lua_touserdata(L, 1));
         self->~iterator();
+        (void)self; // MSVC warns about self not being referenced.
         return 0;
     }
 
