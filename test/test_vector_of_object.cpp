@@ -33,4 +33,3 @@ void test_main(lua_State* L)
     for (std::vector<object>::iterator i(v.begin()), e(v.end()); i != e; ++i)
     {}
 }
-

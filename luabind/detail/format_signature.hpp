@@ -145,4 +145,3 @@ void format_signature(lua_State* L, char const* function, Signature)
 }} // namespace luabind::detail
 
 #endif // LUABIND_FORMAT_SIGNATURE_081014_HPP
-

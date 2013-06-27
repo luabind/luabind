@@ -115,4 +115,3 @@ deduce_signature(R(T::*)(BOOST_PP_ENUM_PARAMS(N,A)) const, Wrapped*)
 # undef N
 
 #endif  // BOOST_PP_IS_ITERATING
-

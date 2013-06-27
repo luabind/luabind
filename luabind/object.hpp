@@ -55,10 +55,10 @@
 
 namespace luabind {
 
-namespace detail 
+namespace detail
 {
   namespace mpl = boost::mpl;
-  
+
   template<class T, class ConverterGenerator>
   void push_aux(lua_State* interpreter, T& value, ConverterGenerator*)
   {
@@ -102,21 +102,21 @@ namespace detail
 namespace adl
 {
   namespace mpl = boost::mpl;
-  
+
   template <class T>
   class object_interface;
-  
+
   namespace is_object_interface_aux
   {
     typedef char (&yes)[1];
     typedef char (&no)[2];
-    
+
     template <class T>
     yes check(object_interface<T>*);
     no check(void*);
 
     template <class T>
-    struct impl 
+    struct impl
     {
         BOOST_STATIC_CONSTANT(bool, value =
             sizeof(is_object_interface_aux::check((T*)0)) == sizeof(yes)
@@ -154,11 +154,11 @@ namespace adl
     , boost::mpl::true_, boost::mpl::true_)
   {
        L = value_wrapper_traits<T>::interpreter(lhs);
-		 lua_State* L2 = value_wrapper_traits<U>::interpreter(rhs);
+         lua_State* L2 = value_wrapper_traits<U>::interpreter(rhs);
 
        // you are comparing objects with different interpreters
        // that's not allowed.
-		 assert(L == L2 || L == 0 || L2 == 0);
+         assert(L == L2 || L == 0 || L2 == 0);
 
        // if the two objects we compare have different interpreters
        // then they
@@ -167,7 +167,7 @@ namespace adl
        if (L == 0) return 1;
        return 0;
   }
-	
+
   template<class T, class U>
   int binary_interpreter(lua_State*& L, T const& x, U const&
     , boost::mpl::true_, boost::mpl::false_)
@@ -232,11 +232,11 @@ LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
       detail::stack_pop pop(interpreter, 1);
       value_wrapper_traits<ValueWrapper>::unwrap(interpreter
         , static_cast<ValueWrapper const&>(v));
-		char const* p = lua_tostring(interpreter, -1);
+        char const* p = lua_tostring(interpreter, -1);
         std::size_t len = lua_rawlen(interpreter, -1);
-		std::copy(p, p + len, std::ostream_iterator<char>(os));
-		return os;
-	}
+        std::copy(p, p + len, std::ostream_iterator<char>(os));
+        return os;
+    }
 
 #undef LUABIND_BINARY_OP_DEF
 
@@ -248,21 +248,21 @@ LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
   }
 
   template<class LHS, class RHS>
-  typename enable_binary<bool,LHS,RHS>::type 
+  typename enable_binary<bool,LHS,RHS>::type
   operator<=(LHS const& lhs, RHS const& rhs)
   {
       return lhs < rhs || lhs == rhs;
   }
 
   template<class LHS, class RHS>
-  typename enable_binary<bool,LHS,RHS>::type 
+  typename enable_binary<bool,LHS,RHS>::type
   operator>=(LHS const& lhs, RHS const& rhs)
   {
       return !(lhs < rhs);
   }
 
   template<class LHS, class RHS>
-  typename enable_binary<bool,LHS,RHS>::type 
+  typename enable_binary<bool,LHS,RHS>::type
   operator!=(LHS const& lhs, RHS const& rhs)
   {
       return !(lhs == rhs);
@@ -275,7 +275,7 @@ LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
   class index_proxy;
 
   class object;
-  
+
   template<class Derived>
   class object_interface
   {
@@ -346,7 +346,7 @@ LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
 #ifdef LUABIND_USE_VALUE_WRAPPER_TAG
   struct iterator_proxy_tag;
 #endif
-  
+
   template<class AccessPolicy>
   class iterator_proxy
     : public object_interface<iterator_proxy<AccessPolicy> >
@@ -379,14 +379,14 @@ LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
               lua_pop(m_interpreter, 2);
       }
 
-		// this will set the value to nil
-		iterator_proxy & operator=(luabind::detail::nil_type)
-		{
+        // this will set the value to nil
+        iterator_proxy & operator=(luabind::detail::nil_type)
+        {
           lua_pushvalue(m_interpreter, m_key_index);
-			 lua_pushnil(m_interpreter);
+             lua_pushnil(m_interpreter);
           AccessPolicy::set(m_interpreter, m_table_index);
           return *this;
-		}
+        }
 
       template<class T>
       iterator_proxy& operator=(T const& value)
@@ -458,7 +458,7 @@ namespace detail
   };
 
   template<class AccessPolicy>
-  class basic_iterator 
+  class basic_iterator
     : public boost::iterator_facade<
         basic_iterator<AccessPolicy>
       , adl::iterator_proxy<AccessPolicy>
@@ -534,7 +534,7 @@ namespace detail
           return lua_compare(m_interpreter, -2, -1, LUA_OPEQ) != 0;
       }
 
-      adl::iterator_proxy<AccessPolicy> dereference() const 
+      adl::iterator_proxy<AccessPolicy> dereference() const
       {
           return adl::iterator_proxy<AccessPolicy>(m_interpreter, m_table, m_key);
       }
@@ -565,14 +565,14 @@ namespace detail
   LUABIND_OPERATOR_ADL_WKND(!=)
 
 #undef LUABIND_OPERATOR_ADL_WKND
- 
+
 } // namespace detail
 
 namespace adl
 {
- 
+
 #ifdef LUABIND_USE_VALUE_WRAPPER_TAG
-  struct index_proxy_tag;    
+  struct index_proxy_tag;
 #endif
 
   template<class Next>
@@ -612,18 +612,18 @@ namespace adl
       // This is non-const to prevent conversion on lvalues.
       operator object();
 
-		// this will set the value to nil
-		this_type& operator=(luabind::detail::nil_type)
-		{
-	       value_wrapper_traits<Next>::unwrap(m_interpreter, m_next);
+        // this will set the value to nil
+        this_type& operator=(luabind::detail::nil_type)
+        {
+           value_wrapper_traits<Next>::unwrap(m_interpreter, m_next);
           detail::stack_pop pop(m_interpreter, 1);
 
           lua_pushvalue(m_interpreter, m_key_index);
-			 lua_pushnil(m_interpreter);
+             lua_pushnil(m_interpreter);
           lua_settable(m_interpreter, -3);
           return *this;
-		}
-		
+        }
+
       template<class T>
       this_type& operator=(T const& value)
       {
@@ -661,8 +661,8 @@ namespace adl
       }
 
   private:
-		struct hidden_type {};
-		
+        struct hidden_type {};
+
 //      this_type& operator=(index_proxy<Next> const&);
 
       mutable lua_State* m_interpreter;
@@ -798,13 +798,13 @@ namespace adl
   class argument : public object_interface<argument>
   {
   public:
-	  argument(from_stack const& stack_reference)
-		: m_interpreter(stack_reference.interpreter)
-		, m_index(stack_reference.index)
-	  {
-		  if (m_index < 0)
-			  m_index = lua_gettop(m_interpreter) - m_index + 1;
-	  }
+      argument(from_stack const& stack_reference)
+        : m_interpreter(stack_reference.interpreter)
+        , m_index(stack_reference.index)
+      {
+          if (m_index < 0)
+              m_index = lua_gettop(m_interpreter) - m_index + 1;
+      }
 
       template<class T>
       index_proxy<argument> operator[](T const& key) const
@@ -812,19 +812,19 @@ namespace adl
           return index_proxy<argument>(*this, m_interpreter, key);
       }
 
-	  void push(lua_State* L) const
-	  {
-		  lua_pushvalue(L, m_index);
-	  }
+      void push(lua_State* L) const
+      {
+          lua_pushvalue(L, m_index);
+      }
 
-	  lua_State* interpreter() const
-	  {
-		  return m_interpreter;
-	  }
+      lua_State* interpreter() const
+      {
+          return m_interpreter;
+      }
 
   private:
-	  lua_State* m_interpreter;
-	  int m_index;
+      lua_State* m_interpreter;
+      int m_index;
   };
 
 } // namespace adl
@@ -933,7 +933,7 @@ object detail::basic_iterator<AccessPolicy>::key() const
     return object(m_key);
 }
 
-namespace detail 
+namespace detail
 {
 
   template<
@@ -956,7 +956,7 @@ namespace detail
       );
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-      if (!interpreter) 
+      if (!interpreter)
           return ErrorPolicy::handle_error(interpreter, typeid(void));
 #endif
 
@@ -1075,14 +1075,14 @@ namespace detail
   struct push_args_from_tuple
   {
       template<class H, class T, class Policies>
-      inline static void apply(lua_State* L, const boost::tuples::cons<H, T>& x, const Policies& p) 
+      inline static void apply(lua_State* L, const boost::tuples::cons<H, T>& x, const Policies& p)
       {
           convert_to_lua_p<Index>(L, *x.get_head(), p);
           push_args_from_tuple<Index+1>::apply(L, x.get_tail(), p);
       }
 
       template<class H, class T>
-      inline static void apply(lua_State* L, const boost::tuples::cons<H, T>& x) 
+      inline static void apply(lua_State* L, const boost::tuples::cons<H, T>& x)
       {
           convert_to_lua(L, *x.get_head());
           push_args_from_tuple<Index+1>::apply(L, x.get_tail());
@@ -1250,7 +1250,7 @@ inline void settable(ValueWrapper const& table, K const& key, T const& value)
     );
 
     // TODO: Exception safe?
-    
+
     value_wrapper_traits<ValueWrapper>::unwrap(interpreter, table);
     detail::stack_pop pop(interpreter, 1);
     detail::push(interpreter, key);
@@ -1280,7 +1280,7 @@ inline void rawset(ValueWrapper const& table, K const& key, T const& value)
     );
 
     // TODO: Exception safe?
-    
+
     value_wrapper_traits<ValueWrapper>::unwrap(interpreter, table);
     detail::stack_pop pop(interpreter, 1);
     detail::push(interpreter, key);
@@ -1423,4 +1423,3 @@ object property(GetValueWrapper const& get, SetValueWrapper const& set)
 #endif
 
 #endif // LUABIND_OBJECT_050419_HPP
-

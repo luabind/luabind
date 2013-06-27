@@ -37,4 +37,3 @@ namespace luabind
 }
 
 #endif
-

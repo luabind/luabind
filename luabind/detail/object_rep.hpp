@@ -31,38 +31,38 @@
 
 namespace luabind { namespace detail
 {
-	class class_rep;
+    class class_rep;
 
-	void finalize(lua_State* L, class_rep* crep);
+    void finalize(lua_State* L, class_rep* crep);
 
-	// this class is allocated inside lua for each pointer.
-	// it contains the actual c++ object-pointer.
-	// it also tells if it is const or not.
-	class LUABIND_API object_rep
-	{
-	public:
-		object_rep(instance_holder* instance, class_rep* crep);
-		~object_rep();
+    // this class is allocated inside lua for each pointer.
+    // it contains the actual c++ object-pointer.
+    // it also tells if it is const or not.
+    class LUABIND_API object_rep
+    {
+    public:
+        object_rep(instance_holder* instance, class_rep* crep);
+        ~object_rep();
 
-		const class_rep* crep() const { return m_classrep; }
-		class_rep* crep() { return m_classrep; }
+        const class_rep* crep() const { return m_classrep; }
+        class_rep* crep() { return m_classrep; }
 
-		void set_instance(instance_holder* instance) { m_instance = instance; }
+        void set_instance(instance_holder* instance) { m_instance = instance; }
 
-		void add_dependency(lua_State* L, int index);
+        void add_dependency(lua_State* L, int index);
         void release_dependency_refs(lua_State* L);
 
-		std::pair<void*, int> get_instance(class_id target) const
-		{
-			if (m_instance == 0)
-				return std::pair<void*, int>((void*)0, -1);
-			return m_instance->get(target);
-		}
+        std::pair<void*, int> get_instance(class_id target) const
+        {
+            if (m_instance == 0)
+                return std::pair<void*, int>((void*)0, -1);
+            return m_instance->get(target);
+        }
 
-		bool is_const() const
-		{
-			return m_instance && m_instance->pointee_const();
-		}
+        bool is_const() const
+        {
+            return m_instance && m_instance->pointee_const();
+        }
 
         void release()
         {
@@ -70,57 +70,57 @@ namespace luabind { namespace detail
                 m_instance->release();
         }
 
-		void* allocate(std::size_t size)
-		{
-			if (size <= 32)
-				return &m_instance_buffer;
-			return std::malloc(size);
-		}
+        void* allocate(std::size_t size)
+        {
+            if (size <= 32)
+                return &m_instance_buffer;
+            return std::malloc(size);
+        }
 
-		void deallocate(void* storage)
-		{
-			if (storage == &m_instance_buffer)
-				return;
-			std::free(storage);
-		}
+        void deallocate(void* storage)
+        {
+            if (storage == &m_instance_buffer)
+                return;
+            std::free(storage);
+        }
 
-	private:
+    private:
 
-	object_rep(object_rep const&)
-	{}
+    object_rep(object_rep const&)
+    {}
 
-	void operator=(object_rep const&)
-	{}
+    void operator=(object_rep const&)
+    {}
 
         instance_holder* m_instance;
         boost::aligned_storage<32> m_instance_buffer;
-		class_rep* m_classrep; // the class information about this object's type
+        class_rep* m_classrep; // the class information about this object's type
         std::size_t m_dependency_cnt; // counts dependencies
-	};
+    };
 
-	template<class T>
-	struct delete_s
-	{
-		static void apply(void* ptr)
-		{
-			delete static_cast<T*>(ptr);
-		}
-	};
+    template<class T>
+    struct delete_s
+    {
+        static void apply(void* ptr)
+        {
+            delete static_cast<T*>(ptr);
+        }
+    };
 
-	template<class T>
-	struct destruct_only_s
-	{
-		static void apply(void* ptr)
-		{
-			// Removes unreferenced formal parameter warning on VC7.
-			(void)ptr;
+    template<class T>
+    struct destruct_only_s
+    {
+        static void apply(void* ptr)
+        {
+            // Removes unreferenced formal parameter warning on VC7.
+            (void)ptr;
 #ifndef NDEBUG
-			int completeness_check[sizeof(T)];
-			(void)completeness_check;
+            int completeness_check[sizeof(T)];
+            (void)completeness_check;
 #endif
-			static_cast<T*>(ptr)->~T();
-		}
-	};
+            static_cast<T*>(ptr)->~T();
+        }
+    };
 
     LUABIND_API object_rep* get_instance(lua_State* L, int index);
     LUABIND_API void push_instance_metatable(lua_State* L);
@@ -129,4 +129,3 @@ namespace luabind { namespace detail
 }}
 
 #endif // LUABIND_OBJECT_REP_HPP_INCLUDED
-

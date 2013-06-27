@@ -27,9 +27,9 @@
 #include <boost/config.hpp>
 
 #ifdef BOOST_MSVC
-	#define LUABIND_ANONYMOUS_FIX static
+    #define LUABIND_ANONYMOUS_FIX static
 #else
-	#define LUABIND_ANONYMOUS_FIX
+    #define LUABIND_ANONYMOUS_FIX
 #endif
 
 #if defined (BOOST_MSVC) && (BOOST_MSVC <= 1200)
@@ -40,37 +40,37 @@
 
 namespace std
 {
-	using ::strlen;
-	using ::strcmp;
-	using ::type_info;
+    using ::strlen;
+    using ::strcmp;
+    using ::type_info;
 }
 
 #endif
 
 
 #if defined (BOOST_MSVC) && (BOOST_MSVC <= 1300)
-	#define LUABIND_MSVC_TYPENAME
+    #define LUABIND_MSVC_TYPENAME
 #else
-	#define LUABIND_MSVC_TYPENAME typename
+    #define LUABIND_MSVC_TYPENAME typename
 #endif
 
 // the maximum number of arguments of functions that's
 // registered. Must at least be 2
 #ifndef LUABIND_MAX_ARITY
-	#define LUABIND_MAX_ARITY 10
+    #define LUABIND_MAX_ARITY 10
 #elif LUABIND_MAX_ARITY <= 1
-	#undef LUABIND_MAX_ARITY
-	#define LUABIND_MAX_ARITY 2
+    #undef LUABIND_MAX_ARITY
+    #define LUABIND_MAX_ARITY 2
 #endif
 
 // the maximum number of classes one class
 // can derive from
 // max bases must at least be 1
 #ifndef LUABIND_MAX_BASES
-	#define LUABIND_MAX_BASES 4
+    #define LUABIND_MAX_BASES 4
 #elif LUABIND_MAX_BASES <= 0
-	#undef LUABIND_MAX_BASES
-	#define LUABIND_MAX_BASES 1
+    #undef LUABIND_MAX_BASES
+    #define LUABIND_MAX_BASES 1
 #endif
 
 // LUABIND_NO_ERROR_CHECKING
@@ -125,4 +125,3 @@ LUABIND_API void disable_super_deprecation();
 } // namespace luabind
 
 #endif // LUABIND_CONFIG_HPP_INCLUDED
-

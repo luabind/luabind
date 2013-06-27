@@ -62,4 +62,3 @@ private:
 } // namespace luabind
 
 #endif // LUABIND_TYPEID_081227_HPP
-

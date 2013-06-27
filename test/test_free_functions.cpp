@@ -86,7 +86,7 @@ void test_main(lua_State* L)
     [
         class_<copy_me>("copy_me")
             .def(constructor<>()),
-    
+
         class_<base>("base")
             .def("f", &base::f),
 
@@ -97,13 +97,13 @@ void test_main(lua_State* L)
         def("f", (int(*)(int, int)) &f),
         def("create", &create_base, adopt(return_value))
 //        def("set_functor", &set_functor)
-            
+
 #if !(BOOST_MSVC < 1300)
         ,
         def("test_value_converter", &test_value_converter),
         def("test_pointer_converter", &test_pointer_converter)
 #endif
-            
+
     ];
 
     DOSTRING(L,
@@ -158,4 +158,3 @@ void test_main(lua_State* L)
     }
 
 }
-

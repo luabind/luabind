@@ -50,4 +50,3 @@ void test_main(lua_State* L)
     DOSTRING(L, "a2 = a:f()");
     DOSTRING(L, "assert(a2:g() == 1)");
 }
-

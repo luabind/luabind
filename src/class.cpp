@@ -39,7 +39,7 @@ namespace luabind
 }
 
 namespace luabind { namespace detail {
-    
+
 
     namespace
     {
@@ -59,7 +59,7 @@ namespace luabind { namespace detail {
     } // namespace unnamed
 
     struct class_registration : registration
-    {   
+    {
         class_registration(char const* name);
 
         void register_(lua_State* L) const;
@@ -112,7 +112,7 @@ namespace luabind { namespace detail {
             m_type
             , m_name
             , L
-		);
+        );
 
         // register this new type in the class registry
         r->add_class(m_type, crep);
@@ -132,7 +132,7 @@ namespace luabind { namespace detail {
 
         crep->m_static_constants.swap(m_static_constants);
 
-		detail::class_registry* registry = detail::class_registry::get_registry(L);
+        detail::class_registry* registry = detail::class_registry::get_registry(L);
 
         crep->get_default_table(L);
         m_scope.register_(L);
@@ -180,8 +180,8 @@ namespace luabind { namespace detail {
             crep->add_base_class(base);
 
             // copy base class table
-			crep->get_table(L);
-			bcrep->get_table(L);
+            crep->get_table(L);
+            bcrep->get_table(L);
             lua_pushnil(L);
 
             while (lua_next(L, -2))
@@ -204,8 +204,8 @@ namespace luabind { namespace detail {
             lua_pop(L, 2);
 
             // copy base class detaults table
-			crep->get_default_table(L);
-			bcrep->get_default_table(L);
+            crep->get_default_table(L);
+            bcrep->get_default_table(L);
             lua_pushnil(L);
 
             while (lua_next(L, -2))
@@ -227,11 +227,11 @@ namespace luabind { namespace detail {
             }
             lua_pop(L, 2);
 
-		}
+        }
 
         lua_settable(L, -3);
     }
-    
+
     // -- interface ---------------------------------------------------------
 
     class_base::class_base(char const* name)
@@ -256,21 +256,21 @@ namespace luabind { namespace detail {
         m_registration->m_bases.push_back(std::make_pair(base, cast));
     }
 
-	void class_base::add_member(registration* member)
-	{
-		std::auto_ptr<registration> ptr(member);
-		m_registration->m_members.operator,(scope(ptr));
-	}
+    void class_base::add_member(registration* member)
+    {
+        std::auto_ptr<registration> ptr(member);
+        m_registration->m_members.operator,(scope(ptr));
+    }
 
-	void class_base::add_default_member(registration* member)
-	{
-		std::auto_ptr<registration> ptr(member);
-		m_registration->m_default_members.operator,(scope(ptr));
-	}
+    void class_base::add_default_member(registration* member)
+    {
+        std::auto_ptr<registration> ptr(member);
+        m_registration->m_default_members.operator,(scope(ptr));
+    }
 
-    const char* class_base::name() const 
-    { 
-        return m_registration->m_name; 
+    const char* class_base::name() const
+    {
+        return m_registration->m_name;
     }
 
     void class_base::add_static_constant(const char* name, int val)
@@ -289,26 +289,26 @@ namespace luabind { namespace detail {
         m_registration->m_casts.push_back(cast_entry(src, target, cast));
     }
 
-	void add_custom_name(type_id const& i, std::string& s)
-	{
-		s += " [";
-		s += i.name();
-		s += "]";
-	}
+    void add_custom_name(type_id const& i, std::string& s)
+    {
+        s += " [";
+        s += i.name();
+        s += "]";
+    }
 
     std::string get_class_name(lua_State* L, type_id const& i)
     {
         std::string ret;
 
-		assert(L);
+        assert(L);
 
-		class_registry* r = class_registry::get_registry(L);
+        class_registry* r = class_registry::get_registry(L);
         class_rep* crep = r->find_class(i);
 
         if (crep == 0)
         {
             ret = "custom";
-			add_custom_name(i, ret);
+            add_custom_name(i, ret);
         }
         else
         {
@@ -334,4 +334,3 @@ namespace luabind { namespace detail {
     }
 
 }} // namespace luabind::detail
-

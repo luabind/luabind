@@ -31,4 +31,3 @@ namespace luabind { namespace detail {
 }} // namespace luabind::detail
 
 #endif // YES_NO_040211_HPP
-

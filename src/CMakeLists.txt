@@ -104,7 +104,7 @@ set(luabind_detail_HDRS
     ../luabind/detail/stack_utils.hpp
     ../luabind/detail/typetraits.hpp
     ../luabind/detail/yes_no.hpp)
-    
+
 source_group("detail headers" FILES ${luabind_detail_HDRS})
 
 set(CMAKE_DEBUG_POSTFIX "-d")
@@ -116,4 +116,3 @@ target_link_libraries(luabind ${LUA_LIBRARIES})
 install(TARGETS luabind
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
-

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(luabind)
 set(CMAKE_MODULE_PATH
-	${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/")
+    ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/")
 
 find_package(Boost 1.51.0 REQUIRED)
 find_package(Lua52 REQUIRED)

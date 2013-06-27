@@ -51,4 +51,3 @@ namespace luabind {
 } // namespace luabind
 
 #endif // POINTEE_SIZEOF_040211_HPP
-

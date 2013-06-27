@@ -108,4 +108,3 @@ struct construct_aux<N, T, Pointer, Signature>
 # undef N
 
 #endif
-

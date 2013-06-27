@@ -120,4 +120,3 @@ object make_function(lua_State* L, F f)
 } // namespace luabind
 
 #endif // LUABIND_MAKE_FUNCTION_081014_HPP
-

@@ -36,4 +36,3 @@ using boost::get_pointer;
 } // namespace luabind
 
 #endif // LUABIND_GET_POINTER_051023_HPP
-

@@ -30,7 +30,7 @@ struct abstract
 {
     virtual ~abstract() {}
     virtual std::string hello() = 0;
-}; 
+};
 
 COUNTER_GUARD(abstract);
 
@@ -62,14 +62,14 @@ std::string call_hello(abstract& a)
 
 abstract& return_abstract_ref()
 {
-	static concrete c;
-	return c;
+    static concrete c;
+    return c;
 }
 
 abstract const& return_const_abstract_ref()
 {
-	static concrete c;
-	return c;
+    static concrete c;
+    return c;
 }
 
 
@@ -82,19 +82,19 @@ void test_main(lua_State* L)
             .def("hello", &abstract::hello),
 
         def("call_hello", &call_hello),
-		  def("return_abstract_ref", &return_abstract_ref),
-		  def("return_const_abstract_ref", &return_const_abstract_ref)
+          def("return_abstract_ref", &return_abstract_ref),
+          def("return_const_abstract_ref", &return_const_abstract_ref)
     ];
-    
+
     DOSTRING_EXPECTED(L,
         "x = abstract()\n"
         "x:hello()\n"
       , "std::runtime_error: 'Attempt to call nonexistent function'");
 
-    DOSTRING_EXPECTED(L, 
+    DOSTRING_EXPECTED(L,
         "call_hello(x)\n"
       , "std::runtime_error: 'Attempt to call nonexistent function'");
-    
+
     DOSTRING(L,
         "class 'concrete' (abstract)\n"
         "  function concrete:__init()\n"
@@ -111,4 +111,3 @@ void test_main(lua_State* L)
 
     DOSTRING(L, "call_hello(y)\n");
 }
-

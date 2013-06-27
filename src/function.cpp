@@ -133,4 +133,3 @@ void invoke_context::format_error(
 }
 
 }} // namespace luabind::detail
-

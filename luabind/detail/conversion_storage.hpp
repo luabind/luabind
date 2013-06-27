@@ -38,4 +38,3 @@ struct conversion_storage
 }} // namespace luabind::detail
 
 #endif // LUABIND_CONVERSION_STORAGE_080930_HPP
-

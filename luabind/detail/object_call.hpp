@@ -49,4 +49,3 @@ call_proxy<
 }
 
 #undef N
-

@@ -64,4 +64,3 @@ void test_main(lua_State* L)
         "assert(status == false)\n"
         "assert(msg == 'derived_std_exception')\n");
 }
-

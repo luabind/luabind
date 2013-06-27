@@ -109,4 +109,3 @@ LUABIND_ANONYMOUS_FIX detail::policy_cons<
 }} // namespace luabind::unnamed
 
 #endif // LUABIND_ITERATOR_POLICY__071111_HPP
-

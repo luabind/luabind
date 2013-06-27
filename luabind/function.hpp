@@ -59,4 +59,3 @@ scope def(char const* name, F f)
 } // namespace luabind
 
 #endif // LUABIND_FUNCTION2_081014_HPP
-

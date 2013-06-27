@@ -68,4 +68,3 @@ BOOST_MPL_ASSERT(( luabind::is_value_wrapper_arg<luabind::object const&> ));
 int main()
 {
 }
-

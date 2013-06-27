@@ -42,7 +42,7 @@ struct lua_state
     ~lua_state();
 
     operator lua_State*() const;
-	void check() const;
+    void check() const;
 
 private:
     lua_State* m_state;
@@ -54,10 +54,10 @@ lua_state::lua_state()
 {
     luaopen_base(m_state);
 #if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 501
-	 // lua 5.1 or newer
-	 luaL_openlibs(m_state);
+     // lua 5.1 or newer
+     luaL_openlibs(m_state);
 #else
-	 // lua 5.0.2 or older
+     // lua 5.0.2 or older
     lua_baselibopen(m_state);
 #endif
     m_top = lua_gettop(m_state);
@@ -81,7 +81,7 @@ lua_state::operator lua_State*() const
 
 int pcall_handler(lua_State* L)
 {
-	return 1;
+    return 1;
 }
 
 void dostring(lua_State* state, char const* str)
@@ -92,14 +92,14 @@ void dostring(lua_State* state, char const* str)
     {
         std::string err(lua_tostring(state, -1));
         lua_pop(state, 2);
-		throw err;
+        throw err;
     }
 
     if (lua_pcall(state, 0, 0, -2))
     {
         std::string err(lua_tostring(state, -1));
         lua_pop(state, 2);
-		throw err;
+        throw err;
     }
 
     lua_pop(state, 1);
@@ -109,34 +109,33 @@ bool tests_failure = false;
 
 void report_failure(char const* err, char const* file, int line)
 {
-	std::cerr << file << ":" << line << "\"" << err << "\"\n";
-	tests_failure = true;
+    std::cerr << file << ":" << line << "\"" << err << "\"\n";
+    tests_failure = true;
 }
 
 int main()
 {
-	lua_state L;
-	try
-	{
-		test_main(L);
-		L.check();
-		return tests_failure ? 1 : 0;
-	}
-	catch (luabind::error const& e)
-	{
-		std::cerr << "Terminated with exception: \"" << e.what() << "\"\n"
-			<< lua_tostring(e.state(), -1) << "\n";
-		return 1;
-	}
-	catch (std::exception const& e)
-	{
-		std::cerr << "Terminated with exception: \"" << e.what() << "\"\n";
-		return 1;
-	}
-	catch (...)
-	{
-		std::cerr << "Terminated with unknown exception\n";
-		return 1;
-	}
+    lua_state L;
+    try
+    {
+        test_main(L);
+        L.check();
+        return tests_failure ? 1 : 0;
+    }
+    catch (luabind::error const& e)
+    {
+        std::cerr << "Terminated with exception: \"" << e.what() << "\"\n"
+            << lua_tostring(e.state(), -1) << "\n";
+        return 1;
+    }
+    catch (std::exception const& e)
+    {
+        std::cerr << "Terminated with exception: \"" << e.what() << "\"\n";
+        return 1;
+    }
+    catch (...)
+    {
+        std::cerr << "Terminated with unknown exception\n";
+        return 1;
+    }
 }
-

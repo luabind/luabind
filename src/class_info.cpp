@@ -30,11 +30,11 @@
 
 namespace luabind
 {
-	LUABIND_API class_info get_class_info(argument const& o)
-	{
-		lua_State* L = o.interpreter();
-	
-		o.push(L);
+    LUABIND_API class_info get_class_info(argument const& o)
+    {
+        lua_State* L = o.interpreter();
+
+        o.push(L);
         detail::object_rep* obj = detail::get_instance(L, -1);
 
         if (!obj)
@@ -83,7 +83,7 @@ namespace luabind
         }
 
         return result;
-	}
+    }
 
     LUABIND_API object get_class_names(lua_State* L)
     {
@@ -103,18 +103,17 @@ namespace luabind
         return result;
     }
 
-	LUABIND_API void bind_class_info(lua_State* L)
-	{
-		module(L)
-		[
-			class_<class_info>("class_info_data")
-				.def_readonly("name", &class_info::name)
-				.def_readonly("methods", &class_info::methods)
-				.def_readonly("attributes", &class_info::attributes),
-		
+    LUABIND_API void bind_class_info(lua_State* L)
+    {
+        module(L)
+        [
+            class_<class_info>("class_info_data")
+                .def_readonly("name", &class_info::name)
+                .def_readonly("methods", &class_info::methods)
+                .def_readonly("attributes", &class_info::attributes),
+
             def("class_info", &get_class_info),
             def("class_names", &get_class_names)
-		];
-	}
+        ];
+    }
 }
-

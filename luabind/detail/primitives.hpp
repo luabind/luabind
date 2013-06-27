@@ -32,53 +32,53 @@
 
 namespace luabind { namespace detail
 {
-	template<class T>
-	struct identity
-	{
-		typedef T type;
-	};
+    template<class T>
+    struct identity
+    {
+        typedef T type;
+    };
 
-	template<class T>
+    template<class T>
     struct type_ {};
 
-	struct null_type {};
+    struct null_type {};
 
-/*	typedef char yes_t;
-	typedef double no_t;*/
+/*  typedef char yes_t;
+    typedef double no_t;*/
 
-	struct lua_to_cpp {};
-	struct cpp_to_lua {};
+    struct lua_to_cpp {};
+    struct cpp_to_lua {};
 
-	template<class T> struct by_value {};
-	template<class T> struct by_reference {};
-	template<class T> struct by_const_reference {};
-	template<class T> struct by_pointer {};
-	template<class T> struct by_const_pointer {};
+    template<class T> struct by_value {};
+    template<class T> struct by_reference {};
+    template<class T> struct by_const_reference {};
+    template<class T> struct by_pointer {};
+    template<class T> struct by_const_pointer {};
 
-	struct converter_policy_tag {};
+    struct converter_policy_tag {};
 
-	struct ltstr
-	{
-		bool operator()(const char* s1, const char* s2) const { return std::strcmp(s1, s2) < 0; }
-	};
+    struct ltstr
+    {
+        bool operator()(const char* s1, const char* s2) const { return std::strcmp(s1, s2) < 0; }
+    };
 
-	template<int N>
-	struct aligned 
-	{
-		char storage[N];
-	};
+    template<int N>
+    struct aligned
+    {
+        char storage[N];
+    };
 
-	// returns the offset added to a Derived* when cast to a Base*
-	// TODO: return ptrdiff
-	template<class Derived, class Base>
-	int ptr_offset(type_<Derived>, type_<Base>)
-	{
-		aligned<sizeof(Derived)> obj;
-		Derived* ptr = reinterpret_cast<Derived*>(&obj);
+    // returns the offset added to a Derived* when cast to a Base*
+    // TODO: return ptrdiff
+    template<class Derived, class Base>
+    int ptr_offset(type_<Derived>, type_<Base>)
+    {
+        aligned<sizeof(Derived)> obj;
+        Derived* ptr = reinterpret_cast<Derived*>(&obj);
 
-		return int(static_cast<char*>(static_cast<void*>(static_cast<Base*>(ptr)))
-		- static_cast<char*>(static_cast<void*>(ptr)));
-	}
+        return int(static_cast<char*>(static_cast<void*>(static_cast<Base*>(ptr)))
+        - static_cast<char*>(static_cast<void*>(ptr)));
+    }
 
 }}
 

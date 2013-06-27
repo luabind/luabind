@@ -31,26 +31,26 @@
 
 namespace luabind { namespace detail
 {
-	LUABIND_API void do_call_member_selection(lua_State* L, char const* name)
-	{
-		object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, -1));
-		assert(obj);
-		lua_pop(L, 1); // pop self
+    LUABIND_API void do_call_member_selection(lua_State* L, char const* name)
+    {
+        object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, -1));
+        assert(obj);
+        lua_pop(L, 1); // pop self
 
-		obj->crep()->get_table(L); // push the crep table
-		lua_pushstring(L, name);
-		lua_gettable(L, -2);
-		lua_remove(L, -2); // remove the crep table
+        obj->crep()->get_table(L); // push the crep table
+        lua_pushstring(L, name);
+        lua_gettable(L, -2);
+        lua_remove(L, -2); // remove the crep table
 
-		if (!is_luabind_function(L, -1))
-			return;
+        if (!is_luabind_function(L, -1))
+            return;
 
-		// this (usually) means the function has not been
-		// overridden by lua, call the default implementation
-		lua_pop(L, 1);
-		obj->crep()->get_default_table(L); // push the crep table
-		lua_pushstring(L, name);
-		lua_gettable(L, -2);
-		lua_remove(L, -2); // remove the crep table
-	}
+        // this (usually) means the function has not been
+        // overridden by lua, call the default implementation
+        lua_pop(L, 1);
+        obj->crep()->get_default_table(L); // push the crep table
+        lua_pushstring(L, name);
+        lua_gettable(L, -2);
+        lua_remove(L, -2); // remove the crep table
+    }
 }}

@@ -33,23 +33,23 @@
 namespace luabind { namespace detail
 {
 
-	// dest is a function that is called to delete the c++ object this struct holds
-	object_rep::object_rep(instance_holder* instance, class_rep* crep)
-		: m_instance(instance)
-		, m_classrep(crep)
-		, m_dependency_cnt(0)
-	{}
+    // dest is a function that is called to delete the c++ object this struct holds
+    object_rep::object_rep(instance_holder* instance, class_rep* crep)
+        : m_instance(instance)
+        , m_classrep(crep)
+        , m_dependency_cnt(0)
+    {}
 
-	object_rep::~object_rep()
-	{
+    object_rep::~object_rep()
+    {
         if (!m_instance)
             return;
         m_instance->~instance_holder();
         deallocate(m_instance);
-	}
+    }
 
-	void object_rep::add_dependency(lua_State* L, int index)
-	{
+    void object_rep::add_dependency(lua_State* L, int index)
+    {
         assert(m_dependency_cnt < sizeof(object_rep));
 
         void* key = (char*)this + m_dependency_cnt;
@@ -59,7 +59,7 @@ namespace luabind { namespace detail
         lua_rawset(L, LUA_REGISTRYINDEX);
 
         ++m_dependency_cnt;
-	}
+    }
 
     void object_rep::release_dependency_refs(lua_State* L)
     {
@@ -277,4 +277,3 @@ namespace luabind { namespace detail
     }
 
 }}
-

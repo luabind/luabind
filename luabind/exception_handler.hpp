@@ -107,4 +107,3 @@ boost::optional<R> handle_exceptions(lua_State* L, F fn, boost::type<R>* = 0)
 } // namespace luabind
 
 #endif // LUABIND_EXCEPTION_HANDLER_050601_HPP
-

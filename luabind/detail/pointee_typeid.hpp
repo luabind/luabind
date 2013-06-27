@@ -37,4 +37,3 @@ namespace luabind { namespace detail {
 }} // namespace luabind::detail
 
 #endif // POINTEE_TYPEID_040211_HPP
-

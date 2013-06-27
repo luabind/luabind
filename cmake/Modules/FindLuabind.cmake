@@ -34,7 +34,7 @@ IF(_LUABIND_LIBRARY)
 ENDIF(_LUABIND_LIBRARY)
 
 INCLUDE(${CMAKE_ROOT}/Modules/FindPackageHandleStandardArgs.cmake)
-# handle the QUIETLY and REQUIRED arguments and set LUABIND_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set LUABIND_FOUND to TRUE if
 # all listed variables are TRUE
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Luabind
     REQUIRED_VARS LUABIND_LIBRARIES LUABIND_INCLUDE_DIRS)

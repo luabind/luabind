@@ -28,7 +28,7 @@ namespace {
 
     struct X {};
     struct Y {};
-    
+
 } // namespace unnamed
 
 luabind::scope test_separate_registration()
@@ -45,7 +45,7 @@ luabind::scope test_separate_registration()
 void test_main(lua_State* L)
 {
     using namespace luabind;
-    
+
     module(L)
     [
         namespace_("Z") [
@@ -56,4 +56,3 @@ void test_main(lua_State* L)
     DOSTRING(L, "x = Z.X()");
     DOSTRING(L, "y = Z.Y()");
 }
-

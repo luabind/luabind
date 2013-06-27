@@ -58,4 +58,3 @@ copy(LUABIND_PLACEHOLDER_ARG(N))
 } // namespace luabind
 
 #endif // LUABIND_COPY_POLICY_081021_HPP
-

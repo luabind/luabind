@@ -36,7 +36,7 @@ namespace luabind {
 namespace detail
 {
   namespace mpl = boost::mpl;
- 
+
   template<class T>
   wrap_base const* get_back_reference_aux0(T const* p, mpl::true_)
   {
@@ -75,7 +75,7 @@ namespace detail
         , has_get_pointer<T>()
       );
   }
-  
+
 } // namespace detail
 
 template<class T>
@@ -109,4 +109,3 @@ bool move_back_reference(lua_State* L, T const& x)
 } // namespace luabind
 
 #endif // LUABIND_BACK_REFERENCE_040510_HPP
-

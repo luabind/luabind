@@ -13,13 +13,13 @@ namespace luabind { namespace detail { namespace has_get_pointer_ {
       BOOST_STATIC_CONSTANT(bool, value = true);
       typedef boost::mpl::bool_<value> type;
   };
-  
+
   template<class T>
   struct impl<const std::shared_ptr<T>>: impl<std::shared_ptr<T>> { };
-  
+
   template<class T>
   struct impl<volatile std::shared_ptr<T>>: impl<std::shared_ptr<T>> { };
-  
+
   template<class T>
   struct impl<const volatile std::shared_ptr<T>>: impl<std::shared_ptr<T>> { };
 }}

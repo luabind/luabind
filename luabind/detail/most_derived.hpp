@@ -41,4 +41,3 @@ struct most_derived
 }} // namespace luabind::detail
 
 #endif // MOST_DERIVED_051018_HPP
-

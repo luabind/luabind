@@ -152,4 +152,3 @@ void test_main(lua_State* L)
     lua_gc(L, LUA_GCCOLLECT, 0);
     TEST_CHECK(ptr_count == 0);
 }
-

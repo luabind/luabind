@@ -39,4 +39,3 @@ struct from_stack
 } // namespace luabind
 
 #endif // LUABIND_FROM_STACK_050715_HPP
-

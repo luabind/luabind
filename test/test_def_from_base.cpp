@@ -26,9 +26,9 @@
 
 struct V
 {
-    int f(int,int) 
+    int f(int,int)
     {
-        return 2; 
+        return 2;
     }
 };
 
@@ -51,4 +51,3 @@ void test_main(lua_State* L)
         "assert(x:f(1,2) == 2)\n"
     );
 }
-

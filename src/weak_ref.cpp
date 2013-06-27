@@ -125,7 +125,7 @@ namespace luabind
         : m_impl(0)
     {
     }
-    
+
     weak_ref::weak_ref(lua_State* main, lua_State* L, int index)
         : m_impl(new impl(main, L, index))
     {
@@ -160,17 +160,17 @@ namespace luabind
     int weak_ref::id() const
     {
         assert(m_impl);
-		return m_impl->ref;
+        return m_impl->ref;
     }
 
-	// L may not be the same pointer as
-	// was used when creating this reference
-	// since it may be a thread that shares
-	// the same globals table.
+    // L may not be the same pointer as
+    // was used when creating this reference
+    // since it may be a thread that shares
+    // the same globals table.
     void weak_ref::get(lua_State* L) const
     {
         assert(m_impl);
-		assert(L);
+        assert(L);
         get_weak_table(L);
         lua_rawgeti(L, -1, m_impl->ref);
         lua_remove(L, -2);
@@ -181,6 +181,5 @@ namespace luabind
         assert(m_impl);
         return m_impl->state;
     }
-    
-} // namespace luabind
 
+} // namespace luabind

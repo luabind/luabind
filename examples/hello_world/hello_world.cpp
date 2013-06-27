@@ -22,9 +22,9 @@
 
 extern "C"
 {
-	#include "lua.h"
-	#include "lualib.h"
-	#include "lauxlib.h"
+    #include "lua.h"
+    #include "lualib.h"
+    #include "lauxlib.h"
 }
 
 #include <iostream>
@@ -48,4 +48,3 @@ extern "C" int init(lua_State* L)
 
     return 0;
 }
-

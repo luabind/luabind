@@ -30,4 +30,3 @@ struct access_member_ptr
 }} // namespace luabind::detail
 
 #endif // LUABIND_PROPERTY_081020_HPP
-
