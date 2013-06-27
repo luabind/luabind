@@ -27,6 +27,12 @@
 #include <vector>
 #include <string>
 
+#include <boost/config.hpp>
+#if !defined(NDEBUG) && !defined(BOOST_NO_CXX11_SCOPED_ENUMS)
+#   include <climits>
+#   include <type_traits>
+#endif
+
 #include <luabind/config.hpp>
 #include <luabind/detail/class_rep.hpp>
 
@@ -49,8 +55,14 @@ namespace luabind
 		template<class T>
 		value(const char* name, T v)
 			: name_(name)
-			, val_(v)
-		{}
+			, val_(static_cast<int>(v))
+		{
+#ifndef NDEBUG
+                    typedef typename std::underlying_type<T>::type integral_t;
+                    assert(static_cast<integral_t>(v) <= INT_MAX);
+                    assert(static_cast<integral_t>(v) >= INT_MIN);
+#endif // ifndef NDEBUG
+                }
 
 		const char* name_;
 		int val_;
