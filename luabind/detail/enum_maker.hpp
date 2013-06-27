@@ -57,12 +57,12 @@ namespace luabind
             : name_(name)
             , val_(static_cast<int>(v))
         {
-#ifndef NDEBUG
-                    typedef typename std::underlying_type<T>::type integral_t;
-                    assert(static_cast<integral_t>(v) <= INT_MAX);
-                    assert(static_cast<integral_t>(v) >= INT_MIN);
-#endif // ifndef NDEBUG
-                }
+#if !defined(NDEBUG) && !defined(BOOST_NO_CXX11_SCOPED_ENUMS)
+            typedef typename std::underlying_type<T>::type integral_t;
+            assert(static_cast<integral_t>(v) <= INT_MAX);
+            assert(static_cast<integral_t>(v) >= INT_MIN);
+#endif // if in debug mode and C++11 scoped enums are supported
+        }
 
         const char* name_;
         int val_;
