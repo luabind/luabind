@@ -7,10 +7,6 @@ namespace std
 //  using ::clock;
 }
 
-#define LUABIND_NO_ERROR_CHECKING
-#define LUABIND_DONT_COPY_STRINGS
-//#define LUABIND_NOT_THREADSAFE
-
 extern "C"
 {
     #include "lua.h"
@@ -44,10 +40,11 @@ int main()
     lua_State* L = luaL_newstate();
     open(L);
 
-    class_<A>(L, "A")
-        .def(constructor<>());
-
-    function(L, "test1", &f1);
+    module(L) [
+        class_<A>("A")
+            .def(constructor<>()),
+        def("test1", &f1)
+    ];
 
     lua_pushcclosure(L, &f2, 0);
     lua_setglobal(L, "test2");
@@ -59,20 +56,20 @@ int main()
     {
         // benchmark luabind
         std::clock_t start1 = std::clock();
-        lua_dostring(L, "a = A()\n"
-                                    "for i = 1, 100000 do\n"
-                                        "test1(5, 4.6, 'foo', a)\n"
-                                    "end");
+        luaL_dostring(L, "a = A()\n"
+                         "  for i = 1, 100000 do\n"
+                         "  test1(5, 4.6, 'foo', a)\n"
+                         "end");
 
         std::clock_t end1 = std::clock();
 
 
         // benchmark empty binding
         std::clock_t start2 = std::clock();
-        lua_dostring(L, "a = A()\n"
-                                    "for i = 1, 100000 do\n"
-                                        "test2(5, 4.6, 'foo', a)\n"
-                                    "end");
+        luaL_dostring(L, "a = A()\n"
+                         "for i = 1, 100000 do\n"
+                         "  test2(5, 4.6, 'foo', a)\n"
+                         "end");
 
         std::clock_t end2 = std::clock();
         total1 += end1 - start1;
@@ -86,9 +83,9 @@ int main()
 #ifdef LUABIND_NO_ERROR_CHECKING
     std::cout << "without error-checking\n";
 #endif
-    std::cout << "luabind:\t" << time1 * 1000000 / num_calls / loops << " microseconds per call\n"
-        << "empty:\t" << time2 * 1000000 / num_calls / loops << " microseconds per call\n"
-        << "diff:\t" << ((time1 - time2) * 1000000 / num_calls / loops) << " microseconds\n\n";
+    std::cout << "luabind: " << time1 * 1000000 / num_calls / loops << " microseconds per call\n"
+              << "empty  : " << time2 * 1000000 / num_calls / loops << " microseconds per call\n"
+              << "diff   : " << ((time1 - time2) * 1000000 / num_calls / loops) << " microseconds\n\n";
 
     lua_close(L);
 }

@@ -1,5 +1,8 @@
 include_directories(
     ${Boost_INCLUDE_DIRS} ${LUA_INCLUDE_DIR} ${CMAKE_SOURCE_DIR})
+    
+add_executable(benchmark "benchmark.cpp")
+target_link_libraries(benchmark ${LUA_LIBRARIES} luabind)
 
 add_library(testmain
     "main.cpp" "test.hpp"
