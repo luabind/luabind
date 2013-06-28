@@ -137,8 +137,6 @@ namespace luabind { namespace detail
         // obj is the object pointer
         static int static_class_gettable(lua_State* L);
 
-        bool has_operator_in_lua(lua_State*, int id);
-
         cast_graph const& casts() const
         {
             return *m_casts;
@@ -150,8 +148,6 @@ namespace luabind { namespace detail
         }
 
     private:
-
-        void cache_operators(lua_State*);
 
         // this is a pointer to the type_info structure for
         // this type
@@ -194,11 +190,6 @@ namespace luabind { namespace detail
         int m_instance_metatable;
 
         std::map<const char*, int, ltstr> m_static_constants;
-
-        // the first time an operator is invoked
-        // we check the associated lua table
-        // and cache the result
-        int m_operator_cache;
 
         cast_graph* m_casts;
         class_id_map* m_classes;

@@ -54,7 +54,6 @@ luabind::detail::class_rep::class_rep(type_id const& type
     : m_type(type)
     , m_name(name)
     , m_class_type(cpp_class)
-    , m_operator_cache(0)
 {
     lua_newtable(L);
     handle(L, -1).swap(m_table);
@@ -88,7 +87,6 @@ luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
     : m_type(typeid(null_type))
     , m_name(name)
     , m_class_type(lua_class)
-    , m_operator_cache(0)
 {
     lua_newtable(L);
     handle(L, -1).swap(m_table);
@@ -268,8 +266,6 @@ int luabind::detail::class_rep::lua_settable_dispatcher(lua_State* L)
     lua_replace(L, 1);
     lua_rawset(L, -3);
 
-    crep->m_operator_cache = 0; // invalidate cache
-
     return 0;
 }
 
@@ -358,30 +354,4 @@ void luabind::detail::finalize(lua_State* L, class_rep* crep)
     {
         if (i->base) finalize(L, i->base);
     }
-}
-
-void luabind::detail::class_rep::cache_operators(lua_State* L)
-{
-    m_operator_cache = 0x1;
-
-    for (int i = 0; i < number_of_operators; ++i)
-    {
-        get_table(L);
-        lua_pushstring(L, get_operator_name(i));
-        lua_rawget(L, -2);
-
-        if (lua_isfunction(L, -1)) m_operator_cache |= 1 << (i + 1);
-
-        lua_pop(L, 2);
-    }
-}
-
-bool luabind::detail::class_rep::has_operator_in_lua(lua_State* L, int id)
-{
-    if ((m_operator_cache & 0x1) == 0)
-        cache_operators(L);
-
-    const int mask = 1 << (id + 1);
-
-    return (m_operator_cache & mask) != 0;
 }
