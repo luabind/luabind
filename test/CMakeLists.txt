@@ -60,7 +60,7 @@ set(TESTS
     "yield")
 
 foreach(test ${TESTS})
-    add_executable(test_${test} "test_${test}.cpp" "test.hpp")
+    add_executable(test_${test} "test_${test}.cpp")
     target_link_libraries(test_${test} testmain)
     set_property(TARGET test_${test} PROPERTY FOLDER "Tests")
     add_test(${test} test_${test})
