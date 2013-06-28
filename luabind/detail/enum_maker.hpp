@@ -27,12 +27,6 @@
 #include <vector>
 #include <string>
 
-#include <boost/config.hpp>
-#if !defined(NDEBUG) && !defined(BOOST_NO_CXX11_SCOPED_ENUMS)
-#   include <climits>
-#   include <type_traits>
-#endif
-
 #include <luabind/config.hpp>
 #include <luabind/detail/class_rep.hpp>
 
@@ -57,11 +51,7 @@ namespace luabind
             : name_(name)
             , val_(static_cast<int>(v))
         {
-#if !defined(NDEBUG) && !defined(BOOST_NO_CXX11_SCOPED_ENUMS)
-            typedef typename std::underlying_type<T>::type integral_t;
-            assert(static_cast<integral_t>(v) <= INT_MAX);
-            assert(static_cast<integral_t>(v) >= INT_MIN);
-#endif // if in debug mode and C++11 scoped enums are supported
+            assert(static_cast<T>(val_) == v);
         }
 
         const char* name_;
