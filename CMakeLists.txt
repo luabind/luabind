@@ -3,10 +3,19 @@ project(luabind)
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/")
 
+set(Boost_USE_STATIC_LIBS     ON)
+set(Boost_USE_MULTITHREADED   ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.51.0 REQUIRED)
 find_package(Lua52 REQUIRED)
 
 add_subdirectory("src")
+
+if (NOT LUABIND_SKIP_TESTS)
+    enable_testing()
+    add_subdirectory("test")
+endif()
+
 install(DIRECTORY luabind DESTINATION include
         FILES_MATCHING PATTERN "*.hpp")
 if(WIN32 AND NOT CYGWIN)
