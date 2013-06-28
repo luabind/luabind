@@ -22,3 +22,9 @@ commits).
 
 If you know another fork which fixes this bugs or in which this fork should be
 merged for other reasons, please let me know.
+
+### A word on the branch names ###
+
+First I worked against the 0.9 branch but then decided to rename it to master,
+since it actually has become the master branch of development in this fork. The
+original master is now named old-master.
