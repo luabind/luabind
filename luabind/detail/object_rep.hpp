@@ -72,7 +72,7 @@ namespace luabind { namespace detail
 
         void* allocate(std::size_t size)
         {
-            if (size <= 32)
+            if (size <= instance_buffer_size)
                 return &m_instance_buffer;
             return std::malloc(size);
         }
@@ -86,14 +86,15 @@ namespace luabind { namespace detail
 
     private:
 
-    object_rep(object_rep const&)
-    {}
+        object_rep(object_rep const&)
+        {}
 
-    void operator=(object_rep const&)
-    {}
+        void operator=(object_rep const&)
+        {}
 
         instance_holder* m_instance;
-        boost::aligned_storage<32> m_instance_buffer;
+        BOOST_STATIC_CONSTANT(std::size_t, instance_buffer_size=32);
+        boost::aligned_storage<instance_buffer_size> m_instance_buffer;
         class_rep* m_classrep; // the class information about this object's type
         std::size_t m_dependency_cnt; // counts dependencies
     };
