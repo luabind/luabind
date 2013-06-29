@@ -43,7 +43,6 @@ set(TESTS
     "lua_classes"
     "null_pointer"
     "object"
-    "object_identity"
     "operators"
     "package_preload"
     "policies"
