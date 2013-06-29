@@ -9,6 +9,11 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.51.0 REQUIRED)
 find_package(Lua52 REQUIRED)
 
+if (MSVC)
+    # Warning level 4, multicore compilation
+    add_definitions("/W4" "/MP")
+endif()
+
 add_subdirectory("src")
 
 if (NOT LUABIND_SKIP_TESTS)
