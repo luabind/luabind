@@ -6,13 +6,13 @@ FIND_PATH(LUABIND_INCLUDE_DIRS luabind/luabind.hpp
 )
 
 FIND_LIBRARY(_LUABIND_LIBRARY_RELEASE
-  NAMES luabind luabind09 luabind-0.9
+  NAMES luabind09 luabind-0.9 luabind
   HINTS $ENV{LUABIND_DIR}
   PATH_SUFFIXES lib64 lib
 )
 
 FIND_LIBRARY(_LUABIND_LIBRARY_DEBUG
-  NAMES luabind-d luabind09-d luabind-0.9-d
+  NAMES luabind09-d luabind-0.9-d luabind-d
   HINTS $ENV{LUABIND_DIR}
   PATH_SUFFIXES lib64 lib
 )
