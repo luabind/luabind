@@ -282,7 +282,7 @@ void test_main(lua_State* L)
 
 #endif
 
-    base* ptr;
+    base* ptr = 0;
     {
         LUABIND_CHECK_STACK(L);
 
@@ -343,9 +343,11 @@ void test_main(lua_State* L)
         ptr = call_function<base*>(L, "derived")
     );
 
-    TEST_NOTHROW(
-        TEST_CHECK(ptr->f() == "derived:f() : base:f()")
-    );
+    if (ptr) {
+        TEST_NOTHROW(
+            TEST_CHECK(ptr->f() == "derived:f() : base:f()")
+        );
+    }
 
     // test virtual function dispatch from within lua
     DOSTRING(L,

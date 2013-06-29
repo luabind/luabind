@@ -55,8 +55,8 @@ struct property_test : counted_type<property_test>
     void set(int a) { a_ = a; }
     int get() const { return a_; }
 
-    void setA(A* a) {}
-     A* getA() const { return 0; }
+    void setA(A*) {}
+    A* getA() const { return 0; }
 
     void set_str(const char* str)
     { str_ = str; }

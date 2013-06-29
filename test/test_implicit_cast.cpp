@@ -50,13 +50,13 @@ struct char_pointer_convertable
     operator const char*() const { return "foo!"; }
 };
 
-void func(const char_pointer_convertable& f)
+void func(const char_pointer_convertable&)
 {
 }
 
 void not_convertable(boost::shared_ptr<A>)
 {
-    TEST_CHECK(false);
+    TEST_ERROR("not_convertable(boost::shared_ptr<A>) should not be called");
 }
 
 int f(int& a)

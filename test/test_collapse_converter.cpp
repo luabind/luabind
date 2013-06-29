@@ -41,7 +41,7 @@ struct default_converter<X>
 
     X from(lua_State* L, int index)
     {
-        return X(lua_tonumber(L, index), lua_tonumber(L, index + 1));
+        return X(lua_tointeger(L, index), lua_tointeger(L, index + 1));
     }
 
     default_converter<int> c1;

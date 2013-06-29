@@ -32,7 +32,7 @@ struct test_class : counted_type<test_class>
     }
 };
 
-int f(int a)
+int f(int)
 {
     return 9;
 }

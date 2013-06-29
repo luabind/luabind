@@ -18,13 +18,13 @@ extern "C"
 struct A {};
 
 // luabind function
-float f1(int a, float b, const char* str, A* c)
+float f1(int, float, const char*, A*)
 {
     return 3.14f;
 }
 
 // empty function
-int f2(lua_State* L)
+int f2(lua_State*)
 {
     return 0;
 }

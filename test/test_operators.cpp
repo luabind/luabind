@@ -53,12 +53,12 @@ struct operator_tester : counted_type<operator_tester>
     }
 };
 
-float operator*(operator_tester const& lhs, operator_tester const& rhs)
+float operator*(operator_tester const& /*lhs*/, operator_tester const& /*rhs*/)
 {
     return 35.f;
 }
 
-std::string operator*(operator_tester const&, int v)
+std::string operator*(operator_tester const&, int)
 {
     return "(operator_tester, int) overload";
 }
@@ -86,12 +86,12 @@ std::ostream& operator<<(std::ostream& os, const operator_tester&)
 
 struct op_test1
 {
-    bool operator==(op_test1 const& rhs) const { return true; }
+    bool operator==(op_test1 const& /*rhs*/) const { return true; }
 };
 
 struct op_test2 : public op_test1
 {
-    bool operator==(op_test2 const& rhs) const { return true; }
+    bool operator==(op_test2 const& /*rhs*/) const { return true; }
 };
 
 COUNTER_GUARD(operator_tester);

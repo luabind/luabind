@@ -79,7 +79,7 @@ lua_state::operator lua_State*() const
     return m_state;
 }
 
-int pcall_handler(lua_State* L)
+int pcall_handler(lua_State*)
 {
     return 1;
 }

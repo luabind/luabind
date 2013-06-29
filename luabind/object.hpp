@@ -417,6 +417,7 @@ LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
       void push(lua_State* interpreter)
       {
           assert(interpreter == m_interpreter);
+          (void)interpreter;
           lua_pushvalue(m_interpreter, m_key_index);
           AccessPolicy::get(m_interpreter, m_table_index);
       }

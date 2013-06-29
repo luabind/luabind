@@ -5,10 +5,10 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
-void raw_function(lua_State* L)
+void raw_function(lua_State*)
 {}
 
-void raw_function2(int, lua_State* L, int)
+void raw_function2(int, lua_State*, int)
 {}
 
 void test_main(lua_State* L)

@@ -34,9 +34,16 @@ struct ex : public std::exception, public counted_type<ex>
 struct exception_thrower : counted_type<exception_thrower>
 {
     exception_thrower() {}
+#ifdef BOOST_MSVC
+#   pragma warning(push)
+#   pragma warning(disable:4702) // warning C4702: unreachable code
+#endif
     exception_thrower(int) { throw ex("exception description"); }
     exception_thrower(int, int) { throw "a string exception"; }
     exception_thrower(int, int, int) { throw 10; }
+#ifdef BOOST_MSVC
+#   pragma warning(pop)
+#endif
     int f() { throw ex("exception from a member function"); }
     int g() { throw "a string exception"; }
     int h() { throw 10; }

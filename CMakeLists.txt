@@ -10,8 +10,12 @@ find_package(Boost 1.51.0 REQUIRED)
 find_package(Lua52 REQUIRED)
 
 if (MSVC)
-    # Warning level 4, multicore compilation
-    add_definitions("/W4" "/MP")
+    add_definitions(
+        "/W4" # Warning level 4
+        "/MP" # Multiprocessor compilation
+        # Disable incorrect warning C4709
+        # ("comma operator within array index expression"):
+        "/wd4709")
 endif()
 
 add_subdirectory("src")

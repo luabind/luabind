@@ -24,8 +24,8 @@
 #include <luabind/luabind.hpp>
 
 int f() { return 1; }
-int f_(int a) { return 2; }
-int f__(int a) { return 3; }
+int f_(int) { return 2; }
+int f__(int) { return 3; }
 int g() { return 4; }
 int g_(int) { return 5; }
 int h() { return 6; }
@@ -41,7 +41,7 @@ struct test_class : counted_type<test_class>
 struct test_class2 : counted_type<test_class2>
 {
     test_class2() {}
-    int string_string(std::string const& s1, std::string const& s2)
+    int string_string(std::string const&, std::string const&)
     { return 1; }
 };
 

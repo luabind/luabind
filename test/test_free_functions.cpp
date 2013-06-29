@@ -63,7 +63,7 @@ struct copy_me
 {
 };
 
-void take_by_value(copy_me m)
+void take_by_value(copy_me)
 {
 }
 
@@ -141,7 +141,7 @@ void test_main(lua_State* L)
         call_function<void>(L, "failing_fun");
         TEST_ERROR("function didn't fail when it was expected to");
     }
-    catch(luabind::error const& e)
+    catch(luabind::error const&)
     {
         if (std::string("[string \"function failing_fun() error('expected "
 #if LUA_VERSION_NUM >= 502

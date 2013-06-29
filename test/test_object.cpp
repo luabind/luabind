@@ -98,12 +98,12 @@ struct test_param : counted_type<test_param>
 
 COUNTER_GUARD(test_param);
 
-int test_match(const luabind::object& o)
+int test_match(const luabind::object&)
 {
     return 0;
 }
 
-int test_match(int i)
+int test_match(int)
 {
     return 1;
 }

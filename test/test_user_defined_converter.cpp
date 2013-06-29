@@ -27,7 +27,7 @@ struct default_converter<X>
 
     X from(lua_State* L, int index)
     {
-        return X(lua_tonumber(L, index));
+        return X(lua_tointeger(L, index));
     }
 
     void to(lua_State* L, X const& x)
