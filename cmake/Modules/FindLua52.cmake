@@ -60,7 +60,7 @@ FIND_PATH(LUA_INCLUDE_DIR lua.h
   /opt
 )
 
-FIND_LIBRARY(LUA_LIBRARY
+FIND_LIBRARY(_LUA_LIBRARY_RELEASE
   NAMES lua52 lua5.2 lua-5.2 lua
   HINTS
   $ENV{LUA_DIR}
@@ -74,16 +74,41 @@ FIND_LIBRARY(LUA_LIBRARY
   /opt
 )
 
-IF(LUA_LIBRARY)
-  # include the math library for Unix
+FIND_LIBRARY(_LUA_LIBRARY_DEBUG
+  NAMES lua52-d lua5.2-d lua-5.2-d lua-d
+  HINTS
+  $ENV{LUA_DIR}
+  PATH_SUFFIXES lib64 lib
+  PATHS
+  ~/Library/Frameworks
+  /Library/Frameworks
+  /sw
+  /opt/local
+  /opt/csw
+  /opt
+)
+
+IF(_LUA_LIBRARY_RELEASE OR _LUA_LIBRARY_DEBUG)
+  IF(_LUA_LIBRARY_RELEASE AND _LUA_LIBRARY_DEBUG)
+    SET(_LUA_LIBRARY optimized ${_LUA_LIBRARY_RELEASE}
+                     debug     ${_LUA_LIBRARY_DEBUG})
+  ELSEIF(_LUA_LIBRARY_RELEASE)
+    SET(_LUA_LIBRARY ${_LUA_LIBRARY_RELEASE})
+  ELSE()
+    SET(_LUA_LIBRARY ${_LUA_LIBRARY_DEBUG})
+  ENDIF()
+  
   IF(UNIX AND NOT APPLE)
-    FIND_LIBRARY(LUA_MATH_LIBRARY m)
-    SET( LUA_LIBRARIES "${LUA_LIBRARY};${LUA_MATH_LIBRARY}" CACHE STRING "Lua Libraries")
-  # For Windows and Mac, don't need to explicitly include the math library
-  ELSE(UNIX AND NOT APPLE)
-    SET( LUA_LIBRARIES "${LUA_LIBRARY}" CACHE STRING "Lua Libraries")
+    FIND_LIBRARY(_LUA_MATH_LIBRARY m)
   ENDIF(UNIX AND NOT APPLE)
-ENDIF(LUA_LIBRARY)
+   # For Windows and Mac, don't need to explicitly include the math library
+ENDIF()
+
+IF(_LUA_LIBRARY)
+    SET(LUA_LIBRARIES
+        "${_LUA_LIBRARY}" "${_LUA_MATH_LIBRARY}" CACHE STRING "Lua 5.2 Libraries")
+ENDIF(_LUA_LIBRARY)
+
 
 IF(LUA_INCLUDE_DIR AND EXISTS "${LUA_INCLUDE_DIR}/lua.h")
   FILE(STRINGS "${LUA_INCLUDE_DIR}/lua.h" lua_version_str REGEX "^#define[ \t]+LUA_RELEASE[ \t]+\"Lua .+\"")
