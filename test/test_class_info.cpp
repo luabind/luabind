@@ -53,7 +53,8 @@ void test_main(lua_State* L)
         "assert(info.name == 'X')\n"
         "assert(info.methods['f'] == X().f)\n"
         "assert(info.methods['__init'] == X().__init)\n"
-        "assert(info.attributes[1] == 'y')\n"
-        "assert(info.attributes[2] == 'x')\n"
+        "attrs = info.attributes\n"
+        "assert(attrs[1] == 'x' or attrs[2] == 'x')\n"
+        "assert(attrs[1] == 'y' or attrs[2] == 'y')\n"
     );
 }
