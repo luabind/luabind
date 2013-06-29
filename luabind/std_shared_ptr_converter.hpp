@@ -2,10 +2,11 @@
 #define STD_SHAREDPTR_CONVERTER_HPP_INCLUDED STD_SHAREDPTR_CONVERTER_HPP_INCLUDED
 
 #include <boost/version.hpp>
+#include <memory> // shared_ptr
 
 #if BOOST_VERSION >= 105300
 #include <boost/get_pointer.hpp>
-
+#include <luabind/detail/has_get_pointer.hpp>
 
 namespace luabind { namespace detail { namespace has_get_pointer_ {
   template<class T>
