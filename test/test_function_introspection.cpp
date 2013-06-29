@@ -23,6 +23,7 @@
 
 #include "test.hpp"
 #include <luabind/luabind.hpp>
+#include <luabind/function_introspection.hpp>
 #include <luabind/adopt_policy.hpp>
 
 struct base : counted_type<base>
@@ -50,9 +51,8 @@ void test_main(lua_State* L)
 {
     using namespace luabind;
     
-    
-    DOSTRING(L,
-        "require('luabind.function_introspection')");
+    bind_function_introspection(L);
+
     DOSTRING(L,
         "assert(function_info.get_function_name)");
     DOSTRING(L,
