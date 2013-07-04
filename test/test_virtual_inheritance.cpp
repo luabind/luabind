@@ -34,11 +34,12 @@ struct Y : virtual X
 {
     Y(int value)
       : X(value)
+      , dummy(2)
     {}
 
     int g() const
     {
-        return 2;
+        return dummy;
     }
 
     int dummy;
@@ -48,11 +49,12 @@ struct Z : virtual X
 {
     Z(int value)
       : X(value)
+      , dummy(3)
     {}
 
     int h() const
     {
-        return 3;
+        return dummy;
     }
 
     int dummy;
@@ -165,24 +167,23 @@ void test_main(lua_State* L)
     // Do everything twice to verify that caching works.
 
     DOSTRING(L,
-        "function assert2(x)\n"
-        "    assert(x)\n"
-        "    assert(x)\n"
-        "end\n"
-    );
-
-    DOSTRING(L,
         "x = U(1)\n"
-        "assert2(x:f() == 1)\n"
-        "assert2(x:g() == 2)\n"
-        "assert2(x:h() == 3)\n"
+        "assert(x:f() == 1)\n"
+        "assert(x:f() == 1)\n"
+        "assert(x:g() == 2)\n"
+        "assert(x:g() == 2)\n"
+        "assert(x:h() == 3)\n"
+        "assert(x:h() == 3)\n"
     );
 
     DOSTRING(L,
         "y = upcast(x)\n"
-        "assert2(y:f() == 1)\n"
-        "assert2(y:g() == 2)\n"
-        "assert2(y:h() == 3)\n"
+        "assert(y:f() == 1)\n"
+        "assert(y:f() == 1)\n"
+        "assert(y:g() == 2)\n"
+        "assert(y:g() == 2)\n"
+        "assert(y:h() == 3)\n"
+        "assert(y:h() == 3)\n"
     );
 
     module(L) [
@@ -200,22 +201,31 @@ void test_main(lua_State* L)
 
     DOSTRING(L,
         "x = Derived()\n"
-        "assert2(x:left() == 1)\n"
-        "assert2(x:right() == 2)\n"
-        "assert2(x:f() == 3)\n"
+        "assert(x:left() == 1)\n"
+        "assert(x:left() == 1)\n"
+        "assert(x:right() == 2)\n"
+        "assert(x:right() == 2)\n"
+        "assert(x:f() == 3)\n"
+        "assert(x:f() == 3)\n"
     );
 
     DOSTRING(L,
         "y = left(x)\n"
-        "assert2(y:left() == 1)\n"
-        "assert2(y:right() == 2)\n"
-        "assert2(y:f() == 3)\n"
+        "assert(y:left() == 1)\n"
+        "assert(y:left() == 1)\n"
+        "assert(y:right() == 2)\n"
+        "assert(y:right() == 2)\n"
+        "assert(y:f() == 3)\n"
+        "assert(y:f() == 3)\n"
     );
 
     DOSTRING(L,
         "y = right(x)\n"
-        "assert2(y:left() == 1)\n"
-        "assert2(y:right() == 2)\n"
-        "assert2(y:f() == 3)\n"
+        "assert(y:left() == 1)\n"
+        "assert(y:left() == 1)\n"
+        "assert(y:right() == 2)\n"
+        "assert(y:right() == 2)\n"
+        "assert(y:f() == 3)\n"
+        "assert(y:f() == 3)\n"
     );
 }
