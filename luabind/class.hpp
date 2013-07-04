@@ -263,12 +263,6 @@ namespace luabind
         public:
             class_base(char const* name);
 
-            struct base_desc
-            {
-                type_id type;
-                int ptr_offset;
-            };
-
             void init(
                 type_id const& type, class_id id
               , type_id const& wrapped_type, class_id wrapper_id);

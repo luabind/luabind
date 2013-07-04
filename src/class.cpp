@@ -175,11 +175,7 @@ namespace luabind { namespace detail {
             // the baseclass' class_rep structure
             detail::class_rep* bcrep = registry->find_class(i->first);
 
-            detail::class_rep::base_info base;
-            base.pointer_offset = 0;
-            base.base = bcrep;
-
-            crep->add_base_class(base);
+            crep->add_base_class(bcrep);
 
             // copy base class table
             crep->get_table(L);

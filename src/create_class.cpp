@@ -86,11 +86,7 @@ namespace luabind { namespace detail
     #endif
 
         class_rep* base = static_cast<class_rep*>(lua_touserdata(L, 1));
-        class_rep::base_info binfo;
-
-        binfo.pointer_offset = 0;
-        binfo.base = base;
-        crep->add_base_class(binfo);
+        crep->add_base_class(base);
 
         // copy base class members
 
