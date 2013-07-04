@@ -68,8 +68,7 @@ namespace luabind { namespace detail {
 
         mutable std::map<const char*, int, detail::ltstr> m_static_constants;
 
-        typedef std::pair<type_id, cast_function> base_desc;
-        mutable std::vector<base_desc> m_bases;
+        mutable std::vector<type_id> m_bases;
 
         type_id m_type;
         class_id m_id;
@@ -167,13 +166,13 @@ namespace luabind { namespace detail {
             casts->insert(e.src, e.target, e.cast);
         }
 
-        for (std::vector<base_desc>::iterator i = m_bases.begin();
+        for (std::vector<type_id>::iterator i = m_bases.begin();
             i != m_bases.end(); ++i)
         {
             LUABIND_CHECK_STACK(L);
 
             // the baseclass' class_rep structure
-            detail::class_rep* bcrep = registry->find_class(i->first);
+            detail::class_rep* bcrep = registry->find_class(*i);
 
             crep->add_base_class(bcrep);
 
@@ -254,9 +253,9 @@ namespace luabind { namespace detail {
         m_registration->m_wrapper_id = wrapper_id;
     }
 
-    void class_base::add_base(type_id const& base, cast_function cast)
+    void class_base::add_base(type_id const& base)
     {
-        m_registration->m_bases.push_back(std::make_pair(base, cast));
+        m_registration->m_bases.push_back(base);
     }
 
     void class_base::add_member(registration* member)
