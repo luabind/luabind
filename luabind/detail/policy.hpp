@@ -487,7 +487,7 @@ namespace luabind { namespace detail
         template<typename T>
         void apply(lua_State* L, T val)
         {
-            typedef std::underlying_type<T>::type integral_t;
+            typedef typename std::underlying_type<T>::type integral_t;
             lua_pushnumber(L, static_cast<integral_t>(val));
         }
 #endif
@@ -495,8 +495,13 @@ namespace luabind { namespace detail
         template<class T>
         T apply(lua_State* L, by_value<T>, int index)
         {
-            typedef std::underlying_type<T>::type integral_t;
-            return static_cast<T>(static_cast<integral_t>(lua_tonumber(L, index)));
+#ifdef BOOST_NO_CXX11_SCOPED_ENUMS
+            typedef int integral_t;
+#else
+            typedef typename std::underlying_type<T>::type integral_t;
+#endif
+            return static_cast<T>(
+                static_cast<integral_t>(lua_tonumber(L, index)));
         }
 
         template<class T>
