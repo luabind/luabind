@@ -4,12 +4,11 @@ include_directories(
 add_executable(benchmark "benchmark.cpp")
 target_link_libraries(benchmark ${LUA_LIBRARIES} luabind)
 
-add_library(testmain
+add_library(testmain STATIC
     "main.cpp" "test.hpp"
     # These tests consist only of compile time asserts and define no test_main
     # function:
-    "test_has_get_pointer.cpp"
-    "test_typetraits.cpp")
+    "test_has_get_pointer.cpp")
     
 target_link_libraries(testmain ${LUA_LIBRARIES} luabind)
 
@@ -58,6 +57,7 @@ set(TESTS
     "super_leak"
     "table"
     "tag_function"
+    "typetraits"
     "unsigned_int"
     "user_defined_converter"
     "value_wrapper"

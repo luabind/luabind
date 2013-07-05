@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include "test.hpp"
 #include <luabind/detail/typetraits.hpp>
 #include <luabind/detail/is_indirect_const.hpp>
 #include <luabind/detail/pointee_sizeof.hpp>
@@ -28,10 +29,13 @@
 using namespace luabind;
 using namespace luabind::detail;
 
-struct tester {};
-struct lua_State;
+namespace {
 
-int test_main(lua_State*)
+struct tester {};
+
+} // namespace unnamed
+
+void test_main(lua_State*)
 {
     BOOST_STATIC_ASSERT(is_nonconst_reference<int&>::value);
     BOOST_STATIC_ASSERT(!is_nonconst_reference<const int&>::value);
@@ -60,6 +64,4 @@ int test_main(lua_State*)
     BOOST_STATIC_ASSERT(is_indirect_const<const int&>::value);
     BOOST_STATIC_ASSERT(!is_indirect_const<int*>::value);
     BOOST_STATIC_ASSERT(is_indirect_const<const int*>::value);
-
-    return 0;
 }
