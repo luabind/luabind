@@ -132,7 +132,9 @@ namespace luabind { namespace detail
     template<class T>
     struct is_const_pointer
     {
-        enum { value = sizeof(is_const_pointer_helper((void(*)(T))0)) == sizeof(yes_t) };
+        enum { value =
+            sizeof(is_const_pointer_helper(static_cast<void(*)(T)>(0)))
+            == sizeof(yes_t) };
         typedef boost::mpl::bool_<value> type;
     };
 
@@ -143,7 +145,10 @@ namespace luabind { namespace detail
     template<class T>
     struct is_nonconst_pointer
     {
-        enum { value = sizeof(is_nonconst_pointer_helper((void(*)(T))0)) == sizeof(yes_t) && !is_const_pointer<T>::value };
+        enum { value =
+            sizeof(is_nonconst_pointer_helper(static_cast<void(*)(T)>(0)))
+            == sizeof(yes_t)
+            && !is_const_pointer<T>::value };
         typedef boost::mpl::bool_<value> type;
     };
 /*

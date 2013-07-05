@@ -6,6 +6,8 @@
 #include <luabind/luabind.hpp>
 #include <luabind/adopt_policy.hpp>
 
+namespace {
+
 struct X
 {
     virtual ~X()
@@ -24,6 +26,8 @@ void take(X* p)
 {
     delete p;
 }
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

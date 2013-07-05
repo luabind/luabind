@@ -5,12 +5,12 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
-void f(luabind::table<> const& x)
+static void f(luabind::table<> const& x)
 {
     TEST_CHECK(luabind::type(x) == LUA_TTABLE);
 }
 
-void g(luabind::table<luabind::argument> const& x)
+static void g(luabind::table<luabind::argument> const& x)
 {
     TEST_CHECK(luabind::type(x) == LUA_TTABLE);
 }

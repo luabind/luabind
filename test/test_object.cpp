@@ -34,6 +34,8 @@
 
 using namespace luabind;
 
+namespace {
+
 int test_object_param(const object& table)
 {
     LUABIND_CHECK_STACK(table.interpreter());
@@ -274,6 +276,8 @@ void test_bool_convertible(lua_State* L)
     assert(G["x4"]);
 }
 
+} // namespace unnamed
+
 void test_main(lua_State* L)
 {
     using namespace luabind;
@@ -282,8 +286,9 @@ void test_main(lua_State* L)
     [
         def("test_object_param", &test_object_param),
         def("test_fun", &test_fun),
-        def("test_match", (int(*)(const luabind::object&))&test_match),
-        def("test_match", (int(*)(int))&test_match),
+        def("test_match",
+            static_cast<int(*)(const luabind::object&)>(&test_match)),
+        def("test_match", static_cast<int(*)(int)>(&test_match)),
         def("test_match_object", &test_match_object),
 
         class_<test_param>("test_param")
@@ -441,7 +446,7 @@ void test_main(lua_State* L)
 
     for (iterator i(globals(L)["t"]), e; i != e; ++i)
     {
-        for (iterator j(*i), e; j != e; ++j)
+        for (iterator j(*i), e2; j != e2; ++j)
         {
             inner_sum += object_cast<int>(*j);
         }

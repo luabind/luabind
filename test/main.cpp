@@ -41,8 +41,6 @@ extern "C"
 #include <iostream>                     // for operator<<, basic_ostream, etc
 #include <string>                       // for string
 
-void test_main(lua_State*);
-
 struct lua_state
 {
     lua_state();
@@ -86,7 +84,7 @@ lua_state::operator lua_State*() const
     return m_state;
 }
 
-int pcall_handler(lua_State*)
+static int pcall_handler(lua_State*)
 {
     return 1;
 }

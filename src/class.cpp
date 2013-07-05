@@ -45,10 +45,10 @@ namespace luabind { namespace detail {
     {
       struct cast_entry
       {
-          cast_entry(class_id src, class_id target, cast_function cast)
-            : src(src)
-            , target(target)
-            , cast(cast)
+          cast_entry(class_id src_, class_id target_, cast_function cast_)
+            : src(src_)
+            , target(target_)
+            , cast(cast_)
           {}
 
           class_id src;
@@ -236,9 +236,9 @@ namespace luabind { namespace detail {
 
     // -- interface ---------------------------------------------------------
 
-    class_base::class_base(char const* name)
+    class_base::class_base(char const* name_)
         : scope(std::auto_ptr<registration>(
-                m_registration = new class_registration(name))
+                m_registration = new class_registration(name_))
           )
     {
     }
@@ -275,9 +275,9 @@ namespace luabind { namespace detail {
         return m_registration->m_name;
     }
 
-    void class_base::add_static_constant(const char* name, int val)
+    void class_base::add_static_constant(const char* name_, int val)
     {
-        m_registration->m_static_constants[name] = val;
+        m_registration->m_static_constants[name_] = val;
     }
 
     void class_base::add_inner_scope(scope& s)
@@ -290,13 +290,7 @@ namespace luabind { namespace detail {
     {
         m_registration->m_casts.push_back(cast_entry(src, target, cast));
     }
-
-    void add_custom_name(type_id const& i, std::string& s)
-    {
-        s += " [";
-        s += i.name();
-        s += "]";
-    }
+    
 
     std::string get_class_name(lua_State* L, type_id const& i)
     {
@@ -309,8 +303,9 @@ namespace luabind { namespace detail {
 
         if (crep == 0 || crep->name() == 0)
         {
-            ret = "custom";
-            add_custom_name(i, ret);
+            ret = "custom [";
+            ret += i.name();
+            ret += ']';
         }
         else
         {

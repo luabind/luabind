@@ -32,6 +32,10 @@
 #include <string>
 
 
+// Individual tests must provide a definition for this function:
+void test_main(lua_State* L);
+
+
 void report_failure(char const* str, char const* file, int line);
 
 #if defined(_MSC_VER)
@@ -104,7 +108,7 @@ int counted_type<T>::count = 0;
         using namespace std;                    \
         if (std::strcmp(                        \
             lua_tostring(e.state(), -1)         \
-          , (char const*)expected))             \
+          , expected))                          \
         {                                       \
             TEST_ERROR(lua_tostring(e.state(), -1)); \
             lua_pop(L, 1);                      \

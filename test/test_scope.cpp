@@ -24,6 +24,8 @@
 #include <luabind/luabind.hpp>
 #include <luabind/yield_policy.hpp>     // for yield
 
+namespace {
+
 int f() { return 1; }
 int f_(int) { return 2; }
 int f__(int) { return 3; }
@@ -48,6 +50,8 @@ struct test_class2 : counted_type<test_class2>
 
 COUNTER_GUARD(test_class);
 COUNTER_GUARD(test_class2);
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

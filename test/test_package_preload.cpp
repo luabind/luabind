@@ -25,12 +25,12 @@
 #include <luabind/luabind.hpp>
 #include <luabind/set_package_preload.hpp>
 
-int f(int x)
+static int f(int x)
 {
     return x + 1;
 }
 
-int loader(lua_State* L)
+static int loader(lua_State* L)
 {
     using namespace luabind;
     module(L)

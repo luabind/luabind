@@ -72,6 +72,11 @@ foreach(test ${TESTS})
     add_test(${test} test_${test})
 endforeach(test)
 
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    set_property(TARGET test_private_destructors
+                 PROPERTY COMPILE_FLAGS "-Wno-ctor-dtor-privacy")
+endif()
+
 if (LUABIND_BUILD_HEADER_TESTS)
 	get_filename_component(BASE "${CMAKE_CURRENT_SOURCE_DIR}/../luabind" ABSOLUTE)
 	foreach(HEADER ${APIHEADERS})

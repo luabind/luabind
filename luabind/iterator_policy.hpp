@@ -44,9 +44,9 @@ struct iterator
         return 0;
     }
 
-    iterator(Iterator first, Iterator last)
-      : first(first)
-      , last(last)
+    iterator(Iterator first_, Iterator last_)
+      : first(first_)
+      , last(last_)
     {}
 
     Iterator first;

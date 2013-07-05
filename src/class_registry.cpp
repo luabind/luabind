@@ -37,8 +37,6 @@
 
 namespace luabind { namespace detail {
 
-    LUABIND_API void push_instance_metatable(lua_State* L);
-
     namespace {
 
         int create_cpp_class_metatable(lua_State* L)

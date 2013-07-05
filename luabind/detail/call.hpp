@@ -30,8 +30,8 @@ struct invoke_context;
 
 struct LUABIND_API function_object
 {
-    function_object(lua_CFunction entry)
-      : entry(entry)
+    function_object(lua_CFunction entry_)
+      : entry(entry_)
       , next(0)
     {}
 

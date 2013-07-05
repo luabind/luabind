@@ -24,6 +24,8 @@
 #include <luabind/luabind.hpp>
 #include <boost/mpl/if.hpp>             // for if_<>::type
 
+namespace {
+
 struct test_class : counted_type<test_class>
 {
     test_class() {}
@@ -47,6 +49,8 @@ int j(lua_State* L)
 void f() {}
 
 COUNTER_GUARD(test_class);
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

@@ -31,6 +31,14 @@
 
 namespace luabind { namespace detail
 {
+    // implements the selection between dynamic dispatch
+    // or default implementation calls from within a virtual
+    // function wrapper. The input is the self reference on
+    // the top of the stack. Output is the function to call
+    // on the top of the stack (the input self reference will
+    // be popped)
+    LUABIND_API void do_call_member_selection(lua_State* L, char const* name);
+    
     class class_rep;
 
     void finalize(lua_State* L, class_rep* crep);
@@ -55,7 +63,7 @@ namespace luabind { namespace detail
         std::pair<void*, int> get_instance(class_id target) const
         {
             if (m_instance == 0)
-                return std::pair<void*, int>((void*)0, -1);
+                return std::pair<void*, int>(static_cast<void*>(0), -1);
             return m_instance->get(target);
         }
 

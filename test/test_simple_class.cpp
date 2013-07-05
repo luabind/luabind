@@ -64,9 +64,9 @@ void test_main(lua_State* L)
     [
         class_<simple_class>("simple")
             .def(constructor<>())
-            .def("f", (f_overload1)&simple_class::f)
-            .def("f", (f_overload2)&simple_class::f)
-            .def("f", (f_overload3)&simple_class::f)
+            .def("f", static_cast<f_overload1>(&simple_class::f))
+            .def("f", static_cast<f_overload2>(&simple_class::f))
+            .def("f", static_cast<f_overload3>(&simple_class::f))
             .def("g", &simple_class::g)
     ];
 

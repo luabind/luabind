@@ -58,7 +58,7 @@ namespace luabind {
         BOOST_STATIC_CONSTANT(int, value = (
             sizeof(
                 detail::to_yes_no(
-                    detail::is_indirect_const_check((T(*)())0, 0L)
+                    detail::is_indirect_const_check(static_cast<T(*)()>(0), 0L)
             ))
          == sizeof(detail::yes_t)
         ));

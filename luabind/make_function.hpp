@@ -11,14 +11,13 @@
 # include <luabind/detail/compute_score.hpp>
 # include <luabind/detail/deduce_signature.hpp>
 # include <luabind/detail/format_signature.hpp>
+# include <luabind/exception_handler.hpp>
 
 namespace luabind {
 
 namespace detail
 {
-# ifndef LUABIND_NO_EXCEPTIONS
-  LUABIND_API void handle_exception_aux(lua_State* L);
-# endif
+  LUABIND_API bool is_luabind_function(lua_State* L, int index);
 
 // MSVC complains about member being sensitive to alignment (C4121)
 // when F is a pointer to member of a class with virtual bases.
@@ -30,10 +29,10 @@ namespace detail
   template <class F, class Signature, class Policies>
   struct function_object_impl : function_object
   {
-      function_object_impl(F f, Policies const& policies)
+      function_object_impl(F f_, Policies const& policies_)
         : function_object(&entry_point)
-        , f(f)
-        , policies(policies)
+        , f(f_)
+        , policies(policies_)
       {}
 
       int call(lua_State* L, invoke_context& ctx) const
@@ -49,7 +48,8 @@ namespace detail
       static int entry_point(lua_State* L)
       {
           function_object_impl const* impl =
-              *(function_object_impl const**)lua_touserdata(L, lua_upvalueindex(1));
+            *static_cast<function_object_impl const**>(
+                lua_touserdata(L, lua_upvalueindex(1)));
 
           invoke_context ctx;
 

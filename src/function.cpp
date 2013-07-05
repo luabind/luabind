@@ -13,7 +13,8 @@ namespace
 
   int function_destroy(lua_State* L)
   {
-      function_object* fn = *(function_object**)lua_touserdata(L, 1);
+      function_object* fn = *static_cast<function_object**>(
+          lua_touserdata(L, 1));
       delete fn;
       return 0;
   }
@@ -89,7 +90,7 @@ LUABIND_API object make_function_aux(lua_State* L, function_object* impl)
 {
     void* storage = lua_newuserdata(L, sizeof(function_object*));
     push_function_metatable(L);
-    *(function_object**)storage = impl;
+    *static_cast<function_object**>(storage) = impl;
     lua_setmetatable(L, -2);
 
     lua_pushlightuserdata(L, &function_tag);

@@ -6,10 +6,12 @@
 #include <luabind/luabind.hpp>
 #include <boost/shared_ptr.hpp>
 
+namespace {
+
 struct X
 {
-    X(int value)
-      : value(value)
+    X(int value_)
+      : value(value_)
     {
         ++alive;
     }
@@ -28,8 +30,8 @@ int X::alive = 0;
 
 struct ptr
 {
-    ptr(X* p)
-      : p(p)
+    ptr(X* p_)
+      : p(p_)
     {}
 
     ptr(ptr const& other)
@@ -65,6 +67,8 @@ ptr make3()
 {
     return ptr(new X(3));
 }
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

@@ -10,8 +10,8 @@ namespace luabind { namespace detail {
 template <class Class, class T, class Result = T>
 struct access_member_ptr
 {
-    access_member_ptr(T Class::* mem_ptr)
-      : mem_ptr(mem_ptr)
+    access_member_ptr(T Class::* mem_ptr_)
+      : mem_ptr(mem_ptr_)
     {}
 
     Result operator()(Class const& x) const

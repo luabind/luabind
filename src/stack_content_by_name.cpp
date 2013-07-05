@@ -24,6 +24,8 @@
 
 #include <luabind/lua_include.hpp>       // for lua_gettop, lua_touserdata, etc
 
+#include <luabind/config.hpp>
+#include <luabind/detail/debug.hpp>      // for declaration of stack_content_by_name
 #include <luabind/detail/class_rep.hpp>  // for class_rep, is_class_rep
 #include <luabind/detail/object_rep.hpp> // for get_instance, object_rep
 
@@ -31,14 +33,15 @@
 
 using namespace luabind::detail;
 
-std::string luabind::detail::stack_content_by_name(lua_State* L, int start_index)
+LUABIND_API std::string luabind::detail::stack_content_by_name(lua_State* L, int start_index)
 {
     std::string ret;
     int top = lua_gettop(L);
     for (int i = start_index; i <= top; ++i)
     {
         object_rep* obj = get_instance(L, i);
-        class_rep* crep = is_class_rep(L, i)?(class_rep*)lua_touserdata(L, i):0;
+        class_rep* crep = is_class_rep(L, i)
+            ? static_cast<class_rep*>(lua_touserdata(L, i)) : 0;
         if (obj == 0 && crep == 0)
         {
             int type = lua_type(L, i);

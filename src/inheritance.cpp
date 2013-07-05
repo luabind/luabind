@@ -25,9 +25,9 @@ namespace
 
   struct edge
   {
-      edge(class_id target, cast_function cast)
-        : target(target)
-        , cast(cast)
+      edge(class_id target_, cast_function cast_)
+        : target(target_)
+        , cast(cast_)
       {}
 
       class_id target;
@@ -41,8 +41,8 @@ namespace
 
   struct vertex
   {
-      vertex(class_id id)
-        : id(id)
+      vertex(class_id id_)
+        : id(id_)
       {}
 
       class_id id;
@@ -123,10 +123,10 @@ namespace
 
   struct queue_entry
   {
-      queue_entry(void* p, class_id vertex_id, int distance)
-        : p(p)
-        , vertex_id(vertex_id)
-        , distance(distance)
+      queue_entry(void* p_, class_id vertex_id_, int distance_)
+        : p(p_)
+        , vertex_id(vertex_id_)
+        , distance(distance_)
       {}
 
       void* p;
@@ -144,18 +144,18 @@ std::pair<void*, int> cast_graph::impl::cast(
         return std::make_pair(p, 0);
 
     if (src >= m_vertices.size() || target >= m_vertices.size())
-        return std::pair<void*, int>((void*)0, -1);
+        return std::pair<void*, int>(static_cast<void*>(0), -1);
 
     std::ptrdiff_t const object_offset =
-        (char const*)dynamic_ptr - (char const*)p;
+        static_cast<char const*>(dynamic_ptr) - static_cast<char const*>(p);
 
     cache_entry cached = m_cache.get(src, target, dynamic_id, object_offset);
 
     if (cached.first != cache::unknown)
     {
         if (cached.first == cache::invalid)
-            return std::pair<void*, int>((void*)0, -1);
-        return std::make_pair((char*)p + cached.first, cached.second);
+            return std::pair<void*, int>(static_cast<void*>(0), -1);
+        return std::make_pair(static_cast<char*>(p) + cached.first, cached.second);
     }
 
     std::queue<queue_entry> q;
@@ -175,7 +175,7 @@ std::pair<void*, int> cast_graph::impl::cast(
         {
             m_cache.put(
                 src, target, dynamic_id, object_offset
-              , (char*)qe.p - (char*)p, qe.distance
+              , static_cast<char*>(qe.p) - static_cast<char*>(p), qe.distance
             );
 
             return std::make_pair(qe.p, qe.distance);
@@ -192,11 +192,11 @@ std::pair<void*, int> cast_graph::impl::cast(
 
     m_cache.put(src, target, dynamic_id, object_offset, cache::invalid, -1);
 
-    return std::pair<void*, int>((void*)0, -1);
+    return std::pair<void*, int>(static_cast<void*>(0), -1);
 }
 
 void cast_graph::impl::insert(
-    class_id src, class_id target, cast_function cast)
+    class_id src, class_id target, cast_function cast_)
 {
     class_id const max_id = std::max(src, target);
 
@@ -215,7 +215,7 @@ void cast_graph::impl::insert(
 
     if (i == edges.end() || i->target != target)
     {
-        edges.insert(i, edge(target, cast));
+        edges.insert(i, edge(target, cast_));
         m_cache.invalidate();
     }
 }
@@ -227,9 +227,9 @@ std::pair<void*, int> cast_graph::cast(
     return m_impl->cast(p, src, target, dynamic_id, dynamic_ptr);
 }
 
-void cast_graph::insert(class_id src, class_id target, cast_function cast)
+void cast_graph::insert(class_id src, class_id target, cast_function cast_)
 {
-    m_impl->insert(src, target, cast);
+    m_impl->insert(src, target, cast_);
 }
 
 cast_graph::cast_graph()

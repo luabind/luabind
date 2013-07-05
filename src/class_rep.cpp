@@ -47,12 +47,12 @@ namespace luabind { namespace detail
     }
 }}
 
-luabind::detail::class_rep::class_rep(type_id const& type
-    , const char* name
+luabind::detail::class_rep::class_rep(type_id const& type_
+    , const char* name_
     , lua_State* L
 )
-    : m_type(type)
-    , m_name(name)
+    : m_type(type_)
+    , m_name(name_)
     , m_class_type(cpp_class)
 {
     shared_init(L);
@@ -90,9 +90,9 @@ void luabind::detail::class_rep::shared_init(lua_State * L) {
 
 }
 
-luabind::detail::class_rep::class_rep(lua_State* L, const char* name)
+luabind::detail::class_rep::class_rep(lua_State* L, const char* name_)
     : m_type(typeid(null_type))
-    , m_name(name)
+    , m_name(name_)
     , m_class_type(lua_class)
 {
     shared_init(L);
@@ -108,7 +108,7 @@ luabind::detail::class_rep::allocate(lua_State* L) const
 {
     const int size = sizeof(object_rep);
     char* mem = static_cast<char*>(lua_newuserdata(L, size));
-    return std::pair<void*,void*>(mem, (void*)0);
+    return std::pair<void*,void*>(mem, static_cast<void*>(0));
 }
 
 namespace

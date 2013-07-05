@@ -30,8 +30,8 @@ namespace detail
   template <class Signature, class F>
   struct tagged_function
   {
-      tagged_function(F f)
-        : f(f)
+      tagged_function(F f_)
+        : f(f_)
       {}
 
       F f;

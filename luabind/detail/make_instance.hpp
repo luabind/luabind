@@ -33,7 +33,9 @@ template <class T>
 std::pair<class_id, void*> get_dynamic_class_aux(
     lua_State*, T const* p, mpl::false_)
 {
-    return std::make_pair(registered_class<T>::id, (void*)p);
+    return std::make_pair(
+        registered_class<T>::id,
+        static_cast<void*>(const_cast<T*>(p)));
 }
 
 template <class T>

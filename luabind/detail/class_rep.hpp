@@ -45,9 +45,6 @@
 
 namespace luabind { namespace detail
 {
-
-    LUABIND_API std::string stack_content_by_name(lua_State* L, int start_index);
-
     struct class_registration;
 
     struct conversion_storage;

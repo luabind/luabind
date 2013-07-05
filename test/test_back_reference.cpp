@@ -33,6 +33,8 @@ namespace luabind
 }
 #endif
 
+namespace {
+
 struct base0
 {
     virtual ~base0() {}
@@ -58,6 +60,8 @@ boost::shared_ptr<base1> filter1(boost::shared_ptr<base1> const& p)
 {
     return p;
 }
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

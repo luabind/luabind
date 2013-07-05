@@ -38,6 +38,8 @@ namespace luabind {
 
 using namespace luabind;
 
+namespace {
+
 struct A : counted_type<A>
 {
     virtual ~A() {}
@@ -132,6 +134,8 @@ struct U : T_
     int g() { return 3; }
     int f(int, int) { return 2; }
 };
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

@@ -26,6 +26,8 @@
 #include <luabind/function_introspection.hpp>
 #include <luabind/adopt_policy.hpp>
 
+namespace {
+
 struct base : counted_type<base>
 {
     int f()
@@ -46,6 +48,8 @@ int f(int x, int y)
     return x + y;
 }
 
+} // namespace unnamed
+
 
 void test_main(lua_State* L)
 {
@@ -60,7 +64,7 @@ void test_main(lua_State* L)
 
     module(L)
     [
-        def("f", (int(*)(int)) &f)
+        def("f", static_cast<int(*)(int)>(&f))
     ];
     
     

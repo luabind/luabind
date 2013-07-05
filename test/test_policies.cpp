@@ -30,6 +30,8 @@
 #include <luabind/dependency_policy.hpp>
 #include <luabind/luabind.hpp>
 
+namespace {
+
 struct test_copy {};
 
 
@@ -102,6 +104,8 @@ struct MI2 : public MI1
 };
 
 struct MI2W : public MI2, public luabind::wrap_base {};
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

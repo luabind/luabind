@@ -17,10 +17,10 @@ namespace detail
   template <class F, class Policies>
   struct function_registration : registration
   {
-      function_registration(char const* name, F f, Policies const& policies)
-        : name(name)
-        , f(f)
-        , policies(policies)
+      function_registration(char const* name_, F f_, Policies const& policies_)
+        : name(name_)
+        , f(f_)
+        , policies(policies_)
       {}
 
       void register_(lua_State* L) const
@@ -38,8 +38,6 @@ namespace detail
       F f;
       Policies policies;
   };
-
-  LUABIND_API bool is_luabind_function(lua_State* L, int index);
 
 } // namespace detail
 

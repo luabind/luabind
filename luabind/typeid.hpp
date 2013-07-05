@@ -28,48 +28,48 @@ namespace luabind {
 # endif
 
 class type_id
-  : public boost::less_than_comparable<type_id>
+  : boost::less_than_comparable<type_id>
 {
 public:
     type_id()
-      : id(&typeid(detail::null_type))
+      : m_id(&typeid(detail::null_type))
     {}
 
     type_id(std::type_info const& id)
-      : id(&id)
+      : m_id(&id)
     {}
 
     bool operator!=(type_id const& other) const
     {
-        return std::strcmp(id->name(), other.id->name()) != 0;
+        return std::strcmp(m_id->name(), other.m_id->name()) != 0;
     }
 
     bool operator==(type_id const& other) const
     {
-        return std::strcmp(id->name(), other.id->name()) == 0;
+        return std::strcmp(m_id->name(), other.m_id->name()) == 0;
     }
 
     bool operator<(type_id const& other) const
     {
-        return std::strcmp(id->name(), other.id->name()) < 0;
+        return std::strcmp(m_id->name(), other.m_id->name()) < 0;
     }
 
     std::string name() const
     {
 # ifdef LUABIND_USE_DEMANGLING
         int status;
-        char* buf = abi::__cxa_demangle(id->name(), 0, 0, &status);
+        char* buf = abi::__cxa_demangle(m_id->name(), 0, 0, &status);
         if (buf != 0) {
-            std::string name(buf);
+            std::string demangled_name(buf);
             std::free(buf);
-            return name;
+            return demangled_name;
         }
 # endif
-        return id->name();
+        return m_id->name();
     }
 
 private:
-    std::type_info const* id;
+    std::type_info const* m_id;
 };
 
 # ifdef BOOST_MSVC

@@ -23,6 +23,8 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+namespace {
+
 struct A
 {
     int get() const
@@ -72,6 +74,8 @@ void free_setter(property_test& p, int a)
 
 int free_getter(const property_test& p)
 { return p.get(); }
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

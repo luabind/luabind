@@ -24,6 +24,8 @@
 #include <luabind/luabind.hpp>
 #include <boost/shared_ptr.hpp>
 
+namespace {
+
 struct A : counted_type<A>
 { virtual ~A() {} };
 
@@ -69,6 +71,8 @@ COUNTER_GUARD(B);
 COUNTER_GUARD(test_implicit);
 COUNTER_GUARD(char_pointer_convertable);
 
+} // namespace unnamed
+
 void test_main(lua_State* L)
 {
     using namespace luabind;
@@ -86,8 +90,8 @@ void test_main(lua_State* L)
 
         class_<test_implicit>("test")
             .def(constructor<>())
-            .def("f", (f1)&test_implicit::f)
-            .def("f", (f2)&test_implicit::f),
+            .def("f", static_cast<f1>(&test_implicit::f))
+            .def("f", static_cast<f2>(&test_implicit::f)),
 
         class_<char_pointer_convertable>("char_ptr")
             .def(constructor<>()),

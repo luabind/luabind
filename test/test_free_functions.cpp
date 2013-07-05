@@ -24,6 +24,8 @@
 #include <luabind/luabind.hpp>
 #include <luabind/adopt_policy.hpp>
 
+namespace {
+
 struct base : counted_type<base>
 {
     int f()
@@ -73,6 +75,8 @@ int function_should_never_be_called(lua_State* L)
     return 1;
 }
 
+} // namespace unnamed
+
 void test_main(lua_State* L)
 {
     using namespace luabind;
@@ -93,8 +97,8 @@ void test_main(lua_State* L)
 
         def("by_value", &take_by_value),
 
-        def("f", (int(*)(int)) &f),
-        def("f", (int(*)(int, int)) &f),
+        def("f", static_cast<int(*)(int)>(&f)),
+        def("f", static_cast<int(*)(int, int)>(&f)),
         def("create", &create_base, adopt(return_value))
 //        def("set_functor", &set_functor)
 
@@ -141,7 +145,7 @@ void test_main(lua_State* L)
         call_function<void>(L, "failing_fun");
         TEST_ERROR("function didn't fail when it was expected to");
     }
-    catch(luabind::error const&)
+    catch (luabind::error const&)
     {
         if (std::string("[string \"function failing_fun() error('expected "
 #if LUA_VERSION_NUM >= 502
@@ -156,5 +160,4 @@ void test_main(lua_State* L)
 
         lua_pop(L, 1);
     }
-
 }

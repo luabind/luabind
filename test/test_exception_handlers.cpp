@@ -6,6 +6,8 @@
 #include <luabind/luabind.hpp>
 #include <luabind/exception_handler.hpp>
 
+namespace {
+
 struct my_exception {};
 
 void translate_my_exception(lua_State* L, my_exception const&)
@@ -35,6 +37,8 @@ void raise_derived()
 {
     throw derived_std_exception();
 }
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

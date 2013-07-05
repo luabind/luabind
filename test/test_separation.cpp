@@ -29,8 +29,6 @@ namespace {
     struct X {};
     struct Y {};
 
-} // namespace unnamed
-
 luabind::scope test_separate_registration()
 {
     using namespace luabind;
@@ -41,6 +39,8 @@ luabind::scope test_separate_registration()
                .def(constructor<>())
            ;
 }
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

@@ -40,13 +40,11 @@ namespace luabind
     {
         lua_State* L = o.interpreter();
         detail::class_rep * crep = NULL;
-        bool givenClassRep = false;
 
         o.push(L);
         if (detail::is_class_rep(L, -1)) {
             VERBOSE("OK, got a class rep");
             // OK, o is a class rep, now at the top of the stack
-            givenClassRep = true;
             crep = static_cast<detail::class_rep *>(lua_touserdata(L, -1));
             lua_pop(L, 1);
         } else {

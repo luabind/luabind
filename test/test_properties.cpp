@@ -8,8 +8,12 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+namespace {
+
 struct Base
 {};
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

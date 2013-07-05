@@ -23,6 +23,8 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+namespace {
+
 struct A : counted_type<A>
 {
     A* f() { return 0; }
@@ -34,6 +36,8 @@ A* return_pointer()
 }
 
 COUNTER_GUARD(A);
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

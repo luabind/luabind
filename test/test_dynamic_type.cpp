@@ -5,10 +5,12 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+namespace {
+
 struct Base
 {
-    Base(int value)
-      : value(value)
+    Base(int value_)
+      : value(value_)
     {}
 
     virtual ~Base()
@@ -50,6 +52,8 @@ std::auto_ptr<Base> make_unregistered()
 {
     return std::auto_ptr<Base>(new Unregistered);
 }
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

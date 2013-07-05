@@ -25,6 +25,8 @@
 #include <luabind/operator.hpp>
 #include <iosfwd>
 
+namespace {
+
 struct operator_tester : counted_type<operator_tester>
 {
     int operator+(int a) const
@@ -105,17 +107,19 @@ COUNTER_GUARD(operator_tester3);
 
 struct len_tester
 {
-    len_tester(int len)
-      : len_(len)
+    len_tester(int len_)
+      : m_len(len_)
     {}
 
     int len() const
     {
-        return len_;
+        return m_len;
     }
 
-    int len_;
+    int m_len;
 };
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

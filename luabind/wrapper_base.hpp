@@ -40,14 +40,6 @@ namespace luabind
     namespace detail
     {
         struct wrap_access;
-
-        // implements the selection between dynamic dispatch
-        // or default implementation calls from within a virtual
-        // function wrapper. The input is the self reference on
-        // the top of the stack. Output is the function to call
-        // on the top of the stack (the input self reference will
-        // be popped)
-        LUABIND_API void do_call_member_selection(lua_State* L, char const* name);
     }
 
     struct wrapped_self_t: weak_ref

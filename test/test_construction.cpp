@@ -23,11 +23,16 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+namespace {
+
 struct A : counted_type<A>
 {
     int test;
     A(int a) { test = a; }
-    A(const A&) { test = 1; }
+    // Explicit call to default ctor to avoid g++'s "warning: base class
+    // ‘struct counted_type<A>’ should be explicitly initialized in the copy
+    // constructor [-Wextra]"
+    A(const A&): counted_type<A>() { test = 1; } // 
     A() { test = 2; }
     ~A() {}
 };
@@ -66,6 +71,8 @@ COUNTER_GUARD(C);
 COUNTER_GUARD(base1);
 COUNTER_GUARD(deriv_1);
 COUNTER_GUARD(deriv_2);
+
+}
 
 void test_main(lua_State* L)
 {

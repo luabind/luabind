@@ -55,18 +55,18 @@ struct abstract_wrap : abstract, wrap_base
     }
 };
 
-std::string call_hello(abstract& a)
+static std::string call_hello(abstract& a)
 {
     return a.hello();
 }
 
-abstract& return_abstract_ref()
+static abstract& return_abstract_ref()
 {
     static concrete c;
     return c;
 }
 
-abstract const& return_const_abstract_ref()
+static abstract const& return_const_abstract_ref()
 {
     static concrete c;
     return c;

@@ -18,15 +18,20 @@ extern "C"
 struct A {};
 
 // luabind function
-float f1(int, float, const char*, A*)
+static float f1(int, float, const char*, A*)
 {
     return 3.14f;
 }
 
 // empty function
-int f2(lua_State*)
+static int f2(lua_State*)
 {
     return 0;
+}
+
+inline double clocks_to_seconds(std::clock_t c)
+{
+    return static_cast<double>(c) / CLOCKS_PER_SEC;
 }
 
 
@@ -77,8 +82,8 @@ int main()
     }
 
 
-    double time1 = double(total1) / (double)CLOCKS_PER_SEC;
-    double time2 = double(total2) / (double)CLOCKS_PER_SEC;
+    double time1 = clocks_to_seconds(total1);
+    double time2 = clocks_to_seconds(total2);
 
 #ifdef LUABIND_NO_ERROR_CHECKING
     std::cout << "without error-checking\n";

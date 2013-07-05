@@ -5,14 +5,28 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+namespace {
+
 struct X
 {
-    X(int value)
-      : value(value)
+    X(int value_)
+      : value(value_)
     {}
 
     int value;
 };
+
+int take(X x)
+{
+    return x.value;
+}
+
+X get(int value)
+{
+    return X(value);
+}
+
+} // namespace unnamed
 
 namespace luabind {
 
@@ -40,15 +54,6 @@ struct default_converter<X>
 
 } // namespace luabind
 
-int take(X x)
-{
-    return x.value;
-}
-
-X get(int value)
-{
-    return X(value);
-}
 
 void test_main(lua_State* L)
 {

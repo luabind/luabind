@@ -17,9 +17,9 @@ namespace luabind { namespace detail {
 class instance_holder
 {
 public:
-    instance_holder(class_rep* cls, bool pointee_const)
+    instance_holder(class_rep* cls, bool is_pointee_const)
       : m_cls(cls)
-      , m_pointee_const(pointee_const)
+      , m_pointee_const(is_pointee_const)
     {}
 
     virtual ~instance_holder()
@@ -83,47 +83,47 @@ public:
         P p, class_id dynamic_id, void* dynamic_ptr, class_rep* cls
     )
       : instance_holder(cls, check_const_pointer(false ? get_pointer(p) : 0))
-      , p(p)
-      , weak(0)
-      , dynamic_id(dynamic_id)
-      , dynamic_ptr(dynamic_ptr)
+      , m_p(p)
+      , m_weak(0)
+      , m_dynamic_id(dynamic_id)
+      , m_dynamic_ptr(dynamic_ptr)
     {}
 
     std::pair<void*, int> get(class_id target) const
     {
         if (target == registered_class<P>::id)
-            return std::pair<void*, int>(&this->p, 0);
+            return std::pair<void*, int>(&this->m_p, 0);
 
         void* naked_ptr = const_cast<void*>(static_cast<void const*>(
-            weak ? weak : get_pointer(p)));
+            m_weak ? m_weak : get_pointer(m_p)));
 
         if (!naked_ptr)
-            return std::pair<void*, int>((void*)0, 0);
+            return std::pair<void*, int>(static_cast<void*>(0), 0);
 
         return get_class()->casts().cast(
             naked_ptr
-          , static_class_id(false ? get_pointer(p) : 0)
+          , static_class_id(false ? get_pointer(m_p) : 0)
           , target
-          , dynamic_id
-          , dynamic_ptr
+          , m_dynamic_id
+          , m_dynamic_ptr
         );
     }
 
     void release()
     {
-        weak = const_cast<void*>(static_cast<void const*>(
-            get_pointer(p)));
-        release_ownership(p);
+        m_weak = const_cast<void*>(static_cast<void const*>(
+            get_pointer(m_p)));
+        release_ownership(m_p);
     }
 
 private:
-    mutable P p;
+    mutable P m_p;
     // weak will hold a possibly stale pointer to the object owned
     // by p once p has released it's owership. This is a workaround
     // to make adopt() work with virtual function wrapper classes.
-    void* weak;
-    class_id dynamic_id;
-    void* dynamic_ptr;
+    void* m_weak;
+    class_id m_dynamic_id;
+    void* m_dynamic_ptr;
 };
 
 }} // namespace luabind::detail

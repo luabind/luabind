@@ -5,6 +5,8 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+namespace {
+
 struct X
 {
 private:
@@ -22,8 +24,8 @@ struct ptr
         ptr_count++;
     }
 
-    ptr(T* p)
-      : p(p)
+    ptr(T* p_)
+      : p(p_)
     {
         ptr_count++;
     }
@@ -97,6 +99,8 @@ ptr<X> get()
 {
     return ptr<X>(new X);
 }
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

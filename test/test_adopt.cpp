@@ -7,6 +7,8 @@
 #include <luabind/adopt_policy.hpp>
 #include <iostream>
 
+namespace {
+
 struct Base
 {
     Base()
@@ -43,6 +45,8 @@ void not_null(Base* p)
 {
     TEST_CHECK(p);
 }
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

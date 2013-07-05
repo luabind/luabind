@@ -6,10 +6,12 @@
 #include <luabind/luabind.hpp>
 #include <luabind/shared_ptr_converter.hpp>
 
+namespace {
+
 struct X
 {
-    X(int value)
-      : value(value)
+    X(int value_)
+      : value(value_)
     {}
 
     int value;
@@ -24,6 +26,8 @@ boost::shared_ptr<X> filter(boost::shared_ptr<X> const& p)
 {
     return p;
 }
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

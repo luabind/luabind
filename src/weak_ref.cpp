@@ -35,59 +35,54 @@ namespace luabind {
 namespace
 {
 
-  int weak_table_tag;
-  int impl_table_tag;
+    int weak_table_tag;
+    int impl_table_tag;
+
+
+    void get_weak_table(lua_State* L)
+    {
+        lua_pushlightuserdata(L, &weak_table_tag);
+        lua_rawget(L, LUA_REGISTRYINDEX);
+
+        if (lua_isnil(L, -1))
+        {
+            lua_pop(L, 1);
+            lua_newtable(L);
+            // metatable
+            lua_newtable(L);
+            lua_pushliteral(L, "__mode");
+            lua_pushliteral(L, "v");
+            lua_rawset(L, -3);
+            // set metatable
+            lua_setmetatable(L, -2);
+
+            lua_pushlightuserdata(L, &weak_table_tag);
+            lua_pushvalue(L, -2);
+            lua_rawset(L, LUA_REGISTRYINDEX);
+
+        }
+
+    }
+
+    void get_impl_table(lua_State* L)
+    {
+
+        lua_pushlightuserdata(L, &impl_table_tag);
+        lua_rawget(L, LUA_REGISTRYINDEX);
+
+        if (lua_isnil(L, -1))
+        {
+            lua_pop(L, 1);
+
+            lua_newtable(L);
+            lua_pushlightuserdata(L, &impl_table_tag);
+            lua_pushvalue(L, -2);
+            lua_rawset(L, LUA_REGISTRYINDEX);
+
+        }
+    }
 
 } // namespace unnamed
-
-LUABIND_API void get_weak_table(lua_State* L)
-{
-    lua_pushlightuserdata(L, &weak_table_tag);
-    lua_rawget(L, LUA_REGISTRYINDEX);
-
-    if (lua_isnil(L, -1))
-    {
-        lua_pop(L, 1);
-        lua_newtable(L);
-        // metatable
-        lua_newtable(L);
-        lua_pushliteral(L, "__mode");
-        lua_pushliteral(L, "v");
-        lua_rawset(L, -3);
-        // set metatable
-        lua_setmetatable(L, -2);
-
-        lua_pushlightuserdata(L, &weak_table_tag);
-        lua_pushvalue(L, -2);
-        lua_rawset(L, LUA_REGISTRYINDEX);
-
-    }
-
-}
-
-LUABIND_API void get_impl_table(lua_State* L)
-{
-
-    lua_pushlightuserdata(L, &impl_table_tag);
-    lua_rawget(L, LUA_REGISTRYINDEX);
-
-    if (lua_isnil(L, -1))
-    {
-        lua_pop(L, 1);
-
-        lua_newtable(L);
-        lua_pushlightuserdata(L, &impl_table_tag);
-        lua_pushvalue(L, -2);
-        lua_rawset(L, LUA_REGISTRYINDEX);
-
-    }
-
-}
-
-} // namespace luabind
-
-namespace luabind
-{
 
     struct weak_ref::impl
     {

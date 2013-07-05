@@ -5,20 +5,29 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+namespace {
+
 struct X
 {
-    X(int x, int y)
-      : x(x)
-      , y(y)
+    X(int x_, int y_)
+      : x(x_)
+      , y(y_)
     {}
 
     int x;
     int y;
 };
 
+int take(X x)
+{
+    return x.x + x.y;
+}
+
+} // namespace unnamed
+
 namespace luabind {
 
-int combine_score(int s1, int s2)
+static int combine_score(int s1, int s2)
 {
     if (s1 < 0 || s2 < 0) return -1;
     return s1 + s2;
@@ -49,11 +58,6 @@ struct default_converter<X>
 };
 
 } // namespace luabind
-
-int take(X x)
-{
-    return x.x + x.y;
-}
 
 void test_main(lua_State* L)
 {

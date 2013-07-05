@@ -5,6 +5,9 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+
+namespace {
+
 // Test the following hierarchy:
 //
 //         X
@@ -15,8 +18,8 @@
 
 struct X
 {
-    X(int x)
-      : value(x)
+    X(int x_)
+      : value(x_)
     {}
 
     virtual ~X()
@@ -32,8 +35,8 @@ struct X
 
 struct Y : virtual X
 {
-    Y(int value)
-      : X(value)
+    Y(int value_)
+      : X(value_)
       , dummy(2)
     {}
 
@@ -47,8 +50,8 @@ struct Y : virtual X
 
 struct Z : virtual X
 {
-    Z(int value)
-      : X(value)
+    Z(int value_)
+      : X(value_)
       , dummy(3)
     {}
 
@@ -62,10 +65,10 @@ struct Z : virtual X
 
 struct U : Y, Z
 {
-    U(int value)
-      : X(value)
-      , Y(value)
-      , Z(value)
+    U(int value_)
+      : X(value_)
+      , Y(value_)
+      , Z(value_)
     {}
 
     int dummy;
@@ -90,8 +93,8 @@ X* upcast(U* p)
 
 struct Base
 {
-    Base(int value)
-      : value(value)
+    Base(int value_)
+      : value(value_)
     {}
 
     virtual ~Base()
@@ -147,6 +150,8 @@ Base* right(Right* p)
 {
     return p;
 }
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

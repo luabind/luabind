@@ -35,6 +35,8 @@ namespace luabind {
 
 }
 
+namespace {
+
 struct base : counted_type<base>
 {
     base(): n(4) {}
@@ -135,6 +137,8 @@ derived tester13()
     d.n2 = 13;
     return d;
 }
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {
