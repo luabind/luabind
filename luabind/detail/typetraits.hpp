@@ -29,6 +29,7 @@
 #include <boost/type_traits/is_reference.hpp>
 #include <boost/type_traits/is_const.hpp>
 #include <luabind/detail/primitives.hpp>
+#include <luabind/detail/yes_no.hpp>
 
 namespace luabind { namespace detail
 {

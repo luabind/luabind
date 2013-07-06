@@ -31,6 +31,7 @@
 #include <luabind/detail/typetraits.hpp>  // for is_nonconst_pointer, is_nonconst_reference, etc
 
 #include <boost/mpl/apply_wrap.hpp>     // for apply_wrap2
+#include <boost/mpl/identity.hpp>
 #include <boost/mpl/if.hpp>             // for if_
 #include <boost/mpl/or.hpp>             // for or_
 #include <boost/type_traits/is_same.hpp>  // for is_same
@@ -39,6 +40,8 @@
 
 namespace luabind { namespace detail
 {
+    namespace mpl = boost::mpl;
+
     template<int N>
     struct char_array
     {
@@ -65,19 +68,24 @@ namespace luabind { namespace detail
 #else
 
     template<class U>
-    char_array<sizeof(typename identity<U>::type)> indirect_sizeof_test(by_reference<U>);
+    char_array<sizeof(typename mpl::identity<U>::type)>
+    indirect_sizeof_test(by_reference<U>);
 
     template<class U>
-    char_array<sizeof(typename identity<U>::type)> indirect_sizeof_test(by_const_reference<U>);
+    char_array<sizeof(typename mpl::identity<U>::type)>
+    indirect_sizeof_test(by_const_reference<U>);
 
     template<class U>
-    char_array<sizeof(typename identity<U>::type)> indirect_sizeof_test(by_pointer<U>);
+    char_array<sizeof(typename mpl::identity<U>::type)>
+    indirect_sizeof_test(by_pointer<U>);
 
     template<class U>
-    char_array<sizeof(typename identity<U>::type)> indirect_sizeof_test(by_const_pointer<U>);
+    char_array<sizeof(typename mpl::identity<U>::type)>
+    indirect_sizeof_test(by_const_pointer<U>);
 
     template<class U>
-    char_array<sizeof(typename identity<U>::type)> indirect_sizeof_test(by_value<U>);
+    char_array<sizeof(typename mpl::identity<U>::type)>
+    indirect_sizeof_test(by_value<U>);
 
 #endif
 
@@ -86,8 +94,6 @@ namespace luabind { namespace detail
     {
         BOOST_STATIC_CONSTANT(int, value = sizeof(indirect_sizeof_test(LUABIND_DECORATE_TYPE(T))));
     };
-
-    namespace mpl = boost::mpl;
 
     template<int Size, class Policies = detail::null_type>
     struct out_value_converter

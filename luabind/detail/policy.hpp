@@ -923,7 +923,7 @@ struct default_converter<lua_State*>
 namespace detail
 {
 
-    struct default_policy : converter_policy_tag
+    struct default_policy
     {
         BOOST_STATIC_CONSTANT(bool, has_arg = true);
 
