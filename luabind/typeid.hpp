@@ -5,11 +5,13 @@
 #ifndef LUABIND_TYPEID_081227_HPP
 # define LUABIND_TYPEID_081227_HPP
 
+# include <luabind/detail/primitives.hpp>
+
 # include <boost/operators.hpp>
+
 # include <cstdlib>
 # include <cstring>
 # include <typeinfo>
-# include <luabind/detail/primitives.hpp>
 
 // boost/units/detail/utility.hpp
 # if defined(__GLIBCXX__) || defined(__GLIBCPP__)

@@ -22,10 +22,10 @@
 
 
 #include "test.hpp"
-#include <luabind/luabind.hpp>
 #include <luabind/adopt_policy.hpp>
 #include <luabind/detail/debug.hpp>
 #include <luabind/error.hpp>
+#include <luabind/luabind.hpp>
 #include <luabind/operator.hpp>
 
 #include <boost/lexical_cast.hpp>

@@ -24,11 +24,11 @@
 #ifndef LUABIND_REF_HPP_INCLUDED
 #define LUABIND_REF_HPP_INCLUDED
 
-#include <cassert>
-#include <algorithm>
-
 #include <luabind/config.hpp>
 #include <luabind/lua_include.hpp>
+
+#include <algorithm>
+#include <cassert>
 
 namespace luabind
 {

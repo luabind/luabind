@@ -24,11 +24,11 @@
 #ifndef LUABIND_ENUM_MAKER_HPP_INCLUDED
 #define LUABIND_ENUM_MAKER_HPP_INCLUDED
 
-#include <vector>
-#include <string>
-
 #include <luabind/config.hpp>
 #include <luabind/detail/class_rep.hpp>
+
+#include <vector>
+#include <string>
 
 namespace luabind
 {

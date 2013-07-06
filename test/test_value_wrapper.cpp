@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <luabind/value_wrapper.hpp>
 #include <luabind/object.hpp>
+#include <luabind/value_wrapper.hpp>
 #include <boost/mpl/assert.hpp>
 
 struct X_tag;

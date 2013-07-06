@@ -24,10 +24,11 @@
 #ifndef LUABIND_OBJECT_REP_HPP_INCLUDED
 #define LUABIND_OBJECT_REP_HPP_INCLUDED
 
-#include <boost/aligned_storage.hpp>
 #include <luabind/config.hpp>
 #include <luabind/detail/instance_holder.hpp>
 #include <luabind/detail/ref.hpp>
+
+#include <boost/aligned_storage.hpp>
 
 namespace luabind { namespace detail
 {

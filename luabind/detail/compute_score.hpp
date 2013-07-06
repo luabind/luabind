@@ -7,6 +7,7 @@
 
 # include <luabind/config.hpp>
 # include <luabind/detail/policy.hpp>
+
 # include <boost/mpl/apply_wrap.hpp>
 # include <boost/mpl/begin_end.hpp>
 # include <boost/mpl/int.hpp>

@@ -24,49 +24,46 @@
 #ifndef LUABIND_POLICY_HPP_INCLUDED
 #define LUABIND_POLICY_HPP_INCLUDED
 
-#include <luabind/config.hpp>
+#include <boost/bind/arg.hpp>
+#include <boost/call_traits.hpp>
+#include <boost/config.hpp>
+#include <boost/limits.hpp>
+#include <boost/mpl/bool.hpp>
+#include <boost/mpl/equal_to.hpp>
+#include <boost/mpl/eval_if.hpp>
+#include <boost/mpl/integral_c.hpp>
+#include <boost/mpl/or.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/type_traits/add_reference.hpp>
+#include <boost/type_traits/add_reference.hpp>
+#include <boost/type_traits/is_array.hpp>
+#include <boost/type_traits/is_base_and_derived.hpp>
+#include <boost/type_traits/is_enum.hpp>
+#include <boost/type_traits/is_pointer.hpp>
+#include <boost/type_traits/remove_reference.hpp>
+#include <boost/version.hpp>
 
-#include <typeinfo>
+#include <luabind/back_reference_fwd.hpp>
+#include <luabind/config.hpp>
+#include <luabind/detail/class_cache.hpp>
+#include <luabind/detail/class_registry.hpp>
+#include <luabind/detail/debug.hpp>
+#include <luabind/detail/decorate_type.hpp>
+#include <luabind/detail/has_get_pointer.hpp>
+#include <luabind/detail/make_instance.hpp>
+#include <luabind/detail/object_rep.hpp>
+#include <luabind/detail/primitives.hpp>
+#include <luabind/detail/typetraits.hpp>
+#include <luabind/from_stack.hpp>
+#include <luabind/value_wrapper.hpp>
+#include <luabind/weak_ref.hpp>
+
+#include <memory>
+#include <string>
 #ifndef BOOST_NO_CXX11_SCOPED_ENUMS
 #   include <type_traits>
 #endif
-#include <string>
-#include <memory>
-
-#include <boost/call_traits.hpp>
-#include <boost/type_traits/is_enum.hpp>
-#include <boost/type_traits/is_array.hpp>
-#include <boost/mpl/bool.hpp>
-#include <boost/mpl/integral_c.hpp>
-#include <boost/mpl/equal_to.hpp>
-#include <boost/mpl/eval_if.hpp>
-#include <boost/mpl/or.hpp>
-#include <boost/type_traits/add_reference.hpp>
-#include <boost/type_traits/remove_reference.hpp>
-#include <boost/type_traits/is_pointer.hpp>
-#include <boost/type_traits/is_base_and_derived.hpp>
-#include <boost/bind/arg.hpp>
-#include <boost/limits.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/version.hpp>
-
-#include <luabind/detail/class_registry.hpp>
-#include <luabind/detail/primitives.hpp>
-#include <luabind/detail/object_rep.hpp>
-#include <luabind/detail/typetraits.hpp>
-#include <luabind/detail/class_cache.hpp>
-#include <luabind/detail/debug.hpp>
-#include <luabind/detail/has_get_pointer.hpp>
-#include <luabind/detail/make_instance.hpp>
-
-#include <boost/type_traits/add_reference.hpp>
-
-#include <luabind/detail/decorate_type.hpp>
-#include <luabind/weak_ref.hpp>
-#include <luabind/back_reference_fwd.hpp>
-
-#include <luabind/value_wrapper.hpp>
-#include <luabind/from_stack.hpp>
+#include <typeinfo>
 
 #if LUA_VERSION_NUM < 502
 # define lua_rawlen lua_objlen

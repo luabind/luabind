@@ -25,10 +25,9 @@
 
 // Internal Includes
 #include <luabind/config.hpp>
-#include <luabind/lua_state_fwd.hpp>
 
 // Library/third-party includes
-// - none
+#include <luabind/lua_state_fwd.hpp>
 
 // Standard includes
 // - none

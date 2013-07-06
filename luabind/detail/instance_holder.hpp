@@ -5,11 +5,13 @@
 #ifndef LUABIND_INSTANCE_HOLDER_081024_HPP
 # define LUABIND_INSTANCE_HOLDER_081024_HPP
 
-# include <luabind/detail/inheritance.hpp>
 # include <luabind/detail/class_rep.hpp> // TODO
+# include <luabind/detail/inheritance.hpp>
 # include <luabind/get_pointer.hpp>
 # include <luabind/typeid.hpp>
+
 # include <boost/type_traits/is_polymorphic.hpp>
+
 # include <stdexcept>
 
 namespace luabind { namespace detail {

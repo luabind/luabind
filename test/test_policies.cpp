@@ -22,13 +22,13 @@
 
 #include "test.hpp"
 
+#include <luabind/adopt_policy.hpp>
+#include <luabind/copy_policy.hpp>
+#include <luabind/dependency_policy.hpp>
+#include <luabind/discard_result_policy.hpp>
+#include <luabind/luabind.hpp>
 #include <luabind/out_value_policy.hpp>
 #include <luabind/return_reference_to_policy.hpp>
-#include <luabind/copy_policy.hpp>
-#include <luabind/adopt_policy.hpp>
-#include <luabind/discard_result_policy.hpp>
-#include <luabind/dependency_policy.hpp>
-#include <luabind/luabind.hpp>
 
 namespace {
 

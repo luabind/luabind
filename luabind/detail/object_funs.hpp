@@ -23,16 +23,15 @@
 #ifndef LUABIND_OBJECT_PROXY_HPP_INCLUDED
 #define LUABIND_OBJECT_PROXY_HPP_INCLUDED
 
-#include <boost/optional.hpp>
-
 #include <luabind/config.hpp>
-#include <luabind/detail/policy.hpp>
-#include <luabind/error.hpp>
 #include <luabind/detail/convert_to_lua.hpp>
 #include <luabind/detail/debug.hpp>
+#include <luabind/detail/policy.hpp>
 #include <luabind/detail/stack_utils.hpp>
+#include <luabind/error.hpp>
 
 #include <boost/mpl/apply_wrap.hpp>
+#include <boost/optional.hpp>
 
 namespace luabind
 {

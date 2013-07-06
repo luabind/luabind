@@ -24,10 +24,11 @@
 #ifndef LUABIND_ADOPT_POLICY_HPP_INCLUDED
 #define LUABIND_ADOPT_POLICY_HPP_INCLUDED
 
-#include <luabind/config.hpp>
-#include <luabind/wrapper_base.hpp>
-#include <luabind/detail/policy.hpp>
 #include <luabind/back_reference_fwd.hpp>
+#include <luabind/config.hpp>
+#include <luabind/detail/policy.hpp>
+#include <luabind/wrapper_base.hpp>
+
 #include <boost/type_traits/is_polymorphic.hpp>
 
 namespace luabind { namespace detail

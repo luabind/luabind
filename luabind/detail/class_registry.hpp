@@ -24,11 +24,11 @@
 #ifndef LUABIND_CLASS_REGISTRY_HPP_INCLUDED
 #define LUABIND_CLASS_REGISTRY_HPP_INCLUDED
 
-#include <map>
-
 #include <luabind/config.hpp>
 #include <luabind/open.hpp>
 #include <luabind/typeid.hpp>
+
+#include <map>
 
 namespace luabind { namespace detail
 {

@@ -26,6 +26,8 @@
 
 #include <luabind/config.hpp>
 
+#include <luabind/lua_include.hpp>
+
 namespace luabind { namespace detail
 {
     // function that is used as __gc metafunction on several objects

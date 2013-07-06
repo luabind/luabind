@@ -23,6 +23,7 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 #include <luabind/operator.hpp>
+
 #include <iosfwd>
 
 namespace {

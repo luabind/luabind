@@ -24,7 +24,9 @@
 #define LUABIND_DEBUG_HPP_INCLUDED
 
 #include <luabind/config.hpp>
+
 #include <luabind/lua_include.hpp>
+
 #include <string>
 
 namespace luabind { namespace detail {
@@ -34,7 +36,9 @@ namespace luabind { namespace detail {
 }}
 
 #ifndef NDEBUG
+
 #include <boost/preprocessor/cat.hpp>
+
 #include <cassert>
 
 namespace luabind { namespace detail

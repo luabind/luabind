@@ -24,10 +24,10 @@
 #ifndef LUABIND_PRIMITIVES_HPP_INCLUDED
 #define LUABIND_PRIMITIVES_HPP_INCLUDED
 
+#include <luabind/config.hpp>
+
 #include <algorithm>
 #include <cstring>
-
-#include <luabind/config.hpp>
 
 namespace luabind { namespace detail
 {

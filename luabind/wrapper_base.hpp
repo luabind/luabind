@@ -26,12 +26,12 @@
 #define LUABIND_WRAPPER_BASE_HPP_INCLUDED
 
 #include <luabind/config.hpp>
-#include <luabind/weak_ref.hpp>
-#include <luabind/detail/ref.hpp>
 #include <luabind/detail/call_member.hpp>
+#include <luabind/detail/ref.hpp>
+#include <luabind/weak_ref.hpp>
 
-#include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_binary_params.hpp>
+#include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 
 #include <stdexcept>
 

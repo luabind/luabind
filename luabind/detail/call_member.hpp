@@ -29,17 +29,15 @@
 #include <luabind/config.hpp>
 #include <luabind/detail/convert_to_lua.hpp>
 #include <luabind/detail/pcall.hpp>
-#include <luabind/error.hpp>
 #include <luabind/detail/stack_utils.hpp>
+#include <luabind/error.hpp>
 #include <luabind/object.hpp> // TODO: REMOVE DEPENDENCY
 
-#include <boost/tuple/tuple.hpp>
-
+#include <boost/mpl/apply_wrap.hpp>
 #include <boost/preprocessor/control/if.hpp>
 #include <boost/preprocessor/facilities/expand.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>
-
-#include <boost/mpl/apply_wrap.hpp>
+#include <boost/tuple/tuple.hpp>
 
 namespace luabind
 {

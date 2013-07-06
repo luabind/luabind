@@ -5,10 +5,10 @@
 #ifndef LUABIND_SHARED_PTR_CONVERTER_090211_HPP
 # define LUABIND_SHARED_PTR_CONVERTER_090211_HPP
 
+# include <luabind/detail/decorate_type.hpp>  // for LUABIND_DECORATE_TYPE
 # include <luabind/detail/policy.hpp>    // for default_converter, etc
 # include <luabind/get_main_thread.hpp>  // for get_main_thread
 # include <luabind/handle.hpp>           // for handle
-# include <luabind/detail/decorate_type.hpp>  // for LUABIND_DECORATE_TYPE
 
 # include <boost/mpl/bool.hpp>           // for bool_, false_
 # include <boost/smart_ptr/shared_ptr.hpp>  // for shared_ptr, get_deleter

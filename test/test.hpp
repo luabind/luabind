@@ -25,9 +25,9 @@
 
 
 #include <luabind/error.hpp>
-#include <luabind/lua_include.hpp>
 
 #include <boost/preprocessor/cat.hpp>
+#include <luabind/lua_include.hpp>
 
 #include <string>
 

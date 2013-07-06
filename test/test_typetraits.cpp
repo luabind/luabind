@@ -21,9 +21,11 @@
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "test.hpp"
-#include <luabind/detail/typetraits.hpp>
+
 #include <luabind/detail/is_indirect_const.hpp>
 #include <luabind/detail/pointee_sizeof.hpp>
+#include <luabind/detail/typetraits.hpp>
+
 #include <boost/static_assert.hpp>
 
 using namespace luabind;

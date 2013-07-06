@@ -22,9 +22,9 @@
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "test.hpp"
-#include <luabind/luabind.hpp>
-#include <luabind/function_introspection.hpp>
 #include <luabind/adopt_policy.hpp>
+#include <luabind/function_introspection.hpp>
+#include <luabind/luabind.hpp>
 
 namespace {
 

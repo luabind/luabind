@@ -22,9 +22,10 @@
 
 #include "test.hpp"
 
+#include <luabind/adopt_policy.hpp>
 #include <luabind/luabind.hpp>
 #include <luabind/wrapper_base.hpp>
-#include <luabind/adopt_policy.hpp>
+
 #include <boost/shared_ptr.hpp>
 
 namespace luabind {

@@ -7,6 +7,11 @@
 # ifndef LUABIND_CALL2_080911_HPP
 #  define LUABIND_CALL2_080911_HPP
 
+#  include <luabind/config.hpp>
+#  include <luabind/detail/policy.hpp>
+#  include <luabind/object.hpp>
+#  include <luabind/yield_policy.hpp>
+
 #  include <boost/mpl/apply_wrap.hpp>
 #  include <boost/mpl/begin_end.hpp>
 #  include <boost/mpl/deref.hpp>
@@ -19,10 +24,7 @@
 #  include <boost/preprocessor/repetition/enum.hpp>
 #  include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #  include <boost/type_traits/is_void.hpp>
-
-#  include <luabind/config.hpp>
-#  include <luabind/detail/policy.hpp>
-#  include <luabind/yield_policy.hpp>
+#  include <luabind/lua_include.hpp>
 
 namespace luabind { namespace detail {
 

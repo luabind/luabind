@@ -68,49 +68,46 @@
 */
 
 #include <luabind/prefix.hpp>
-#include <luabind/config.hpp>
 
-#include <string>
-#include <map>
-#include <vector>
-#include <cassert>
+#include <luabind/back_reference.hpp>
+#include <luabind/config.hpp>
+#include <luabind/dependency_policy.hpp>
+#include <luabind/detail/call.hpp>
+#include <luabind/detail/call_member.hpp>
+#include <luabind/detail/class_rep.hpp>
+#include <luabind/detail/compute_score.hpp>
+#include <luabind/detail/constructor.hpp>
+#include <luabind/detail/deduce_signature.hpp>
+#include <luabind/detail/enum_maker.hpp>
+#include <luabind/detail/inheritance.hpp>
+#include <luabind/detail/link_compatibility.hpp>
+#include <luabind/detail/object_rep.hpp>
+#include <luabind/detail/operator_id.hpp>
+#include <luabind/detail/pointee_typeid.hpp>
+#include <luabind/detail/primitives.hpp>
+#include <luabind/detail/property.hpp>
+#include <luabind/detail/signature_match.hpp>
+#include <luabind/detail/typetraits.hpp>
+#include <luabind/function.hpp>
+#include <luabind/scope.hpp>
+#include <luabind/typeid.hpp>
 
 #include <boost/bind.hpp>
+#include <boost/mpl/apply.hpp>
+#include <boost/mpl/eval_if.hpp>
+#include <boost/mpl/find_if.hpp>
+#include <boost/mpl/lambda.hpp>
+#include <boost/mpl/logical.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
-#include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_member_object_pointer.hpp>
-#include <boost/mpl/apply.hpp>
-#include <boost/mpl/lambda.hpp>
-#include <boost/mpl/logical.hpp>
-#include <boost/mpl/find_if.hpp>
-#include <boost/mpl/eval_if.hpp>
-#include <boost/mpl/logical.hpp>
+#include <boost/type_traits/is_same.hpp>
 
-#include <luabind/config.hpp>
-#include <luabind/scope.hpp>
-#include <luabind/back_reference.hpp>
-#include <luabind/function.hpp>
-#include <luabind/dependency_policy.hpp>
-#include <luabind/detail/constructor.hpp>
-#include <luabind/detail/call.hpp>
-#include <luabind/detail/deduce_signature.hpp>
-#include <luabind/detail/compute_score.hpp>
-#include <luabind/detail/primitives.hpp>
-#include <luabind/detail/property.hpp>
-#include <luabind/detail/typetraits.hpp>
-#include <luabind/detail/class_rep.hpp>
-#include <luabind/detail/call.hpp>
-#include <luabind/detail/object_rep.hpp>
-#include <luabind/detail/signature_match.hpp>
-#include <luabind/detail/call_member.hpp>
-#include <luabind/detail/enum_maker.hpp>
-#include <luabind/detail/operator_id.hpp>
-#include <luabind/detail/pointee_typeid.hpp>
-#include <luabind/detail/link_compatibility.hpp>
-#include <luabind/detail/inheritance.hpp>
-#include <luabind/typeid.hpp>
+#include <cassert>
+#include <map>
+#include <string>
+#include <vector>
 
 // to remove the 'this' used in initialization list-warning
 #ifdef _MSC_VER

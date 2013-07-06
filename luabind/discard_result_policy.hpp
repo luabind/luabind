@@ -30,7 +30,6 @@
 
 #include <boost/mpl/if.hpp>             // for if_
 #include <boost/type_traits/is_same.hpp>  // for is_same
-
 #include <luabind/lua_include.hpp>
 
 namespace luabind { namespace detail

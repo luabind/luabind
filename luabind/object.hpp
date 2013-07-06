@@ -23,26 +23,24 @@
 #ifndef LUABIND_OBJECT_050419_HPP
 #define LUABIND_OBJECT_050419_HPP
 
-#include <boost/implicit_cast.hpp> // detail::push()
-#include <boost/ref.hpp> // detail::push()
-#include <boost/mpl/bool.hpp> // value_wrapper_traits specializations
-#include <boost/mpl/apply_wrap.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/optional.hpp>
-
-#include <luabind/nil.hpp>
-#include <luabind/value_wrapper.hpp>
+#include <luabind/detail/convert_to_lua.hpp> // REFACTOR
 #include <luabind/detail/pcall.hpp>
-#include <luabind/handle.hpp>
-#include <luabind/from_stack.hpp>
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/stack_utils.hpp>
-#include <luabind/detail/convert_to_lua.hpp> // REFACTOR
+#include <luabind/from_stack.hpp>
+#include <luabind/handle.hpp>
+#include <luabind/nil.hpp>
 #include <luabind/typeid.hpp>
+#include <luabind/value_wrapper.hpp>
 
+#include <boost/implicit_cast.hpp> // detail::push()
 #include <boost/iterator/iterator_facade.hpp> // iterator
-
+#include <boost/mpl/apply_wrap.hpp>
+#include <boost/mpl/bool.hpp> // value_wrapper_traits specializations
+#include <boost/optional.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
+#include <boost/ref.hpp> // detail::push()
+#include <boost/tuple/tuple.hpp>
 #include <boost/utility/enable_if.hpp>
 
 #if LUA_VERSION_NUM < 502

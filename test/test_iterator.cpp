@@ -4,8 +4,9 @@
 
 #include "test.hpp"
 
-#include <luabind/luabind.hpp>
 #include <luabind/iterator_policy.hpp>
+#include <luabind/luabind.hpp>
+
 #include <boost/iterator/iterator_adaptor.hpp>
 
 struct container

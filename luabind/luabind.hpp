@@ -24,8 +24,8 @@
 #ifndef LUABIND_BIND_HPP_INCLUDED
 #define LUABIND_BIND_HPP_INCLUDED
 
-#include <luabind/config.hpp>
 #include <luabind/class.hpp>
+#include <luabind/config.hpp>
 #include <luabind/function.hpp>
 #include <luabind/open.hpp>
 

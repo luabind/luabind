@@ -26,9 +26,9 @@
 
 #include <luabind/config.hpp>
 #include <luabind/detail/policy.hpp>
-#include <boost/ref.hpp>
 
 #include <boost/mpl/apply_wrap.hpp>
+#include <boost/ref.hpp>
 
 namespace luabind { namespace detail
 {

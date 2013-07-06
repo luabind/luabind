@@ -22,12 +22,12 @@
 
 #define LUABIND_BUILDING
 
-#include <luabind/lua_include.hpp>       // for lua_gettop, lua_touserdata, etc
-
 #include <luabind/config.hpp>
-#include <luabind/detail/debug.hpp>      // for declaration of stack_content_by_name
 #include <luabind/detail/class_rep.hpp>  // for class_rep, is_class_rep
+#include <luabind/detail/debug.hpp>      // for declaration of stack_content_by_name
 #include <luabind/detail/object_rep.hpp> // for get_instance, object_rep
+
+#include <luabind/lua_include.hpp>       // for lua_gettop, lua_touserdata, etc
 
 #include <string>                        // for string
 

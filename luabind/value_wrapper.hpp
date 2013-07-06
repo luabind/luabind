@@ -23,9 +23,9 @@
 #ifndef LUABIND_VALUE_WRAPPER_050419_HPP
 #define LUABIND_VALUE_WRAPPER_050419_HPP
 
-#include <boost/mpl/integral_c.hpp>
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/aux_/msvc_eti_base.hpp>
+#include <boost/mpl/bool.hpp>
+#include <boost/mpl/integral_c.hpp>
 
 #ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 # define LUABIND_USE_VALUE_WRAPPER_TAG
@@ -33,15 +33,15 @@
 #endif
 
 #ifdef LUABIND_USE_VALUE_WRAPPER_TAG
-# include <boost/mpl/identity.hpp>
+# include <boost/mpl/and.hpp>
 # include <boost/mpl/eval_if.hpp>
 # include <boost/mpl/has_xxx.hpp>
+# include <boost/mpl/identity.hpp>
 # include <boost/mpl/not.hpp>
-# include <boost/mpl/and.hpp>
 # include <boost/mpl/or.hpp>
-# include <boost/type_traits/is_reference.hpp>
-# include <boost/type_traits/is_pointer.hpp>
 # include <boost/type_traits/is_array.hpp>
+# include <boost/type_traits/is_pointer.hpp>
+# include <boost/type_traits/is_reference.hpp>
 #endif
 
 namespace luabind {

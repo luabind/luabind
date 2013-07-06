@@ -3,10 +3,11 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test.hpp"
-#include <luabind/luabind.hpp>
-#include <boost/shared_ptr.hpp>
-#include <luabind/shared_ptr_converter.hpp>
 #include <luabind/class_info.hpp>
+#include <luabind/luabind.hpp>
+#include <luabind/shared_ptr_converter.hpp>
+
+#include <boost/shared_ptr.hpp>
 
 struct Foo
 {

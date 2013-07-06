@@ -5,6 +5,7 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 #include <luabind/tag_function.hpp>
+
 #include <boost/bind.hpp>
 
 namespace {

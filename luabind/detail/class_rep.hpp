@@ -24,24 +24,25 @@
 #ifndef LUABIND_CLASS_REP_HPP_INCLUDED
 #define LUABIND_CLASS_REP_HPP_INCLUDED
 
+#include <luabind/config.hpp>
+#include <luabind/detail/class_registry.hpp>
+#include <luabind/detail/garbage_collector.hpp>
+#include <luabind/detail/object_rep.hpp>
+#include <luabind/detail/operator_id.hpp>
+#include <luabind/detail/primitives.hpp>
+#include <luabind/detail/ref.hpp>
+#include <luabind/error.hpp>
+#include <luabind/handle.hpp>
+#include <luabind/typeid.hpp>
+
 #include <boost/limits.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
+#include <luabind/lua_include.hpp>
 
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <luabind/config.hpp>
-#include <luabind/lua_include.hpp>
-#include <luabind/detail/object_rep.hpp>
-#include <luabind/detail/garbage_collector.hpp>
-#include <luabind/detail/operator_id.hpp>
-#include <luabind/detail/class_registry.hpp>
-#include <luabind/error.hpp>
-#include <luabind/handle.hpp>
-#include <luabind/detail/primitives.hpp>
-#include <luabind/typeid.hpp>
-#include <luabind/detail/ref.hpp>
 
 namespace luabind { namespace detail
 {

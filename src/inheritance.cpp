@@ -4,16 +4,19 @@
 
 #define LUABIND_BUILDING
 
-#include <limits>
-#include <map>
-#include <vector>
-#include <queue>
+#include <luabind/detail/inheritance.hpp>
+#include <luabind/typeid.hpp>
+
 #include <boost/dynamic_bitset.hpp>
 #include <boost/foreach.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
-#include <luabind/typeid.hpp>
-#include <luabind/detail/inheritance.hpp>
+
+#include <limits>
+#include <map>
+#include <queue>
+#include <vector>
+
 
 namespace luabind { namespace detail {
 

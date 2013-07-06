@@ -22,13 +22,12 @@
 
 #define LUABIND_BUILDING
 
-#include <boost/foreach.hpp>
-
-#include <luabind/lua_include.hpp>
-
-#include <luabind/config.hpp>
 #include <luabind/class.hpp>
+#include <luabind/config.hpp>
 #include <luabind/nil.hpp>
+
+#include <boost/foreach.hpp>
+#include <luabind/lua_include.hpp>
 
 #include <cstring>
 #include <iostream>

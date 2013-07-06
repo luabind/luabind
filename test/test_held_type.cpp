@@ -23,7 +23,9 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 #include <luabind/version.hpp>
+
 #include <boost/shared_ptr.hpp>
+
 #include <memory>
 
 namespace luabind {

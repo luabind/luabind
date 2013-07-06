@@ -5,13 +5,16 @@
 #ifndef LUABIND_INHERITANCE_090217_HPP
 # define LUABIND_INHERITANCE_090217_HPP
 
+# include <luabind/typeid.hpp>
+
+# include <boost/scoped_ptr.hpp>
+
 # include <cassert>
 # include <limits>
 # include <map>
 # include <memory>
 # include <vector>
-# include <luabind/typeid.hpp>
-# include <boost/scoped_ptr.hpp>
+
 
 namespace luabind { namespace detail {
 

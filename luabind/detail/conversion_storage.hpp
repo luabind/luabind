@@ -6,6 +6,7 @@
 # define LUABIND_CONVERSION_STORAGE_080930_HPP
 
 # include <luabind/config.hpp>
+
 # include <boost/aligned_storage.hpp>
 
 namespace luabind { namespace detail {

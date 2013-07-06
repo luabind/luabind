@@ -24,8 +24,12 @@
 #define CLASS_CACHE_040218_HPP
 
 #include <luabind/prefix.hpp>
-#include <boost/type_traits/add_reference.hpp>
+#include <luabind/detail/class_registry.hpp>
+#include <luabind/detail/class_rep.hpp>
+
 #include <boost/type_traits/add_const.hpp>
+#include <boost/type_traits/add_reference.hpp>
+#include <luabind/lua_state_fwd.hpp>
 
 namespace luabind { namespace detail {
 

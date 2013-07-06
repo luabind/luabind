@@ -21,10 +21,11 @@
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <luabind/detail/has_get_pointer.hpp>
+
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/get_pointer.hpp>
 #include <boost/mpl/assert.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/get_pointer.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
 namespace lb = luabind::detail;
 

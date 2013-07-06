@@ -22,11 +22,11 @@
 
 #define LUABIND_BUILDING
 
-#include <luabind/lua_include.hpp>
-
-#include <luabind/luabind.hpp>
 #include <luabind/class_info.hpp>
 #include <luabind/detail/class_registry.hpp>
+#include <luabind/luabind.hpp>
+
+#include <luabind/lua_include.hpp>
 
 /*
 #include <iostream>

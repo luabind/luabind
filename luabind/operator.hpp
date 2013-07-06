@@ -23,15 +23,16 @@
 #ifndef OPERATOR_040729_HPP
 #define OPERATOR_040729_HPP
 
+#include <luabind/detail/other.hpp>
+#include <luabind/raw_policy.hpp>
+
+#include <boost/mpl/apply_wrap.hpp>
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/identity.hpp>
-#include <boost/mpl/apply_wrap.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <luabind/detail/other.hpp>
-#include <luabind/raw_policy.hpp>
 
 #if defined(__GNUC__) && __GNUC__ < 3
 # define LUABIND_NO_STRINGSTREAM

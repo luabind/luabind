@@ -33,6 +33,7 @@
 // to its suitability for any purpose.
 
 #include <luabind/config.hpp>
+
 #include <boost/config.hpp>
 
 namespace luabind

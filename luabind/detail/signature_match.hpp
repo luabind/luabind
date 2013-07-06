@@ -26,14 +26,13 @@
 #include <luabind/config.hpp>
 
 #include <boost/config.hpp>
+#include <boost/mpl/remove.hpp>
+#include <boost/mpl/size.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/preprocessor/arithmetic/inc.hpp>
+#include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
-#include <boost/preprocessor/cat.hpp>
-#include <boost/preprocessor/arithmetic/inc.hpp>
-
-#include <boost/mpl/vector.hpp>
-#include <boost/mpl/size.hpp>
-#include <boost/mpl/remove.hpp>
 
 namespace luabind
 {

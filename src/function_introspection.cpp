@@ -36,13 +36,13 @@
 #define LUABIND_BUILDING
 
 // Internal Includes
-#include <luabind/function_introspection.hpp>
 #include <luabind/config.hpp>              // for LUABIND_API
-#include <luabind/detail/stack_utils.hpp>  // for stack_pop
-#include <luabind/function.hpp>            // for def, is_luabind_function
 #include <luabind/detail/call.hpp>         // for function_object
-#include <luabind/object.hpp>              // for argument, object, etc
+#include <luabind/detail/stack_utils.hpp>  // for stack_pop
 #include <luabind/from_stack.hpp>          // for from_stack
+#include <luabind/function.hpp>            // for def, is_luabind_function
+#include <luabind/function_introspection.hpp>
+#include <luabind/object.hpp>              // for argument, object, etc
 #include <luabind/scope.hpp>               // for module, module_, scope
 
 // Library/third-party includes

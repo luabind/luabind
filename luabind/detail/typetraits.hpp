@@ -25,11 +25,12 @@
 #define LUABIND_TYPETRAITS_HPP_INCLUDED
 
 #include <luabind/config.hpp>
-#include <boost/mpl/if.hpp>
-#include <boost/type_traits/is_reference.hpp>
-#include <boost/type_traits/is_const.hpp>
 #include <luabind/detail/primitives.hpp>
 #include <luabind/detail/yes_no.hpp>
+
+#include <boost/mpl/if.hpp>
+#include <boost/type_traits/is_const.hpp>
+#include <boost/type_traits/is_reference.hpp>
 
 namespace luabind { namespace detail
 {

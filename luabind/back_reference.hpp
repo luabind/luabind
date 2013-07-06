@@ -23,16 +23,16 @@
 #ifndef LUABIND_BACK_REFERENCE_040510_HPP
 #define LUABIND_BACK_REFERENCE_040510_HPP
 
-#include <luabind/lua_state_fwd.hpp>
-
 #ifndef LUABIND_NO_RTTI
 #include <luabind/wrapper_base.hpp>
 #endif
 
 #include <luabind/detail/has_get_pointer.hpp>
 #include <luabind/get_pointer.hpp>
-#include <boost/type_traits/is_polymorphic.hpp>
+
 #include <boost/mpl/bool.hpp>
+#include <boost/type_traits/is_polymorphic.hpp>
+#include <luabind/lua_state_fwd.hpp>
 
 namespace luabind {
   struct wrap_base;

@@ -27,20 +27,20 @@
 #define LUABIND_CALL_FUNCTION_HPP_INCLUDED
 
 #include <luabind/config.hpp>
-
-#include <boost/mpl/if.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/mpl/or.hpp>
-#include <boost/preprocessor/repeat.hpp>
-#include <boost/preprocessor/iteration/iterate.hpp>
-#include <boost/preprocessor/repetition/enum.hpp>
-#include <boost/preprocessor/repetition/enum_params.hpp>
-#include <boost/preprocessor/repetition/enum_binary_params.hpp>
-#include <boost/preprocessor/punctuation/comma_if.hpp>
-
-#include <luabind/error.hpp>
 #include <luabind/detail/convert_to_lua.hpp>
 #include <luabind/detail/pcall.hpp>
+#include <luabind/error.hpp>
+#include <luabind/object.hpp>
+
+#include <boost/mpl/if.hpp>
+#include <boost/mpl/or.hpp>
+#include <boost/preprocessor/iteration/iterate.hpp>
+#include <boost/preprocessor/punctuation/comma_if.hpp>
+#include <boost/preprocessor/repeat.hpp>
+#include <boost/preprocessor/repetition/enum.hpp>
+#include <boost/preprocessor/repetition/enum_binary_params.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/tuple/tuple.hpp>
 
 namespace luabind
 {
