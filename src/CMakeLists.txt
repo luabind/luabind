@@ -69,7 +69,6 @@ set(luabind_HDRS
     ../luabind/yield_policy.hpp)
 
 set(luabind_detail_HDRS
-    ../luabind/detail/calc_arity.hpp
     ../luabind/detail/call.hpp
     ../luabind/detail/call_function.hpp
     ../luabind/detail/call_member.hpp

@@ -103,7 +103,7 @@
 #include <luabind/detail/class_rep.hpp>
 #include <luabind/detail/call.hpp>
 #include <luabind/detail/object_rep.hpp>
-#include <luabind/detail/calc_arity.hpp>
+#include <luabind/detail/signature_match.hpp>
 #include <luabind/detail/call_member.hpp>
 #include <luabind/detail/enum_maker.hpp>
 #include <luabind/detail/operator_id.hpp>
