@@ -83,7 +83,6 @@
 #include <luabind/detail/link_compatibility.hpp>
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/operator_id.hpp>
-#include <luabind/detail/pointee_typeid.hpp>
 #include <luabind/detail/primitives.hpp>
 #include <luabind/detail/property.hpp>
 #include <luabind/detail/signature_match.hpp>

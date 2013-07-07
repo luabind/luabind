@@ -89,7 +89,6 @@ set(luabind_detail_HDRS
     ../luabind/detail/has_get_pointer.hpp
     ../luabind/detail/inheritance.hpp
     ../luabind/detail/instance_holder.hpp
-    ../luabind/detail/is_indirect_const.hpp
     ../luabind/detail/link_compatibility.hpp
     ../luabind/detail/make_instance.hpp
     ../luabind/detail/most_derived.hpp
@@ -101,7 +100,6 @@ set(luabind_detail_HDRS
     ../luabind/detail/other.hpp
     ../luabind/detail/pcall.hpp
     ../luabind/detail/pointee_sizeof.hpp
-    ../luabind/detail/pointee_typeid.hpp
     ../luabind/detail/policy.hpp
     ../luabind/detail/primitives.hpp
     ../luabind/detail/property.hpp

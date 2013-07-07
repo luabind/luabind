@@ -22,7 +22,6 @@
 
 #include "test.hpp"
 
-#include <luabind/detail/is_indirect_const.hpp>
 #include <luabind/detail/pointee_sizeof.hpp>
 #include <luabind/detail/typetraits.hpp>
 
@@ -60,10 +59,4 @@ void test_main(lua_State*)
     BOOST_STATIC_ASSERT(!is_nonconst_pointer<const tester*>::value);
 
     BOOST_STATIC_ASSERT(!is_const_reference<const tester>::value);
-
-    BOOST_STATIC_ASSERT(!luabind::is_indirect_const<int&>::value);
-    BOOST_STATIC_ASSERT(is_indirect_const<const int>::value);
-    BOOST_STATIC_ASSERT(is_indirect_const<const int&>::value);
-    BOOST_STATIC_ASSERT(!is_indirect_const<int*>::value);
-    BOOST_STATIC_ASSERT(is_indirect_const<const int*>::value);
 }
