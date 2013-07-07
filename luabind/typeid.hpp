@@ -19,6 +19,15 @@
 #  include <cxxabi.h>
 # endif // __GNUC__
 
+// See https://svn.boost.org/trac/boost/ticket/754
+# if (defined(__GNUC__) && __GNUC__ >= 3) \
+      || defined(_AIX) \
+      || (defined(__sgi) && defined(__host_mips)) \
+      || (defined(__hpux) && defined(__HP_aCC)) \
+      || (defined(linux) && defined(__INTEL_COMPILER) && defined(__ICC))
+#  define LUABIND_SAFE_TYPEID 
+# endif
+
 namespace luabind {
 
 # ifdef BOOST_MSVC
@@ -43,17 +52,29 @@ public:
 
     bool operator!=(type_id const& other) const
     {
+# ifdef LUABIND_SAFE_TYPEID
         return std::strcmp(m_id->name(), other.m_id->name()) != 0;
+# else
+        return *m_id != *other.m_id;
+# endif
     }
 
     bool operator==(type_id const& other) const
     {
+# ifdef LUABIND_SAFE_TYPEID
         return std::strcmp(m_id->name(), other.m_id->name()) == 0;
+# else
+        return *m_id == *other.m_id;
+# endif
     }
 
     bool operator<(type_id const& other) const
     {
+# ifdef LUABIND_SAFE_TYPEID
         return std::strcmp(m_id->name(), other.m_id->name()) < 0;
+# else
+        return m_id->before(*other.m_id);
+# endif
     }
 
     std::string name() const
