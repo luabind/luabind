@@ -17,12 +17,11 @@ if (MSVC)
         # ("comma operator within array index expression"):
         "/wd4709")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
     # see http://stackoverflow.com/a/11004675/2128694
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
         execute_process(
             COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-        if (GCC_VERSION VERSION_GREATER 4.7 OR GCC_VERSION VERSION_EQUAL 4.7)
+        if (GCC_VERSION VERSION_GREATER 4.7 OR GCC_VERSION VERSION_EQUAL 4.7 AND NOT LUABIND_NO_CXX11)
             add_definitions("-std=c++11")
         endif()
         add_definitions("-pedantic" "-Wall" "-Wextra" "-Wcast-align"
@@ -36,8 +35,10 @@ else()
                         "-Wsign-conversion" "-Wsign-promo"
                         "-Wstrict-null-sentinel" "-Wstrict-overflow=5"
                         "-Wno-deprecated-declarations") # auto_ptr is OK for now.
-    elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" AND NOT LUABIND_NO_CXX11)
+        # I do not know (a) since when Clang supports this flags and (b) how to
+        # check Clang's version. Use LUABIND_NO_CXX11 manually if you need to.
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
     endif ()
 endif()
 
