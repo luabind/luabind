@@ -45,7 +45,7 @@ namespace luabind { namespace detail
 
             while (lua_next(L, -2))
             {
-                lua_pushstring(L, "__init");
+                lua_pushliteral(L, "__init");
                 if (lua_compare(L, -1, -3, LUA_OPEQ))
                 {
                     lua_pop(L, 2);
@@ -53,7 +53,7 @@ namespace luabind { namespace detail
                 }
                 else lua_pop(L, 1); // __init string
 
-                lua_pushstring(L, "__finalize");
+                lua_pushliteral(L, "__finalize");
                 if (lua_compare(L, -1, -3, LUA_OPEQ))
                 {
                     lua_pop(L, 2);
@@ -79,7 +79,7 @@ namespace luabind { namespace detail
 
         if (!is_class_rep(L, 1))
         {
-            lua_pushstring(L, "expected class to derive from or a newline");
+            lua_pushliteral(L, "expected class to derive from or a newline");
             lua_error(L);
         }
 
@@ -110,13 +110,13 @@ namespace luabind { namespace detail
 
         if (lua_gettop(L) != 1 || lua_type(L, 1) != LUA_TSTRING || lua_isnumber(L, 1))
         {
-            lua_pushstring(L, "invalid construct, expected class name");
+            lua_pushliteral(L, "invalid construct, expected class name");
             lua_error(L);
         }
 
         if (std::strlen(lua_tostring(L, 1)) != lua_rawlen(L, 1))
         {
-            lua_pushstring(L, "luabind does not support class names with extra nulls");
+            lua_pushliteral(L, "luabind does not support class names with extra nulls");
             lua_error(L);
         }
 

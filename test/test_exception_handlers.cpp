@@ -12,7 +12,7 @@ struct my_exception {};
 
 void translate_my_exception(lua_State* L, my_exception const&)
 {
-    lua_pushstring(L, "my_exception");
+    lua_pushliteral(L, "my_exception");
 }
 
 struct derived_std_exception : std::exception
@@ -25,7 +25,7 @@ struct derived_std_exception : std::exception
 
 void translate_derived_exception(lua_State* L, derived_std_exception const&)
 {
-    lua_pushstring(L, "derived_std_exception");
+    lua_pushliteral(L, "derived_std_exception");
 }
 
 void raise_my_exception()

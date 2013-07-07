@@ -76,7 +76,7 @@ namespace luabind { namespace detail
     {
         object_rep* instance = static_cast<object_rep*>(lua_touserdata(L, 1));
 
-        lua_pushstring(L, "__finalize");
+        lua_pushliteral(L, "__finalize");
         lua_gettable(L, 1);
 
         if (lua_isnil(L, -1))
@@ -206,7 +206,7 @@ namespace luabind { namespace detail
           }
 
           lua_pop(L, lua_gettop(L));
-          lua_pushstring(L, "No such operator defined");
+          lua_pushliteral(L, "No such operator defined");
           lua_error(L);
 
           return 0;

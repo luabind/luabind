@@ -31,7 +31,8 @@ struct type_to_string
 {
     static void get(lua_State* L)
     {
-        lua_pushstring(L, get_class_name(L, typeid(T)).c_str());
+        std::string const class_name = get_class_name(L, typeid(T));
+        lua_pushlstring(L, class_name.c_str(), class_name.size());
     }
 };
 
@@ -41,7 +42,7 @@ struct type_to_string<T*>
     static void get(lua_State* L)
     {
         type_to_string<T>::get(L);
-        lua_pushstring(L, "*");
+        lua_pushliteral(L, "*");
         lua_concat(L, 2);
     }
 };
@@ -52,7 +53,7 @@ struct type_to_string<T&>
     static void get(lua_State* L)
     {
         type_to_string<T>::get(L);
-        lua_pushstring(L, "&");
+        lua_pushliteral(L, "&");
         lua_concat(L, 2);
     }
 };
@@ -63,7 +64,7 @@ struct type_to_string<T const>
     static void get(lua_State* L)
     {
         type_to_string<T>::get(L);
-        lua_pushstring(L, " const");
+        lua_pushliteral(L, " const");
         lua_concat(L, 2);
     }
 };
@@ -74,7 +75,7 @@ struct type_to_string<T const>
     { \
         static void get(lua_State* L) \
         { \
-            lua_pushstring(L, #x); \
+            lua_pushliteral(L, #x); \
         } \
     };
 
@@ -103,7 +104,7 @@ struct type_to_string<table<Base> >
 {
     static void get(lua_State* L)
     {
-        lua_pushstring(L, "table");
+        lua_pushliteral(L, "table");
     }
 };
 
@@ -115,7 +116,7 @@ template <class Iter, class End>
 void format_signature_aux(lua_State* L, bool first, Iter, End end)
 {
     if (!first)
-        lua_pushstring(L, ",");
+        lua_pushliteral(L, ",");
     type_to_string<typename Iter::type>::get(L);
     format_signature_aux(L, false, typename mpl::next<Iter>::type(), end);
 }
@@ -127,17 +128,17 @@ void format_signature(lua_State* L, char const* function, Signature)
 
     type_to_string<typename first::type>::get(L);
 
-    lua_pushstring(L, " ");
+    lua_pushliteral(L, " ");
     lua_pushstring(L, function);
 
-    lua_pushstring(L, "(");
+    lua_pushliteral(L, "(");
     format_signature_aux(
         L
       , true
       , typename mpl::next<first>::type()
       , typename mpl::end<Signature>::type()
     );
-    lua_pushstring(L, ")");
+    lua_pushliteral(L, ")");
 
     lua_concat(L, static_cast<int>(mpl::size<Signature>()) * 2 + 2);
 }

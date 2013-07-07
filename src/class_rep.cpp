@@ -42,7 +42,7 @@ namespace luabind { namespace detail
 {
     LUABIND_API int property_tag(lua_State* L)
     {
-        lua_pushstring(L, "luabind: property_tag function can't be called");
+        lua_pushliteral(L, "luabind: property_tag function can't be called");
         lua_error(L);
         return 0;
     }
@@ -79,12 +79,12 @@ void luabind::detail::class_rep::shared_init(lua_State * L) {
 
     m_instance_metatable = (m_class_type == cpp_class) ? r->cpp_instance() : r->lua_instance();
 
-    lua_pushstring(L, "__luabind_cast_graph");
+    lua_pushliteral(L, "__luabind_cast_graph");
     lua_gettable(L, LUA_REGISTRYINDEX);
     m_casts = static_cast<cast_graph*>(lua_touserdata(L, -1));
     lua_pop(L, 1);
 
-    lua_pushstring(L, "__luabind_class_id_map");
+    lua_pushliteral(L, "__luabind_class_id_map");
     lua_gettable(L, LUA_REGISTRYINDEX);
     m_classes = static_cast<class_id_map*>(lua_touserdata(L, -1));
     lua_pop(L, 1);
@@ -208,7 +208,7 @@ int luabind::detail::class_rep::super_callback(lua_State* L)
     }
 
     base->get_table(L);
-    lua_pushstring(L, "__init");
+    lua_pushliteral(L, "__init");
     lua_gettable(L, -2);
     lua_insert(L, 1);
     lua_pop(L, 1);
@@ -299,7 +299,7 @@ bool luabind::detail::is_class_rep(lua_State* L, int index)
 {
     if (lua_getmetatable(L, index) == 0) return false;
 
-    lua_pushstring(L, "__luabind_classrep");
+    lua_pushliteral(L, "__luabind_classrep");
     lua_gettable(L, -2);
     if (lua_toboolean(L, -1))
     {

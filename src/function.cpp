@@ -21,7 +21,7 @@ namespace
 
   void push_function_metatable(lua_State* L)
   {
-      lua_pushstring(L, "luabind.function");
+      lua_pushliteral(L, "luabind.function");
       lua_rawget(L, LUA_REGISTRYINDEX);
 
       if (lua_istable(L, -1))
@@ -31,11 +31,11 @@ namespace
 
       lua_newtable(L);
 
-      lua_pushstring(L, "__gc");
+      lua_pushliteral(L, "__gc");
       lua_pushcclosure(L, &function_destroy, 0);
       lua_rawset(L, -3);
 
-      lua_pushstring(L, "luabind.function");
+      lua_pushliteral(L, "luabind.function");
       lua_pushvalue(L, -2);
       lua_rawset(L, LUA_REGISTRYINDEX);
   }
@@ -109,12 +109,12 @@ void invoke_context::format_error(
     if (candidate_index == 0)
     {
         int stacksize = lua_gettop(L);
-        lua_pushstring(L, "No matching overload found, candidates:\n");
+        lua_pushliteral(L, "No matching overload found, candidates:\n");
         int count = 0;
         for (function_object const* f = overloads; f != 0; f = f->next)
         {
             if (count != 0)
-                lua_pushstring(L, "\n");
+                lua_pushliteral(L, "\n");
             f->format_signature(L, function_name);
             ++count;
         }
@@ -124,11 +124,11 @@ void invoke_context::format_error(
     {
         // Ambiguous
         int stacksize = lua_gettop(L);
-        lua_pushstring(L, "Ambiguous, candidates:\n");
+        lua_pushliteral(L, "Ambiguous, candidates:\n");
         for (int i = 0; i < candidate_index; ++i)
         {
             if (i != 0)
-                lua_pushstring(L, "\n");
+                lua_pushliteral(L, "\n");
             candidates[i]->format_signature(L, function_name);
         }
         lua_concat(L, lua_gettop(L) - stacksize);

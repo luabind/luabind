@@ -24,9 +24,9 @@ namespace
   void push_exception_string(lua_State* L, char const* exception, char const* what)
   {
       lua_pushstring(L, exception);
-      lua_pushstring(L, ": '");
+      lua_pushliteral(L, ": '");
       lua_pushstring(L, what);
-      lua_pushstring(L, "'");
+      lua_pushliteral(L, "'");
       lua_concat(L, 4);
   }
 }
@@ -68,7 +68,7 @@ LUABIND_API void handle_exception_aux(lua_State* L)
     }
     catch (...)
     {
-        lua_pushstring(L, "Unknown C++ exception");
+        lua_pushliteral(L, "Unknown C++ exception");
     }
 }
 

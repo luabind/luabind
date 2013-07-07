@@ -41,7 +41,7 @@ namespace
 
       if (args == 0 || args > 2)
       {
-          lua_pushstring(L, "make_property() called with wrong number of arguments.");
+          lua_pushliteral(L, "make_property() called with wrong number of arguments.");
           lua_error(L);
       }
 
@@ -56,7 +56,7 @@ namespace
 
   int deprecated_super(lua_State* L)
   {
-      lua_pushstring(L,
+      lua_pushliteral(L,
           "DEPRECATION: 'super' has been deprecated in favor of "
           "directly calling the base class __init() function. "
           "This error can be disabled by calling 'luabind::disable_super_deprecation()'."
