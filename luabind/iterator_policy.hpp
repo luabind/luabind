@@ -106,11 +106,19 @@ struct iterator_policy : conversion_policy<0>
 
 }} // namespace luabind::detail
 
-namespace luabind { namespace {
+namespace luabind {
 
-LUABIND_ANONYMOUS_FIX detail::policy_cons<
-    detail::iterator_policy, detail::null_type> return_stl_iterator;
+    detail::policy_cons<detail::iterator_policy, detail::null_type> const
+        return_stl_iterator = {};
+    
+    namespace detail
+    {
+        inline void ignore_unused_return_stl_iterator()
+        {
+            (void)return_stl_iterator;
+        }
+    }
 
-}} // namespace luabind::unnamed
+} // namespace luabind
 
 #endif // LUABIND_ITERATOR_POLICY__071111_HPP

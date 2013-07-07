@@ -44,15 +44,15 @@ struct C
 
 struct property_test : counted_type<property_test>
 {
-    property_test(): o(6), c_ref(&c) {}
+    property_test(): c_ref(&c), o(6) {}
      ~property_test() { c.a = 0; }
 
     std::string str_;
-    int a_;
+    C* c_ref;
+    C c;
     float o;
+    int a_;
     signed char b;
-     C c;
-     C* c_ref;
 
     void set(int a) { a_ = a; }
     int get() const { return a_; }

@@ -588,17 +588,17 @@ namespace adl
 
       template<class Key>
       index_proxy(Next const& next, lua_State* L, Key const& key)
-        : m_interpreter(L)
+        : m_next(next)
+        , m_interpreter(L)
         , m_key_index(lua_gettop(L) + 1)
-        , m_next(next)
       {
           detail::push(m_interpreter, key);
       }
 
       index_proxy(index_proxy const& other)
-        : m_interpreter(other.m_interpreter)
+        : m_next(other.m_next)
+        , m_interpreter(other.m_interpreter)
         , m_key_index(other.m_key_index)
-        , m_next(other.m_next)
       {
           other.m_interpreter = 0;
       }
@@ -665,10 +665,9 @@ namespace adl
 
 //      this_type& operator=(index_proxy<Next> const&);
 
+      Next const& m_next;
       mutable lua_State* m_interpreter;
       int m_key_index;
-
-      Next const& m_next;
   };
 
 } // namespace adl

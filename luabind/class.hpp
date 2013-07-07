@@ -382,11 +382,11 @@ namespace luabind
               , Set const& set_ = Set()
               , SetPolicies const& set_policies_ = SetPolicies()
             )
-              : name(name_)
+              : set(set_)
+              , set_policies(set_policies_)
               , get(get_)
               , get_policies(get_policies_)
-              , set(set_)
-              , set_policies(set_policies_)
+              , name(name_)
             {}
 
             void register_(lua_State* L) const
@@ -457,12 +457,12 @@ namespace luabind
             {
                 context[name] = property(get_);
             }
-
-            char const* name;
-            Get get;
-            GetPolicies get_policies;
+            
             Set set;
             SetPolicies set_policies;
+            Get get;
+            GetPolicies get_policies;
+            char const* name;
         };
 
     } // namespace detail

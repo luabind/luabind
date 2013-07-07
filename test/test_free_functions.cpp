@@ -51,6 +51,7 @@ base* create_base()
     return new base();
 }
 
+#if !(BOOST_MSVC < 1300)
 void test_value_converter(const std::string str)
 {
     TEST_CHECK(str == "converted string");
@@ -60,6 +61,7 @@ void test_pointer_converter(const char* const str)
 {
     TEST_CHECK(std::strcmp(str, "converted string") == 0);
 }
+#endif
 
 struct copy_me
 {

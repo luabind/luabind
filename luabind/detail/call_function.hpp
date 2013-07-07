@@ -61,19 +61,19 @@ namespace luabind
                     , int params
                     , function_t fun
                     , const Tuple args)
-                    : m_state(L)
-                    , m_params(params)
+                    : m_args(args)
                     , m_fun(fun)
-                    , m_args(args)
+                    , m_state(L)
+                    , m_params(params)
                     , m_called(false)
                 {
                 }
 
                 proxy_function_caller(const proxy_function_caller& rhs)
-                    : m_state(rhs.m_state)
-                    , m_params(rhs.m_params)
+                    : m_args(rhs.m_args)
                     , m_fun(rhs.m_fun)
-                    , m_args(rhs.m_args)
+                    , m_state(rhs.m_state)
+                    , m_params(rhs.m_params)
                     , m_called(rhs.m_called)
                 {
                     rhs.m_called = true;
@@ -209,10 +209,10 @@ namespace luabind
 
             private:
 
+                Tuple m_args;
+                function_t m_fun;
                 lua_State* m_state;
                 int m_params;
-                function_t m_fun;
-                Tuple m_args;
                 mutable bool m_called;
 
             };

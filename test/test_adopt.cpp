@@ -31,11 +31,6 @@ int Base::count = 0;
 struct Base_wrap : Base, luabind::wrap_base
 {};
 
-void destroy(Base* p)
-{
-    delete p;
-}
-
 Base* adopted = 0;
 
 void take_ownership(Base* p)

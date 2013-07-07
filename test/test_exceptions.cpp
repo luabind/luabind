@@ -23,6 +23,8 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+namespace {
+
 struct ex : public std::exception, public counted_type<ex>
 {
     ex(const char* m): msg(m) {}
@@ -38,9 +40,14 @@ struct exception_thrower : counted_type<exception_thrower>
 #   pragma warning(push)
 #   pragma warning(disable:4702) // warning C4702: unreachable code
 #endif
-    exception_thrower(int) { throw ex("exception description"); }
-    exception_thrower(int, int) { throw "a string exception"; }
-    exception_thrower(int, int, int) { throw 10; }
+    LUABIND_ATTRIBUTE_NORETURN exception_thrower(int)
+    { throw ex("exception description"); }
+    
+    LUABIND_ATTRIBUTE_NORETURN exception_thrower(int, int)
+    { throw "a string exception"; }
+    
+    LUABIND_ATTRIBUTE_NORETURN exception_thrower(int, int, int)
+    { throw 10; }
 #ifdef BOOST_MSVC
 #   pragma warning(pop)
 #endif
@@ -50,6 +57,8 @@ struct exception_thrower : counted_type<exception_thrower>
 };
 
 COUNTER_GUARD(exception_thrower);
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

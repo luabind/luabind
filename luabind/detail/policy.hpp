@@ -686,7 +686,7 @@ struct default_converter<type> \
     int compute_score(lua_State* L, int index) \
     { \
         return lua_type(L, index) == LUA_TNUMBER ? 0 : -1; \
-    }; \
+    } \
     \
     type from(lua_State* L, int index) \
     { \
@@ -724,7 +724,7 @@ struct default_converter<type> \
     int compute_score(lua_State* L, int index) \
     { \
         return lua_type(L, index) == LUA_TNUMBER ? 0 : -1; \
-    }; \
+    } \
     \
     type from(lua_State* L, int index) \
     { \

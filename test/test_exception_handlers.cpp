@@ -28,12 +28,12 @@ void translate_derived_exception(lua_State* L, derived_std_exception const&)
     lua_pushliteral(L, "derived_std_exception");
 }
 
-void raise_my_exception()
+void LUABIND_ATTRIBUTE_NORETURN raise_my_exception()
 {
     throw my_exception();
 }
 
-void raise_derived()
+void LUABIND_ATTRIBUTE_NORETURN raise_derived()
 {
     throw derived_std_exception();
 }

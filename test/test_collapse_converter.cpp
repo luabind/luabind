@@ -9,16 +9,16 @@ namespace {
 
 struct X
 {
-    X(int x_, int y_)
+    X(lua_Integer x_, lua_Integer y_)
       : x(x_)
       , y(y_)
     {}
 
-    int x;
-    int y;
+    lua_Integer x;
+    lua_Integer y;
 };
 
-int take(X x)
+lua_Integer take(X x)
 {
     return x.x + x.y;
 }
@@ -53,8 +53,8 @@ struct default_converter<X>
         return X(lua_tointeger(L, index), lua_tointeger(L, index + 1));
     }
 
-    default_converter<int> c1;
-    default_converter<int> c2;
+    default_converter<lua_Integer> c1;
+    default_converter<lua_Integer> c2;
 };
 
 } // namespace luabind

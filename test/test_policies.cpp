@@ -83,8 +83,6 @@ policies_test_class const* copy_val_const() { return &global; }
 
 secret_type* secret() { return &sec_; }
 
-void aux_test();
-
 struct test_t {
     test_t *make(int) { return new test_t(); }
     void take(test_t*) {}

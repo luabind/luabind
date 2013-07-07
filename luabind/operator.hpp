@@ -178,7 +178,7 @@ namespace detail {
     };
 
     template<class Policies>
-    inline void operator_result(lua_State* L, operator_void_return, Policies*)
+    inline void operator_result(lua_State*, operator_void_return, Policies*)
     {
     }
 

@@ -49,30 +49,11 @@ struct B: A, counted_type<B>
 
 struct C : counted_type<C> {};
 
-struct base1 : counted_type<base1>
-{
-    virtual void doSomething() = 0;
-    virtual ~base1() {}
-};
-
-struct deriv_1 : base1, counted_type<deriv_1>
-{
-    void doSomething() {}
-};
-
-struct deriv_2 : deriv_1, counted_type<deriv_2>
-{
-    void doMore() {}
-};
-
 COUNTER_GUARD(A);
 COUNTER_GUARD(B);
 COUNTER_GUARD(C);
-COUNTER_GUARD(base1);
-COUNTER_GUARD(deriv_1);
-COUNTER_GUARD(deriv_2);
 
-}
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

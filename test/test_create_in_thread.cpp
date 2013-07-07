@@ -5,6 +5,8 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+namespace {
+
 int count = 0;
 
 struct X
@@ -28,6 +30,8 @@ struct Y
 
 struct Y_wrap : Y, luabind::wrap_base
 {};
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

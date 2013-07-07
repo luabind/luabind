@@ -28,6 +28,7 @@
 
 namespace {
 
+/*
 struct base : counted_type<base>
 {
     int f()
@@ -37,16 +38,19 @@ struct base : counted_type<base>
 };
 
 COUNTER_GUARD(base);
+*/
 
 int f(int x)
 {
     return x + 1;
 }
 
+/*
 int f(int x, int y)
 {
     return x + y;
 }
+*/
 
 } // namespace unnamed
 

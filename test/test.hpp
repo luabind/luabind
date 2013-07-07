@@ -31,6 +31,15 @@
 
 #include <string>
 
+// See boost/exception/detail/attribute_noreturn.hpp
+#if defined(_MSC_VER)
+#define LUABIND_ATTRIBUTE_NORETURN __declspec(noreturn)
+#elif defined(__GNUC__)
+#define LUABIND_ATTRIBUTE_NORETURN __attribute__((__noreturn__))
+#else
+#define LUABIND_ATTRIBUTE_NORETURN
+#endif
+
 
 // Individual tests must provide a definition for this function:
 void test_main(lua_State* L);

@@ -9,19 +9,19 @@ namespace {
 
 struct X
 {
-    X(int value_)
+    X(lua_Integer value_)
       : value(value_)
     {}
 
-    int value;
+    lua_Integer value;
 };
 
-int take(X x)
+lua_Integer take(X x)
 {
     return x.value;
 }
 
-X get(int value)
+X get(lua_Integer value)
 {
     return X(value);
 }

@@ -87,8 +87,8 @@ namespace
     struct weak_ref::impl
     {
         impl(lua_State* main, lua_State* s, int index)
-            : count(0)
-            , state(main)
+            : state(main)
+            , count(0)
             , ref(0)
         {
 
@@ -111,8 +111,8 @@ namespace
             lua_pop(state, 1);
         }
 
-        int count;
         lua_State* state;
+        int count;
         int ref;
     };
 

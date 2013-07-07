@@ -51,6 +51,7 @@ set(luabind_HDRS
     ../luabind/make_function.hpp
     ../luabind/nil.hpp
     ../luabind/object.hpp
+    ../luabind/object_fwd.hpp
     ../luabind/open.hpp
     ../luabind/operator.hpp
     ../luabind/out_value_policy.hpp
@@ -114,6 +115,11 @@ source_group("detail headers" FILES ${luabind_detail_HDRS})
 set(CMAKE_DEBUG_POSTFIX "-d")
 add_library(luabind ${luabind_SRCS} ${luabind_HDRS} ${luabind_detail_HDRS})
 set_property(TARGET luabind PROPERTY OUTPUT_NAME "luabind09")
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    # Clang complains about '#define LUABIND_BUILDING'.
+    set_property(TARGET luabind
+                 PROPERTY COMPILE_FLAGS "-Wno-unused-macros")
+endif()
 
 target_link_libraries(luabind ${LUA_LIBRARIES})
 

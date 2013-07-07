@@ -23,6 +23,8 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 
+namespace {
+
 struct simple_class : counted_type<simple_class>
 {
     static int feedback;
@@ -51,6 +53,8 @@ struct simple_class : counted_type<simple_class>
 int simple_class::feedback = 0;
 
 COUNTER_GUARD(simple_class);
+
+} // namespace unnamed
 
 void test_main(lua_State* L)
 {

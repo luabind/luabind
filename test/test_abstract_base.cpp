@@ -26,6 +26,8 @@
 
 using namespace luabind;
 
+namespace {
+
 struct abstract
 {
     virtual ~abstract() {}
@@ -48,11 +50,6 @@ struct abstract_wrap : abstract, wrap_base
     {
         return call_member<std::string>(this, "hello");
     }
-
-    static void default_hello(abstract const&)
-    {
-        throw std::runtime_error("abstract function");
-    }
 };
 
 static std::string call_hello(abstract& a)
@@ -71,6 +68,8 @@ static abstract const& return_const_abstract_ref()
     static concrete c;
     return c;
 }
+
+} // namespace unnamed
 
 
 void test_main(lua_State* L)

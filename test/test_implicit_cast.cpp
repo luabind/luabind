@@ -46,16 +46,6 @@ struct test_implicit : counted_type<test_implicit>
     char const* f(B*) { return "f(B*)"; }
 };
 
-struct char_pointer_convertable
-  : counted_type<char_pointer_convertable>
-{
-    operator const char*() const { return "foo!"; }
-};
-
-void func(const char_pointer_convertable&)
-{
-}
-
 void not_convertable(boost::shared_ptr<A>)
 {
     TEST_ERROR("not_convertable(boost::shared_ptr<A>) should not be called");
@@ -69,7 +59,6 @@ int f(int& a)
 COUNTER_GUARD(A);
 COUNTER_GUARD(B);
 COUNTER_GUARD(test_implicit);
-COUNTER_GUARD(char_pointer_convertable);
 
 } // namespace unnamed
 
@@ -93,9 +82,6 @@ void test_main(lua_State* L)
             .def("f", static_cast<f1>(&test_implicit::f))
             .def("f", static_cast<f2>(&test_implicit::f)),
 
-        class_<char_pointer_convertable>("char_ptr")
-            .def(constructor<>()),
-
         class_<enum_placeholder>("LBENUM")
             .enum_("constants")
             [
@@ -105,7 +91,6 @@ void test_main(lua_State* L)
         def("enum_by_val", &enum_by_val),
         def("enum_by_const_ref", &enum_by_const_ref),
 
-        def("func", &func),
         def("no_convert", &not_convertable),
         def("f", &f)
     ];
@@ -116,10 +101,6 @@ void test_main(lua_State* L)
 
     DOSTRING(L, "assert(t:f(a) == 'f(A*)')");
     DOSTRING(L, "assert(t:f(b) == 'f(B*)')");
-
-    DOSTRING(L,
-        "a = char_ptr()\n"
-        "func(a)");
 
     DOSTRING(L, "assert(LBENUM.VAL1 == 1)");
     DOSTRING(L, "assert(LBENUM.VAL2 == 2)");

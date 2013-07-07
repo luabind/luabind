@@ -110,7 +110,7 @@ void dostring(lua_State* state, char const* str)
     lua_pop(state, 1);
 }
 
-bool tests_failure = false;
+static bool tests_failure = false;
 
 void report_failure(char const* err, char const* file, int line)
 {

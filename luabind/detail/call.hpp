@@ -64,8 +64,8 @@ struct LUABIND_API invoke_context
 
     void format_error(lua_State* L, function_object const* overloads) const;
 
-    int best_score;
     function_object const* candidates[10];
+    int best_score;
     int candidate_index;
 };
 

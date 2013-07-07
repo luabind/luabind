@@ -99,9 +99,9 @@ namespace luabind { namespace detail
 
         void operator=(object_rep const&);
 
-        instance_holder* m_instance;
         BOOST_STATIC_CONSTANT(std::size_t, instance_buffer_size=32);
         boost::aligned_storage<instance_buffer_size> m_instance_buffer;
+        instance_holder* m_instance;
         class_rep* m_classrep; // the class information about this object's type
         std::size_t m_dependency_cnt; // counts dependencies
     };

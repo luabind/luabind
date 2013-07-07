@@ -35,19 +35,6 @@ struct test_class : counted_type<test_class>
     }
 };
 
-int f(int)
-{
-    return 9;
-}
-
-int j(lua_State* L)
-{
-    lua_pushnumber(L, 9);
-    return lua_yield(L, 1);
-}
-
-void f() {}
-
 COUNTER_GUARD(test_class);
 
 } // namespace unnamed
