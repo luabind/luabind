@@ -35,10 +35,15 @@ else()
                         "-Wsign-conversion" "-Wsign-promo"
                         "-Wstrict-null-sentinel" "-Wstrict-overflow=5"
                         "-Wno-deprecated-declarations") # auto_ptr is OK for now.
-    elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" AND NOT LUABIND_NO_CXX11)
-        # I do not know (a) since when Clang supports this flags and (b) how to
-        # check Clang's version. Use LUABIND_NO_CXX11 manually if you need to.
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+        add_definitions("-Weverything" "-Wno-shadow" "-Wno-undef"
+                        "-Wno-global-constructors" "-Wno-weak-vtables"
+                        "-Wno-padded" "-Wno-exit-time-destructors")
+        if (NOT LUABIND_NO_CXX11)
+            # I do not know (a) since when Clang supports this flags and (b) how to
+            # check Clang's version. Use LUABIND_NO_CXX11 manually if you need to.
+            add_definitions("-std=c++11" "-Wno-c++98-compat")
+        endif()
     endif ()
 endif()
 

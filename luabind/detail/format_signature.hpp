@@ -7,20 +7,13 @@
 
 # include <luabind/config.hpp>
 # include <luabind/lua_include.hpp>
+# include <luabind/object_fwd.hpp>
 # include <luabind/typeid.hpp>
 
 # include <boost/mpl/begin_end.hpp>
 # include <boost/mpl/next.hpp>
 # include <boost/mpl/size.hpp>
 
-namespace luabind {
-
-class object;
-class argument;
-template <class Base>
-struct table;
-
-} // namespace luabind
 
 namespace luabind { namespace detail {
 
