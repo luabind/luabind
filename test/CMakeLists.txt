@@ -72,7 +72,7 @@ foreach(test ${TESTS})
     add_test(${test} test_${test})
 endforeach(test)
 
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU|Clang")
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU|Clang" AND LUABIND_ENABLE_WARNINGS)
     set (priv_dtor_flags "-Wno-ctor-dtor-privacy")
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         set(priv_dtor_flags "${priv_dtor_flags} -Wno-unused-member-function")

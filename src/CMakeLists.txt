@@ -115,7 +115,7 @@ source_group("detail headers" FILES ${luabind_detail_HDRS})
 set(CMAKE_DEBUG_POSTFIX "-d")
 add_library(luabind ${luabind_SRCS} ${luabind_HDRS} ${luabind_detail_HDRS})
 set_property(TARGET luabind PROPERTY OUTPUT_NAME "luabind09")
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" AND LUABIND_ENABLE_WARNINGS)
     # Clang complains about '#define LUABIND_BUILDING'.
     set_property(TARGET luabind
                  PROPERTY COMPILE_FLAGS "-Wno-unused-macros")
