@@ -1,5 +1,15 @@
 cmake_minimum_required(VERSION 2.6)
 project(luabind)
+
+option(LUABIND_ENABLE_WARNINGS
+       "Enable compiler warnings during the build of luabind and the tests.")
+option(LUABIND_NO_CXX11
+       "Disable C++11 support (only has an effect for g++ and Clang)")
+option(LUABIND_SKIP_TESTS
+       "Do not build the tests (they must be *run* manually in any case)")
+option(LUABIND_BUILD_HEADER_TESTS
+       "Enable this for (many) additional compilation tests (N/A if LUABIND_SKIP_TESTS).")
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/")
 
