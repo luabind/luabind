@@ -9,6 +9,8 @@ option(LUABIND_SKIP_TESTS
        "Do not build the tests (they must be *run* manually in any case)")
 option(LUABIND_BUILD_HEADER_TESTS
        "Enable this for (many) additional compilation tests (N/A if LUABIND_SKIP_TESTS).")
+option(BUILD_SHARED_LIBS
+    "Build luabind as a shared/dynamic library (.so or DLL). You must link Lua dynamically then.")
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/")
@@ -19,6 +21,10 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.51.0 REQUIRED)
 find_package(Lua52 REQUIRED)
 
+if (BUILD_SHARED_LIBS)
+    add_definitions("-DLUABIND_DYNAMIC_LINK")
+endif()
+
 if (MSVC)
     add_definitions("/MP") # Multiprocessor compilation
     if (LUABIND_ENABLE_WARNINGS)
@@ -28,8 +34,15 @@ if (MSVC)
             # Disable incorrect warning C4709
             # ("comma operator within array index expression"):
             "/wd4709")
-        endif(LUABIND_ENABLE_WARNINGS)
-else()
+    endif(LUABIND_ENABLE_WARNINGS)
+    if (BUILD_SHARED_LIBS) # Yes, this also concers the default /W3.
+        # warning C4251
+        # "... needs to have dll-interface to be used by clients of ..."
+        # is issued a lot for private symbols or symbols in a detail
+        # namespace.
+        add_definitions("/wd4251")
+    endif(BUILD_SHARED_LIBS)
+else(MSVC)
     # see http://stackoverflow.com/a/11004675/2128694
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
         execute_process(
@@ -48,7 +61,7 @@ else()
                     OR GCC_VERSION VERSION_EQUAL 4.3)
                 add_definitions("-Wlogical-op" "-Wmissing-declarations"
                                 "-Wsign-conversion")
-            endif()
+            endif() # gcc >= 4.3
             add_definitions("-pedantic" "-Wall" "-Wextra" "-Wcast-align"
                             "-Wcast-qual" "-Wctor-dtor-privacy" "-Winit-self"
                             "-Wdisabled-optimization" "-Wformat=2"
@@ -69,10 +82,10 @@ else()
             add_definitions("-std=c++11")
             if (LUABIND_ENABLE_WARNINGS)
                 add_definitions("-Wno-c++98-compat")
-            endif()
-        endif()
-    endif ()
-endif()
+            endif(LUABIND_ENABLE_WARNINGS)
+        endif(NOT LUABIND_NO_CXX11)
+    endif() # Clang
+endif(MSVC) # else part
 
 add_subdirectory("src")
 

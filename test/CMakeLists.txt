@@ -2,7 +2,7 @@ include_directories(
     ${Boost_INCLUDE_DIRS} ${LUA_INCLUDE_DIR} ${CMAKE_SOURCE_DIR})
     
 add_executable(benchmark "benchmark.cpp")
-target_link_libraries(benchmark ${LUA_LIBRARIES} luabind)
+target_link_libraries(benchmark luabind)
 
 add_library(testmain STATIC
     "main.cpp" "test.hpp"
@@ -10,7 +10,14 @@ add_library(testmain STATIC
     # function:
     "test_has_get_pointer.cpp")
     
-target_link_libraries(testmain ${LUA_LIBRARIES} luabind)
+target_link_libraries(testmain luabind)
+
+if (BUILD_SHARED_LIBS AND MSVC)
+    add_custom_command(TARGET testmain POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            $<TARGET_FILE:luabind> $<TARGET_FILE_DIR:testmain>
+        COMMENT "Copying DLL...")
+endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
