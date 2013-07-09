@@ -60,10 +60,15 @@
 
 #include <memory>
 #include <string>
-#ifndef BOOST_NO_CXX11_SCOPED_ENUMS
-#   include <type_traits>
-#endif
 #include <typeinfo>
+
+#if (   defined(BOOST_NO_CXX11_SCOPED_ENUMS) \
+     || defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS))
+# define LUABIND_NO_SCOPED_ENUM
+#endif
+#ifndef LUABIND_NO_SCOPED_ENUM
+# include <type_traits>
+#endif
 
 #if LUA_VERSION_NUM < 502
 # define lua_rawlen lua_objlen
@@ -475,7 +480,7 @@ namespace luabind { namespace detail
             return 1;
         }
 
-#ifdef BOOST_NO_CXX11_SCOPED_ENUMS
+#ifdef LUABIND_NO_SCOPED_ENUM
         void apply(lua_State* L, int val)
         {
             lua_pushnumber(L, val);
@@ -492,7 +497,7 @@ namespace luabind { namespace detail
         template<class T>
         T apply(lua_State* L, by_value<T>, int index)
         {
-#ifdef BOOST_NO_CXX11_SCOPED_ENUMS
+#ifdef LUABIND_NO_SCOPED_ENUM
             typedef int integral_t;
 #else
             typedef typename std::underlying_type<T>::type integral_t;
