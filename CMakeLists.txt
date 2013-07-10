@@ -53,7 +53,9 @@ else(MSVC)
             if (LUABIND_ENABLE_WARNINGS)
                 add_definitions("-Wnoexcept")
             endif(LUABIND_ENABLE_WARNINGS)
-        endif() # gcc >= 4.7 and C++11 support not explicitly disabled
+        elseif(LUABIND_ENABLE_WARNINGS)
+            add_definitions("-Wno-long-long")
+        endif()
         # This warning is enabled by default:
         add_definitions("-Wno-deprecated-declarations") # auto_ptr is OK for now.
         if (LUABIND_ENABLE_WARNINGS)
@@ -81,9 +83,11 @@ else(MSVC)
             # check Clang's version. Use LUABIND_NO_CXX11 manually if you need to.
             add_definitions("-std=c++11")
             if (LUABIND_ENABLE_WARNINGS)
-                add_definitions("-Wno-c++98-compat")
+                add_definitions("-Wno-c++98-compat" "-Wno-c++98-compat-pedantic")
             endif(LUABIND_ENABLE_WARNINGS)
-        endif(NOT LUABIND_NO_CXX11)
+        elseif(LUABIND_ENABLE_WARNINGS)
+            add_definitions("-Wno-c++11-long-long")
+        endif()
     endif() # Clang
 endif(MSVC) # else part
 
