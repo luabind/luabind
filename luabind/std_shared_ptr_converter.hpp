@@ -1,14 +1,25 @@
-#ifndef STD_SHAREDPTR_CONVERTER_HPP_INCLUDED
-#define STD_SHAREDPTR_CONVERTER_HPP_INCLUDED STD_SHAREDPTR_CONVERTER_HPP_INCLUDED
+#if defined(LUABIND_TEST_HEADERCOMPILE)
+# include <boost/config.hpp>
+# if (defined(BOOST_NO_CXX11_SMART_PTR) \
+      && (!defined(BOOST_MSVC) || BOOST_MSVC < 1600))
+// Skip file contents if in headercompile test and std::shared_ptr is not
+// supported.
+#  define LUABIND_STD_SHAREDPTR_CONVERTER_HPP_INCLUDED
+# endif
+#endif
 
-#include <boost/version.hpp>
+
+#ifndef LUABIND_STD_SHAREDPTR_CONVERTER_HPP_INCLUDED
+#define LUABIND_STD_SHAREDPTR_CONVERTER_HPP_INCLUDED LUABIND_STD_SHAREDPTR_CONVERTER_HPP_INCLUDED
+
+#include <boost/config.hpp>
 
 #include <memory> // shared_ptr
 
 #if BOOST_VERSION >= 105300
-#include <luabind/detail/has_get_pointer.hpp>
+# include <luabind/detail/has_get_pointer.hpp>
 
-#include <boost/get_pointer.hpp>
+# include <boost/get_pointer.hpp>
 
 namespace luabind { namespace detail { namespace has_get_pointer_ {
   template<class T>
