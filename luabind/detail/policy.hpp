@@ -754,17 +754,26 @@ struct default_converter<type const&> \
 
 #endif
 
+// TODO: The preprocessor does not have access to enough information to
+// relieably determine which of lua_tointeger or lua_tonumber would be better.
+// Convert to using template metaprogramming (could use boost::is_arithmetic).
+
 LUABIND_NUMBER_CONVERTER(char, integer)
 LUABIND_NUMBER_CONVERTER(signed char, integer)
 LUABIND_NUMBER_CONVERTER(unsigned char, integer)
 LUABIND_NUMBER_CONVERTER(signed short, integer)
 LUABIND_NUMBER_CONVERTER(unsigned short, integer)
-LUABIND_NUMBER_CONVERTER(signed int, integer)
 
+LUABIND_NUMBER_CONVERTER(signed int, integer)
 LUABIND_NUMBER_CONVERTER(unsigned int, number)
 LUABIND_NUMBER_CONVERTER(unsigned long, number)
-
 LUABIND_NUMBER_CONVERTER(signed long, integer)
+
+#ifndef BOOST_NO_LONG_LONG
+    LUABIND_NUMBER_CONVERTER(signed long long, number)
+    LUABIND_NUMBER_CONVERTER(unsigned long long, number)
+#endif
+
 LUABIND_NUMBER_CONVERTER(float, number)
 LUABIND_NUMBER_CONVERTER(double, number)
 LUABIND_NUMBER_CONVERTER(long double, number)
