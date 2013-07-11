@@ -100,6 +100,7 @@ IF(_LUA_LIBRARY_RELEASE OR _LUA_LIBRARY_DEBUG)
   
   IF(UNIX AND NOT APPLE)
     FIND_LIBRARY(_LUA_MATH_LIBRARY m)
+    mark_as_advanced(_LUA_MATH_LIBRARY)
   ENDIF(UNIX AND NOT APPLE)
    # For Windows and Mac, don't need to explicitly include the math library
 ENDIF()
@@ -121,7 +122,7 @@ INCLUDE(${CMAKE_ROOT}/Modules/FindPackageHandleStandardArgs.cmake)
 # handle the QUIETLY and REQUIRED arguments and set LUA_FOUND to TRUE if
 # all listed variables are TRUE
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Lua52
-                                  REQUIRED_VARS LUA_LIBRARIES LUA_INCLUDE_DIR
+                                  REQUIRED_VARS LUA_INCLUDE_DIR LUA_LIBRARIES
                                   VERSION_VAR LUA_VERSION_STRING)
 
 MARK_AS_ADVANCED(LUA_INCLUDE_DIR LUA_LIBRARIES LUA_LIBRARY LUA_MATH_LIBRARY
