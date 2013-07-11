@@ -1,16 +1,25 @@
 cmake_minimum_required(VERSION 2.6)
 project(luabind)
 
+include(CMakeDependentOption)
+
 option(LUABIND_ENABLE_WARNINGS
        "Enable compiler warnings during the build of luabind and the tests.")
-option(LUABIND_NO_CXX11
-       "Disable C++11 support (only has an effect for g++ and Clang)")
+       
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU|Clang")
+    option(LUABIND_NO_CXX11 "Disable C++11 support." OFF)
+endif()
+
 option(LUABIND_SKIP_TESTS
        "Do not build the tests (they must be *run* manually in any case)")
-option(LUABIND_BUILD_HEADER_TESTS
-       "Enable this for (many) additional compilation tests (N/A if LUABIND_SKIP_TESTS).")
+
+CMAKE_DEPENDENT_OPTION(LUABIND_BUILD_HEADER_TESTS
+       "Enable this for (many) additional compilation tests." OFF
+       "NOT LUABIND_SKIP_TESTS" OFF)
+
 option(LUABIND_APPEND_VERSION_SUFFIX
     "Append the 09 suffix to generated libraries (recommended)." ON)
+
 option(BUILD_SHARED_LIBS
     "Build luabind as a shared/dynamic library (.so or DLL). You must link Lua dynamically then.")
 
