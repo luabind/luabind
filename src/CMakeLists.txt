@@ -114,7 +114,15 @@ source_group("detail headers" FILES ${luabind_detail_HDRS})
 
 set(CMAKE_DEBUG_POSTFIX "-d")
 add_library(luabind ${luabind_SRCS} ${luabind_HDRS} ${luabind_detail_HDRS})
-set_property(TARGET luabind PROPERTY OUTPUT_NAME "luabind09")
+
+if (LUABIND_APPEND_VERSION_SUFFIX)
+    set_property(TARGET luabind PROPERTY OUTPUT_NAME "luabind09")
+else()
+    # This is neccesary when the LUABIND_APPEND_VERSION_SUFFIX variable is
+    # changed from ON to OFF.
+    set_property(TARGET luabind PROPERTY OUTPUT_NAME "luabind")
+endif()
+
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" AND LUABIND_ENABLE_WARNINGS)
     # Clang complains about '#define LUABIND_BUILDING'.
     set_property(TARGET luabind

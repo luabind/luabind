@@ -9,6 +9,8 @@ option(LUABIND_SKIP_TESTS
        "Do not build the tests (they must be *run* manually in any case)")
 option(LUABIND_BUILD_HEADER_TESTS
        "Enable this for (many) additional compilation tests (N/A if LUABIND_SKIP_TESTS).")
+option(LUABIND_APPEND_VERSION_SUFFIX
+    "Append the 09 suffix to generated libraries (recommended)." ON)
 option(BUILD_SHARED_LIBS
     "Build luabind as a shared/dynamic library (.so or DLL). You must link Lua dynamically then.")
 
