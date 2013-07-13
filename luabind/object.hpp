@@ -412,8 +412,7 @@ LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
           return m_interpreter;
       }
 
-      // TODO: Why is it non-const?
-      void push(lua_State* L)
+      void push(lua_State* L) const
       {
           assert(L == m_interpreter);
           (void)L;
@@ -717,8 +716,7 @@ struct value_wrapper_traits<adl::iterator_proxy_tag>
     template<class Proxy>
     static void unwrap(lua_State* interpreter, Proxy const& p)
     {
-        // TODO: Why const_cast?
-        const_cast<Proxy&>(p).push(interpreter);
+        p.push(interpreter);
     }
 };
 
