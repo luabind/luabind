@@ -4,3 +4,4 @@ doc/*.html
 doc/version.rst
 nppBackup/
 build/
+*.kdev4
