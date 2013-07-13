@@ -79,7 +79,6 @@ set(luabind_detail_HDRS
     ../luabind/detail/class_rep.hpp
     ../luabind/detail/compute_score.hpp
     ../luabind/detail/constructor.hpp
-    ../luabind/detail/conversion_storage.hpp
     ../luabind/detail/convert_to_lua.hpp
     ../luabind/detail/debug.hpp
     ../luabind/detail/decorate_type.hpp
@@ -94,7 +93,6 @@ set(luabind_detail_HDRS
     ../luabind/detail/make_instance.hpp
     ../luabind/detail/most_derived.hpp
     ../luabind/detail/object_call.hpp
-    ../luabind/detail/object_funs.hpp
     ../luabind/detail/object_rep.hpp
     ../luabind/detail/open.hpp
     ../luabind/detail/operator_id.hpp

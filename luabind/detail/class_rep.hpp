@@ -48,8 +48,6 @@ namespace luabind { namespace detail
 {
     struct class_registration;
 
-    struct conversion_storage;
-
     // This function is used as a tag to identify "properties".
     LUABIND_API int property_tag(lua_State*);
 
