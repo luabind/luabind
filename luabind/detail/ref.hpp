@@ -56,9 +56,10 @@ namespace detail
 
         void operator=(lua_reference const& r)
         {
-            // TODO: self assignment problems
-            reset();
-            if (!r.is_valid()) return;
+            if (!r.is_valid()) {
+                reset();
+                return;
+            }
             r.get(r.state());
             set(r.state());
         }
