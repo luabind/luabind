@@ -184,7 +184,8 @@ namespace luabind { namespace detail
               {
                   int nargs = lua_gettop(L);
 
-                  lua_pushvalue(L, lua_upvalueindex(1));
+                  lua_pushvalue(L, lua_upvalueindex(1)); // operator name
+                  // instance[operator name] (via get_instance_value / __index)
                   lua_gettable(L, 1 + i);
 
                   if (lua_isnil(L, -1))
@@ -195,17 +196,18 @@ namespace luabind { namespace detail
 
                   lua_insert(L, 1); // move the function to the bottom
 
-                  nargs = lua_toboolean(L, lua_upvalueindex(2)) ? 1 : nargs;
+                  bool const is_unary = lua_toboolean(L, lua_upvalueindex(2)) ?
+                      true : false; // Avoid MSVC "performance warning".
 
-                  if (lua_toboolean(L, lua_upvalueindex(2))) // remove trailing nil
-                  lua_remove(L, 3);
+                  nargs = is_unary ? 1 : nargs;
+
+                  if (is_unary) // remove trailing nil
+                    lua_remove(L, 3);
 
                   lua_call(L, nargs, 1);
                   return 1;
               }
           }
-
-          lua_pop(L, lua_gettop(L));
           lua_pushliteral(L, "No such operator defined");
           lua_error(L);
 
@@ -216,35 +218,34 @@ namespace luabind { namespace detail
 
     LUABIND_API void push_instance_metatable(lua_State* L)
     {
-        lua_newtable(L);
-
-        // just indicate that this really is a class and not just
-        // any user data
-        lua_pushboolean(L, 1);
-        lua_setfield(L, -2, "__luabind_class");
+        // One sequence entry for the tag, 3 non-sequence entries for
+        // __gc, __index and __newindex and one more for each operator.
+        lua_createtable(L, 1, 3 + number_of_operators);
 
         // This is used as a tag to determine if a userdata is a luabind
         // instance. We use a numeric key and a cclosure for fast comparision.
-        lua_pushnumber(L, 1);
-        lua_pushcclosure(L, get_instance_value, 0);
+        lua_pushcfunction(L, get_instance_value);
+        lua_rawseti(L, -2, 1);
+
+        lua_pushliteral(L, "__gc");
+        lua_pushcfunction(L, destroy_instance);
         lua_rawset(L, -3);
 
-        lua_pushcclosure(L, destroy_instance, 0);
-        lua_setfield(L, -2, "__gc");
+        lua_pushliteral(L, "__index");
+        lua_pushcfunction(L, get_instance_value);
+        lua_rawset(L, -3);
 
-        lua_pushcclosure(L, get_instance_value, 0);
-        lua_setfield(L, -2, "__index");
-
-        lua_pushcclosure(L, set_instance_value, 0);
-        lua_setfield(L, -2, "__newindex");
+        lua_pushliteral(L, "__newindex");
+        lua_pushcfunction(L, set_instance_value);
+        lua_rawset(L, -3);
 
         for (int op = 0; op < number_of_operators; ++op)
         {
             lua_pushstring(L, get_operator_name(op));
             lua_pushvalue(L, -1);
-            lua_pushboolean(L, op == op_unm || op == op_len);
+            lua_pushboolean(L, op == op_unm || op == op_len); // Unary?
             lua_pushcclosure(L, &dispatch_operator, 2);
-            lua_settable(L, -3);
+            lua_rawset(L, -3);
         }
     }
 
