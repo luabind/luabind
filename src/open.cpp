@@ -82,32 +82,28 @@ namespace
     }
     namespace {
         template<typename T>
-        inline void * shared_create_userdata(lua_State* L, const char * name) {
-            lua_pushstring(L, name);
+        inline void* create_gc_udata(lua_State* L, void* tag) {
             void* storage = lua_newuserdata(L, sizeof(T));
 
             // set gc metatable
-            lua_newtable(L);
-            lua_pushcclosure(L, &detail::garbage_collector<T>, 0);
+            lua_createtable(L, 0, 1); // one (non-sequence) element.
+            lua_pushcfunction(L, &detail::garbage_collector<T>);
             lua_setfield(L, -2, "__gc");
             lua_setmetatable(L, -2);
 
-            lua_settable(L, LUA_REGISTRYINDEX);
+            lua_rawsetp(L, LUA_REGISTRYINDEX, tag);
             return storage;
         }
 
         template<typename T>
-        inline void createGarbageCollectedRegistryUserdata(lua_State* L, const char * name) {
-            void * storage = shared_create_userdata<T>(L, name);
-            // placement "new"
+        inline void push_gc_udata(lua_State* L, void* tag) {
+            void* storage = create_gc_udata<T>(L, tag);
             new (storage) T;
         }
 
         template<typename T, typename A1>
-        inline void createGarbageCollectedRegistryUserdata(lua_State* L, const char * name, A1 constructorArg) {
-            void * storage = shared_create_userdata<T>(L, name);
-
-            // placement "new"
+        inline void push_gc_udata(lua_State* L, void* tag, A1 constructorArg) {
+            void* storage = create_gc_udata<T>(L, tag);
             new (storage) T(constructorArg);
         }
     }
@@ -125,23 +121,23 @@ namespace
             );
         }
 
-        createGarbageCollectedRegistryUserdata<detail::class_registry>(L, "__luabind_classes", L);
-        createGarbageCollectedRegistryUserdata<detail::class_id_map>(L, "__luabind_class_id_map");
-        createGarbageCollectedRegistryUserdata<detail::cast_graph>(L, "__luabind_cast_graph");
-        createGarbageCollectedRegistryUserdata<detail::class_map>(L, "__luabind_class_map");
+        push_gc_udata<detail::class_registry>(L, &detail::classes_tag, L);
+        push_gc_udata<detail::class_id_map>(L, &detail::classid_map_tag);
+        push_gc_udata<detail::cast_graph>(L, &detail::cast_graph_tag);
+        push_gc_udata<detail::class_map>(L, &detail::class_map_tag);
 
         // add functions (class, cast etc...)
-        lua_pushcclosure(L, detail::create_class::stage1, 0);
+        lua_pushcfunction(L, detail::create_class::stage1);
         lua_setglobal(L, "class");
 
-        lua_pushcclosure(L, &make_property, 0);
+        lua_pushcfunction(L, &make_property);
         lua_setglobal(L, "property");
 
         lua_pushlightuserdata(L, &main_thread_tag);
         lua_pushlightuserdata(L, L);
         lua_rawset(L, LUA_REGISTRYINDEX);
 
-        lua_pushcclosure(L, &deprecated_super, 0);
+        lua_pushcfunction(L, &deprecated_super);
         lua_setglobal(L, "super");
     }
 

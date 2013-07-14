@@ -34,6 +34,8 @@ namespace luabind { namespace detail
 {
     class class_rep;
 
+    extern char classes_tag; // Not used in headers, thus no LUABIND_API.
+
     struct LUABIND_API class_registry
     {
         class_registry(lua_State* L);

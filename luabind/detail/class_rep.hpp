@@ -50,6 +50,7 @@ namespace luabind { namespace detail
 
     // This function is used as a tag to identify "properties".
     LUABIND_API int property_tag(lua_State*);
+    extern char classrep_tag; // Not used in headers, thus no LUABIND_API.
 
     // this is class-specific information, poor man's vtable
     // this is allocated statically (removed by the compiler)

@@ -348,8 +348,8 @@ namespace luabind {
 #undef LUABIND_UNARY_OPERATOR
 
     // defined in operator.cpp
-    extern LUABIND_API self_type self;
-    extern LUABIND_API const_self_type const_self;
+    LUABIND_API extern self_type self;
+    LUABIND_API extern const_self_type const_self;
 } // namespace luabind
 
 #endif // OPERATOR_040729_HPP

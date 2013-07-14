@@ -20,6 +20,10 @@
 
 namespace luabind { namespace detail {
 
+LUABIND_API char classid_map_tag = 0;
+LUABIND_API char class_map_tag = 0;
+char cast_graph_tag = 0;
+
 class_id const class_id_map::local_id_base =
     std::numeric_limits<class_id>::max() / 2;
 

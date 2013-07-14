@@ -41,6 +41,8 @@ namespace luabind { namespace detail
         lua_error(L);
         return 0;
     }
+
+    char classrep_tag = 0;
 }}
 
 luabind::detail::class_rep::class_rep(type_id const& type_
@@ -74,13 +76,11 @@ void luabind::detail::class_rep::shared_init(lua_State * L) {
 
     m_instance_metatable = (m_class_type == cpp_class) ? r->cpp_instance() : r->lua_instance();
 
-    lua_pushliteral(L, "__luabind_cast_graph");
-    lua_gettable(L, LUA_REGISTRYINDEX);
+    lua_rawgetp(L, LUA_REGISTRYINDEX, &cast_graph_tag);
     m_casts = static_cast<cast_graph*>(lua_touserdata(L, -1));
     lua_pop(L, 1);
 
-    lua_pushliteral(L, "__luabind_class_id_map");
-    lua_gettable(L, LUA_REGISTRYINDEX);
+    lua_rawgetp(L, LUA_REGISTRYINDEX, &classid_map_tag);
     m_classes = static_cast<class_id_map*>(lua_touserdata(L, -1));
     lua_pop(L, 1);
 
@@ -292,18 +292,12 @@ int luabind::detail::class_rep::static_class_gettable(lua_State* L)
 
 bool luabind::detail::is_class_rep(lua_State* L, int index)
 {
-    if (lua_getmetatable(L, index) == 0) return false;
+    if (!lua_getmetatable(L, index))
+        return false;
 
-    lua_pushliteral(L, "__luabind_classrep");
-    lua_gettable(L, -2);
-    if (lua_toboolean(L, -1))
-    {
-        lua_pop(L, 2);
-        return true;
-    }
-
-    lua_pop(L, 2);
-    return false;
+    lua_rawgetp(L, -1, &classrep_tag);
+    detail::stack_pop pop(L, 2);
+    return !lua_isnil(L, -1);
 }
 
 void luabind::detail::finalize(lua_State* L, class_rep* crep)

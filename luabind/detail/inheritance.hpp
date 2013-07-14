@@ -18,6 +18,10 @@
 
 namespace luabind { namespace detail {
 
+LUABIND_API extern char classid_map_tag;
+LUABIND_API extern char class_map_tag;
+extern char cast_graph_tag; // Not used in headers, thus no LUABIND_API.
+
 typedef void*(*cast_function)(void*);
 typedef std::size_t class_id;
 
