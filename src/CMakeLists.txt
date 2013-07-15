@@ -102,7 +102,6 @@ set(luabind_detail_HDRS
     ../luabind/detail/policy.hpp
     ../luabind/detail/primitives.hpp
     ../luabind/detail/property.hpp
-    ../luabind/detail/ref.hpp
     ../luabind/detail/signature_match.hpp
     ../luabind/detail/stack_utils.hpp
     ../luabind/detail/typetraits.hpp

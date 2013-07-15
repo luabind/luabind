@@ -27,6 +27,8 @@
 
 #include <luabind/lua_include.hpp>
 
+#include <cassert>
+
 namespace luabind {
 
 // A reference to a Lua value. Represents an entry in the
@@ -46,8 +48,11 @@ public:
     void push(lua_State* L) const;
 
     lua_State* interpreter() const;
+    bool is_valid() const;
 
     void replace(lua_State* L, int stack_index);
+    void pop(lua_State* L);
+    void reset();
 
 private:
     lua_State* m_interpreter;
@@ -64,7 +69,7 @@ inline handle::handle(handle const& other)
   , m_index(LUA_NOREF)
 {
     if (m_interpreter == 0) return;
-    lua_rawgeti(m_interpreter, LUA_REGISTRYINDEX, other.m_index);
+    other.push(m_interpreter);
     m_index = luaL_ref(m_interpreter, LUA_REGISTRYINDEX);
 }
 
@@ -86,7 +91,7 @@ inline handle::handle(lua_State* main, lua_State* L, int stack_index)
 
 inline handle::~handle()
 {
-    if (m_interpreter && m_index != LUA_NOREF)
+    if (is_valid())
         luaL_unref(m_interpreter, LUA_REGISTRYINDEX, m_index);
 }
 
@@ -112,10 +117,36 @@ inline lua_State* handle::interpreter() const
     return m_interpreter;
 }
 
+inline bool handle::is_valid() const
+{
+    if (m_index == LUA_NOREF) {
+        assert(!m_interpreter);
+        return false;
+    } else {
+        assert(m_interpreter);
+        return true;
+    }
+}
+
 inline void handle::replace(lua_State* L, int stack_index)
 {
     lua_pushvalue(L, stack_index);
     lua_rawseti(L, LUA_REGISTRYINDEX, m_index);
+}
+
+inline void handle::reset()
+{
+    if (is_valid()) {
+        luaL_unref(m_interpreter, LUA_REGISTRYINDEX, m_index);
+        m_index = LUA_NOREF;
+    }
+}
+
+inline void handle::pop(lua_State* L)
+{
+    reset();
+    m_interpreter = L;
+    m_index = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 template<>

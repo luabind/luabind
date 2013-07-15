@@ -26,7 +26,6 @@
 
 #include <luabind/config.hpp>
 #include <luabind/detail/instance_holder.hpp>
-#include <luabind/detail/ref.hpp>
 
 #include <boost/aligned_storage.hpp>
 

@@ -40,7 +40,7 @@ namespace luabind { namespace detail
         {
             wrapped_self_t& wrapper = wrap_access::ref(*p);
             wrapper.get(wrapper.state());
-            wrapper.m_strong_ref.set(wrapper.state());
+            wrapper.m_strong_ref.pop(wrapper.state());
         }
     }
 

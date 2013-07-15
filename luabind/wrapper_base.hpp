@@ -27,8 +27,8 @@
 
 #include <luabind/config.hpp>
 #include <luabind/detail/call_member.hpp>
-#include <luabind/detail/ref.hpp>
 #include <luabind/weak_ref.hpp>
+#include <luabind/handle.hpp>
 
 #include <boost/preprocessor/repetition/enum_trailing_binary_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
@@ -44,7 +44,7 @@ namespace luabind
 
     struct wrapped_self_t: weak_ref
     {
-        detail::lua_reference m_strong_ref;
+        handle m_strong_ref;
     };
 
     struct wrap_base

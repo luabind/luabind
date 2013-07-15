@@ -30,7 +30,6 @@
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/operator_id.hpp>
 #include <luabind/detail/primitives.hpp>
-#include <luabind/detail/ref.hpp>
 #include <luabind/error.hpp>
 #include <luabind/handle.hpp>
 #include <luabind/typeid.hpp>
@@ -160,7 +159,7 @@ namespace luabind { namespace detail
         // is kept inside lua (to let lua collect it when lua_close()
         // is called) we need to lock it to prevent collection.
         // the actual reference is not currently used.
-        detail::lua_reference m_self_ref;
+        handle m_self_ref;
 
         // this should always be used when accessing
         // members in instances of a class.

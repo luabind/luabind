@@ -71,8 +71,7 @@ void luabind::detail::class_rep::shared_init(lua_State * L) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, (m_class_type == cpp_class) ? r->cpp_class() : r->lua_class());
     lua_setmetatable(L, -2);
 
-    lua_pushvalue(L, -1); // duplicate our user data
-    m_self_ref.set(L);
+    handle(L, -1).swap(m_self_ref);
 
     m_instance_metatable = (m_class_type == cpp_class) ? r->cpp_instance() : r->lua_instance();
 
