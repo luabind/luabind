@@ -792,7 +792,7 @@ namespace adl
         , m_index(stack_reference.index)
       {
           if (m_index < 0)
-              m_index = lua_gettop(m_interpreter) - m_index + 1;
+              m_index = lua_gettop(m_interpreter) + m_index + 1;
       }
 
       template<class T>
