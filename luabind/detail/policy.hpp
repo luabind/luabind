@@ -70,10 +70,6 @@
 # include <type_traits>
 #endif
 
-#if LUA_VERSION_NUM < 502
-# define lua_rawlen lua_objlen
-#endif
-
 namespace luabind
 {
     namespace detail
@@ -1106,9 +1102,5 @@ namespace luabind { namespace
 # define LUABIND_PLACEHOLDER_ARG(N) boost::arg<N>
 #endif
 }}
-
-#if LUA_VERSION_NUM < 502
-# undef lua_rawlen
-#endif
 
 #endif // LUABIND_POLICY_HPP_INCLUDED

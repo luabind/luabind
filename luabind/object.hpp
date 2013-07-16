@@ -43,14 +43,6 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/utility/enable_if.hpp>
 
-#if LUA_VERSION_NUM < 502
-# define lua_compare(L, index1, index2, fn) fn(L, index1, index2)
-# define LUA_OPEQ lua_equal
-# define LUA_OPLT lua_lessthan
-# define lua_rawlen lua_objlen
-# define lua_pushglobaltable(L) lua_pushvalue(L, LUA_GLOBALSINDEX)
-#endif
-
 namespace luabind {
 
 namespace detail
@@ -1411,13 +1403,5 @@ object property(GetValueWrapper const& get, SetValueWrapper const& set)
 
 
 } // namespace luabind
-
-#if LUA_VERSION_NUM < 502
-# undef lua_compare
-# undef LUA_OPEQ
-# undef LUA_OPLT
-# undef lua_rawlen
-# undef lua_pushglobaltable
-#endif
 
 #endif // LUABIND_OBJECT_050419_HPP

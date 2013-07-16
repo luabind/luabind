@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef LUA_INCLUDE_HPP_INCLUDED
-#define LUA_INCLUDE_HPP_INCLUDED
+#ifndef LUABIND_LUA_INCLUDE_HPP_INCLUDED
+#define LUABIND_LUA_INCLUDE_HPP_INCLUDED
 
 #ifndef LUABIND_CPLUSPLUS_LUA
 extern "C"
@@ -35,4 +35,14 @@ extern "C"
 }
 #endif
 
+#if LUA_VERSION_NUM < 502
+# define lua_compare(L, index1, index2, fn) fn(L, index1, index2)
+# define LUA_OPEQ lua_equal
+# define LUA_OPLT lua_lessthan
+# define lua_rawlen lua_objlen
+# define lua_pushglobaltable(L) lua_pushvalue(L, LUA_GLOBALSINDEX)
+# define lua_getuservalue lua_getfenv
+# define lua_setuservalue lua_setfenv
 #endif
+
+#endif // LUABIND_LUA_INCLUDE_HPP_INCLUDED

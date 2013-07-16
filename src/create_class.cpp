@@ -26,12 +26,6 @@
 
 #include <luabind/lua_include.hpp>
 
-#if LUA_VERSION_NUM < 502
-# define lua_compare(L, index1, index2, fn) fn(L, index1, index2)
-# define LUA_OPEQ lua_equal
-# define lua_rawlen lua_objlen
-#endif
-
 namespace luabind { namespace detail
 {
     namespace

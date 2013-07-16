@@ -30,10 +30,6 @@
 
 #include <cassert>
 
-#if LUA_VERSION_NUM < 502
-# define lua_pushglobaltable(L) lua_pushvalue(L, LUA_GLOBALSINDEX)
-#endif
-
 namespace luabind { namespace detail {
 
     registration::registration()
