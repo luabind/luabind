@@ -38,6 +38,8 @@
 
 // Internal Includes
 #include <luabind/config.hpp>
+#include <luabind/make_function.hpp>
+#include <luabind/object_fwd.hpp>
 
 // Library/third-party includes
 #include <luabind/lua_state_fwd.hpp>
@@ -47,7 +49,22 @@
 
 
 namespace luabind {
+    LUABIND_API void set_package_preload(
+        lua_State* L,
+        char const* modulename,
+        object const& loader);
 
-	LUABIND_API void set_package_preload(lua_State * L, const char * modulename, int (*loader) (lua_State *));
+    template <typename F>
+    void set_package_preload(
+        lua_State* L,
+        char const* modulename,
+        F loader)
+    {
+        object f = make_function(L, loader);
+        // Call add_overload to correctly set the name of f. Inefficiency
+        // should not matter here.
+        detail::add_overload(luabind::newtable(L), modulename, f);
+        set_package_preload(L, modulename, f);
+    }
 }
 #endif // INCLUDED_set_package_preload_hpp_GUID_563c882e_86f7_4ea7_8603_4594ea41737e
