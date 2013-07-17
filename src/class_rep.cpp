@@ -57,7 +57,8 @@ luabind::detail::class_rep::class_rep(type_id const& type_
 }
 
 
-void luabind::detail::class_rep::shared_init(lua_State * L) {
+void luabind::detail::class_rep::shared_init(lua_State * L)
+{
     lua_newtable(L);
     handle(L, -1).swap(m_table);
     lua_newtable(L);
