@@ -43,6 +43,23 @@ extern "C"
 # define lua_pushglobaltable(L) lua_pushvalue(L, LUA_GLOBALSINDEX)
 # define lua_getuservalue lua_getfenv
 # define lua_setuservalue lua_setfenv
+
+inline void lua_rawsetp(lua_State* L, int t, void* k)
+{
+    lua_pushlightuserdata(L, k);
+    lua_insert(L, -2); // Move key beneath value.
+    if (t < 0)
+        t -= 1; // Adjust for pushed k.
+    lua_rawset(L, t);
+}
+
+inline void lua_rawgetp(lua_State* L, int t, void* k)
+{
+    lua_pushlightuserdata(L, k);
+    if (t < 0)
+        t -= 1; // Adjust for pushed k.
+    lua_rawget(L, t);
+}
 #endif
 
 #endif // LUABIND_LUA_INCLUDE_HPP_INCLUDED
