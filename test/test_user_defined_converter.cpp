@@ -46,7 +46,7 @@ struct default_converter<X>
 
     void to(lua_State* L, X const& x)
     {
-        lua_pushnumber(L, x.value);
+        lua_pushinteger(L, x.value);
     }
 
     default_converter<int> cv;
