@@ -11,6 +11,7 @@
 
 # include <cstdlib>
 # include <cstring>
+# include <string>
 # include <typeinfo>
 
 // boost/units/detail/utility.hpp
