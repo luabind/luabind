@@ -38,7 +38,7 @@ namespace luabind { namespace detail
     // on the top of the stack (the input self reference will
     // be popped)
     LUABIND_API void do_call_member_selection(lua_State* L, char const* name);
-    
+
     class class_rep;
 
     void finalize(lua_State* L, class_rep* crep);

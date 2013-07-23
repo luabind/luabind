@@ -457,7 +457,7 @@ namespace luabind
             {
                 context[name] = property(get_);
             }
-            
+
             Set set;
             SetPolicies set_policies;
             Get get;

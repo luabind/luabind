@@ -110,7 +110,7 @@ namespace luabind {
 
     detail::policy_cons<detail::iterator_policy, detail::null_type> const
         return_stl_iterator = {};
-    
+
     namespace detail
     {
         inline void ignore_unused_return_stl_iterator()

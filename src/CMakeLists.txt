@@ -74,10 +74,8 @@ set(luabind_detail_HDRS
     ../luabind/detail/call_function.hpp
     ../luabind/detail/call_member.hpp
     ../luabind/detail/call_operator_iterate.hpp
-    ../luabind/detail/class_cache.hpp
     ../luabind/detail/class_registry.hpp
     ../luabind/detail/class_rep.hpp
-    ../luabind/detail/compute_score.hpp
     ../luabind/detail/constructor.hpp
     ../luabind/detail/convert_to_lua.hpp
     ../luabind/detail/debug.hpp

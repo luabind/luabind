@@ -42,10 +42,10 @@ struct exception_thrower : counted_type<exception_thrower>
 #endif
     LUABIND_ATTRIBUTE_NORETURN exception_thrower(int)
     { throw ex("exception description"); }
-    
+
     LUABIND_ATTRIBUTE_NORETURN exception_thrower(int, int)
     { throw "a string exception"; }
-    
+
     LUABIND_ATTRIBUTE_NORETURN exception_thrower(int, int, int)
     { throw 10; }
 #ifdef BOOST_MSVC

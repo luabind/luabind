@@ -286,7 +286,7 @@ namespace luabind { namespace detail {
     {
         m_registration->m_casts.push_back(cast_entry(src, target, cast));
     }
-    
+
 
     std::string get_class_name(lua_State* L, type_id const& i)
     {

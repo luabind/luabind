@@ -1,6 +1,6 @@
 include_directories(
     ${Boost_INCLUDE_DIRS} ${LUA_INCLUDE_DIR} ${CMAKE_SOURCE_DIR})
-    
+
 add_executable(benchmark "benchmark.cpp")
 target_link_libraries(benchmark luabind)
 
@@ -9,7 +9,7 @@ add_library(testmain STATIC
     # These tests consist only of compile time asserts and define no test_main
     # function:
     "test_has_get_pointer.cpp")
-    
+
 target_link_libraries(testmain luabind)
 
 if (BUILD_SHARED_LIBS AND MSVC)

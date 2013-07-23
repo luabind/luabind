@@ -35,4 +35,3 @@ struct lua_State;
 #endif
 
 #endif // LUABIND_BACK_REFERENCE_FWD_040510_HPP
-

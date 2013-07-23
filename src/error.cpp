@@ -42,7 +42,7 @@ namespace luabind
 
     void set_error_callback(error_callback_fun e)
     {
-	    error_callback = e;
+        error_callback = e;
     }
 
     void set_cast_failed_callback(cast_failed_callback_fun c)

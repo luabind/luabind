@@ -58,10 +58,10 @@ static luabind::object local_loader(lua_State* L, char const* modname)
 void test_main(lua_State* L)
 {
     using namespace luabind;
-    
+
     set_package_preload(L, "testmod", &loader);
     DOSTRING(L, "assert(require('testmod') == true)");
-    
+
     DOSTRING(L, "assert(f(7) == 8)");
 
     set_package_preload(L, "testmod_l", &local_loader);
@@ -69,7 +69,7 @@ void test_main(lua_State* L)
     DOSTRING(L,
         "assert(not testmod_l)\n" // No global should be created.
         "assert(mod.f(41) == 42)\n"); // Module should be returned.
-    
+
     DOSTRING(L, "package.preload = nil");
     try {
         set_package_preload(L, "failmod", &loader);
@@ -80,4 +80,3 @@ void test_main(lua_State* L)
     }
     TEST_ERROR("set_package_preload() should have thrown.");
 }
-

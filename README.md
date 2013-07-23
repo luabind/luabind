@@ -58,7 +58,7 @@ luabind release (0.9) are described.
   with the provided arguments sometimes only contained the function signatures
   but not the actual error message. mrwonko's commit [9d15e0][c-errmsg] (and
   previous).
-* Luabind did not work over shared library (DLL) boundaries on some 
+* Luabind did not work over shared library (DLL) boundaries on some
   platforms. fhoefling's commit [a83af3][c-dll] and my minor improvement
   [a8349d][c-dll2].
 * Calling `call_function` with a return type but not using it resulted in a

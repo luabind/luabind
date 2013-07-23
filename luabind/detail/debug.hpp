@@ -42,7 +42,7 @@ namespace luabind { namespace detail {
 #include <cassert>
 
 namespace luabind { namespace detail
-{   
+{
     struct stack_checker_type
     {
         stack_checker_type(lua_State* L)

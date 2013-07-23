@@ -84,8 +84,8 @@ namespace luabind
 
 #endif
 
-	LUABIND_API void set_pcall_callback(pcall_callback_fun e);
-	LUABIND_API pcall_callback_fun get_pcall_callback();
+    LUABIND_API void set_pcall_callback(pcall_callback_fun e);
+    LUABIND_API pcall_callback_fun get_pcall_callback();
 }
 
 #endif // LUABIND_ERROR_HPP_INCLUDED

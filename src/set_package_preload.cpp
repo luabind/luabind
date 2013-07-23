@@ -1,15 +1,15 @@
 /**
-	@file
-	@brief Implementation
+    @file
+    @brief Implementation
 
-	@date 2012
+    @date 2012
 
-	@author
-	Ryan Pavlik
-	<rpavlik@iastate.edu> and <abiryan@ryand.net>
-	http://academic.cleardefinition.com/
-	Iowa State University Virtual Reality Applications Center
-	Human-Computer Interaction Graduate Program
+    @author
+    Ryan Pavlik
+    <rpavlik@iastate.edu> and <abiryan@ryand.net>
+    http://academic.cleardefinition.com/
+    Iowa State University Virtual Reality Applications Center
+    Human-Computer Interaction Graduate Program
 */
 
 //          Copyright Iowa State University 2012.

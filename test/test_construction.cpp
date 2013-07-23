@@ -32,7 +32,7 @@ struct A : counted_type<A>
     // Explicit call to default ctor to avoid g++'s "warning: base class
     // ‘struct counted_type<A>’ should be explicitly initialized in the copy
     // constructor [-Wextra]"
-    A(const A&): counted_type<A>() { test = 1; } // 
+    A(const A&): counted_type<A>() { test = 1; } //
     A() { test = 2; }
     ~A() {}
 };

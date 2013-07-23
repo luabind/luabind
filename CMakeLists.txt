@@ -5,7 +5,7 @@ include(CMakeDependentOption)
 
 option(LUABIND_ENABLE_WARNINGS
        "Enable compiler warnings during the build of luabind and the tests.")
-       
+
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU|Clang")
     option(LUABIND_NO_CXX11 "Disable C++11 support." OFF)
 endif()
@@ -41,7 +41,7 @@ if (MSVC)
     if (LUABIND_ENABLE_WARNINGS)
         add_definitions(
             "/W4" # Warning level 4
-            
+
             # Disable incorrect warning C4709
             # ("comma operator within array index expression"):
             "/wd4709")
