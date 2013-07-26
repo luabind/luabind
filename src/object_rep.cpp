@@ -26,6 +26,8 @@
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/operator_id.hpp>
 
+#include <cstring>
+
 #if LUA_VERSION_NUM < 502
 # define lua_getuservalue lua_getfenv
 # define lua_setuservalue lua_setfenv
@@ -179,13 +181,14 @@ namespace luabind { namespace detail
 
       int dispatch_operator(lua_State* L)
       {
+          int const name_upvalue = lua_upvalueindex(1);
           for (int i = 0; i < 2; ++i)
           {
               if (get_instance(L, 1 + i))
               {
                   int nargs = lua_gettop(L);
 
-                  lua_pushvalue(L, lua_upvalueindex(1)); // operator name
+                  lua_pushvalue(L, name_upvalue); // operator name
                   // instance[operator name] (via get_instance_value / __index)
                   lua_gettable(L, 1 + i);
 
@@ -209,9 +212,19 @@ namespace luabind { namespace detail
                   return 1;
               }
           }
-          lua_pushliteral(L, "No such operator defined");
-          lua_error(L);
+          object_rep* inst = get_instance(L, 1);
+          char const* const_s = inst->is_const() ? "const " : "";
+          char const* cls_name = inst->crep()->name();
+          char const* op_name = lua_tostring(L, name_upvalue);
 
+          if (std::strcmp(op_name, "__tostring") == 0) {
+              lua_pushfstring(L, "%s%s object: %p",
+                  const_s, cls_name, static_cast<void*>(inst));
+              return 1;
+          }
+          lua_pushfstring(L, "%sclass %s: no %s operator defined.",
+              const_s, cls_name, op_name);
+          lua_error(L);
           return 0;
       }
 

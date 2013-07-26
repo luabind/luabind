@@ -183,7 +183,17 @@ void test_main(lua_State* L)
     DOSTRING(L, "assert(test + 2 == 1 + 2)");
     DOSTRING(L, "assert(test3 + 6 == 1 + 6)");
     DOSTRING(L, "assert(test3 + test2 == 73)");
-//  DOSTRING(L, "assert(tostring(test) == 'operator_tester')");
+    DOSTRING(L, "assert(tostring(test) == 'operator_tester')");
+    // Default __tostring should be "class NAME: ADDRESS".
+    DOSTRING(L, "assert(tostring(test2):match('"
+            // Pointer representation is platform dependent, don't check it.
+            "^operator_tester2 object: "
+        "'))");
+    DOSTRING(L, "print(test2)");
+    
+    DOSTRING_EXPECTED(L,
+        "local d = test2 / test3",
+        "class operator_tester2: no __div operator defined.");
 
     const char* prog =
         "class 'my_class'\n"
