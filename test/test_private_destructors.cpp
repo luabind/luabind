@@ -57,12 +57,6 @@ T* get_pointer(ptr<T> const& x)
     return x.p;
 }
 
-template <class T>
-ptr<T const>* get_const_holder(ptr<T>*)
-{
-    return 0;
-}
-
 void f1(X const&)
 {}
 

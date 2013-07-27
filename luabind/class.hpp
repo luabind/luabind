@@ -129,26 +129,10 @@ namespace luabind
         struct unspecified {};
 
         template<class Derived> struct operator_;
-
-        struct you_need_to_define_a_get_const_holder_function_for_your_smart_ptr {};
     }
 
     template<class T, class X1 = detail::unspecified, class X2 = detail::unspecified, class X3 = detail::unspecified>
     struct class_;
-
-    // TODO: this function will only be invoked if the user hasn't defined a correct overload
-    // maybe we should have a static assert in here?
-    inline detail::you_need_to_define_a_get_const_holder_function_for_your_smart_ptr*
-    get_const_holder(...)
-    {
-        return 0;
-    }
-
-    template <class T>
-    boost::shared_ptr<T const>* get_const_holder(boost::shared_ptr<T>*)
-    {
-        return 0;
-    }
 
     template <
         BOOST_PP_ENUM_PARAMS_WITH_A_DEFAULT(
