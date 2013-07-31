@@ -290,6 +290,17 @@ int luabind::detail::class_rep::static_class_gettable(lua_State* L)
     return 1;
 }
 
+int luabind::detail::class_rep::tostring(lua_State* L)
+{
+    class_rep* crep = static_cast<class_rep*>(lua_touserdata(L, 1));
+    lua_pushfstring(L, "class %s", crep->m_name ? crep->m_name : "<unnamed>");
+    if (crep->m_type != type_id()) {
+        lua_pushfstring(L, " (%s)", crep->m_type.name().c_str());
+        lua_concat(L, 2);
+    }
+    return 1;
+}
+
 bool luabind::detail::is_class_rep(lua_State* L, int index)
 {
     if (!lua_getmetatable(L, index))

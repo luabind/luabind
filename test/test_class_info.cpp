@@ -57,4 +57,10 @@ void test_main(lua_State* L)
         "assert(attrs[1] == 'x' or attrs[2] == 'x')\n"
         "assert(attrs[1] == 'y' or attrs[2] == 'y')\n"
     );
+
+    DOSTRING(L,
+        "s = tostring(X)\n"
+        "assert(s:match('^class X (.+)$'))"
+    );
+    DOSTRING(L, "print(X)");
 }

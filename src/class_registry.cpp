@@ -43,7 +43,7 @@ namespace luabind { namespace detail {
 
         int create_cpp_class_metatable(lua_State* L)
         {
-            lua_createtable(L, 0, 5);
+            lua_createtable(L, 0, 6);
 
             // mark the table with our unique tag
             // that says that the user data that has this
@@ -52,20 +52,24 @@ namespace luabind { namespace detail {
             lua_rawsetp(L, -2, &classrep_tag);
 
             lua_pushliteral(L, "__gc");
-            lua_pushcclosure(L, &garbage_collector<class_rep>, 0);
+            lua_pushcfunction(L, &garbage_collector<class_rep>);
 
             lua_rawset(L, -3);
 
             lua_pushliteral(L, "__call");
-            lua_pushcclosure(L, &class_rep::constructor_dispatcher, 0);
+            lua_pushcfunction(L, &class_rep::constructor_dispatcher);
             lua_rawset(L, -3);
 
             lua_pushliteral(L, "__index");
-            lua_pushcclosure(L, &class_rep::static_class_gettable, 0);
+            lua_pushcfunction(L, &class_rep::static_class_gettable);
             lua_rawset(L, -3);
 
             lua_pushliteral(L, "__newindex");
-            lua_pushcclosure(L, &class_rep::lua_settable_dispatcher, 0);
+            lua_pushcfunction(L, &class_rep::lua_settable_dispatcher);
+            lua_rawset(L, -3);
+
+            lua_pushliteral(L, "__tostring");
+            lua_pushcfunction(L, &class_rep::tostring);
             lua_rawset(L, -3);
 
             return luaL_ref(L, LUA_REGISTRYINDEX);

@@ -115,6 +115,8 @@ namespace luabind { namespace detail
         // obj is the object pointer
         static int static_class_gettable(lua_State* L);
 
+        static int tostring(lua_State* L); // for __tostring
+
         cast_graph const& casts() const
         {
             return *m_casts;
