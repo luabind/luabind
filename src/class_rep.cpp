@@ -264,14 +264,35 @@ int luabind::detail::class_rep::static_class_gettable(lua_State* L)
 
     const char* key = lua_tostring(L, 2);
 
-    if (std::strlen(key) != lua_rawlen(L, 2))
+    if (!key)
     {
+#ifndef LUABIND_NO_ERROR_CHECKING
+        lua_pushfstring(L,
+            "no static value at %s-index in class '%s'",
+            luaL_typename(L, 2), crep->name());
+        return lua_error(L);
+#else
         lua_pushnil(L);
         return 1;
+#endif
+
+    }
+
+    if (std::strlen(key) != lua_rawlen(L, 2))
+    {
+#ifndef LUABIND_NO_ERROR_CHECKING
+        lua_pushfstring(L,
+            "no static '%s' (followed by embedded 0) in class '%s'",
+            key, crep->name());
+        return lua_error(L);
+#else
+        lua_pushnil(L);
+        return 1;
+#endif
+
     }
 
     std::map<const char*, int, ltstr>::const_iterator j = crep->m_static_constants.find(key);
-
     if (j != crep->m_static_constants.end())
     {
         lua_pushnumber(L, j->second);
@@ -279,15 +300,12 @@ int luabind::detail::class_rep::static_class_gettable(lua_State* L)
     }
 
 #ifndef LUABIND_NO_ERROR_CHECKING
-
     lua_pushfstring(L, "no static '%s' in class '%s'", key, crep->name());
-    lua_error(L);
-
-#endif
-
+    return lua_error(L);
+#else
     lua_pushnil(L);
-
     return 1;
+#endif
 }
 
 int luabind::detail::class_rep::tostring(lua_State* L)

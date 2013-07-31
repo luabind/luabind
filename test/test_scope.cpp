@@ -155,4 +155,11 @@ void test_main(lua_State* L)
     DOSTRING(L,
         "u = test.create_unnamed()\n"
         "assert(u:f() == 42)");
+
+    DOSTRING_EXPECTED(L, "_ = test_class2.foo",
+        "no static 'foo' in class 'test_class2'");
+    DOSTRING_EXPECTED(L, "_ = test.test_class['val1\\0foo']",
+        "no static 'val1' (followed by embedded 0) in class 'test_class'");
+    DOSTRING_EXPECTED(L, "_ = test_class2[{}]",
+        "no static value at table-index in class 'test_class2'");
 }
