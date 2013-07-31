@@ -228,7 +228,7 @@ namespace luabind { namespace detail
     {
         // One sequence entry for the tag, 3 non-sequence entries for
         // __gc, __index and __newindex and one more for each operator.
-        lua_createtable(L, 1, 3 + number_of_operators);
+        lua_createtable(L, 1, 4 + number_of_operators);
 
         // This is used as a tag to determine if a userdata is a luabind
         // instance. We use a numeric key and a cclosure for fast comparision.
@@ -245,6 +245,12 @@ namespace luabind { namespace detail
 
         lua_pushliteral(L, "__newindex");
         lua_pushcfunction(L, set_instance_value);
+        lua_rawset(L, -3);
+
+        // Direct calls to metamethods cannot be allowed, because the
+        // callee trusts the caller to pass arguments of the right type.
+        lua_pushliteral(L, "__metatable");
+        lua_pushboolean(L, true);
         lua_rawset(L, -3);
 
         for (int op = 0; op < number_of_operators; ++op)

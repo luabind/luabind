@@ -43,7 +43,7 @@ namespace luabind { namespace detail {
 
         int create_cpp_class_metatable(lua_State* L)
         {
-            lua_createtable(L, 0, 6);
+            lua_createtable(L, 0, 7);
 
             // mark the table with our unique tag
             // that says that the user data that has this
@@ -53,7 +53,6 @@ namespace luabind { namespace detail {
 
             lua_pushliteral(L, "__gc");
             lua_pushcfunction(L, &garbage_collector<class_rep>);
-
             lua_rawset(L, -3);
 
             lua_pushliteral(L, "__call");
@@ -70,6 +69,12 @@ namespace luabind { namespace detail {
 
             lua_pushliteral(L, "__tostring");
             lua_pushcfunction(L, &class_rep::tostring);
+            lua_rawset(L, -3);
+
+            // Direct calls to metamethods cannot be allowed, because the
+            // callee trusts the caller to pass arguments of the right type.
+            lua_pushliteral(L, "__metatable");
+            lua_pushboolean(L, true);
             lua_rawset(L, -3);
 
             return luaL_ref(L, LUA_REGISTRYINDEX);

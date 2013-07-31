@@ -65,6 +65,7 @@ set(TESTS
     "table"
     "tag_function"
     "typetraits"
+    "unchecked"
     "unsigned_int"
     "user_defined_converter"
     "value_wrapper"
