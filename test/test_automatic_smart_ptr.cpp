@@ -97,6 +97,10 @@ void test_main(lua_State* L)
         "assert(x3.value == 3)\n"
     );
 
+    DOSTRING(L, "function get2() return x2 end");
+    boost::shared_ptr<X> spx = call_function<boost::shared_ptr<X> >(L, "get2");
+    TEST_CHECK(spx.use_count() == 2);
+
     DOSTRING(L,
         "x1 = nil\n"
         "x2 = nil\n"
@@ -104,5 +108,8 @@ void test_main(lua_State* L)
         "collectgarbage()\n"
     );
 
-    assert(X::alive == 0);
+    TEST_CHECK(spx.use_count() == 1);
+    TEST_CHECK(X::alive == 1);
+    spx.reset();
+    TEST_CHECK(X::alive == 0);
 }
