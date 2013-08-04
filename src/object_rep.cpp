@@ -226,8 +226,9 @@ namespace luabind { namespace detail
 
     LUABIND_API void push_instance_metatable(lua_State* L)
     {
-        // One sequence entry for the tag, 3 non-sequence entries for
-        // __gc, __index and __newindex and one more for each operator.
+        // One sequence entry for the tag, 4 non-sequence entries for
+        // __gc, __index, __newindex and __metatable and
+        // one more for each operator.
         lua_createtable(L, 1, 4 + number_of_operators);
 
         // This is used as a tag to determine if a userdata is a luabind
