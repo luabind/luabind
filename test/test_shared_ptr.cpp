@@ -48,4 +48,16 @@ void test_main(lua_State* L)
     DOSTRING(L,
         "assert(x == filter(x))\n"
     );
+
+    boost::shared_ptr<X> spx(new X(2));
+    globals(L)["x2"] = spx;
+    TEST_CHECK(spx.use_count() == 2);
+    DOSTRING(L, "assert(get_value(x2) == 2)");
+    DOSTRING(L,
+        "x = nil\n"
+        "x2 = nil\n"
+        "collectgarbage()\n"
+        "collectgarbage()\n"
+    );
+    TEST_CHECK(spx.use_count() == 1);
 }
