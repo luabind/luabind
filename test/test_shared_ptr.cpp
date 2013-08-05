@@ -11,7 +11,8 @@
 namespace {
 
 struct B: boost::enable_shared_from_this<B> {};
-struct D: B {};
+struct I: B {};
+struct D: I {};
 
 struct X
 {
@@ -34,6 +35,11 @@ boost::shared_ptr<X> filter(boost::shared_ptr<X> const& p, long expected_uc)
 }
 
 void needs_b(boost::shared_ptr<B> const& p)
+{
+    TEST_CHECK(p.use_count() == 2);
+}
+
+void needs_i(boost::shared_ptr<I> const& p)
 {
     TEST_CHECK(p.use_count() == 2);
 }
@@ -64,9 +70,11 @@ void test_main(lua_State* L)
 
         class_<B, boost::shared_ptr<B> >("B")
             .def(constructor<>()),
-        class_<D, B, boost::shared_ptr<D> >("D")
+        class_<I, B, boost::shared_ptr<I> >("I"),
+        class_<D, I, boost::shared_ptr<D> >("D")
             .def(constructor<>()),
-        def("needs_b", &needs_b)
+        def("needs_b", &needs_b),
+        def("needs_i", &needs_i)
         
 #ifndef LUABIND_NO_STD_SHARED_PTR
         ,
@@ -106,14 +114,18 @@ void test_main(lua_State* L)
 
     DOSTRING(L,
         "d = D()\n"
-        "needs_b(d)\n" // test that automatic downcasting works
+        "needs_b(d)\n" // test that automatic upcasting works
     );
+    
+    // upcast to class which is neither the template parameter of
+    // enable_shared_from_this nor a direct match to the holder type:
+    DOSTRING(L, "needs_i(d)");
 
 #ifndef LUABIND_NO_STD_SHARED_PTR
     // And the same once again with std::shared_ptr:
     DOSTRING(L,
         "d2 = D2()\n"
-        "needs_b2(d2)\n" // test that automatic downcasting works
+        "needs_b2(d2)\n" // test that automatic upcasting works
     );
 #endif
 }

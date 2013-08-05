@@ -91,7 +91,7 @@ private:
     // shared_from_this() available.
     ptr_t shared_from_raw(rawptr_t raw, lua_State*, int, mpl::true_)
     {
-        return raw->shared_from_this();
+        return ptr_t(raw->shared_from_this(), raw);
     }
 
 public:
