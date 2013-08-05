@@ -28,6 +28,12 @@ struct X
 
 int X::alive = 0;
 
+
+struct D: X
+{
+    D(int value_): X(value_) {}
+};
+
 struct ptr
 {
     ptr(X* p_)
@@ -68,6 +74,13 @@ ptr make3()
     return ptr(new X(3));
 }
 
+boost::shared_ptr<D> make_d()
+{
+    return boost::shared_ptr<D>(new D(10));
+}
+
+void needs_x(boost::shared_ptr<X>) {}
+
 } // namespace unnamed
 
 void test_main(lua_State* L)
@@ -78,9 +91,14 @@ void test_main(lua_State* L)
         class_<X>("X")
           .def_readonly("value", &X::value),
 
+        class_<D, X>("D"),
+
         def("make1", make1),
         def("make2", make2),
-        def("make3", make3)
+        def("make3", make3),
+
+        def("make_d", make_d),
+        def("needs_x", needs_x)
     ];
 
     DOSTRING(L,
@@ -112,4 +130,15 @@ void test_main(lua_State* L)
     TEST_CHECK(X::alive == 1);
     spx.reset();
     TEST_CHECK(X::alive == 0);
+
+    DOSTRING(L,
+        "d = make_d()\n"
+        "status, err = pcall(needs_x, d)\n"
+        "assert(not status)\n"
+        "pat = '^No matching overload found, candidates:\\n'\n"
+        "pat = pat .. 'void needs_x%(custom %[.+%]%)$'\n"
+        "if not err:match(pat) then\n"
+        "  error('expected \"' .. pat .. '\", got \"' .. err .. '\"')\n"
+        "end\n"
+    );
 }
