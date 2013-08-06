@@ -144,7 +144,7 @@ public:
         }
         else
         {
-            detail::value_converter().apply(L, p);
+            m_val_cv.apply(L, p);
         }
     }
 
