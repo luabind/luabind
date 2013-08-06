@@ -44,6 +44,7 @@ set(luabind_HDRS
     ../luabind/get_main_thread.hpp
     ../luabind/get_pointer.hpp
     ../luabind/handle.hpp
+    ../luabind/intrusive_ptr_converter.hpp
     ../luabind/iterator_policy.hpp
     ../luabind/luabind.hpp
     ../luabind/lua_state_fwd.hpp

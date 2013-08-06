@@ -45,6 +45,7 @@ set(TESTS
     "held_type"
     "implicit_cast"
     "implicit_raw"
+    "intrusive_ptr"
     "iterator"
     "lua_classes"
     "null_pointer"
