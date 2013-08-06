@@ -56,6 +56,15 @@ void needs_b2(std::shared_ptr<B2> const& p)
 
 #endif
 
+unsigned n_unref = 0;
+
+void on_state_unreferenced(lua_State* L)
+{
+    TEST_CHECK(L);
+    TEST_CHECK(luabind::is_state_unreferenced(L));
+    ++n_unref;
+}
+
 } // namespace unnamed
 
 void test_main(lua_State* L)
@@ -75,7 +84,7 @@ void test_main(lua_State* L)
             .def(constructor<>()),
         def("needs_b", &needs_b),
         def("needs_i", &needs_i)
-        
+
 #ifndef LUABIND_NO_STD_SHARED_PTR
         ,
         class_<B2, std::shared_ptr<B2> >("B2")
@@ -85,6 +94,10 @@ void test_main(lua_State* L)
         def("needs_b2", &needs_b2)
 #endif
     ];
+
+    set_state_unreferenced_callback(L, &on_state_unreferenced);
+    TEST_CHECK(
+        get_state_unreferenced_callback(L) == &on_state_unreferenced);
 
     DOSTRING(L,
         "x = X(1)\n"
@@ -116,7 +129,7 @@ void test_main(lua_State* L)
         "d = D()\n"
         "needs_b(d)\n" // test that automatic upcasting works
     );
-    
+
     // upcast to class which is neither the template parameter of
     // enable_shared_from_this nor a direct match to the holder type:
     DOSTRING(L, "needs_i(d)");
@@ -128,4 +141,6 @@ void test_main(lua_State* L)
         "needs_b2(d2)\n" // test that automatic upcasting works
     );
 #endif
+    TEST_CHECK(n_unref == 2);
+    TEST_CHECK(is_state_unreferenced(L));
 }

@@ -21,18 +21,28 @@ namespace mpl = boost::mpl;
 namespace detail
 {
 
-  struct shared_ptr_deleter
+  LUABIND_API extern char state_use_count_tag;
+
+  LUABIND_API struct shared_ptr_deleter
   {
       shared_ptr_deleter(lua_State* L, int index)
         : life_support(get_main_thread(L), L, index)
-      {}
+      {
+          alter_use_count(L, +1);
+      }
 
       void operator()(void const*)
       {
+          lua_State* L = life_support.interpreter();
+          assert(L);
           handle().swap(life_support);
+          alter_use_count(L, -1);
       }
 
       handle life_support;
+
+  private:
+      static void alter_use_count(lua_State* L, lua_Integer diff);
   };
 
   // From http://stackoverflow.com/a/1007175/2128694
@@ -161,6 +171,15 @@ struct default_converter<boost::shared_ptr<T> >:
 template <typename T>
 struct default_converter<boost::shared_ptr<T> const&>:
     detail::shared_ptr_converter<boost::shared_ptr<T> > {};
+
+typedef void(*state_unreferenced_fun)(lua_State*);
+
+LUABIND_API void set_state_unreferenced_callback(
+    lua_State* L, state_unreferenced_fun cb);
+LUABIND_API state_unreferenced_fun get_state_unreferenced_callback(
+    lua_State* L);
+LUABIND_API bool is_state_unreferenced(lua_State* L);
+
 } // namespace luabind
 
 #endif // LUABIND_SHARED_PTR_CONVERTER_090211_HPP

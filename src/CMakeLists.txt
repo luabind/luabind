@@ -19,6 +19,7 @@ set(luabind_SRCS
     pcall.cpp
     scope.cpp
     set_package_preload.cpp
+    shared_ptr_converter.cpp
     stack_content_by_name.cpp
     weak_ref.cpp
     wrapper_base.cpp)
