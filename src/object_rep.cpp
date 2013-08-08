@@ -23,6 +23,7 @@
 #define LUABIND_BUILDING
 
 #include <luabind/detail/class_rep.hpp>
+#include <luabind/detail/format_signature.hpp> // for get_class_name
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/operator_id.hpp>
 
@@ -209,16 +210,16 @@ namespace luabind { namespace detail
           }
           object_rep* inst = get_instance(L, 1);
           char const* const_s = inst->is_const() ? "const " : "";
-          char const* cls_name = inst->crep()->name();
+          std::string const cls_name = get_class_name(L, inst->crep()->type());
           char const* op_name = lua_tostring(L, name_upvalue);
 
           if (std::strcmp(op_name, "__tostring") == 0) {
               lua_pushfstring(L, "%s%s object: %p",
-                  const_s, cls_name, static_cast<void*>(inst));
+                  const_s, cls_name.c_str(), static_cast<void*>(inst));
               return 1;
           }
           lua_pushfstring(L, "%sclass %s: no %s operator defined.",
-              const_s, cls_name, op_name);
+              const_s, cls_name.c_str(), op_name);
           return lua_error(L);
       }
 

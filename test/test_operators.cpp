@@ -120,6 +120,10 @@ struct len_tester
     int m_len;
 };
 
+struct nameless {};
+
+nameless make_nameless() { return nameless(); }
+
 } // namespace unnamed
 
 void test_main(lua_State* L)
@@ -162,7 +166,10 @@ void test_main(lua_State* L)
 
         class_<len_tester>("len_tester")
             .def(constructor<int>())
-            .def("__len", &len_tester::len)
+            .def("__len", &len_tester::len),
+
+        class_<nameless>(),
+        def("make_nameless", &make_nameless)
     ];
 
     DOSTRING(L, "test = operator_tester()");
@@ -190,7 +197,9 @@ void test_main(lua_State* L)
             "^operator_tester2 object: "
         "'))");
     DOSTRING(L, "print(test2)");
-    
+
+    DOSTRING(L, "print(make_nameless())");
+
     DOSTRING_EXPECTED(L,
         "local d = test2 / test3",
         "class operator_tester2: no __div operator defined.");
