@@ -1,3 +1,5 @@
+.. _policy-yield:
+
 yield
 ----------------
 

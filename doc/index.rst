@@ -11,12 +11,29 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   intro
+   building
+   basic-usage
+   scopes
+   functions
+   classes
+   userdefined-converters
+   object
+   lua-classes
+   exceptions
+   policies
+   split-registration
+   errors
+   build-options
+   impl-notes
+   faq
+   issues
+   acknowledgments
 
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
 

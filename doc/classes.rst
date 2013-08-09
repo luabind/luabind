@@ -1,3 +1,5 @@
+.. _part-classes:
+
 Binding classes to Lua
 ======================
 
@@ -94,6 +96,8 @@ Here's an example illlustrating this::
 This selects the first overload of the function ``f`` to bind. The second
 overload is not bound.
 
+
+.. _sec-properties:
 
 Properties
 ----------
@@ -450,6 +454,7 @@ Like this:
 Internally, luabind will do the necessary conversions on the raw pointers, which
 are first extracted from the holder type.
 
+.. _sec-split-cls-registration:
 
 Splitting class registrations
 -----------------------------
@@ -484,4 +489,4 @@ Here, the class ``X`` is registered in two steps. The two functions
 units.
 
 To separate the module registration and the classes to be registered, see
-`Splitting up the registration`_.
+:ref:`part-split-registration`.

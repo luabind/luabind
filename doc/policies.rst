@@ -1,3 +1,5 @@
+.. _part-policies:
+
 Policies
 ========
 
@@ -11,16 +13,16 @@ to the ``this`` pointer.
     :local:
     :depth: 1
 
-.. include:: adopt.rst
-.. include:: dependency.rst
-.. include:: out_value.rst
-.. include:: pure_out_value.rst
-.. include:: return_reference_to.rst
-.. include:: copy.rst
-.. include:: discard_result.rst
-.. include:: return_stl_iterator.rst
-.. include:: raw.rst
-.. include:: yield.rst
+.. include:: policies/adopt.rst
+.. include:: policies/dependency.rst
+.. include:: policies/out_value.rst
+.. include:: policies/pure_out_value.rst
+.. include:: policies/return_reference_to.rst
+.. include:: policies/copy.rst
+.. include:: policies/discard_result.rst
+.. include:: policies/return_stl_iterator.rst
+.. include:: policies/raw.rst
+.. include:: policies/yield.rst
 
 ..  old policies section
     ===================================================

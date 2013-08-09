@@ -1,3 +1,5 @@
+.. _policy-out_value:
+
 out_value
 ----------------
 

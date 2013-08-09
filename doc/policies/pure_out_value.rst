@@ -1,3 +1,5 @@
+.. _policy-pure_out_value:
+
 pure_out_value
 ----------------
 

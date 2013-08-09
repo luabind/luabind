@@ -1,6 +1,8 @@
 Error Handling
 ==============
 
+.. _sec-pcall-errorfunc:
+
 pcall errorfunc
 ---------------
 
@@ -69,6 +71,8 @@ Note that the callback set by ``set_pcall_callback()`` will only be used when
 luabind executes lua code. Anytime when you call ``lua_pcall`` yourself, you
 have to supply your function if you want error messages translated.
 
+.. _sec-lua-panic:
+
 lua panic
 ---------
 
@@ -130,7 +134,7 @@ in-depth explanation.
 
   There is no data member named *attribute-name* in the class *class-name*,
   or there's no setter-function registered on that property name. See the 
-  Properties_ section.
+  :ref:`sec-properties` section.
 
 - .. parsed-literal:: 
 
@@ -146,7 +150,7 @@ in-depth explanation.
 
   The class' constructor or member function threw an unknown exception.
   Known exceptions are const char*, std::exception. See the 
-  `exceptions`_ section.
+  :ref:`part-exceptions` section.
 
 - .. parsed-literal::
 

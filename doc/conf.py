@@ -64,7 +64,7 @@ release = '0.9'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', 'policies']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -92,6 +92,10 @@ pygments_style = 'sphinx'
 primary_domain = 'cpp'
 
 highlight_language = 'c++'
+
+rst_epilog = """
+.. |...| unicode:: U+02026
+"""
 
 
 # -- Options for HTML output ---------------------------------------------------

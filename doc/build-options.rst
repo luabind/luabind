@@ -1,3 +1,5 @@
+.. _part-build-options:
+
 Build options
 =============
 
@@ -65,7 +67,7 @@ LUABIND_DYNAMIC_LINK
 
 LUABIND_NO_RTTI
     You can define this if you don't want luabind to use ``dynamic_cast<>``.
-    It will disable `Object identity`_.
+    It will disable :ref:`sec-objid`.
 
 NDEBUG
     This define will disable all asserts and should be defined in a release 

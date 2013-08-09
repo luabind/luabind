@@ -141,6 +141,8 @@ take a ``lua_State`` pointer, and the name is a member function in the Lua class
 	virtual function where the only difference in their signatures is their constness, the
 	wrong overload will be called by ``call_member``. This is rarely the case though.
 
+.. _sec-objid:
+
 Object identity
 ~~~~~~~~~~~~~~~
 

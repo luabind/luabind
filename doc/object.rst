@@ -1,3 +1,5 @@
+.. _part-object:
+
 Object
 ======
 
@@ -66,7 +68,7 @@ reading and writing values into the table (using operator=).
 Note that it is impossible to know if a Lua value is indexable or not
 (``lua_gettable`` doesn't fail, it succeeds or crashes). This means that if
 you're trying to index something that cannot be indexed, you're on your own.
-Lua will call its ``panic()`` function. See `lua panic`_.
+Lua will call its ``panic()`` function. See :ref:`sec-lua-panic`.
 
 There are also free functions that can be used for indexing the table, see
 `Related functions`_.
@@ -258,10 +260,10 @@ true value of the table entry.
 The ``object_cast`` function casts the value of an object to a C++ value.
 You can supply a policy to handle the conversion from lua to C++. If the cast
 cannot be made a ``cast_failed`` exception will be thrown. If you have
-defined LUABIND_NO_ERROR_CHECKING (see `Build options`_) no checking will occur,
-and if the cast is invalid the application may very well crash. The nothrow
-versions will return an uninitialized ``boost::optional<T>`` object, to
-indicate that the cast could not be performed.
+defined LUABIND_NO_ERROR_CHECKING (see :ref:`part-build-options`) no checking
+will occur, and if the cast is invalid the application may very well crash.
+The nothrow versions will return an uninitialized ``boost::optional<T>``
+object, to indicate that the cast could not be performed.
 
 The function signatures of all of the above functions are really templates
 for the object parameter, but the intention is that you should only pass

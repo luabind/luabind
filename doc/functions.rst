@@ -1,3 +1,5 @@
+.. _part-functions:
+
 Binding functions to Lua
 ========================
 
@@ -11,7 +13,7 @@ following synopsis::
 - F is the function pointer you want to register. 
 - The Policies parameter is used to describe how parameters and return values 
   are treated by the function, this is an optional parameter. More on this in 
-  the `policies`_ section.
+  the :ref:`part-policies` section.
 
 An example usage could be if you want to register the function ``float
 std::sin(float)``::
@@ -56,7 +58,7 @@ isn't.
 .. sidebar:: Ownership transfer
 
    To correctly handle ownership transfer, create_a() would need an adopt
-   return value policy. More on this in the `Policies`_ section.
+   return value policy. More on this in the :ref:`part-policies` section.
 
 For example, if the following function and class is registered:
 
@@ -137,7 +139,7 @@ Like this::
 
 
 If you want to use a custom error handler for the function call, see
-``set_pcall_callback`` under `pcall errorfunc`_.
+``set_pcall_callback`` under :ref:`sec-pcall-errorfunc`.
 
 Using Lua threads
 -----------------
@@ -167,10 +169,11 @@ value passed in to ``lua_yield()``. When you want to continue the execution, you
 it one. The parameters to ``resume()`` will be returned by ``yield()`` on the Lua side.
 
 For yielding C++-functions (without the support of passing data back and forth between the
-Lua side and the c++ side), you can use the yield_ policy.
+Lua side and the c++ side), you can use the :ref:`policy-yield` policy.
 
-With the overload of ``resume_function`` that takes an object_, it is important that the
-object was constructed with the thread as its ``lua_State*``. Like this:
+With the overload of ``resume_function`` that takes an :ref:`part-object`,
+it is important that the object was constructed with the thread as its
+``lua_State*``. Like this:
 
 .. parsed-literal::
 

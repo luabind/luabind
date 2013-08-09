@@ -15,8 +15,8 @@ What's wrong with functions taking variable number of arguments?
 Internal structure overflow in VC
     If you, in visual studio, get fatal error C1204: compiler limit :
     internal structure overflow. You should try to split that compilation
-    unit up in smaller ones. See `Splitting up the registration`_ and
-    `Splitting class registrations`_.
+    unit up in smaller ones. See :ref:`part-split-registration` and
+    :ref:`sec-split-cls-registration`.
 
 What's wrong with precompiled headers in VC?
     Visual Studio doesn't like anonymous namespaces in its precompiled
@@ -85,4 +85,5 @@ Crashes when linking against luabind as a dll in Windows
 
 I cannot register a function with a non-const parameter
     This is because there is no way to get a reference to a Lua value. Have 
-    a look at out_value_ and pure_out_value_ policies.
+    a look at :ref:`policy-out_value` and :ref:`policy-pure_out_value`
+    policies.

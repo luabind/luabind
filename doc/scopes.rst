@@ -66,8 +66,8 @@ Each declaration must be separated by a comma, like this::
     ];
 
 
-More about the actual declarations in the `Binding functions to Lua`_ and
-`Binding classes to Lua`_ sections.
+More about the actual declarations in the :ref:`part-functions` and
+:ref:`part-classes` sections.
 
 A word of caution, if you are in really bad need for performance, putting your
 functions in tables will increase the lookup time.

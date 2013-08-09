@@ -1,3 +1,5 @@
+.. _part-split-registration:
+
 Splitting up the registration
 =============================
 
