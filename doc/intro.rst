@@ -29,9 +29,12 @@ us know about your project.
 The main channel for help and feedback is the `luabind mailing list`_.
 There's also an IRC channel ``#luabind`` on irc.freenode.net.
 
+Additionally, this fork’s `github issue tracker`_ can also be used for bug reports, feature requests and questions.
+
 .. _`luabind mailing list`: https://lists.sourceforge.net/lists/listinfo/luabind-user
 .. _MIT license: http://www.opensource.org/licenses/mit-license.php
 .. _Boost: http://www.boost.org
+.. _github issue tracker: https://github.com/Oberon00/luabind/issues
 
 
 Features
@@ -44,7 +47,7 @@ Luabind supports:
  - Overloaded member functions 
  - Operators 
  - Properties 
- - Enums 
+ - Enums (also C++11 ``enum class`` if available)
  - Lua functions in C++ 
  - Lua classes in C++ 
  - Lua classes (single inheritance) 
@@ -58,25 +61,13 @@ Luabind supports:
 Portability
 ===========
 
-Luabind has been tested to work on the following compilers:
+Luabind is currently tested regularly with
 
- - Visual Studio 7.1 
- - Intel C++ 6.0 (Windows) 
- - GCC 2.95.3 (cygwin) 
- - GCC 3.0.4 (Debian/Linux) 
- - GCC 3.1 (SunOS 5.8) 
- - GCC 3.2 (cygwin) 
- - GCC 3.3.1 (cygwin)
- - GCC 3.3 (Apple, MacOS X)
- - GCC 4.0 (Apple, MacOS X)
+    * Microsoft Visual C++ 11 (2012) x32 and x64
+    * gcc 4.8 x64 (with and without -std=c++11)
+    * Clang 2.6 x64 (with and without -std=c++11)
 
-It has been confirmed not to work with:
-
- - GCC 2.95.2 (SunOS 5.8) 
-
-Metrowerks 8.3 (Windows) compiles but fails the const-test. This 
-means that const member functions are treated as non-const member 
-functions.
-
-If you have tried luabind with a compiler not listed here, let us know 
-your result with it.
+It should work with any compiler conformant with C++03. However, probably only
+versions of the above threecompilers will work out of the box with the
+provided CMake build files. Please report any issues you have to the
+`github issue tracker`_.

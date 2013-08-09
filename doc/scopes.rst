@@ -1,18 +1,31 @@
 Scopes
 ======
 
-Everything that gets registered in Lua is registered in a namespace (Lua
-tables) or in the global scope (called module). All registrations must be
-surrounded by its scope. To define a module, the ``luabind::module`` class is
-used. It is used like this::
+Everything that gets registered in Lua is registered in a given Lua table, in
+a namespace (Lua table at given name), or in the global scope (called module).
+All registrations must be surrounded by its scope. To define a module, the
+``luabind::module`` class is used. It is used like this::
 
     module(L)
     [
         // declarations
     ];
 
-This will register all declared functions or classes in the global namespace in
-Lua. If you want to have a namespace for your module (like the standard
+This will register all declared functions or classes in the global namespace
+in Lua.
+
+You can also register into a custom Lua table wrapped in a
+:ref:`part-object`::
+
+    object mod = newtable(L);
+    module(L, mod)
+    [
+        // declarations
+    ];
+
+You can then directly use all object manipulation functions on ``mod``.
+
+If you just want to have a namespace for your module (like the standard
 libraries) you can give a name to the constructor, like this::
 
     module(L, "my_library")
@@ -68,6 +81,3 @@ Each declaration must be separated by a comma, like this::
 
 More about the actual declarations in the :ref:`part-functions` and
 :ref:`part-classes` sections.
-
-A word of caution, if you are in really bad need for performance, putting your
-functions in tables will increase the lookup time.

@@ -141,6 +141,20 @@ take a ``lua_State`` pointer, and the name is a member function in the Lua class
 	virtual function where the only difference in their signatures is their constness, the
 	wrong overload will be called by ``call_member``. This is rarely the case though.
 
+.. note::
+    You can also override virtual member functions per instance which often
+    makes it unnecessary to derive a new class in Lua. Instead of e.g. ::
+        class "D" (B)
+
+        function D:__init() B.__init(self) end
+        function D:virtual_function() ... end
+
+    you may be able to get around with ::
+
+        b = B()
+        function b:virtual_function() ... end
+
+
 .. _sec-objid:
 
 Object identity

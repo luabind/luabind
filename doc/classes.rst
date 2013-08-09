@@ -454,6 +454,99 @@ Like this:
 Internally, luabind will do the necessary conversions on the raw pointers, which
 are first extracted from the holder type.
 
+This means that for Luabind a ``smart_ptr<derived>`` is not related to a
+``smart_ptr<base>``, but ``derived*`` and ``base*`` are, as are
+``smart_ptr<derived>`` and ``base*``. In other words, upcasting does not work
+for smart pointers as target types, but as source types.
+
+
+Additional support for shared_ptr and intrusive_ptr
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This limitation cannot be removed for all smart pointers in a generic way,
+but luabind has special support for
+
+    * ``boost::shared_ptr`` in ``shared_ptr_converter.hpp``
+    * ``std::shared_ptr`` in ``std_shared_ptr_converter.hpp``
+    * ``boost::intrusive_ptr`` in ``intrusive_ptr_converter.hpp``
+
+You should include the header(s) you need in the cpp files which register
+functions that accept the corresponding smart pointer types, to get automatic
+conversions from ``smart_ptr<X>`` to ``smart_ptr<Y>``, whenever Luabind would
+convert ``X*`` to ``Y*``, removing the limitation mentioned above.
+
+However, the ``shared_ptr`` converters might not behave exactly as you would
+expect:
+
+    1. If the shared_ptr requested (from C++) has the exact same type as the
+       one which is present in Lua (if any), then a copy will be made.
+
+    2. If the pointee type of the requested shared_ptr has a
+       ``shared_from_this`` member (checked automatically at compile time),
+       this will be used to obtain a ``shared_ptr``. Caveats:
+
+        * If the object is not already held in a shared_ptr, behavior is
+          undefined (probably a ``bad_weak_ptr`` exception will be thrown).
+
+        * If the ``shared_from_this`` member is not a function with the right
+          prototype (``ptr_t shared_from_this()`` with the expression ::
+
+            shared_ptr<RequestedT>(raw->shared_from_this(), raw)
+        
+          being valid, where ``raw`` is of type ``RequestedT*`` and points to
+          the C++ object in Lua.
+
+    3. Otherwise, a new ``shared_ptr`` will be created from the raw pointer
+       associated with the Lua object (even if it is not held in a
+       ``shared_ptr``). It will have a deleter set that holds a strong
+       reference to the Lua object, thus preventing it’s collection until the
+       reference is released by invoking the deleter (i.e. by resetting or
+       destroying the ``shared_ptr``) or until the assocciated ``lua_State``
+       is closed: then the ``shared_ptr`` becomes dangling.
+
+       If such a ``shared_ptr`` is passed back to Lua, the original Lua object
+       (userdata) will be passed instead, preventing the creation of more
+       ``shared_ptr``\ s with this deleter.
+
+1. is as you should have expected and 2. is special behavior introduced to
+avoid 3. when possible. If you cannot derive your (root) classes from
+``enable_shared_from_this`` (which is the recommended way of providing a
+``shared_from_this`` method) you must be careful not to close the
+``lua_State`` when you still have a ``shared_ptr`` obtained by 3.
+
+There are three functions provided to support this (in namespace luabind)::
+
+    bool is_state_unreferenced(lua_State* L);
+
+    typedef void(*state_unreferenced_fun)(lua_State* L);
+    void set_state_unreferenced_callback(lua_State* L, state_unreferenced_fun cb);
+    state_unreferenced_fun get_state_unreferenced_callback(lua_State* L);
+
+``is_state_unreferenced`` will return ``false`` if closing ``L`` would make
+existing ``shared_ptrs`` dangling and ``true`` if it safe (in this respect) to
+call ``lua_close(L)``.
+
+The ``cb`` argument passed to ``set_state_unreferenced_callback`` will be
+called whenever the return value of ``is_state_unreferenced(L)`` would change
+from ``false`` to ``true``.
+
+``get_state_unreferenced_callback`` returns the current
+``state_unreferenced_fun`` for ``L``.
+
+A typical use of this functions would be to replace ::
+
+    lua_close(L);
+
+with ::
+
+    if (luabind::is_state_unreferenced(L))
+        lua_close(L);
+    else
+        luabind::set_state_unreferenced_callback(L, &lua_close);
+
+(``lua_close`` happens to be a valid ``state_unreferenced_fun``.)
+
+
 .. _sec-split-cls-registration:
 
 Splitting class registrations
