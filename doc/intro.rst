@@ -1,7 +1,3 @@
-+++++++++++++++++++
- luabind |version|
-+++++++++++++++++++
-
 Introduction
 ============
 
@@ -9,8 +5,8 @@ Luabind is a library that helps you create bindings between C++ and Lua. It has
 the ability to expose functions and classes, written in C++, to Lua. It will
 also supply the functionality to define classes in Lua and let them derive from
 other Lua classes or C++ classes. Lua classes can override virtual functions
-from their C++ base classes. It is written towards Lua 5.0, and does not work
-with Lua 4.
+from their C++ base classes. It is written towards Lua 5.2 but should also
+work with 5.1.
 
 It is implemented utilizing template meta programming. That means that you
 don't need an extra preprocess pass to compile your project (it is done by the

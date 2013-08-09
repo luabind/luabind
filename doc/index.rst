@@ -1,10 +1,15 @@
-.. Luabind documentation master file, created by
-   sphinx-quickstart on Thu Aug 08 22:35:23 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Luabind |version| documentation
+===============================
 
-Welcome to Luabind's documentation!
-===================================
+Luabind is a library that helps you create bindings between C++ and Lua. It
+has the ability to expose functions and classes, written in C++, to Lua.
+It will also supply the functionality to define classes in Lua and let them
+derive from other Lua classes or C++ classes. Lua classes can override virtual
+functions from their C++ base classes. It is written towards Lua 5.2 but
+should also work with 5.1.
+
+The old official homepage can be found
+at http://www.rasterbar.com/products/luabind.html.
 
 Contents:
 
@@ -31,9 +36,7 @@ Contents:
    acknowledgments
 
 
-Indices and tables
-==================
+Searchpage
+==========
 
-* :ref:`genindex`
 * :ref:`search`
-
