@@ -554,6 +554,23 @@ with ::
 (``lua_close`` happens to be a valid ``state_unreferenced_fun``.)
 
 
+Unnamed classes
+---------------
+
+You can register unnamed classes by not passing a name to ``class_``::
+
+    class_<X>()
+
+This does not export the class object itself to Lua, meaning that
+constructors cannot be called and enums are only accessible via objects of
+this class' type.
+
+This is useful e.g. for registering multiple instantiations of a class
+template, and construct a matching instance using a factory function,
+like boost::make_shared of for hiding intermediate classes in inheritance
+hierarchies.
+
+
 .. _sec-split-cls-registration:
 
 Splitting class registrations
