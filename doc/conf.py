@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Luabind'
-copyright = u'2013, Daniel Wallin, Arvid Norberg'
+copyright = u'2005 Rasterbar Software; 2013 Christian Neumüller'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
