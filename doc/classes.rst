@@ -244,7 +244,7 @@ The operators supported are those available in Lua:
 
 .. parsed-literal::
 
-    +    -    \*    /    ==    <    <=
+    +    -    \*    /    ==    <    <=    %
 
 This means, no in-place operators. The equality operator (``==``) has a little
 hitch; it will not be called if the references are equal. This means that the
@@ -309,6 +309,13 @@ std::ostream. Like this example:
         class_<number>("number")
             .def(**tostring(self)**)
     ];
+
+If you do not define a ``__tostring`` operator, Luabind supplies a default
+which result in strings of the form ``[const] <type> object: <address>``, i.e.
+``const`` is prepended if the object is const, ``<type>`` will be the string
+you supplied to ``class_`` (or a string derived from `std::type_info::name`
+for unnamed classes) and ``<address>`` will be the address of the Lua userdata
+(meaning that different addresses could refer to the same C++ object).
 
 
 Nested scopes and static functions
