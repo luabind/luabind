@@ -144,6 +144,7 @@ take a ``lua_State`` pointer, and the name is a member function in the Lua class
 .. note::
     You can also override virtual member functions per instance which often
     makes it unnecessary to derive a new class in Lua. Instead of e.g. ::
+    
         class "D" (B)
 
         function D:__init() B.__init(self) end
