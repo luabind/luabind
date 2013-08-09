@@ -1,5 +1,5 @@
 discard_result
-----------------
+--------------
 
 Motivation
 ~~~~~~~~~~
@@ -11,32 +11,32 @@ Lua.
 Defined in
 ~~~~~~~~~~
 
-.. parsed-literal::
+::
 
     #include <luabind/discard_result_policy.hpp>
 
 Synopsis
 ~~~~~~~~
 
-.. parsed-literal::
+::
 
     discard_result
 
 Example
 ~~~~~~~
 
-.. parsed-literal::
+::
 
     struct X
     {
         X& set(T n)
         {
             ...
-            return \*this;
+            return *this;
         }
     };
 
-    ...
+.. parsed-literal::
 
     module(L)
     [

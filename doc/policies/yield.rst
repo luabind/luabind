@@ -25,14 +25,14 @@ Synopsis
 Example
 ~~~~~~~
 
-.. parsed-literal::
+::
 
     void do_thing_that_takes_time()
     {
-        ...
+        // ...
     }
 
-    ...
+.. parsed-literal::
 
     module(L)
     [

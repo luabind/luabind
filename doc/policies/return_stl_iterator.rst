@@ -11,28 +11,28 @@ in lua to iterate over the container. It works on any container that defines
 Defined in
 ~~~~~~~~~~
 
-.. parsed-literal::
+::
 
     #include <luabind/iterator_policy.hpp>
 
 Synopsis
 ~~~~~~~~
 
-.. parsed-literal::
+::
 
     return_stl_iterator
 
 Example
 ~~~~~~~
 
-.. parsed-literal::
+::
 
     struct X
     {
         std::vector<std::string> names;
     };
 
-    ...
+.. parsed-literal::
 
     module(L)
     [
@@ -40,7 +40,7 @@ Example
             .def_readwrite("names", &X::names, **return_stl_iterator**)
     ];
 
-    ...
+.. code-block:: lua
 
     > a = A()
     > for name in a.names do

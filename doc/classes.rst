@@ -34,7 +34,7 @@ namespace luabind)::
 This will register the class with the name testclass and constructor that takes
 a string as argument and one member function with the name ``print_string``.
 
-::
+.. code-block:: lua
 
     Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
     > a = testclass('a string')
@@ -134,7 +134,9 @@ For example, when having a struct containing another struct. Like this::
     struct A { int m; };
     struct B { A a; };
 
-When binding ``B`` to lua, the following expression code should work::
+When binding ``B`` to lua, the following expression code should work:
+
+.. code-block:: lua
 
     b = B()
     b.a.m = 1
@@ -192,7 +194,7 @@ any integer. You register them like this::
 In Lua they are accessed like any data member, except that they are read-only
 and reached on the class itself rather than on an instance of the class.
 
-::
+.. code-block:: lua
 
     Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
     > print(A.my_enum)

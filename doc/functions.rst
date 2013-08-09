@@ -78,7 +78,9 @@ For example, if the following function and class is registered:
     void g(A*);
     void g(B*);
 
-And the following Lua code is executed::
+And the following Lua code is executed:
+
+.. code-block:: lua
 
     a1 = create_a()
     a1:f() -- the const version is called

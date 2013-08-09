@@ -1,5 +1,5 @@
 copy
-----------------
+----
 
 Motivation
 ~~~~~~~~~~
@@ -12,14 +12,14 @@ constructor.
 Defined in
 ~~~~~~~~~~
 
-.. parsed-literal::
+::
 
     #include <luabind/copy_policy.hpp>
 
 Synopsis
 ~~~~~~~~
 
-.. parsed-literal::
+::
 
     copy(index)
 
@@ -36,7 +36,7 @@ Parameter     Purpose
 Example
 ~~~~~~~
 
-.. parsed-literal::
+::
 
     X* get()
     {
@@ -44,7 +44,7 @@ Example
         return &instance;
     }
 
-    ...
+.. parsed-literal::
 
     module(L)
     [

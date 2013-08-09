@@ -1,5 +1,5 @@
 dependency
-----------------
+----------
 
 Motivation
 ~~~~~~~~~~
@@ -10,14 +10,14 @@ This is needed for example when returning internal references to some class.
 Defined in
 ~~~~~~~~~~
 
-.. parsed-literal::
+::
 
     #include <luabind/dependency_policy.hpp>
 
 Synopsis
 ~~~~~~~~
 
-.. parsed-literal::
+::
 
     dependency(nurse_index, patient_index)
 
@@ -34,13 +34,15 @@ Parameter         Purpose
 Example
 ~~~~~~~
 
-.. parsed-literal::
+::
 
     struct X
     {
         B member;
         B& get() { return member; }
     };
+
+.. parsed-literal::
 
     module(L)
     [

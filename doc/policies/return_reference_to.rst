@@ -28,14 +28,14 @@ to tell luabind that the return-value is already on the lua stack.
 Defined in
 ~~~~~~~~~~
 
-.. parsed-literal::
+::
 
     #include <luabind/return_reference_to_policy.hpp>
 
 Synopsis
 ~~~~~~~~
 
-.. parsed-literal::
+::
 
     return_reference_to(index)
 
@@ -52,7 +52,7 @@ Parameter Purpose
 Example
 ~~~~~~~
 
-.. parsed-literal::
+::
 
     struct A
     {
@@ -61,9 +61,11 @@ Example
         A& set(float v)
         {
             val = v;
-            return \*this;
+            return *this;
         }
     };
+
+.. parsed-literal::
 
     module(L)
     [

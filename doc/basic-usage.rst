@@ -60,7 +60,7 @@ Hello world
         return 0;
     }
 
-::
+.. code-block:: lua
 
     Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
     > loadlib('hello_world.dll', 'init')()

@@ -1,7 +1,7 @@
 .. _policy-pure_out_value:
 
 pure_out_value
-----------------
+--------------
 
 Motivation
 ~~~~~~~~~~
@@ -14,14 +14,14 @@ signature.
 Defined in
 ~~~~~~~~~~
 
-.. parsed-literal::
+::
 
     #include <luabind/out_value_policy.hpp>
 
 Synopsis
 ~~~~~~~~
 
-.. parsed-literal::
+::
 
     pure_out_value(index, policies = none)
 
@@ -42,15 +42,19 @@ Example
 
 Note that no values are passed to the calls to ``f1`` and ``f2``.
 
-.. parsed-literal::
+::
 
     void f1(float& val) { val = 10.f; }
     void f2(float\* val) { \*val = 10.f; }
+
+.. parsed-literal::
 
     module(L)
     [
         def("f", &f, **pure_out_value(_1)**)
     ];
+
+.. code-block:: lua
 
     Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
     > print(f1())

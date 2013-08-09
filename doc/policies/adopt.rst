@@ -1,5 +1,5 @@
 adopt
-----------------
+-----
 
 Motivation
 ~~~~~~~~~~
@@ -9,14 +9,14 @@ Used to transfer ownership across language boundaries.
 Defined in
 ~~~~~~~~~~
 
-.. parsed-literal::
+::
 
     #include <luabind/adopt_policy.hpp>
 
 Synopsis
 ~~~~~~~~
 
-.. parsed-literal::
+::
 
     adopt(index)
 
@@ -32,14 +32,14 @@ Parameter     Purpose
 Example
 ~~~~~~~
 
-.. parsed-literal::
+::
 
     X* create()
     {
         return new X;
     }
 
-    ...
+.. parsed-literal::
 
     module(L)
     [

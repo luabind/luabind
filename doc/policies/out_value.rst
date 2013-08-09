@@ -1,7 +1,7 @@
 .. _policy-out_value:
 
 out_value
-----------------
+---------
 
 Motivation
 ~~~~~~~~~~
@@ -17,14 +17,14 @@ the lua manual).
 Defined in
 ~~~~~~~~~~
 
-.. parsed-literal::
+::
 
     #include <luabind/out_value_policy.hpp>
 
 Synopsis
 ~~~~~~~~
 
-.. parsed-literal::
+::
 
     out_value(index, policies = none)
 
@@ -44,15 +44,19 @@ Parameter       Purpose
 Example
 ~~~~~~~
 
-.. parsed-literal::
+::
 
     void f1(float& val) { val = val + 10.f; }
-    void f2(float\* val) { \*val = \*val + 10.f; }
+    void f2(float* val) { *val = *val + 10.f; }
+
+.. parsed-literal::
 
     module(L)
     [
         def("f", &f, **out_value(_1)**)
     ];
+
+.. code-block:: lua
 
     Lua 5.0  Copyright (C) 1994-2003 Tecgraf, PUC-Rio
     > print(f1(10))

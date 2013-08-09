@@ -1,3 +1,5 @@
+.. highlight:: lua
+
 Defining classes in Lua
 =======================
 
@@ -47,7 +49,7 @@ virtual functions with Lua functions. To do this we have to create a wrapper
 class for our C++ base class. This is the class that will hold the Lua object
 when we instantiate a Lua class.
 
-::
+.. code-block:: c++
 
     class base
     {
@@ -76,7 +78,7 @@ when we instantiate a Lua class.
         }
     };
 
-    ...
+    // ...
 
     module(L)
     [
@@ -126,7 +128,9 @@ it has virtual functions you may have silent errors.
 
 The wrappers must derive from ``luabind::wrap_base``, it contains a Lua reference
 that will hold the Lua instance of the object to make it possible to dispatch
-virtual function calls into Lua. This is done through an overloaded member function::
+virtual function calls into Lua. This is done through an overloaded member function:
+
+.. code-block:: c++
 
     template<class Ret>
     Ret call(char const* name, ...)
@@ -165,7 +169,7 @@ When a pointer or reference to a registered class with a wrapper is passed
 to Lua, luabind will query for it's dynamic type. If the dynamic type
 inherits from ``wrap_base``, object identity is preserved.
 
-::
+.. code-block:: c++
 
     struct A { .. };
     struct A_wrap : A, wrap_base { .. };
@@ -297,7 +301,9 @@ garbage collected.
 	+--------------------+       be held by c++. 
 
 
-The problem can be illustrated by this example::
+The problem can be illustrated by this example:
+
+.. code-block:: c++
 
     struct A {};
 
@@ -305,7 +311,7 @@ The problem can be illustrated by this example::
     void adopt_a(A* a) { delete a; }
 
 
-::
+.. code-block:: c++
 
     using namespace luabind;
 
