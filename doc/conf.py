@@ -177,6 +177,10 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'Luabinddoc'
 
+html_use_modindex = False
+
+html_use_index = False
+
 
 # -- Options for LaTeX output --------------------------------------------------
 
