@@ -42,6 +42,7 @@ set(TESTS
     "extend_class_in_lua"
     "free_functions"
     "function_introspection"
+    "function_object"
     "held_type"
     "implicit_cast"
     "implicit_raw"

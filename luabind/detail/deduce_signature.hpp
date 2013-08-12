@@ -18,15 +18,30 @@ namespace luabind { namespace detail {
 namespace mpl = boost::mpl;
 namespace fty = boost::function_types;
 
-template <class F>
+template <class F, class Enable=void>
 struct signature_aux
 {
     typedef F type;
 };
 
+// Handle boost::function and std::function:
+template <template<class> class F, class S>
+struct signature_aux<
+    F<S>,
+    typename mpl::apply< // Enable only if F<S>::result_type exists.
+        mpl::always<void>, typename F<S>::result_type>::type >
+{
+    typedef S type;
+};
+
+template <typename F>
+struct is_function:
+    fty::is_callable_builtin<typename signature_aux<F>::type>
+{};
+
 template <class F>
 typename boost::enable_if<
-    fty::is_callable_builtin<typename signature_aux<F>::type>,
+    is_function<F>::value,
     fty::components<typename signature_aux<F>::type> >::type
 deduce_signature(F const&, ...)
 {
