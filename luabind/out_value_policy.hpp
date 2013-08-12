@@ -98,7 +98,7 @@ namespace luabind { namespace detail
     template<int Size, class Policies = detail::null_type>
     struct out_value_converter
     {
-        int consumed_args(...) const
+        int consumed_args() const
         {
             return 1;
         }
@@ -207,7 +207,7 @@ namespace luabind { namespace detail
     template<int Size, class Policies = detail::null_type>
     struct pure_out_value_converter
     {
-        int consumed_args(...) const
+        int consumed_args() const
         {
             return 0;
         }

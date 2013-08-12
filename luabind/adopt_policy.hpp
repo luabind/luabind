@@ -52,7 +52,7 @@ namespace luabind { namespace detail
     {
         typedef adopt_pointer type;
 
-        int consumed_args(...) const
+        int consumed_args() const
         {
             return 1;
         }

@@ -37,7 +37,7 @@ template <>
 struct default_converter<X>
   : native_converter_base<X>
 {
-    int consumed_args(...) const
+    int consumed_args() const
     {
         return 2;
     }
