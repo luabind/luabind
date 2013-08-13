@@ -8,6 +8,7 @@
 #include <luabind/luabind.hpp>
 
 #include <boost/noncopyable.hpp>
+#include <iostream>
 
 using boost::intrusive_ptr;
 
