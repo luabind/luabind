@@ -41,6 +41,7 @@ set(luabind_HDRS
     ../luabind/exception_handler.hpp
     ../luabind/from_stack.hpp
     ../luabind/function.hpp
+    ../luabind/function_converter.hpp
     ../luabind/function_introspection.hpp
     ../luabind/get_main_thread.hpp
     ../luabind/get_pointer.hpp

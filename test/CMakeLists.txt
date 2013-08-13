@@ -41,6 +41,7 @@ set(TESTS
     "exception_handlers"
     "extend_class_in_lua"
     "free_functions"
+    "function_converter"
     "function_introspection"
     "function_object"
     "held_type"
