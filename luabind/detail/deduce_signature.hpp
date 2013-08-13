@@ -34,6 +34,9 @@ struct signature_aux<
     typedef S type;
 };
 
+template <class F>
+struct signature_aux<const F>: signature_aux<F> {};
+
 template <typename F>
 struct is_function:
     fty::is_callable_builtin<typename signature_aux<F>::type>
