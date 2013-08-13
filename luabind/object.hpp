@@ -23,7 +23,6 @@
 #ifndef LUABIND_OBJECT_050419_HPP
 #define LUABIND_OBJECT_050419_HPP
 
-#include <luabind/detail/convert_to_lua.hpp> // REFACTOR
 #include <luabind/detail/pcall.hpp>
 #include <luabind/detail/policy.hpp>
 #include <luabind/detail/stack_utils.hpp>
@@ -31,64 +30,18 @@
 #include <luabind/from_stack.hpp>
 #include <luabind/handle.hpp>
 #include <luabind/nil.hpp>
+#include <luabind/stack.hpp>
 #include <luabind/typeid.hpp>
 #include <luabind/value_wrapper.hpp>
 
-#include <boost/implicit_cast.hpp> // detail::push()
 #include <boost/iterator/iterator_facade.hpp> // iterator
 #include <boost/mpl/apply_wrap.hpp>
 #include <boost/mpl/bool.hpp> // value_wrapper_traits specializations
-#include <boost/optional.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
-#include <boost/ref.hpp> // detail::push()
 #include <boost/tuple/tuple.hpp>
 #include <boost/utility/enable_if.hpp>
 
 namespace luabind {
-
-namespace detail
-{
-  namespace mpl = boost::mpl;
-
-  template<class T, class ConverterGenerator>
-  void push_aux(lua_State* interpreter, T& value, ConverterGenerator*)
-  {
-      typedef typename boost::mpl::if_<
-          boost::is_reference_wrapper<T>
-        , BOOST_DEDUCED_TYPENAME boost::unwrap_reference<T>::type&
-        , T
-      >::type unwrapped_type;
-
-      typename mpl::apply_wrap2<
-          ConverterGenerator,unwrapped_type,cpp_to_lua
-      >::type cv;
-
-      cv.apply(
-          interpreter
-        , boost::implicit_cast<
-              BOOST_DEDUCED_TYPENAME boost::unwrap_reference<T>::type&
-          >(value)
-      );
-  }
-
-  template<class T, class Policies>
-  void push(lua_State* interpreter, T& value, Policies const&)
-  {
-      typedef typename find_conversion_policy<
-          0
-        , Policies
-      >::type converter_policy;
-
-      push_aux(interpreter, value, static_cast<converter_policy*>(0));
-  }
-
-  template<class T>
-  void push(lua_State* interpreter, T& value)
-  {
-      push(interpreter, value, null_type());
-  }
-
-} // namespace detail
 
 namespace adl
 {
@@ -204,9 +157,9 @@ namespace adl
       assert(L); \
 \
       detail::stack_pop pop1(L, 1); \
-      detail::push(L, lhs); \
+      push(L, lhs); \
       detail::stack_pop pop2(L, 1); \
-      detail::push(L, rhs); \
+      push(L, rhs); \
 \
       return lua_compare(L, -1, -2, fn) != 0; \
   }
@@ -400,7 +353,7 @@ LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
       iterator_proxy& operator=(T const& value)
       {
           lua_pushvalue(m_interpreter, m_key_index);
-          detail::push(m_interpreter, value);
+          push(m_interpreter, value);
           AccessPolicy::set(m_interpreter, m_table_index);
           return *this;
       }
@@ -600,7 +553,7 @@ namespace adl
         , m_interpreter(L)
         , m_key_index(lua_gettop(L) + 1)
       {
-          detail::push(m_interpreter, key);
+          luabind::push(m_interpreter, key);
       }
 
       index_proxy(index_proxy const& other)
@@ -639,7 +592,7 @@ namespace adl
           detail::stack_pop pop(m_interpreter, 1);
 
           lua_pushvalue(m_interpreter, m_key_index);
-          detail::push(m_interpreter, value);
+          luabind::push(m_interpreter, value);
           lua_settable(m_interpreter, -3);
           return *this;
       }
@@ -650,7 +603,7 @@ namespace adl
           detail::stack_pop pop(m_interpreter, 1);
 
           lua_pushvalue(m_interpreter, m_key_index);
-          detail::push(m_interpreter, value);
+          luabind::push(m_interpreter, value);
           lua_settable(m_interpreter, -3);
           return *this;
       }
@@ -752,7 +705,7 @@ namespace adl
       template<class T>
       object(lua_State* L, T const& value)
       {
-          detail::push(L, value);
+          luabind::push(L, value);
           detail::stack_pop pop(L, 1);
           handle(L, -1).swap(m_handle);
       }
@@ -760,7 +713,7 @@ namespace adl
       template<class T, class Policies>
       object(lua_State* L, T const& value, Policies const&)
       {
-          detail::push(L, value, Policies());
+          luabind::push(L, value, Policies());
           detail::stack_pop pop(L, 1);
           handle(L, -1).swap(m_handle);
       }
@@ -940,137 +893,38 @@ object detail::basic_iterator<AccessPolicy>::key() const
     return object(m_key);
 }
 
-namespace detail
+template<class T, class ValueWrapper, class Policies>
+T object_cast(ValueWrapper const& value_wrapper, Policies const&)
 {
-
-  template<
-      class T
-    , class ValueWrapper
-    , class Policies
-    , class ErrorPolicy
-    , class ReturnType
-  >
-  ReturnType object_cast_aux(
-      ValueWrapper const& value_wrapper
-    , T*
-    , Policies*
-    , ErrorPolicy*
-    , ReturnType*
-  )
-  {
-      lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
-          value_wrapper
-      );
-
-#ifndef LUABIND_NO_ERROR_CHECKING
-      if (!interpreter)
-          return ErrorPolicy::handle_error(interpreter, typeid(void));
-#endif
-
-      value_wrapper_traits<ValueWrapper>::unwrap(interpreter, value_wrapper);
-
-      detail::stack_pop pop(interpreter, 1);
-
-      typedef typename detail::find_conversion_policy<
-          0
-        , Policies
-      >::type converter_generator;
-
-      typename mpl::apply_wrap2<converter_generator, T, lua_to_cpp>::type cv;
-
-      if (cv.match(interpreter, LUABIND_DECORATE_TYPE(T), -1) < 0)
-      {
-          return ErrorPolicy::handle_error(interpreter, typeid(T));
-      }
-
-      return cv.apply(interpreter, LUABIND_DECORATE_TYPE(T), -1);
-  }
-
-# ifdef BOOST_MSVC
-#  pragma warning(push)
-#  pragma warning(disable:4702) // unreachable code
-# endif
-
-  template<class T>
-  struct throw_error_policy
-  {
-      static T handle_error(lua_State* interpreter, type_id const& type_info)
-      {
-#ifndef LUABIND_NO_EXCEPTIONS
-          throw cast_failed(interpreter, type_info);
-#else
-          cast_failed_callback_fun e = get_cast_failed_callback();
-          if (e) e(interpreter, type_info);
-
-          assert(0 && "object_cast failed. If you want to handle this error use "
-              "luabind::set_error_callback()");
-          std::terminate();
-          return *(typename boost::remove_reference<T>::type*)0;
-#endif
-      }
-  };
-
-# ifdef BOOST_MSVC
-#  pragma warning(pop)
-# endif
-
-  template<class T>
-  struct nothrow_error_policy
-  {
-      static boost::optional<T> handle_error(lua_State*, type_id const&)
-      {
-          return boost::optional<T>();
-      }
-  };
-
-} // namespace detail
+    lua_State* L = value_wrapper_traits<ValueWrapper>::interpreter(value_wrapper);
+    if (!L)
+        return detail::throw_error_policy<T>::handle_error(L, typeid(void));
+    value_wrapper_traits<ValueWrapper>::unwrap(L, value_wrapper);
+    detail::stack_pop pop(L, 1);
+    return from_lua<T>(L, -1, Policies());
+}
 
 template<class T, class ValueWrapper>
 T object_cast(ValueWrapper const& value_wrapper)
 {
-    return detail::object_cast_aux(
-        value_wrapper
-      , static_cast<T*>(0)
-      , static_cast<detail::null_type*>(0)
-      , static_cast<detail::throw_error_policy<T>*>(0)
-      , static_cast<T*>(0)
-    );
-}
-
-template<class T, class ValueWrapper, class Policies>
-T object_cast(ValueWrapper const& value_wrapper, Policies const&)
-{
-    return detail::object_cast_aux(
-        value_wrapper
-      , static_cast<T*>(0)
-      , static_cast<Policies*>(0)
-      , static_cast<detail::throw_error_policy<T>*>(0)
-      , static_cast<T*>(0)
-    );
-}
-
-template<class T, class ValueWrapper>
-boost::optional<T> object_cast_nothrow(ValueWrapper const& value_wrapper)
-{
-    return detail::object_cast_aux(
-        value_wrapper
-      , static_cast<T*>(0)
-      , static_cast<detail::null_type*>(0)
-      , static_cast<detail::nothrow_error_policy<T>*>(0)
-      , static_cast<boost::optional<T>*>(0)
-    );
+    return object_cast<T>(value_wrapper, detail::null_type());
 }
 
 template<class T, class ValueWrapper, class Policies>
 boost::optional<T> object_cast_nothrow(ValueWrapper const& value_wrapper, Policies const&)
 {
-    return detail::object_cast_aux(
-        value_wrapper
-      , static_cast<T*>(0)
-      , static_cast<Policies*>(0)
-      , static_cast<detail::nothrow_error_policy<T>*>(0)
-      , static_cast<boost::optional<T>*>(0)
-    );
+    lua_State* L = value_wrapper_traits<ValueWrapper>::interpreter(value_wrapper);
+    if (!L)
+        return detail::nothrow_error_policy<T>::handle_error(L, typeid(void));
+    value_wrapper_traits<ValueWrapper>::unwrap(L, value_wrapper);
+    detail::stack_pop pop(L, 1);
+    return from_lua_nothrow<T>(L, -1, Policies());
+}
+
+template<class T, class ValueWrapper>
+boost::optional<T> object_cast_nothrow(ValueWrapper const& value_wrapper)
+{
+    return object_cast_nothrow<T>(value_wrapper, detail::null_type());
 }
 
 namespace detail
@@ -1242,7 +1096,7 @@ inline object gettable(ValueWrapper const& table, K const& key)
 
     value_wrapper_traits<ValueWrapper>::unwrap(interpreter, table);
     detail::stack_pop pop(interpreter, 2);
-    detail::push(interpreter, key);
+    push(interpreter, key);
     lua_gettable(interpreter, -2);
     return object(from_stack(interpreter, -1));
 }
@@ -1258,8 +1112,8 @@ inline void settable(ValueWrapper const& table, K const& key, T const& value)
 
     value_wrapper_traits<ValueWrapper>::unwrap(interpreter, table);
     detail::stack_pop pop(interpreter, 1);
-    detail::push(interpreter, key);
-    detail::push(interpreter, value);
+    push(interpreter, key);
+    push(interpreter, value);
     lua_settable(interpreter, -3);
 }
 
@@ -1272,7 +1126,7 @@ inline object rawget(ValueWrapper const& table, K const& key)
 
     value_wrapper_traits<ValueWrapper>::unwrap(interpreter, table);
     detail::stack_pop pop(interpreter, 2);
-    detail::push(interpreter, key);
+    push(interpreter, key);
     lua_rawget(interpreter, -2);
     return object(from_stack(interpreter, -1));
 }
@@ -1288,8 +1142,8 @@ inline void rawset(ValueWrapper const& table, K const& key, T const& value)
 
     value_wrapper_traits<ValueWrapper>::unwrap(interpreter, table);
     detail::stack_pop pop(interpreter, 1);
-    detail::push(interpreter, key);
-    detail::push(interpreter, value);
+    push(interpreter, key);
+    push(interpreter, value);
     lua_rawset(interpreter, -3);
 }
 

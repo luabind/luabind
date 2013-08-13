@@ -65,6 +65,7 @@ set(luabind_HDRS
     ../luabind/scope.hpp
     ../luabind/set_package_preload.hpp
     ../luabind/shared_ptr_converter.hpp
+    ../luabind/stack.hpp
     ../luabind/tag_function.hpp
     ../luabind/typeid.hpp
     ../luabind/value_wrapper.hpp
