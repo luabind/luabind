@@ -60,6 +60,11 @@ inline void lua_rawgetp(lua_State* L, int t, void* k)
         t -= 1; // Adjust for pushed k.
     lua_rawget(L, t);
 }
+
+inline int lua_absindex(lua_State* L, int idx)
+{
+    return idx < 0 ? lua_gettop(L) + idx + 1 : idx;
+}
 #endif
 
 #endif // LUABIND_LUA_INCLUDE_HPP_INCLUDED
