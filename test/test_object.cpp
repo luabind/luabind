@@ -353,6 +353,7 @@ void test_main(lua_State* L)
         "function test_object_policies(a) glob = a\n"
         "return 6\n"
         "end");
+
     object test_object_policies = g["test_object_policies"];
     object ret_val = test_object_policies("teststring")[detail::null_type()];
     TEST_CHECK(object_cast<int>(ret_val) == 6);
@@ -454,6 +455,14 @@ void test_main(lua_State* L)
 
     TEST_CHECK(inner_sum == 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8);
     TEST_CHECK(object_cast<int>(globals(L)["t"][2][2]) == 4);
+
+    DOSTRING(L,
+        "obj = setmetatable({}, {\n"
+        "    __tostring = function() return 'custom __tostring' end})");
+
+    TEST_CHECK(
+        boost::lexical_cast<std::string>(globals(L)["obj"]) ==
+        "custom __tostring");
 
     test_call(L);
     test_metatable(L);

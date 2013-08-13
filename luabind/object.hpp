@@ -214,21 +214,37 @@ namespace adl
 LUABIND_BINARY_OP_DEF(==, LUA_OPEQ)
 LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
 
+  inline int value_to_string(lua_State* L)
+  {
+      assert(lua_gettop(L) == 1);
+      luaL_tolstring(L, 1, 0);
+      return 1;
+  }
+
   template<class ValueWrapper>
   std::ostream& operator<<(std::ostream& os
     , object_interface<ValueWrapper> const& v)
   {
       using namespace luabind;
-      lua_State* interpreter = value_wrapper_traits<ValueWrapper>::interpreter(
+      lua_State* L = value_wrapper_traits<ValueWrapper>::interpreter(
           static_cast<ValueWrapper const&>(v));
-      detail::stack_pop pop(interpreter, 1);
-      value_wrapper_traits<ValueWrapper>::unwrap(interpreter
+      detail::stack_pop pop(L, 1);
+      lua_pushcfunction(L, &value_to_string);
+      value_wrapper_traits<ValueWrapper>::unwrap(L
         , static_cast<ValueWrapper const&>(v));
-        char const* p = lua_tostring(interpreter, -1);
-        std::size_t len = lua_rawlen(interpreter, -1);
-        std::copy(p, p + len, std::ostream_iterator<char>(os));
-        return os;
-    }
+
+      if (lua_pcall(L, 1, 1, 0) != LUA_OK)
+      {
+          lua_pop(L, 1); // Pop error.
+          os.setstate(std::ios::failbit);
+          return os;
+      }
+
+      size_t len;
+      char const* p = lua_tolstring(L, -1, &len);
+      std::copy(p, p + len, std::ostream_iterator<char>(os));
+      return os;
+  }
 
 #undef LUABIND_BINARY_OP_DEF
 
