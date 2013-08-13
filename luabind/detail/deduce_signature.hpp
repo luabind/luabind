@@ -41,7 +41,7 @@ struct is_function:
 
 template <class F>
 typename boost::enable_if<
-    is_function<F>::value,
+    is_function<F>,
     fty::components<typename signature_aux<F>::type> >::type
 deduce_signature(F const&, ...)
 {
