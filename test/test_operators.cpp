@@ -120,6 +120,9 @@ struct len_tester
     int m_len;
 };
 
+struct B {};
+struct D: B {};
+
 struct nameless {};
 
 nameless make_nameless() { return nameless(); }
@@ -169,7 +172,12 @@ void test_main(lua_State* L)
             .def("__len", &len_tester::len),
 
         class_<nameless>(),
-        def("make_nameless", &make_nameless)
+        def("make_nameless", &make_nameless),
+
+        class_<B>("B")
+            .def(constructor<>()),
+        class_<D, B>("D")
+            .def(constructor<>())
     ];
 
     DOSTRING(L, "test = operator_tester()");
@@ -243,4 +251,12 @@ void test_main(lua_State* L)
     DOSTRING(L,
         "x = len_tester(3)\n"
         "assert(#x == 3)");
+
+    D d;
+    globals(L)["d"] = &d;
+    globals(L)["b"] = static_cast<B*>(&d);
+    DOSTRING(L,
+        "assert(d == b)\n"
+        "assert(b == d)\n"
+        "assert(d ~= x)\n");
 }

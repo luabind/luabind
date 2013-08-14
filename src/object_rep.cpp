@@ -208,16 +208,53 @@ namespace luabind { namespace detail
                   return lua_gettop(L);
               }
           }
+
           object_rep* inst = get_instance(L, 1);
-          char const* const_s = inst->is_const() ? "const " : "";
-          std::string const cls_name = get_class_name(L, inst->crep()->type());
+          assert(inst);
           char const* op_name = lua_tostring(L, name_upvalue);
 
-          if (std::strcmp(op_name, "__tostring") == 0) {
-              lua_pushfstring(L, "%s%s object: %p",
-                  const_s, cls_name.c_str(), static_cast<void*>(inst));
+          if (std::strcmp(op_name, "__eq") == 0)
+          {
+              object_rep* inst2 = get_instance(L, 2);
+              if (!inst2)
+              {
+                  lua_pushboolean(L, false);
+                  return 1;
+              }
+              class_id clsid = inst->crep()->classes().get(
+                  inst->crep()->type());
+              void* addr = inst->get_instance(clsid).first;
+              void* addr2 = inst2->get_instance(clsid).first;
+              bool const null_inst = !addr;
+              if (!addr2)
+              {
+                  clsid = inst2->crep()->classes().get(
+                      inst2->crep()->type());
+                  addr = inst->get_instance(clsid).first;
+                  addr2 = inst2->get_instance(clsid).first;
+                  if (!addr2)
+                  {
+                      lua_pushboolean(L, null_inst);
+                      return 1;
+                  }
+              }
+              lua_pushboolean(L, addr == addr2);
               return 1;
           }
+
+          char const* const_s = inst->is_const() ? "const " : "";
+          std::string const cls_name = get_class_name(L, inst->crep()->type());
+
+          if (std::strcmp(op_name, "__tostring") == 0)
+          {
+              class_id clsid = inst->crep()->classes().get(
+                  inst->crep()->type());
+              void* addr = inst->get_instance(clsid).first;
+              lua_pushfstring(L, "%s%s object: %p",
+                  const_s, cls_name.c_str(), addr);
+              return 1;
+          }
+
           lua_pushfstring(L, "%sclass %s: no %s operator defined.",
               const_s, cls_name.c_str(), op_name);
           return lua_error(L);
