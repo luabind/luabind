@@ -973,7 +973,7 @@ namespace adl
           other.value_wrapper = 0;
       }
 
-      ~call_proxy() BOOST_NOEXCEPT_IF(false)
+      ~call_proxy() LUABIND_MAY_THROW
       {
           if (value_wrapper)
               call(static_cast<detail::null_type*>(0));

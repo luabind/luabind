@@ -92,7 +92,7 @@ namespace luabind { namespace detail
     template<class T>
     by_const_reference<T> decorated_type<const T&>::t;
 
-#ifdef BOOST_HAS_RVALUE_REFS
+#ifndef LUABIND_NO_RVALUE_REFERENCES
     template<class T>
     struct decorated_type<T&&>
     {

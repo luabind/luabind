@@ -116,12 +116,12 @@ namespace luabind {
 #   define N BOOST_PP_ITERATION()
 
 #   define TMPL_PARAMS   BOOST_PP_ENUM_PARAMS(N, typename A)
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+#   ifndef LUABIND_NO_RVALUE_REFERENCES
 #       define TYPED_ARGS BOOST_PP_ENUM_BINARY_PARAMS(N, A, && a)
 #   else
 #       define TYPED_ARGS BOOST_PP_ENUM_BINARY_PARAMS(N, A, const& a)
 #   endif
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+#   ifndef LUABIND_NO_RVALUE_REFERENCES
 #       define PRINT_FORWARD_ARG(z, n, _) std::forward<BOOST_PP_CAT(A, n)>(BOOST_PP_CAT(a, n))
 #       define TRAILING_ARGS BOOST_PP_ENUM_TRAILING(N, PRINT_FORWARD_ARG, ~)
 #   else

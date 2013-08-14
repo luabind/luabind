@@ -29,7 +29,7 @@ set(CMAKE_MODULE_PATH
 set(Boost_USE_STATIC_LIBS     ON)
 set(Boost_USE_MULTITHREADED   ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.51.0 REQUIRED)
+find_package(Boost 1.40.0 REQUIRED) # Better use at least 1.51.
 find_package(Lua52 REQUIRED)
 
 if (BUILD_SHARED_LIBS)

@@ -62,10 +62,6 @@
 #include <string>
 #include <typeinfo>
 
-#if (   defined(BOOST_NO_CXX11_SCOPED_ENUMS) \
-     || defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS))
-# define LUABIND_NO_SCOPED_ENUM
-#endif
 #ifndef LUABIND_NO_SCOPED_ENUM
 # include <type_traits>
 #endif
@@ -677,7 +673,7 @@ lua_Number as_lua_number(T v)
     return static_cast<lua_Number>(v);
 }
 
-#ifdef BOOST_HAS_RVALUE_REFS
+#ifndef LUABIND_NO_RVALUE_REFERENCES
 
 # define LUABIND_NUMBER_CONVERTER(type, kind) \
     template <> \
@@ -806,7 +802,7 @@ struct default_converter<bool const&>
   : default_converter<bool>
 {};
 
-#ifdef BOOST_HAS_RVALUE_REFS
+#ifndef LUABIND_NO_RVALUE_REFERENCES
 template <>
 struct default_converter<bool&&>
   : default_converter<bool>
@@ -843,7 +839,7 @@ struct default_converter<std::string const&>
   : default_converter<std::string>
 {};
 
-#ifdef BOOST_HAS_RVALUE_REFS
+#ifndef LUABIND_NO_RVALUE_REFERENCES
 template <>
 struct default_converter<std::string&&>
   : default_converter<std::string>
