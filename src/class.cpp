@@ -297,9 +297,9 @@ namespace luabind { namespace detail {
         class_registry* r = class_registry::get_registry(L);
         class_rep* crep = r->find_class(i);
 
-        if (crep == 0 || crep->name() == 0)
+        if (!crep || !crep->name())
         {
-            ret = "custom [";
+            ret = crep ? "unnamed [" : "custom [";
             ret += i.name();
             ret += ']';
         }
