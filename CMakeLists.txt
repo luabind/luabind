@@ -23,6 +23,9 @@ option(LUABIND_APPEND_VERSION_SUFFIX
 option(BUILD_SHARED_LIBS
     "Build luabind as a shared/dynamic library (.so or DLL). You must link Lua dynamically then.")
 
+set(LUABIND_LUA_VERSION "" CACHE STRING
+    "51 or 52; empty to use 51 if 52 cannot be found and 52 otherwise.")
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/")
 
@@ -30,7 +33,18 @@ set(Boost_USE_STATIC_LIBS     ON)
 set(Boost_USE_MULTITHREADED   ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.40.0 REQUIRED) # Better use at least 1.51.
-find_package(Lua52 REQUIRED)
+
+if (LUABIND_LUA_VERSION)
+    find_package("Lua${LUABIND_LUA_VERSION}" REQUIRED)
+else(LUABIND_LUA_VERSION)
+    find_package(Lua52)
+    if (NOT LUA52_FOUND)
+        find_package(Lua51)
+        if (NOT LUA51_FOUND)
+            message(FATAL_ERROR "Neither Lua 5.1 nor 5.2 could be found.")
+        endif(NOT LUA51_FOUND)
+    endif(NOT LUA52_FOUND)
+endif(LUABIND_LUA_VERSION)
 
 if (BUILD_SHARED_LIBS)
     add_definitions("-DLUABIND_DYNAMIC_LINK")

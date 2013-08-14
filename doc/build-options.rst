@@ -113,6 +113,11 @@ If not specified otherwise, all options are boolean and default to ``OFF``.
 ``LUABIND_APPEND_VERSION_SUFFIX``
     With this option set (the default), built binaries and object archives
     will be named e.g. ``luabind09.dll`` instead of just ``luabind.dll``.
+    
+``LUABIND_LUA_VERSION``
+    A string variable with defaults to ``""`` (the empty string). It can be
+    set to ``"51"`` or ``"52"`` to use the respective Lua versions. If left
+    empty, Lua52 will be tried first before falling back to Lua51.
 
 ``BUILD_SHARED_LIBS``
     Build luabind as a shared/dynamic library (.so or DLL). If enabling this,
