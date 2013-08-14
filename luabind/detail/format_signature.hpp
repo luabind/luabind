@@ -17,6 +17,8 @@
 
 namespace luabind { namespace detail {
 
+namespace mpl = boost::mpl;
+
 LUABIND_API std::string get_class_name(lua_State* L, type_id const& i);
 
 template <class T>

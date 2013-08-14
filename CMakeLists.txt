@@ -87,7 +87,8 @@ else(MSVC)
         if (LUABIND_ENABLE_WARNINGS)
             add_definitions("-Weverything" "-Wno-shadow" "-Wno-undef"
                             "-Wno-global-constructors" "-Wno-weak-vtables"
-                            "-Wno-padded" "-Wno-exit-time-destructors")
+                            "-Wno-padded" "-Wno-exit-time-destructors"
+                            "-Wno-missing-noreturn")
         endif(LUABIND_ENABLE_WARNINGS)
         if (NOT LUABIND_NO_CXX11)
             # I do not know (a) since when Clang supports this flags and (b) how to

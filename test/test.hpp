@@ -32,12 +32,16 @@
 #include <string>
 
 // See boost/exception/detail/attribute_noreturn.hpp
-#if defined(_MSC_VER)
-#define LUABIND_ATTRIBUTE_NORETURN __declspec(noreturn)
+#if defined(BOOST_CLANG)
+// Clang's noreturn changes the type so that it is not recognizable by
+// Boost.FunctionTypes.
+#    define LUABIND_ATTRIBUTE_NORETURN
+#elif defined(_MSC_VER)
+#    define LUABIND_ATTRIBUTE_NORETURN __declspec(noreturn)
 #elif defined(__GNUC__)
-#define LUABIND_ATTRIBUTE_NORETURN __attribute__((__noreturn__))
+#    define LUABIND_ATTRIBUTE_NORETURN __attribute__((__noreturn__))
 #else
-#define LUABIND_ATTRIBUTE_NORETURN
+#    define LUABIND_ATTRIBUTE_NORETURN
 #endif
 
 
