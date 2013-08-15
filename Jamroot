@@ -205,7 +205,7 @@ else
     alias make-version-file ;
 }
 
-if docs in [ modules.peek : ARGV ] 
+if docs in [ modules.peek : ARGV ]
 {
     local result = [ SHELL "rst2html.py --version 2>&1" : exit-status ] ;
     if $(result[2]) = 0

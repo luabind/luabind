@@ -40,7 +40,7 @@ namespace luabind {
 namespace detail
 {
   namespace mpl = boost::mpl;
- 
+
   template<class T>
   wrap_base const* get_back_reference_aux0(T const* p, mpl::true_)
   {
@@ -79,7 +79,7 @@ namespace detail
         , has_get_pointer<T>()
       );
   }
-  
+
 } // namespace detail
 
 template<class T>

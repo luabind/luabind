@@ -26,9 +26,9 @@
 
 struct V
 {
-    int f(int,int) 
+    int f(int,int)
     {
-        return 2; 
+        return 2;
     }
 };
 

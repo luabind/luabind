@@ -1,7 +1,7 @@
 import modules ;
 
 exe intrusive_ptr
-    : intrusive_ptr.cpp 
+    : intrusive_ptr.cpp
       /luabind//luabind
     ;
 

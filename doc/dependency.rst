@@ -27,7 +27,7 @@ Parameters
 ================= ==========================================================
 Parameter         Purpose
 ================= ==========================================================
-``nurse_index``   The index which will keep the patient alive. 
+``nurse_index``   The index which will keep the patient alive.
 ``patient_index`` The index which will be kept alive.
 ================= ==========================================================
 

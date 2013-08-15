@@ -29,7 +29,7 @@ dt { /* used in FAQ */
 
 dl {
   margin-left: 0.5em ;
-  margin-right: 10em 
+  margin-right: 10em
 }
 
 h3 {
@@ -275,18 +275,18 @@ th {
 
 a:link
 {
-	font-weight: bold;
-	color: #003366;
-	text-decoration: none;
+    font-weight: bold;
+    color: #003366;
+    text-decoration: none;
 }
 
 a:visited
 {
-	font-weight: bold;
-	color: #003366;
-	text-decoration: none;
+    font-weight: bold;
+    color: #003366;
+    text-decoration: none;
 }
 
 h3 {
-  text-transform: uppercase 
+  text-transform: uppercase
 }

@@ -40,9 +40,9 @@ namespace test
   };
 
   Y* get_pointer(Y const&);
-  
+
   struct Z : boost::enable_shared_from_this<Z> {};
-  
+
 } // namespace test
 
 #ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP

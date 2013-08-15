@@ -149,7 +149,7 @@ end
 function recurse_dir(path)
   for i in path.contents do
     if i:is_directory() then recurse_dir(i)
-    else 
+    else
       table.foreach(inspectors, function(_,x)
               x:inspect(i)
             end)
@@ -160,7 +160,7 @@ end
 
 -- main
 
-inspectors = { filename_length(31), filename_case(), 
+inspectors = { filename_length(31), filename_case(),
                tab_inspector(), line_length_inspector(79),
                define_inspector() }
 number_of_files = 0

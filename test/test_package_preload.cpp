@@ -44,11 +44,11 @@ int loader(lua_State* L)
 void test_main(lua_State* L)
 {
     using namespace luabind;
-    
+
     set_package_preload(L, "testmod", &loader);
     DOSTRING(L,
         "require('testmod')");
-    
+
     DOSTRING(L, "assert(f(7) == 8)");
 }
 

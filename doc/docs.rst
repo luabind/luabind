@@ -49,11 +49,11 @@ with Lua 4.
 
 It is implemented utilizing template meta programming. That means that you
 don't need an extra preprocess pass to compile your project (it is done by the
-compiler). It also means you don't (usually) have to know the exact signature 
-of each function you register, since the library will generate code depending 
-on the compile-time type of the function (which includes the signature). The 
-main drawback of this approach is that the compilation time will increase for 
-the file that does the registration, it is therefore recommended that you 
+compiler). It also means you don't (usually) have to know the exact signature
+of each function you register, since the library will generate code depending
+on the compile-time type of the function (which includes the signature). The
+main drawback of this approach is that the compilation time will increase for
+the file that does the registration, it is therefore recommended that you
 register everything in the same cpp-file.
 
 Luabind is released under the terms of the `MIT license`_.
@@ -72,20 +72,20 @@ Features
 
 Luabind supports:
 
- - Overloaded free functions 
- - C++ classes in Lua 
- - Overloaded member functions 
- - Operators 
- - Properties 
- - Enums 
- - Lua functions in C++ 
- - Lua classes in C++ 
- - Lua classes (single inheritance) 
- - Derives from Lua or C++ classes 
- - Override virtual functions from C++ classes 
- - Implicit casts between registered types 
- - Best match signature matching 
- - Return value policies and parameter policies 
+ - Overloaded free functions
+ - C++ classes in Lua
+ - Overloaded member functions
+ - Operators
+ - Properties
+ - Enums
+ - Lua functions in C++
+ - Lua classes in C++
+ - Lua classes (single inheritance)
+ - Derives from Lua or C++ classes
+ - Override virtual functions from C++ classes
+ - Implicit casts between registered types
+ - Best match signature matching
+ - Return value policies and parameter policies
 
 
 Portability
@@ -93,25 +93,25 @@ Portability
 
 Luabind has been tested to work on the following compilers:
 
- - Visual Studio 7.1 
- - Intel C++ 6.0 (Windows) 
- - GCC 2.95.3 (cygwin) 
- - GCC 3.0.4 (Debian/Linux) 
- - GCC 3.1 (SunOS 5.8) 
- - GCC 3.2 (cygwin) 
+ - Visual Studio 7.1
+ - Intel C++ 6.0 (Windows)
+ - GCC 2.95.3 (cygwin)
+ - GCC 3.0.4 (Debian/Linux)
+ - GCC 3.1 (SunOS 5.8)
+ - GCC 3.2 (cygwin)
  - GCC 3.3.1 (cygwin)
  - GCC 3.3 (Apple, MacOS X)
  - GCC 4.0 (Apple, MacOS X)
 
 It has been confirmed not to work with:
 
- - GCC 2.95.2 (SunOS 5.8) 
+ - GCC 2.95.2 (SunOS 5.8)
 
-Metrowerks 8.3 (Windows) compiles but fails the const-test. This 
-means that const member functions are treated as non-const member 
+Metrowerks 8.3 (Windows) compiles but fails the const-test. This
+means that const member functions are treated as non-const member
 functions.
 
-If you have tried luabind with a compiler not listed here, let us know 
+If you have tried luabind with a compiler not listed here, let us know
 your result with it.
 
 .. include:: building.rst
@@ -236,7 +236,7 @@ As you might have figured out, the following declarations are equivalent::
     ];
 
 ::
-    
+
     module(L, "my_library")
     [
         // declarations
@@ -270,10 +270,10 @@ following synopsis::
     template<class F, class policies>
     void def(const char* name, F f, const Policies&);
 
-- name is the name the function will have within Lua. 
-- F is the function pointer you want to register. 
-- The Policies parameter is used to describe how parameters and return values 
-  are treated by the function, this is an optional parameter. More on this in 
+- name is the name the function will have within Lua.
+- F is the function pointer you want to register.
+- The Policies parameter is used to describe how parameters and return values
+  are treated by the function, this is an optional parameter. More on this in
   the `policies`_ section.
 
 An example usage could be if you want to register the function ``float
@@ -314,7 +314,7 @@ integers, both will always match.
 Since all overloads are tested, it will always find the best match (not the
 first match). This also means that it can handle situations where the only
 difference in the signature is that one member function is const and the other
-isn't. 
+isn't.
 
 .. sidebar:: Ownership transfer
 
@@ -324,7 +324,7 @@ isn't.
 For example, if the following function and class is registered:
 
 ::
-   
+
     struct A
     {
         void f();
@@ -384,7 +384,7 @@ call. You do this with the operator[]. You give the policies within the
 brackets, like this::
 
     int ret = call_function<int>(
-        L 
+        L
       , "a_lua_function"
       , new complex_class()
     )[ adopt(_1) ];
@@ -396,7 +396,7 @@ __ http://www.boost.org/doc/html/ref.html
 
 Like this::
 
-	int ret = call_function(L, "fun", boost::ref(val));
+    int ret = call_function(L, "fun", boost::ref(val));
 
 
 If you want to use a custom error handler for the function call, see
@@ -437,9 +437,9 @@ object was constructed with the thread as its ``lua_State*``. Like this:
 
 .. parsed-literal::
 
-	lua_State* thread = lua_newthread(L);
-	object fun = get_global(**thread**)["my_thread_fun"];
-	resume_function(fun);
+    lua_State* thread = lua_newthread(L);
+    object fun = get_global(**thread**)["my_thread_fun"];
+    resume_function(fun);
 
 
 Binding classes to Lua
@@ -743,7 +743,7 @@ std::ostream. Like this example:
     std::ostream& operator<<(std::ostream&, number&);
 
     ...
-    
+
     module(L)
     [
         class_<number>("number")
@@ -754,7 +754,7 @@ std::ostream. Like this example:
 Nested scopes and static functions
 ----------------------------------
 
-It is possible to add nested scopes to a class. This is useful when you need 
+It is possible to add nested scopes to a class. This is useful when you need
 to wrap a nested class, or a static function.
 
 .. parsed-literal::
@@ -775,11 +775,11 @@ It's also possible to add namespaces to classes using the same syntax.
 
 Derived classes
 ---------------
-  
+
 If you want to register classes that derives from other classes, you can
 specify a template parameter ``bases<>`` to the ``class_`` instantiation. The
 following hierarchy::
-   
+
     struct A {};
     struct B : A {};
 
@@ -1103,12 +1103,12 @@ The constructor that takes a ``from_stack`` object is used when you want to
 initialize the object with a value from the lua stack. The ``from_stack``
 type has the following constructor::
 
-	 from_stack(lua_State* L, int index);
+     from_stack(lua_State* L, int index);
 
 The index is an ordinary lua stack index, negative values are indexed from the
 top of the stack. You use it like this::
 
-	 object o(from_stack(L, -1));
+     object o(from_stack(L, -1));
 
 This will create the object ``o`` and copy the value from the top of the lua stack.
 
@@ -1225,7 +1225,7 @@ supports the same operations as ``luabind::object``. Which means that in most
 cases you can just treat it as an ordinary object. The difference is that any
 assignments to this proxy will result in the value being inserted at the
 iterators position, in the table.
- 
+
 The ``key()`` member returns the key used by the iterator when indexing the
 associated Lua table.
 
@@ -1342,7 +1342,7 @@ Example::
   using luabind;
   object table = newtable(L);
   table["foo"] = "bar";
-  
+
   // now, clear the "foo"-field
   table["foo"] = nil;
 
@@ -1404,19 +1404,19 @@ when we instantiate a Lua class.
         base(const char* s)
         { std::cout << s << "\n"; }
 
-        virtual void f(int a) 
+        virtual void f(int a)
         { std::cout << "f(" << a << ")\n"; }
     };
 
     struct base_wrapper : base, luabind::wrap_base
     {
         base_wrapper(const char* s)
-            : base(s) 
+            : base(s)
         {}
 
-        virtual void f(int a) 
-        { 
-            call<void>("f", a); 
+        virtual void f(int a)
+        {
+            call<void>("f", a);
         }
 
         static void default_f(base* ptr, int a)
@@ -1441,7 +1441,7 @@ when we instantiate a Lua class.
     as first parameter.
 
 Note that if you have both base classes and a base class wrapper, you must give
-both bases and the base class wrapper type as template parameter to 
+both bases and the base class wrapper type as template parameter to
 ``class_`` (as done in the example above). The order in which you specify
 them is not important. You must also register both the static version and the
 virtual version of the function from the wrapper, this is necessary in order
@@ -1467,9 +1467,9 @@ C++ class, or if it doesn't have any virtual member functions, you can register
 it without a class wrapper.
 
 You don't need to have a class wrapper in order to derive from a class, but if
-it has virtual functions you may have silent errors. 
+it has virtual functions you may have silent errors.
 
-.. Unnecessary? The rule of thumb is: 
+.. Unnecessary? The rule of thumb is:
   If your class has virtual functions, create a wrapper type, if it doesn't
   don't create a wrapper type.
 
@@ -1485,10 +1485,10 @@ take a ``lua_State`` pointer, and the name is a member function in the Lua class
 
 .. warning::
 
-	The current implementation of ``call_member`` is not able to distinguish const
-	member functions from non-const. If you have a situation where you have an overloaded
-	virtual function where the only difference in their signatures is their constness, the
-	wrong overload will be called by ``call_member``. This is rarely the case though.
+    The current implementation of ``call_member`` is not able to distinguish const
+    member functions from non-const. If you have a situation where you have an overloaded
+    virtual function where the only difference in their signatures is their constness, the
+    wrong overload will be called by ``call_member``. This is rarely the case though.
 
 Object identity
 ~~~~~~~~~~~~~~~
@@ -1528,15 +1528,15 @@ declaring a member function with the same name as an operator (the name of the
 metamethods in Lua). The operators you can overload are:
 
  - ``__add``
- - ``__sub`` 
- - ``__mul`` 
- - ``__div`` 
- - ``__pow`` 
- - ``__lt`` 
- - ``__le`` 
- - ``__eq`` 
- - ``__call`` 
- - ``__unm`` 
+ - ``__sub``
+ - ``__mul``
+ - ``__div``
+ - ``__pow``
+ - ``__lt``
+ - ``__le``
+ - ``__eq``
+ - ``__call``
+ - ``__unm``
  - ``__tostring``
  - ``__len``
 
@@ -1552,7 +1552,7 @@ right hand value. Consider the following examples::
       function my_class:__init(v)
           self.val = v
       end
-        
+
       function my_class:__sub(v)
           return my_class(self.val - v.val)
       end
@@ -1572,7 +1572,7 @@ self object. ::
 
         elseif (type(v) == 'number') then
             return my_class(self.val - v)
-        
+
         else
             -- assume both operands are instances of my_class
             return my_class(self.val - v.val)
@@ -1620,13 +1620,13 @@ garbage collected.
 
 ::
 
-	+--------------------+
-	| C++ object         |    <- ownership of this part is transferred
-	|                    |       to c++ when adopted
-	+--------------------+
-	| lua class instance |    <- this part is garbage collected when
-	| and lua members    |       instance is adopted, since it cannot
-	+--------------------+       be held by c++. 
+    +--------------------+
+    | C++ object         |    <- ownership of this part is transferred
+    |                    |       to c++ when adopted
+    +--------------------+
+    | lua class instance |    <- this part is garbage collected when
+    | and lua members    |       instance is adopted, since it cannot
+    +--------------------+       be held by c++.
 
 
 The problem can be illustrated by this example::
@@ -1795,7 +1795,7 @@ Policies
 
 Sometimes it is necessary to control how luabind passes arguments and return
 value, to do this we have policies. All policies use an index to associate
-them with an argument in the function signature. These indices are ``result`` 
+them with an argument in the function signature. These indices are ``result``
 and ``_N`` (where ``N >= 1``). When dealing with member functions ``_1`` refers
 to the ``this`` pointer.
 
@@ -1869,7 +1869,7 @@ to the ``this`` pointer.
 
         module(L)
         [
-            def("set_and_get_new", &set_and_get_new, 
+            def("set_and_get_new", &set_and_get_new,
                 adopt(return_value) + adopt(_1))
         ];
 
@@ -1978,9 +1978,9 @@ to the ``this`` pointer.
     Instead of creating a new object, luabind will just copy the object that is
     already on the stack.
 
-    .. warning:: 
-       This policy ignores all type information and should be used only it 
-       situations where the parameter type is a perfect match to the 
+    .. warning::
+       This policy ignores all type information and should be used only it
+       situations where the parameter type is a perfect match to the
        return-type (such as in the example).
 
     To use this policy you need to include ``luabind/return_reference_to_policy.hpp``.
@@ -2009,7 +2009,7 @@ to the ``this`` pointer.
             def("f", &f, out_value(_1))
         ];
 
-    When invoking this function from Lua it will return the value assigned to its 
+    When invoking this function from Lua it will return the value assigned to its
     parameter.
 
     ::
@@ -2019,7 +2019,7 @@ to the ``this`` pointer.
         > print(a)
         20
 
-    When this policy is used in conjunction with user define types we often need 
+    When this policy is used in conjunction with user define types we often need
     to do ownership transfers.
 
     ::
@@ -2029,7 +2029,7 @@ to the ``this`` pointer.
         void f1(A*& obj) { obj = new A(); }
         void f2(A** obj) { *obj = new A(); }
 
-    Here we need to make sure luabind takes control over object returned, for 
+    Here we need to make sure luabind takes control over object returned, for
     this we use the adopt policy::
 
         module(L)
@@ -2039,8 +2039,8 @@ to the ``this`` pointer.
             def("f2", &f2, out_value(_1, adopt(_2)))
         ];
 
-    Here we are using adopt as an internal policy to out_value. The index 
-    specified, _2, means adopt will be used to convert the value back to Lua. 
+    Here we are using adopt as an internal policy to out_value. The index
+    specified, _2, means adopt will be used to convert the value back to Lua.
     Using _1 means the policy will be used when converting from Lua to C++.
 
     To use this policy you need to include ``luabind/out_value_policy.hpp``.
@@ -2048,7 +2048,7 @@ to the ``this`` pointer.
     Pure out value
     --------------
 
-    This policy works in exactly the same way as out_value, except that it 
+    This policy works in exactly the same way as out_value, except that it
     replaces the parameters with default-constructed objects.
 
     ::
@@ -2063,7 +2063,7 @@ to the ``this`` pointer.
 
         module(L)
         [
-            def("get", &get, 
+            def("get", &get,
                 pure_out_value(_1) + pure_out_value(_2))
         ];
 
@@ -2074,7 +2074,7 @@ to the ``this`` pointer.
         > print(x, y)
         3    5
 
-    Like out_value, it is possible to specify an internal policy used then 
+    Like out_value, it is possible to specify an internal policy used then
     converting the values back to Lua.
 
     ::
@@ -2095,9 +2095,9 @@ to the ``this`` pointer.
     Discard result
     --------------
 
-    This is a very simple policy which makes it possible to throw away 
-    the value returned by a C++ function, instead of converting it to 
-    Lua. This example makes sure the this reference never gets converted 
+    This is a very simple policy which makes it possible to throw away
+    the value returned by a C++ function, instead of converting it to
+    Lua. This example makes sure the this reference never gets converted
     to Lua.
 
     ::
@@ -2157,9 +2157,9 @@ to the ``this`` pointer.
 
 
     Yield
-    -----    
+    -----
 
-    This policy will cause the function to always yield the current thread when 
+    This policy will cause the function to always yield the current thread when
     returning. See the Lua manual for restrictions on yield.
 
 
@@ -2174,7 +2174,7 @@ on the module it's being registered in.
 
     luabind::scope register_a()
     {
-        return 
+        return
             class_<a>("a")
                 .def("f", &a::f)
                 ;
@@ -2184,7 +2184,7 @@ on the module it's being registered in.
 
     luabind::scope register_b()
     {
-        return 
+        return
             class_<b>("b")
                 .def("g", &b::g)
                 ;
@@ -2212,7 +2212,7 @@ pcall errorfunc
 ---------------
 
 As mentioned in the `Lua documentation`_, it is possible to pass an
-error handler function to ``lua_pcall()``. Luabind makes use of 
+error handler function to ``lua_pcall()``. Luabind makes use of
 ``lua_pcall()`` internally when calling member functions and free functions.
 It is possible to set the error handler function that Luabind will use
 globally::
@@ -2336,23 +2336,23 @@ in-depth explanation.
     the attribute '*class-name.attribute-name*' is read only
 
   There is no data member named *attribute-name* in the class *class-name*,
-  or there's no setter-function registered on that property name. See the 
+  or there's no setter-function registered on that property name. See the
   Properties_ section.
 
-- .. parsed-literal:: 
+- .. parsed-literal::
 
     the attribute '*class-name.attribute-name*' is of type: (*class-name*) and does not match (*class_name*)
 
-  This error is generated if you try to assign an attribute with a value 
+  This error is generated if you try to assign an attribute with a value
   of a type that cannot be converted to the attributes type.
 
 
-- .. parsed-literal:: 
+- .. parsed-literal::
 
     *class-name()* threw an exception, *class-name:function-name()* threw an exception
 
   The class' constructor or member function threw an unknown exception.
-  Known exceptions are const char*, std::exception. See the 
+  Known exceptions are const char*, std::exception. See the
   `exceptions`_ section.
 
 - .. parsed-literal::
@@ -2362,9 +2362,9 @@ in-depth explanation.
     no constructor of *class-name* matched the arguments (*parameter-types*)
     no operator *operator-name* matched the arguments (*parameter-types*)
 
-  No function/operator with the given name takes the parameters you gave 
+  No function/operator with the given name takes the parameters you gave
   it. You have either misspelled the function name, or given it incorrect
-  parameters. This error is followed by a list of possible candidate 
+  parameters. This error is followed by a list of possible candidate
   functions to help you figure out what parameter has the wrong type. If
   the candidate list is empty there's no function at all with that name.
   See the signature matching section.
@@ -2390,61 +2390,61 @@ Build options
 =============
 
 There are a number of configuration options available when building luabind.
-It is very important that your project has the exact same configuration 
+It is very important that your project has the exact same configuration
 options as the ones given when the library was build! The exceptions are the
-``LUABIND_MAX_ARITY`` and ``LUABIND_MAX_BASES`` which are template-based 
-options and only matters when you use the library (which means they can 
+``LUABIND_MAX_ARITY`` and ``LUABIND_MAX_BASES`` which are template-based
+options and only matters when you use the library (which means they can
 differ from the settings of the library).
 
 The default settings which will be used if no other settings are given
 can be found in ``luabind/config.hpp``.
 
-If you want to change the settings of the library, you can modify the 
+If you want to change the settings of the library, you can modify the
 config file. It is included and used by all makefiles. You can change paths
 to Lua and boost in there as well.
 
 LUABIND_MAX_ARITY
-    Controls the maximum arity of functions that are registered with luabind. 
-    You can't register functions that takes more parameters than the number 
-    this macro is set to. It defaults to 5, so, if your functions have greater 
+    Controls the maximum arity of functions that are registered with luabind.
+    You can't register functions that takes more parameters than the number
+    this macro is set to. It defaults to 5, so, if your functions have greater
     arity you have to redefine it. A high limit will increase compilation time.
 
 LUABIND_MAX_BASES
-    Controls the maximum number of classes one class can derive from in 
-    luabind (the number of classes specified within ``bases<>``). 
-    ``LUABIND_MAX_BASES`` defaults to 4. A high limit will increase 
+    Controls the maximum number of classes one class can derive from in
+    luabind (the number of classes specified within ``bases<>``).
+    ``LUABIND_MAX_BASES`` defaults to 4. A high limit will increase
     compilation time.
 
 LUABIND_NO_ERROR_CHECKING
-    If this macro is defined, all the Lua code is expected only to make legal 
-    calls. If illegal function calls are made (e.g. giving parameters that 
+    If this macro is defined, all the Lua code is expected only to make legal
+    calls. If illegal function calls are made (e.g. giving parameters that
     doesn't match the function signature) they will not be detected by luabind
-    and the application will probably crash. Error checking could be disabled 
-    when shipping a release build (given that no end-user has access to write 
-    custom Lua code). Note that function parameter matching will be done if a 
-    function is overloaded, since otherwise it's impossible to know which one 
-    was called. Functions will still be able to throw exceptions when error 
+    and the application will probably crash. Error checking could be disabled
+    when shipping a release build (given that no end-user has access to write
+    custom Lua code). Note that function parameter matching will be done if a
+    function is overloaded, since otherwise it's impossible to know which one
+    was called. Functions will still be able to throw exceptions when error
     checking is disabled.
 
-    If a function throws an exception it will be caught by luabind and 
+    If a function throws an exception it will be caught by luabind and
     propagated with ``lua_error()``.
 
 LUABIND_NO_EXCEPTIONS
-    This define will disable all usage of try, catch and throw in luabind. 
-    This will in many cases disable run-time errors, when performing invalid 
-    casts or calling Lua functions that fails or returns values that cannot 
-    be converted by the given policy. luabind requires that no function called 
-    directly or indirectly by luabind throws an exception (throwing exceptions 
+    This define will disable all usage of try, catch and throw in luabind.
+    This will in many cases disable run-time errors, when performing invalid
+    casts or calling Lua functions that fails or returns values that cannot
+    be converted by the given policy. luabind requires that no function called
+    directly or indirectly by luabind throws an exception (throwing exceptions
     through Lua has undefined behavior).
 
-    Where exceptions are the only way to get an error report from luabind, 
+    Where exceptions are the only way to get an error report from luabind,
     they will be replaced with calls to the callback functions set with
     ``set_error_callback()`` and ``set_cast_failed_callback()``.
 
 LUA_API
-    If you want to link dynamically against Lua, you can set this define to 
-    the import-keyword on your compiler and platform. On Windows in Visual Studio 
-    this should be ``__declspec(dllimport)`` if you want to link against Lua 
+    If you want to link dynamically against Lua, you can set this define to
+    the import-keyword on your compiler and platform. On Windows in Visual Studio
+    this should be ``__declspec(dllimport)`` if you want to link against Lua
     as a dll.
 
 LUABIND_DYNAMIC_LINK
@@ -2456,7 +2456,7 @@ LUABIND_NO_RTTI
     It will disable `Object identity`_.
 
 NDEBUG
-    This define will disable all asserts and should be defined in a release 
+    This define will disable all asserts and should be defined in a release
     build.
 
 
@@ -2510,7 +2510,7 @@ FAQ
 
 What's up with __cdecl and __stdcall?
     If you're having problem with functions
-    that cannot be converted from ``void (__stdcall *)(int,int)`` to 
+    that cannot be converted from ``void (__stdcall *)(int,int)`` to
     ``void (__cdecl*)(int,int)``. You can change the project settings to make the
     compiler generate functions with __cdecl calling conventions. This is
     a problem in developer studio.
@@ -2527,37 +2527,37 @@ Internal structure overflow in VC
 
 What's wrong with precompiled headers in VC?
     Visual Studio doesn't like anonymous namespaces in its precompiled
-    headers. If you encounter this problem you can disable precompiled 
+    headers. If you encounter this problem you can disable precompiled
     headers for the compilation unit (cpp-file) that uses luabind.
 
 error C1076: compiler limit - internal heap limit reached in VC
     In visual studio you will probably hit this error. To fix it you have to
     increase the internal heap with a command-line option. We managed to
-    compile the test suit with /Zm300, but you may need a larger heap then 
+    compile the test suit with /Zm300, but you may need a larger heap then
     that.
 
 error C1055: compiler limit \: out of keys in VC
     It seems that this error occurs when too many assert() are used in a
     program, or more specifically, the __LINE__ macro. It seems to be fixed by
-    changing /ZI (Program database for edit and continue) to /Zi 
+    changing /ZI (Program database for edit and continue) to /Zi
     (Program database).
 
 How come my executable is huge?
     If you're compiling in debug mode, you will probably have a lot of
-    debug-info and symbols (luabind consists of a lot of functions). Also, 
-    if built in debug mode, no optimizations were applied, luabind relies on 
-    that the compiler is able to inline functions. If you built in release 
-    mode, try running strip on your executable to remove export-symbols, 
+    debug-info and symbols (luabind consists of a lot of functions). Also,
+    if built in debug mode, no optimizations were applied, luabind relies on
+    that the compiler is able to inline functions. If you built in release
+    mode, try running strip on your executable to remove export-symbols,
     this will trim down the size.
 
-    Our tests suggests that cygwin's gcc produces much bigger executables 
+    Our tests suggests that cygwin's gcc produces much bigger executables
     compared to gcc on other platforms and other compilers.
 
-.. HUH?! // check the magic number that identifies luabind's functions 
+.. HUH?! // check the magic number that identifies luabind's functions
 
 Can I register class templates with luabind?
-    Yes you can, but you can only register explicit instantiations of the 
-    class. Because there's no Lua counterpart to C++ templates. For example, 
+    Yes you can, but you can only register explicit instantiations of the
+    class. Because there's no Lua counterpart to C++ templates. For example,
     you can register an explicit instantiation of std::vector<> like this::
 
         module(L)
@@ -2570,28 +2570,28 @@ Can I register class templates with luabind?
 .. Again, irrelevant to docs: Note that the space between the two > is required by C++.
 
 Do I have to register destructors for my classes?
-    No, the destructor of a class is always called by luabind when an 
+    No, the destructor of a class is always called by luabind when an
     object is collected. Note that Lua has to own the object to collect it.
-    If you pass it to C++ and gives up ownership (with adopt policy) it will 
+    If you pass it to C++ and gives up ownership (with adopt policy) it will
     no longer be owned by Lua, and not collected.
 
-    If you have a class hierarchy, you should make the destructor virtual if 
-    you want to be sure that the correct destructor is called (this apply to C++ 
+    If you have a class hierarchy, you should make the destructor virtual if
+    you want to be sure that the correct destructor is called (this apply to C++
     in general).
 
 .. And again, the above is irrelevant to docs. This isn't a general C++ FAQ. But it saves us support questions.
 
 Fatal Error C1063 compiler limit \: compiler stack overflow in VC
-    VC6.5 chokes on warnings, if you are getting a lot of warnings from your 
-    code try suppressing them with a pragma directive, this should solve the 
+    VC6.5 chokes on warnings, if you are getting a lot of warnings from your
+    code try suppressing them with a pragma directive, this should solve the
     problem.
 
 Crashes when linking against luabind as a dll in Windows
-    When you build luabind, Lua and you project, make sure you link against 
+    When you build luabind, Lua and you project, make sure you link against
     the runtime dynamically (as a dll).
 
 I cannot register a function with a non-const parameter
-    This is because there is no way to get a reference to a Lua value. Have 
+    This is because there is no way to get a reference to a Lua value. Have
     a look at out_value_ and pure_out_value_ policies.
 
 

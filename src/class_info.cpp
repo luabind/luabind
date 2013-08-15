@@ -36,40 +36,40 @@
 
 namespace luabind
 {
-	LUABIND_API class_info get_class_info(argument const& o)
-	{
-		lua_State* L = o.interpreter();
-		detail::class_rep * crep = NULL;
-		bool givenClassRep = false;
+    LUABIND_API class_info get_class_info(argument const& o)
+    {
+        lua_State* L = o.interpreter();
+        detail::class_rep * crep = NULL;
+        bool givenClassRep = false;
 
-		o.push(L);
-		if (detail::is_class_rep(L, -1)) {
-			VERBOSE("OK, got a class rep");
-			// OK, o is a class rep, now at the top of the stack
-			givenClassRep = true;
-			crep = static_cast<detail::class_rep *>(lua_touserdata(L, -1));
-			lua_pop(L, 1);
-		} else {
+        o.push(L);
+        if (detail::is_class_rep(L, -1)) {
+            VERBOSE("OK, got a class rep");
+            // OK, o is a class rep, now at the top of the stack
+            givenClassRep = true;
+            crep = static_cast<detail::class_rep *>(lua_touserdata(L, -1));
+            lua_pop(L, 1);
+        } else {
 
-			VERBOSE("Not a class rep");
-			detail::object_rep* obj = detail::get_instance(L, -1);
+            VERBOSE("Not a class rep");
+            detail::object_rep* obj = detail::get_instance(L, -1);
 
-			if (!obj)
-			{
-				VERBOSE("Not a obj rep");
-			    class_info result;
-			    result.name = lua_typename(L, lua_type(L, -1));
-			    lua_pop(L, 1);
-			    result.methods = newtable(L);
-			    result.attributes = newtable(L);
-			    return result;
-			} else {
-		        lua_pop(L, 1);
-				// OK, we were given an object - gotta get the crep.
-				crep = obj->crep();
-			}
-		}
-		crep->get_table(L);
+            if (!obj)
+            {
+                VERBOSE("Not a obj rep");
+                class_info result;
+                result.name = lua_typename(L, lua_type(L, -1));
+                lua_pop(L, 1);
+                result.methods = newtable(L);
+                result.attributes = newtable(L);
+                return result;
+            } else {
+                lua_pop(L, 1);
+                // OK, we were given an object - gotta get the crep.
+                crep = obj->crep();
+            }
+        }
+        crep->get_table(L);
         object table(from_stack(L, -1));
         lua_pop(L, 1);
 
@@ -103,7 +103,7 @@ namespace luabind
         }
 
         return result;
-	}
+    }
 
     LUABIND_API object get_class_names(lua_State* L)
     {
@@ -123,18 +123,18 @@ namespace luabind
         return result;
     }
 
-	LUABIND_API void bind_class_info(lua_State* L)
-	{
-		module(L)
-		[
-			class_<class_info>("class_info_data")
-				.def_readonly("name", &class_info::name)
-				.def_readonly("methods", &class_info::methods)
-				.def_readonly("attributes", &class_info::attributes),
+    LUABIND_API void bind_class_info(lua_State* L)
+    {
+        module(L)
+        [
+            class_<class_info>("class_info_data")
+                .def_readonly("name", &class_info::name)
+                .def_readonly("methods", &class_info::methods)
+                .def_readonly("attributes", &class_info::attributes),
 
             def("class_info", &get_class_info),
             def("class_names", &get_class_names)
-		];
-	}
+        ];
+    }
 }
 

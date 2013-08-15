@@ -30,7 +30,7 @@
 
 namespace luabind {
 
-	LUABIND_API void open(lua_State* L);
+    LUABIND_API void open(lua_State* L);
 
 }
 
