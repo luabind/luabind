@@ -108,7 +108,7 @@ namespace std
 #   define LUABIND_API __declspec(dllimport)
 #  endif
 # else
-#  if defined(_GNUC_) && _GNUC_ >=4
+#  if defined(__GNUC__) && __GNUC__ >=4
 #   define LUABIND_API __attribute__ ((visibility("default")))
 #  endif
 # endif

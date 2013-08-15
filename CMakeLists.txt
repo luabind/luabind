@@ -81,6 +81,10 @@ else(MSVC)
         elseif(LUABIND_ENABLE_WARNINGS)
             add_definitions("-Wno-long-long")
         endif()
+        if (BUILD_SHARED_LIBS AND
+                GCC_VERSION VERSION_GREATER 4 OR GCC_VERSION VERSION_EQUAL 4)
+            add_definitions("-fvisibility=hidden")
+        endif()
         # This warning is enabled by default:
         add_definitions("-Wno-deprecated-declarations") # auto_ptr is OK for now.
         if (LUABIND_ENABLE_WARNINGS)
@@ -98,6 +102,7 @@ else(MSVC)
                             "-Wstrict-null-sentinel" "-Wstrict-overflow=5")
         endif(LUABIND_ENABLE_WARNINGS)
     elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+        add_definitions("-fvisibility=hidden")
         if (LUABIND_ENABLE_WARNINGS)
             add_definitions("-Weverything" "-Wno-shadow" "-Wno-undef"
                             "-Wno-global-constructors" "-Wno-weak-vtables"

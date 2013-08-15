@@ -23,7 +23,7 @@ namespace detail
 
   LUABIND_API extern char state_use_count_tag;
 
-  LUABIND_API struct shared_ptr_deleter
+  struct LUABIND_API shared_ptr_deleter
   {
       shared_ptr_deleter(lua_State* L, int index)
         : life_support(get_main_thread(L), L, index)
