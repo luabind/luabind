@@ -52,6 +52,14 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
         option(LUABIND_USE_NOEXCEPT "If your compiler is C++11 compliant, but you're using old Boost, you need to set this." OFF)
     endif()
     option(LUABIND_DYNAMIC_LINK "Build luabind as a shared library?" OFF)
+
+    include(CheckCXX11Features)
+    if(CXX11_COMPILER_FLAGS) # TODO this is not quite the right check to use here.
+        option(LUABIND_USE_CXX11 "Build Luabind using C++11 features?" ON)
+        if(LUABIND_USE_CXX11)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
+        endif()
+    endif()
 endif()
 
 # Configure the build info header
