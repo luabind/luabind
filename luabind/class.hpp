@@ -566,7 +566,7 @@ namespace luabind
         {
             return this->virtual_def(
                 name_, fn, default_or_policies, detail::null_type()
-              , LUABIND_MSVC_TYPENAME detail::is_policy_cons<DefaultOrPolicies>::type());
+              , typename detail::is_policy_cons<DefaultOrPolicies>::type());
         }
 
         template<class F, class Default, class Policies>

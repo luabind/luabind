@@ -32,26 +32,10 @@
     #define LUABIND_ANONYMOUS_FIX
 #endif
 
-#if defined (BOOST_MSVC) && (BOOST_MSVC <= 1200)
-
-#define for if (false) {} else for
-
-#include <cstring>
-
-namespace std
-{
-    using ::strlen;
-    using ::strcmp;
-    using ::type_info;
-}
-
-#endif
-
-
 #if defined (BOOST_MSVC) && (BOOST_MSVC <= 1300)
-    #define LUABIND_MSVC_TYPENAME
-#else
-    #define LUABIND_MSVC_TYPENAME typename
+
+#error "Support for your version of Visual C++ has been removed from this version of Luabind"
+
 #endif
 
 // the maximum number of arguments of functions that's
