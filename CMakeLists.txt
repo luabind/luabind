@@ -13,6 +13,10 @@ set(CPACK_PACKAGE_VERSION_PATCH "1")
 set(CPACK_PACKAGE_VERSION
     "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 
+list(APPEND CMAKE_MODULE_PATH
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx11/Modules")
+
 if(NOT Boost_FOUND)
     set(Boost_USE_STATIC_LIBS     ON)
     set(Boost_USE_MULTITHREADED   ON)
@@ -20,9 +24,23 @@ if(NOT Boost_FOUND)
     find_package(Boost REQUIRED)
 endif()
 
-if(NOT LUA_FOUND AND NOT LUA51_FOUND)
-    find_package(Lua51 REQUIRED)
-    set(LUA_INCLUDE_DIRS "${LUA_INCLUDE_DIR}")
+if(NOT LUA_FOUND AND NOT LUA51_FOUND AND NOT LUA52_FOUND)
+    set(LUABIND_LUA_VERSION "" CACHE STRING
+        "51 or 52; empty to use 51 if 52 cannot be found and 52 otherwise.")
+
+    if(LUABIND_LUA_VERSION)
+        find_package("Lua${LUABIND_LUA_VERSION}" REQUIRED)
+        set(LUA_INCLUDE_DIRS "${LUA_INCLUDE_DIR}")
+    else()
+        find_package(Lua52)
+        if(NOT LUA52_FOUND)
+            find_package(Lua51)
+            set(LUA_INCLUDE_DIRS "${LUA_INCLUDE_DIR}")
+            if(NOT LUA51_FOUND)
+                message(FATAL_ERROR "Neither Lua 5.1 nor 5.2 could be found.")
+            endif()
+        endif()
+    endif()
 endif()
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
