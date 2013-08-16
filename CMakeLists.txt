@@ -53,7 +53,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     endif()
     option(LUABIND_DYNAMIC_LINK "Build luabind as a shared library?" OFF)
 
-    include(CheckCXX11Features)
+    find_package(CXXFeatures)
     if(CXX11_COMPILER_FLAGS) # TODO this is not quite the right check to use here.
         option(LUABIND_USE_CXX11 "Build Luabind using C++11 features?" ON)
         if(LUABIND_USE_CXX11)
