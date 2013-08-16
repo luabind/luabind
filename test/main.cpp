@@ -121,11 +121,14 @@ void report_failure(char const* err, char const* file, int line)
 int main()
 {
     lua_state L;
+#ifndef LUABIND_NO_EXCEPTIONS
     try
     {
+#endif
         test_main(L);
         L.check();
         return tests_failure ? 1 : 0;
+#ifndef LUABIND_NO_EXCEPTIONS
     }
     catch (luabind::error const& e)
     {
@@ -143,4 +146,5 @@ int main()
         std::cerr << "Terminated with unknown exception\n";
         return 1;
     }
+#endif
 }
