@@ -14,6 +14,9 @@ set(CPACK_PACKAGE_VERSION
     "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 
 if(NOT Boost_FOUND)
+    set(Boost_USE_STATIC_LIBS     ON)
+    set(Boost_USE_MULTITHREADED   ON)
+    set(Boost_USE_STATIC_RUNTIME OFF)
     find_package(Boost REQUIRED)
 endif()
 
@@ -46,3 +49,13 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     endif()
     add_subdirectory(doc)
 endif()
+
+if(WIN32 AND NOT CYGWIN)
+  set(INSTALL_CMAKE_DIR CMake)
+  set(INSTALL_CMAKE_DIR_LUA CMake)
+else()
+  set(INSTALL_CMAKE_DIR lib/CMake/Luabind)
+  set(INSTALL_CMAKE_DIR_LUA lib/CMake/Lua52)
+endif()
+INSTALL(FILES "cmake/Modules/FindLuabind.cmake" DESTINATION ${INSTALL_CMAKE_DIR})
+INSTALL(FILES "cmake/Modules/FindLua52.cmake" DESTINATION ${INSTALL_CMAKE_DIR_LUA})

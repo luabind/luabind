@@ -21,6 +21,7 @@ set(LUABIND_SRCS
     pcall.cpp
     scope.cpp
     set_package_preload.cpp
+    shared_ptr_converter.cpp
     stack_content_by_name.cpp
     weak_ref.cpp
     wrapper_base.cpp)
@@ -41,18 +42,22 @@ set(LUABIND_API
     ../luabind/exception_handler.hpp
     ../luabind/from_stack.hpp
     ../luabind/function.hpp
+    ../luabind/function_converter.hpp
     ../luabind/function_introspection.hpp
     ../luabind/get_main_thread.hpp
     ../luabind/get_pointer.hpp
     ../luabind/handle.hpp
+    ../luabind/intrusive_ptr_converter.hpp
     ../luabind/iterator_policy.hpp
     ../luabind/luabind.hpp
+    ../luabind/lua_state_fwd.hpp
     ../luabind/lua_include.hpp
     ../luabind/lua_state_fwd.hpp
     ../luabind/make_function.hpp
     ../luabind/nil.hpp
     ../luabind/no_dependency.hpp
     ../luabind/object.hpp
+    ../luabind/object_fwd.hpp
     ../luabind/open.hpp
     ../luabind/operator.hpp
     ../luabind/out_value_policy.hpp
@@ -62,6 +67,7 @@ set(LUABIND_API
     ../luabind/scope.hpp
     ../luabind/set_package_preload.hpp
     ../luabind/shared_ptr_converter.hpp
+    ../luabind/stack.hpp
     ../luabind/tag_function.hpp
     ../luabind/typeid.hpp
     ../luabind/value_wrapper.hpp
@@ -72,14 +78,13 @@ set(LUABIND_API
 source_group(API FILES ${LUABIND_API})
 
 set(LUABIND_DETAIL_API
-    ../luabind/detail/call_function.hpp
     ../luabind/detail/call.hpp
+    ../luabind/detail/call_function.hpp
     ../luabind/detail/call_member.hpp
     ../luabind/detail/call_operator_iterate.hpp
     ../luabind/detail/class_registry.hpp
     ../luabind/detail/class_rep.hpp
     ../luabind/detail/constructor.hpp
-    ../luabind/detail/conversion_storage.hpp
     ../luabind/detail/convert_to_lua.hpp
     ../luabind/detail/debug.hpp
     ../luabind/detail/decorate_type.hpp
@@ -101,11 +106,9 @@ set(LUABIND_DETAIL_API
     ../luabind/detail/other.hpp
     ../luabind/detail/pcall.hpp
     ../luabind/detail/pointee_sizeof.hpp
-    ../luabind/detail/pointee_typeid.hpp
     ../luabind/detail/policy.hpp
     ../luabind/detail/primitives.hpp
     ../luabind/detail/property.hpp
-    ../luabind/detail/ref.hpp
     ../luabind/detail/signature_match.hpp
     ../luabind/detail/stack_utils.hpp
     ../luabind/detail/typetraits.hpp
