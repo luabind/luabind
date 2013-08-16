@@ -3,6 +3,7 @@
 # http://academic.cleardefinition.com/
 # Iowa State University HCI Graduate Program/VRAC
 
+# ls *.cpp | sort | sed "s/^/    /"
 set(LUABIND_SRCS
     class.cpp
     class_info.cpp
@@ -26,6 +27,7 @@ set(LUABIND_SRCS
     weak_ref.cpp
     wrapper_base.cpp)
 
+# ls ../luabind/*.hpp | sort | sed "s/^/    /"
 set(LUABIND_API
     ../luabind/adopt_policy.hpp
     ../luabind/back_reference_fwd.hpp
@@ -37,12 +39,12 @@ set(LUABIND_API
     ../luabind/copy_policy.hpp
     ../luabind/dependency_policy.hpp
     ../luabind/discard_result_policy.hpp
-    ../luabind/error.hpp
     ../luabind/error_callback_fun.hpp
+    ../luabind/error.hpp
     ../luabind/exception_handler.hpp
     ../luabind/from_stack.hpp
-    ../luabind/function.hpp
     ../luabind/function_converter.hpp
+    ../luabind/function.hpp
     ../luabind/function_introspection.hpp
     ../luabind/get_main_thread.hpp
     ../luabind/get_pointer.hpp
@@ -50,14 +52,13 @@ set(LUABIND_API
     ../luabind/intrusive_ptr_converter.hpp
     ../luabind/iterator_policy.hpp
     ../luabind/luabind.hpp
-    ../luabind/lua_state_fwd.hpp
     ../luabind/lua_include.hpp
     ../luabind/lua_state_fwd.hpp
     ../luabind/make_function.hpp
     ../luabind/nil.hpp
     ../luabind/no_dependency.hpp
-    ../luabind/object.hpp
     ../luabind/object_fwd.hpp
+    ../luabind/object.hpp
     ../luabind/open.hpp
     ../luabind/operator.hpp
     ../luabind/out_value_policy.hpp
@@ -68,6 +69,7 @@ set(LUABIND_API
     ../luabind/set_package_preload.hpp
     ../luabind/shared_ptr_converter.hpp
     ../luabind/stack.hpp
+    ../luabind/std_shared_ptr_converter.hpp
     ../luabind/tag_function.hpp
     ../luabind/typeid.hpp
     ../luabind/value_wrapper.hpp
@@ -77,9 +79,10 @@ set(LUABIND_API
     ../luabind/yield_policy.hpp)
 source_group(API FILES ${LUABIND_API})
 
+# ls ../luabind/detail/*.hpp | sort | sed "s/^/    /"
 set(LUABIND_DETAIL_API
-    ../luabind/detail/call.hpp
     ../luabind/detail/call_function.hpp
+    ../luabind/detail/call.hpp
     ../luabind/detail/call_member.hpp
     ../luabind/detail/call_operator_iterate.hpp
     ../luabind/detail/class_registry.hpp
@@ -119,6 +122,7 @@ set(LUABIND_EXTRA_LIBS)
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251")
 elseif(CMAKE_COMPILER_IS_GNUCXX)
+    # TODO we often need libm, not just with gcc.
     list(APPEND LUABIND_EXTRA_LIBS m)
 endif()
 

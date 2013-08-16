@@ -3,9 +3,8 @@
 # http://academic.cleardefinition.com/
 # Iowa State University HCI Graduate Program/VRAC
 
-# ls test_*.cpp | sort | sed s/test_// | sed s/.cpp//
-# remove value_wrapper and has_get_pointer because they are
-# compile-only tests
+# ls test_*.cpp | sort | sed -e 's/test_//' -e 's/.cpp//' -e 's/^/    /' | grep -v "has_get_pointer"
+# This command removes has_get_pointer because it is a compile-only test
 set(TESTS
     abstract_base
     adopt
@@ -56,6 +55,7 @@ set(TESTS
     unchecked
     unsigned_int
     user_defined_converter
+    value_wrapper
     vector_of_object
     virtual_inheritance
     yield)
