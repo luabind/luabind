@@ -92,10 +92,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU|Clang" AND LUABIND_ENABLE_WARNINGS)
                  PROPERTY COMPILE_FLAGS "-Wno-float-equal")
 endif()
 
-if(BUILD_TESTING)
-    add_executable(benchmark "benchmark.cpp")
-    target_link_libraries(benchmark ${LUA_LIBRARIES} luabind)
-endif()
+add_executable(benchmark "benchmark.cpp")
+target_link_libraries(benchmark ${LUA_LIBRARIES} luabind)
+
 
 if(BUILD_TESTING AND LUABIND_BUILD_HEADER_TESTS)
     get_filename_component(BASE "${CMAKE_CURRENT_SOURCE_DIR}/../luabind" ABSOLUTE)
