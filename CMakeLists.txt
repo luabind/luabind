@@ -69,7 +69,8 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 
     else()
         # No CXX11, can't have scoped enum
-        set(LUABIND_NO_SCOPED_ENUM ON CACHE INTERNAL "" FORCE)
+        # TODO is this right?
+        #set(LUABIND_NO_SCOPED_ENUM ON CACHE INTERNAL "" FORCE)
     endif()
 
 endif()
