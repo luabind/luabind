@@ -44,6 +44,8 @@
 
 #cmakedefine LUABIND_USE_NOEXCEPT 1
 
+#cmakedefine LUABIND_NOT_THREADSAFE 1
+
 #cmakedefine LUABIND_DYNAMIC_LINK 1
 
 /// TODO does this actually change the ABI?

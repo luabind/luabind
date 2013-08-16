@@ -57,6 +57,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     option(LUABIND_NO_EXCEPTIONS "Disable all usage of try, catch, and throw?" OFF)
     option(LUABIND_CPLUSPLUS_LUA "Was Lua built as C++?" OFF)
     option(LUABIND_DYNAMIC_LINK "Build luabind as a shared library?" OFF)
+    option(LUABIND_NOT_THREADSAFE "Permit the use of static variables, thus making Luabind usable only from one of your system threads." OFF)
     option(LUABIND_USE_CXX11 "Build Luabind using C++11 features?" ${LUABIND_CXX11_DEFAULT})
 
     if(NOT Boost_VERSION VERSION_GREATER 1.46)
