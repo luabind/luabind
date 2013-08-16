@@ -1,3 +1,6 @@
 [submodule "test/jenkins-ctest-plugin"]
     path = test/jenkins-ctest-plugin
     url = https://rpavlik@github.com/rpavlik/jenkins-ctest-plugin.git
+[submodule "cmake/cxx11"]
+	path = cmake/cxx11
+	url = git://anongit.kde.org/scratch/dakon/cmake-cxx11.git
