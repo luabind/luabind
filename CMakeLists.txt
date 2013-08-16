@@ -27,35 +27,48 @@ endif()
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     # We are the top-level project
-    option(INSTALL_LUABIND "Install the LuaBind library and headers" ON)
-    option(BUILD_SHARED_LUABIND "Build luabind as a shared library?" OFF)
-    include(CTest)
+    option(LUABIND_INSTALL "Install the LuaBind library and headers" ON)
+    option(LUABIND_NO_ERROR_CHECKING "Build so that all the Lua code is expected only to make legal calls?" OFF)
+    option(LUABIND_NO_EXCEPTIONS "Disable all usage of try, catch, and throw?" OFF)
+    option(LUABIND_CPLUSPLUS_LUA "Was Lua built as C++?" OFF)
+    if(NOT Boost_VERSION VERSION_GREATER 1.46)
+        option(LUABIND_USE_NOEXCEPT "If your compiler is C++11 compliant, but you're using old Boost, you need to set this." OFF)
+    endif()
+    option(LUABIND_DYNAMIC_LINK "Build luabind as a shared library?" OFF)
 endif()
 
-set(BUILD_SHARED_LIBS ${BUILD_SHARED_LUABIND})
-if(BUILD_SHARED_LIBS)
-    add_definitions(-DLUABIND_DYNAMIC_LINK)
-endif()
+# Configure the build info header
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/luabind")
+configure_file(build_information.hpp.cmake_in "${CMAKE_CURRENT_BINARY_DIR}/luabind/build_information.hpp")
+
+
+set(BUILD_SHARED_LIBS ${LUABIND_DYNAMIC_LINK})
 
 include_directories(${Boost_INCLUDE_DIRS}
     "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_BINARY_DIR}"
     ${LUA_INCLUDE_DIRS})
 
 add_subdirectory(src)
 
+# Set up testing and documentation, only if we are the top-level project.
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    include(CTest)
     if(BUILD_TESTING)
         add_subdirectory(test)
     endif()
     add_subdirectory(doc)
 endif()
 
-if(WIN32 AND NOT CYGWIN)
-  set(INSTALL_CMAKE_DIR CMake)
-  set(INSTALL_CMAKE_DIR_LUA CMake)
-else()
-  set(INSTALL_CMAKE_DIR lib/CMake/Luabind)
-  set(INSTALL_CMAKE_DIR_LUA lib/CMake/Lua52)
+if(LUABIND_INSTALL)
+    if(WIN32 AND NOT CYGWIN)
+        set(INSTALL_CMAKE_DIR CMake)
+        set(INSTALL_CMAKE_DIR_LUA CMake)
+    else()
+        set(INSTALL_CMAKE_DIR lib/CMake/Luabind)
+        set(INSTALL_CMAKE_DIR_LUA lib/CMake/Lua52)
+    endif()
+    install(FILES "cmake/Modules/FindLuabind.cmake" DESTINATION ${INSTALL_CMAKE_DIR})
+    install(FILES "cmake/Modules/FindLua52.cmake" DESTINATION ${INSTALL_CMAKE_DIR_LUA})
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/luabind/build_information.hpp" DESTINATION include/luabind)
 endif()
-INSTALL(FILES "cmake/Modules/FindLuabind.cmake" DESTINATION ${INSTALL_CMAKE_DIR})
-INSTALL(FILES "cmake/Modules/FindLua52.cmake" DESTINATION ${INSTALL_CMAKE_DIR_LUA})

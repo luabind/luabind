@@ -27,6 +27,8 @@
 #include <boost/config.hpp>
 #include <boost/detail/workaround.hpp>
 
+#include <luabind/build_information.hpp>
+
 #ifdef BOOST_MSVC
     #define LUABIND_ANONYMOUS_FIX static
 #else
