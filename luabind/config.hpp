@@ -25,6 +25,7 @@
 #define LUABIND_CONFIG_HPP_INCLUDED
 
 #include <boost/config.hpp>
+#include <boost/detail/workaround.hpp>
 
 #ifdef BOOST_MSVC
     #define LUABIND_ANONYMOUS_FIX static
@@ -32,10 +33,8 @@
     #define LUABIND_ANONYMOUS_FIX
 #endif
 
-#if defined (BOOST_MSVC) && (BOOST_MSVC <= 1300)
-
-#error "Support for your version of Visual C++ has been removed from this version of Luabind"
-
+#if BOOST_WORKAROUND(BOOST_MSVC, <= 1300)
+    #error "Support for your version of Visual C++ has been removed from this version of Luabind"
 #endif
 
 // the maximum number of arguments of functions that's

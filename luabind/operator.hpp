@@ -56,13 +56,11 @@ namespace luabind { namespace detail {
 
     struct operator_void_return {};
 
-#if !BOOST_WORKAROUND(BOOST_MSVC, <= 1300)
     template<class T>
     inline T const& operator,(T const& x, operator_void_return)
     {
         return x;
     }
-#endif
 
 }} // namespace luabind
 

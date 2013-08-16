@@ -53,51 +53,6 @@ namespace luabind { namespace detail
 
 }}
 
-#if defined (BOOST_MSVC) && (BOOST_MSVC <= 1200)
-
-namespace luabind
-{
-    // most absurd workaround of all time?
-    namespace detail
-    {
-        template<int N>
-        struct size_char_array
-        {
-            char storage[N + 2];
-        };
-
-        template<int N>
-        size_char_array<N> deduce_size(LUABIND_PLACEHOLDER_ARG(N));
-
-        template<class T>
-        struct get_index_workaround
-        {
-            static T t;
-            BOOST_STATIC_CONSTANT(int, value = sizeof(deduce_size(t)) - 2);
-        };
-    }
-
-    template<class A, class B>
-    detail::policy_cons<detail::dependency_policy<detail::get_index_workaround<A>::value
-        , detail::get_index_workaround<B>::value>, detail::null_type> dependency(A,B)
-    {
-        return detail::policy_cons<detail::dependency_policy<
-            detail::get_index_workaround<A>::value, detail::get_index_workaround<B>::value>
-            , detail::null_type>();
-    }
-
-    template<class A>
-    detail::policy_cons<detail::dependency_policy<0
-        , detail::get_index_workaround<A>::value>, detail::null_type>
-    return_internal_reference(A)
-    {
-        return detail::policy_cons<detail::dependency_policy<0
-            , detail::get_index_workaround<A>::value>, detail::null_type>();
-    }
-}
-
-#else
-
 namespace luabind
 {
     template<int A, int B>
@@ -114,7 +69,5 @@ namespace luabind
         return detail::policy_cons<detail::dependency_policy<0, A>, detail::null_type>();
     }
 }
-
-#endif
 
 #endif // LUABIND_DEPENDENCY_POLICY_HPP_INCLUDED

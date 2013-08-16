@@ -118,14 +118,6 @@ namespace luabind { namespace detail
     template<class T>
     struct decorated_type_cref_impl
     {
-#if defined(BOOST_MSVC) && BOOST_MSVC == 1200
-        template<class U>
-        static by_const_reference<U> get(const U&)
-        {
-            return by_const_reference<U>();
-        }
-        static T data() { return reinterpret_cast<T>(decorated_type_array); }
-#else
 
         static void(*data())(T)
         { return (void(*)(T))0; }
@@ -133,87 +125,52 @@ namespace luabind { namespace detail
         template<class U>
         static by_const_reference<U> get(void(*f)(const U&))
         { return by_const_reference<U>(); }
-#endif
+
     };
 
     template<class T>
     struct decorated_type_ref_impl
     {
-#if defined(BOOST_MSVC) && BOOST_MSVC == 1200
-        template<class U>
-        static by_reference<U> get(U&)
-        {
-            return by_reference<U>();
-        }
-        static T data() { return reinterpret_cast<T>(decorated_type_array); }
-#else
+
         static void(*data())(T)
         { return (void(*)(T))0; }
 
         template<class U>
         static by_reference<U> get(void(*)(U&))
         { return by_reference<U>(); }
-#endif
     };
 
     template<class T>
     struct decorated_type_cptr_impl
     {
-#if defined(BOOST_MSVC) && BOOST_MSVC == 1200
         template<class U>
         static by_const_pointer<U> get(const U*)
         {
             return by_const_pointer<U>();
         }
         static T& data() { return reinterpret_cast<T&>(decorated_type_array); }
-#else
-        static void(*data())(T)
-        { return (void(*)(T))0; }
-
-        template<class U>
-        static by_const_pointer<U> get(void(*)(const U*))
-        { return by_const_pointer<U>(); }
-#endif
     };
 
     template<class T>
     struct decorated_type_ptr_impl
     {
-#if defined(BOOST_MSVC) && BOOST_MSVC == 1200
         template<class U>
         static by_pointer<U> get(U*)
         {
             return by_pointer<U>();
         }
         static T& data() { return reinterpret_cast<T&>(decorated_type_array); }
-#else
-        static void(*data())(T)
-        { return (void(*)(T))0; }
-
-        template<class U>
-        static by_pointer<U> get(void(*)(U*))
-        { return by_pointer<U>(); }
-#endif
     };
 
     template<class T>
     struct decorated_type_value_impl
     {
-#if defined(BOOST_MSVC) && BOOST_MSVC == 1200
-        template<class U>
-        static by_value<U> get(U&)
-        {
-            return by_value<U>();
-        }
-        static T& data() { return reinterpret_cast<T&>(decorated_type_array); }
-#else
         static void(*data())(T&)
         { return (void(*)(T&))0; }
 
         template<class U>
         static by_value<U> get(void(*)(U&))
         { return by_value<U>(); }
-#endif
     };
 
     template<>
@@ -263,13 +220,9 @@ namespace luabind { namespace detail
     {
     };
 
-#if defined(BOOST_MSVC) && BOOST_MSVC == 1200
-    #define LUABIND_DECORATE_TYPE(t) luabind::detail::decorated_type<t>::get(luabind::detail::decorated_type<t>::data())
-#else
 //  #define LUABIND_DECORATE_TYPE(t) luabind::detail::decorated_type<t>::get((void(*)(type<t>))0)
     #define LUABIND_DECORATE_TYPE(t) luabind::detail::decorated_type<t>::get(luabind::detail::decorated_type<t>::data())
         //#define LUABIND_DECORATE_TYPE(t) luabind::detail::decorated_type<t>::get(type<t>())
-#endif
 
 #endif
 
