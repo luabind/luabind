@@ -95,6 +95,7 @@ endif()
 add_executable(benchmark "benchmark.cpp")
 target_link_libraries(benchmark ${LUA_LIBRARIES} luabind)
 
+option(LUABIND_BUILD_HEADER_TESTS "Try to compile every header in the luabind directory, excluding detail headers, in its own translation unit, to check for missing includes." OFF)
 
 if(BUILD_TESTING AND LUABIND_BUILD_HEADER_TESTS)
     get_filename_component(BASE "${CMAKE_CURRENT_SOURCE_DIR}/../luabind" ABSOLUTE)
