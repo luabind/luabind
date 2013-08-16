@@ -115,7 +115,9 @@
      || defined(BOOST_NO_SCOPED_ENUMS)          \
      || defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS) \
      || defined(BOOST_NO_0X_HDR_TYPE_TRAITS))
-#   define LUABIND_NO_SCOPED_ENUM
+#   ifndef LUABIND_NO_SCOPED_ENUM
+#       define LUABIND_NO_SCOPED_ENUM
+#   endif
 #endif
 
 #if (   defined(BOOST_NO_CXX11_RVALUE_REFERENCES) \
