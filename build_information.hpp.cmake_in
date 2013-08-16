@@ -44,9 +44,7 @@
 
 #cmakedefine LUABIND_USE_NOEXCEPT 1
 
-#ifndef LUABIND_BUILDING
-#  cmakedefine LUABIND_DYNAMIC_LINK 1
-#endif
+#cmakedefine LUABIND_DYNAMIC_LINK 1
 
 #endif // INCLUDED_BuildInformation_hpp_GUID_90CCCE9E_4374_4090_36BA_3AA2C22271F7
 
