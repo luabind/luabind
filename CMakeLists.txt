@@ -58,6 +58,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     option(LUABIND_CPLUSPLUS_LUA "Was Lua built as C++?" OFF)
     option(LUABIND_DYNAMIC_LINK "Build luabind as a shared library?" OFF)
     option(LUABIND_NOT_THREADSAFE "Permit the use of static variables, thus making Luabind usable only from one of your system threads." OFF)
+    option(LUABIND_ENABLE_WARNINGS "Enable extra warnings during the build of the library and tests" ON)
     option(LUABIND_USE_CXX11 "Build Luabind using C++11 features?" ${LUABIND_CXX11_DEFAULT})
 
     if(NOT Boost_VERSION VERSION_GREATER 1.46)
@@ -79,11 +80,96 @@ endif()
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/luabind")
 configure_file(build_information.hpp.cmake_in "${CMAKE_CURRENT_BINARY_DIR}/luabind/build_information.hpp")
 
-
+# Set up the build
 set(BUILD_SHARED_LIBS ${LUABIND_DYNAMIC_LINK})
 
 if(LUABIND_USE_CXX11 AND CXX11_COMPILER_FLAGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
+endif()
+
+# Test and enable warning flags if desired, as well as other compiler flag
+include(CheckCXXCompilerFlag)
+macro(_luabind_add_flag _flag _var)
+    check_cxx_compiler_flag(${_flag} ${_var})
+    if(${_var})
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_flag}")
+    endif()
+endmacro()
+
+if(MSVC)
+    if(LUABIND_ENABLE_WARNINGS)
+        # Warning level 4
+        _luabind_add_flag(/W4 SUPPORTS_W4_FLAG)
+
+        # Disable incorrect warning C4709
+        # ("comma operator within array index expression")
+        _luabind_add_flag(/wd4709 SUPPORTS_WD4709_FLAG)
+    endif()
+else()
+
+    set(possible_flags)
+    if(BUILD_SHARED_LIBS)
+        list(APPEND possible_flags fvisibility=hidden)
+    endif()
+    if(LUABIND_ENABLE_WARNINGS)
+        list(APPEND possible_flags
+            Wall
+            Wextra
+            Wno-deprecated-declarations # auto_ptr is OK for now
+            Wlogical-op
+            Wmissing-declarations
+            Wsign-conversion
+            pedantic
+            Wcast-align
+            Wcast-qual
+            Wctor-dtor-privacy
+            Winit-self
+            Wdisabled-optimizations
+            Wformat=2
+            Wmissing-include-dirs
+            Wold-style-cast
+            Woverloaded-virtual
+            Wredundant-decls
+            Wshadow
+            Wsign-promo
+            Wstrict-null-sentinel
+            Wstrict-overflow=5)
+
+
+        if(LUABIND_USE_CXX11)
+            list(APPEND possible_flags Wnoexcept)
+        endif()
+
+        if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+            list(APPEND possible_flags
+                Weverything
+                Wno-shadow
+                Wno-undef
+                Wno-global-constructors
+                Wno-weak-vtables
+                Wno-padded
+                Wno-exit-time-destructors
+                Wno-missing-noreturn)
+
+            if(LUABIND_USE_CXX11)
+               list(APPEND possible_flags
+                    Wno-c++98-compat
+                    Wno-c++98-compat-pedantic)
+            else()
+               list(APPEND possible_flags
+                    Wno-c++11-long-long)
+            endif()
+
+        endif()
+
+    endif()
+
+    if(possible_flags)
+        foreach(_flag ${possible_flags})
+            string(REGEX REPLACE [-+=] _ sanitized_flag ${_flag})
+            _luabind_add_flag(-${_flag} SUPPORTS_${sanitized_flag}_FLAG)
+        endforeach()
+    endif()
 endif()
 
 include_directories(${Boost_INCLUDE_DIRS}
