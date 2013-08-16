@@ -46,5 +46,8 @@
 
 #cmakedefine LUABIND_DYNAMIC_LINK 1
 
+/// TODO does this actually change the ABI?
+#cmakedefine LUABIND_NO_SCOPED_ENUM 1
+
 #endif // INCLUDED_BuildInformation_hpp_GUID_90CCCE9E_4374_4090_36BA_3AA2C22271F7
 

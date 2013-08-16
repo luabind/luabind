@@ -42,24 +42,35 @@ if(NOT LUA_FOUND AND NOT LUA51_FOUND AND NOT LUA52_FOUND)
     set(LUA_INCLUDE_DIRS "${LUA_INCLUDE_DIR}")
 endif()
 
+# C++11-related searches
+find_package(CXXFeatures)
+
+set(LUABIND_CXX11_DEFAULT OFF)
+if(CXX11_COMPILER_FLAGS) # TODO this is not quite the right check to use here.
+    set(LUABIND_CXX11_DEFAULT ON)
+endif()
+
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     # We are the top-level project
     option(LUABIND_INSTALL "Install the LuaBind library and headers" ON)
     option(LUABIND_NO_ERROR_CHECKING "Build so that all the Lua code is expected only to make legal calls?" OFF)
     option(LUABIND_NO_EXCEPTIONS "Disable all usage of try, catch, and throw?" OFF)
     option(LUABIND_CPLUSPLUS_LUA "Was Lua built as C++?" OFF)
+    option(LUABIND_DYNAMIC_LINK "Build luabind as a shared library?" OFF)
+    option(LUABIND_USE_CXX11 "Build Luabind using C++11 features?" ${LUABIND_CXX11_DEFAULT})
+
     if(NOT Boost_VERSION VERSION_GREATER 1.46)
         option(LUABIND_USE_NOEXCEPT "If your compiler is C++11 compliant, but you're using old Boost, you need to set this." OFF)
     endif()
-    option(LUABIND_DYNAMIC_LINK "Build luabind as a shared library?" OFF)
 
-    find_package(CXXFeatures)
-    if(CXX11_COMPILER_FLAGS) # TODO this is not quite the right check to use here.
-        option(LUABIND_USE_CXX11 "Build Luabind using C++11 features?" ON)
-        if(LUABIND_USE_CXX11)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
-        endif()
+    if(LUABIND_USE_CXX11)
+        option(LUABIND_NO_SCOPED_ENUM "Indicates that your compiler and standard library lacks scoped enums and std::underlying_type" OFF)
+
+    else()
+        # No CXX11, can't have scoped enum
+        set(LUABIND_NO_SCOPED_ENUM ON CACHE INTERNAL "" FORCE)
     endif()
+
 endif()
 
 # Configure the build info header
@@ -68,6 +79,10 @@ configure_file(build_information.hpp.cmake_in "${CMAKE_CURRENT_BINARY_DIR}/luabi
 
 
 set(BUILD_SHARED_LIBS ${LUABIND_DYNAMIC_LINK})
+
+if(LUABIND_USE_CXX11 AND CXX11_COMPILER_FLAGS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
+endif()
 
 include_directories(${Boost_INCLUDE_DIRS}
     "${CMAKE_CURRENT_SOURCE_DIR}"
