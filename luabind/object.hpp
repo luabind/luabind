@@ -242,8 +242,6 @@ LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
   {
       struct safe_bool_type {};
   public:
-      ~object_interface() {}
-
       call_proxy<Derived, boost::tuples::tuple<> > operator()();
 
       template<class A0>
