@@ -90,15 +90,15 @@ namespace luabind { namespace detail
 
         void add_base_class(class_rep* bcrep);
 
-        const std::vector<class_rep*>& bases() const throw() { return m_bases; }
+        const std::vector<class_rep*>& bases() const LUABIND_NOEXCEPT { return m_bases; }
 
         void set_type(type_id const& t) { m_type = t; }
-        type_id const& type() const throw() { return m_type; }
+        type_id const& type() const LUABIND_NOEXCEPT { return m_type; }
 
-        const char* name() const throw() { return m_name; }
+        const char* name() const LUABIND_NOEXCEPT { return m_name; }
 
         // the lua reference to the metatable for this class' instances
-        int metatable_ref() const throw() { return m_instance_metatable; }
+        int metatable_ref() const LUABIND_NOEXCEPT { return m_instance_metatable; }
 
         void get_table(lua_State* L) const { m_table.push(L); }
         void get_default_table(lua_State* L) const { m_default_table.push(L); }

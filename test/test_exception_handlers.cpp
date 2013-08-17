@@ -17,7 +17,7 @@ void translate_my_exception(lua_State* L, my_exception const&)
 
 struct derived_std_exception : std::exception
 {
-    char const* what() const throw()
+    char const* what() const LUABIND_NOEXCEPT
     {
         return "derived_std_exception";
     }

@@ -28,8 +28,8 @@ namespace {
 struct ex : public std::exception, public counted_type<ex>
 {
     ex(const char* m): msg(m) {}
-    virtual ~ex() throw() {}
-    virtual const char* what() const throw() { return msg; }
+    virtual ~ex() LUABIND_NOEXCEPT {}
+    virtual const char* what() const LUABIND_NOEXCEPT { return msg; }
     const char* msg;
 };
 

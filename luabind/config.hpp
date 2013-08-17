@@ -139,6 +139,7 @@ namespace std
      && BOOST_VERSION >= 104700)
 #    define LUABIND_USE_NOEXCEPT
 #endif
+
 #ifndef LUABIND_MAY_THROW
 #    ifdef BOOST_NOEXCEPT_IF
 #        define LUABIND_MAY_THROW BOOST_NOEXCEPT_IF(false)
@@ -146,6 +147,16 @@ namespace std
 #        define LUABIND_MAY_THROW noexcept(false)
 #    else
 #       define LUABIND_MAY_THROW
+#    endif
+#endif
+
+#ifndef LUABIND_NOEXCEPT
+#    ifdef BOOST_NOEXCEPT_OR_NOTHROW
+#        define LUABIND_NOEXCEPT BOOST_NOEXCEPT_OR_NOTHROW
+#    elif defined(LUABIND_USE_NOEXCEPT)
+#        define LUABIND_NOEXCEPT noexcept
+#    else
+#       define LUABIND_NOEXCEPT throw()
 #    endif
 #endif
 

@@ -51,8 +51,8 @@ namespace luabind
     {
     public:
         explicit error(lua_State* L): m_L(L) {}
-        lua_State* state() const throw() { return m_L; }
-        virtual const char* what() const throw()
+        lua_State* state() const LUABIND_NOEXCEPT { return m_L; }
+        virtual const char* what() const LUABIND_NOEXCEPT
         {
             return "lua runtime error";
         }
@@ -67,9 +67,9 @@ namespace luabind
     {
     public:
         cast_failed(lua_State* L, type_id const& i): m_L(L), m_info(i) {}
-        lua_State* state() const throw() { return m_L; }
-        type_id info() const throw() { return m_info; }
-        virtual const char* what() const throw() { return "unable to make cast"; }
+        lua_State* state() const LUABIND_NOEXCEPT { return m_L; }
+        type_id info() const LUABIND_NOEXCEPT { return m_info; }
+        virtual const char* what() const LUABIND_NOEXCEPT { return "unable to make cast"; }
     private:
         lua_State* m_L;
         type_id m_info;
