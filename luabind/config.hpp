@@ -134,7 +134,9 @@ namespace std
 
 // If you use Boost <= 1.46 but your compiler is C++11 compliant and marks
 // destructors as noexcept by default, you need to define LUABIND_USE_NOEXCEPT.
-#if !defined(BOOST_NO_NOEXCEPT) && !defined(BOOST_NO_CXX11_NOEXCEPT)
+#if (   !defined(BOOST_NO_NOEXCEPT) \
+     && !defined(BOOST_NO_CXX11_NOEXCEPT) \
+     && BOOST_VERSION >= 104700)
 #    define LUABIND_USE_NOEXCEPT
 #endif
 #ifndef LUABIND_MAY_THROW
