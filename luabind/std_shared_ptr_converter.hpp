@@ -8,7 +8,8 @@
 #include <boost/config.hpp>
 #if (defined(BOOST_NO_CXX11_SMART_PTR) \
      && !defined(BOOST_HAS_TR1_SHARED_PTR) \
-     && (!defined(BOOST_MSVC) || BOOST_MSVC < 1600))
+     && (!defined(BOOST_MSVC) || BOOST_MSVC < 1600) \
+     || defined(LUABIND_NO_STD_SHARED_PTR))
 #  define LUABIND_NO_STD_SHARED_PTR
 #else
 
