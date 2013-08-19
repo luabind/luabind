@@ -102,6 +102,8 @@ macro(_luabind_add_flag _flag _var)
 endmacro()
 
 if(MSVC)
+    # multi-process compile
+    _luabind_add_flag(/MP SUPPORTS_MP_FLAG)
     if(LUABIND_ENABLE_WARNINGS)
         # Warning level 4
         _luabind_add_flag(/W4 SUPPORTS_W4_FLAG)
