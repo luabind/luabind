@@ -1,116 +1,78 @@
-include_directories(
-    ${Boost_INCLUDE_DIRS} ${LUA_INCLUDE_DIR} ${CMAKE_SOURCE_DIR})
+# Build for LuaBind
+# Ryan Pavlik <rpavlik@iastate.edu>
+# http://academic.cleardefinition.com/
+# Iowa State University HCI Graduate Program/VRAC
 
-add_executable(benchmark "benchmark.cpp")
-target_link_libraries(benchmark luabind)
-
-add_library(testmain STATIC
-    "main.cpp" "test.hpp"
-    # These tests consist only of compile time asserts and define no test_main
-    # function:
-    "test_has_get_pointer.cpp")
-
-target_link_libraries(testmain luabind)
-
-if (BUILD_SHARED_LIBS AND MSVC)
-    add_custom_command(TARGET testmain POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-            $<TARGET_FILE:luabind> $<TARGET_FILE_DIR:testmain>
-        COMMENT "Copying DLL...")
-endif()
-
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
+# ls test_*.cpp | sort | sed s/test_// | sed s/.cpp//
+# remove typetraits value_wrapper and has_get_pointer because they are
+# compile-only tests
 set(TESTS
-    "abstract_base"
-    "adopt"
-    "adopt_wrapper"
-    "attributes"
-    "automatic_smart_ptr"
-    "back_reference"
-    "builtin_converters"
-    "class_info"
-    "collapse_converter"
-    "const"
-    "construction"
-    "create_in_thread"
-    "def_from_base"
-    "destruction"
-    "dynamic_type"
-    "exceptions"
-    "exception_handlers"
-    "extend_class_in_lua"
-    "free_functions"
-    "function_converter"
-    "function_introspection"
-    "function_object"
-    "held_type"
-    "implicit_cast"
-    "implicit_raw"
-    "intrusive_ptr"
-    "iterator"
-    "lua_classes"
-    "null_pointer"
-    "object"
-    "operators"
-    "package_preload"
-    "policies"
-    "private_destructors"
-    "properties"
-    "scope"
-    "separation"
-    "set_instance_value"
-    "shadow"
-    "shared_ptr"
-    "simple_class"
-    "smart_ptr_attributes"
-    "super_leak"
-    "table"
-    "tag_function"
-    "typetraits"
-    "unchecked"
-    "unsigned_int"
-    "user_defined_converter"
-    "value_wrapper"
-    "vector_of_object"
-    "virtual_inheritance"
-    "yield")
+    abstract_base
+    adopt
+    adopt_wrapper
+    attributes
+    automatic_smart_ptr
+    back_reference
+    builtin_converters
+    class_info
+    collapse_converter
+    const
+    construction
+    create_in_thread
+    def_from_base
+    dynamic_type
+    exception_handlers
+    exceptions
+    extend_class_in_lua
+    free_functions
+    function_introspection
+    held_type
+    implicit_cast
+    implicit_raw
+    iterator
+    lua_classes
+    null_pointer
+    object
+    object_identity
+    operators
+    package_preload
+    policies
+    private_destructors
+    properties
+    scope
+    separation
+    set_instance_value
+    shadow
+    shared_ptr
+    simple_class
+    smart_ptr_attributes
+    super_leak
+    table
+    tag_function
+    unsigned_int
+    user_defined_converter
+    vector_of_object
+    virtual_inheritance
+    yield)
+
+add_library(test_main STATIC main.cpp)
 
 foreach(test ${TESTS})
-    add_executable(test_${test} "test_${test}.cpp")
-    target_link_libraries(test_${test} testmain)
-    set_property(TARGET test_${test} PROPERTY FOLDER "Tests")
-    add_test(${test} test_${test})
-endforeach(test)
+    add_executable(test_${test} test_${test}.cpp)
+    target_link_libraries(test_${test} test_main luabind)
+    add_test(NAME ${test} COMMAND test_${test})
+endforeach()
 
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU|Clang" AND LUABIND_ENABLE_WARNINGS)
-    set (priv_dtor_flags "-Wno-ctor-dtor-privacy")
-    if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-        set(priv_dtor_flags "${priv_dtor_flags} -Wno-unused-member-function")
-    endif()
-    set_property(TARGET test_private_destructors
-                 PROPERTY COMPILE_FLAGS "${priv_dtor_flags}")
-    set_property(TARGET test_builtin_converters
-                 PROPERTY COMPILE_FLAGS "-Wno-float-equal")
-endif()
-
-if (LUABIND_BUILD_HEADER_TESTS)
+if(BUILD_TESTING)
     get_filename_component(BASE "${CMAKE_CURRENT_SOURCE_DIR}/../luabind" ABSOLUTE)
     foreach(HEADER ${APIHEADERS})
         get_filename_component(FULLHEADER "${HEADER}" ABSOLUTE)
         file(RELATIVE_PATH SHORTNAME "${BASE}" "${FULLHEADER}")
         string(REPLACE "/" "_" SHORTNAME "${SHORTNAME}")
         string(REPLACE ".hpp" "" SHORTNAME "${SHORTNAME}")
-        set (targetname test_headercompile_${SHORTNAME})
-        set (cppname "${CMAKE_CURRENT_BINARY_DIR}/${targetname}.cpp")
-        configure_file(test_headercompile.cpp.in "${cppname}" @ONLY)
-        add_executable(${targetname} ${cppname})
-        if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" AND LUABIND_ENABLE_WARNINGS)
-            # Clang complains about '#define LUABIND_TEST_HEADERCOMPILE'.
-            set_property(TARGET ${targetname}
-                    PROPERTY COMPILE_FLAGS "-Wno-unused-macros")
-        endif()
-        set_property(TARGET ${targetname} PROPERTY FOLDER "Tests/Headers")
-        target_link_libraries(${targetname} luabind)
+        configure_file(test_headercompile.cpp.in "${CMAKE_CURRENT_BINARY_DIR}/test_headercompile_${SHORTNAME}.cpp" @ONLY)
+
+        add_executable(test_headercompile_${SHORTNAME} "${CMAKE_CURRENT_BINARY_DIR}/test_headercompile_${SHORTNAME}.cpp")
+        target_link_libraries(test_headercompile_${SHORTNAME} luabind)
     endforeach()
 endif()

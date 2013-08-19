@@ -31,7 +31,7 @@
 #include <luabind/detail/pcall.hpp>
 #include <luabind/detail/stack_utils.hpp>
 #include <luabind/error.hpp>
-#include <luabind/object.hpp> // TODO: REMOVE DEPENDENCY
+#include <luabind/detail/object.hpp> // TODO: REMOVE DEPENDENCY
 
 #include <boost/mpl/apply_wrap.hpp>
 #include <boost/preprocessor/control/if.hpp>

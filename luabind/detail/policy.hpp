@@ -40,12 +40,13 @@
 #include <boost/type_traits/is_base_and_derived.hpp>
 #include <boost/type_traits/is_enum.hpp>
 #include <boost/type_traits/is_pointer.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
 #include <boost/type_traits/remove_reference.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <boost/version.hpp>
 
 #include <luabind/back_reference_fwd.hpp>
 #include <luabind/config.hpp>
-#include <luabind/detail/class_cache.hpp>
 #include <luabind/detail/class_registry.hpp>
 #include <luabind/detail/debug.hpp>
 #include <luabind/detail/decorate_type.hpp>
@@ -661,117 +662,72 @@ struct native_converter_base
     }
 };
 
-template <class T>
-lua_Integer as_lua_integer(T v)
+// *********** converter for integer types *****************
+template <typename QualifiedT>
+struct integer_converter
+  : native_converter_base<typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type>
 {
-    return static_cast<lua_Integer>(v);
-}
+    typedef typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type T;
+    typedef typename native_converter_base<T>::param_type param_type;
+    typedef typename native_converter_base<T>::value_type value_type;
 
-template <class T>
-lua_Number as_lua_number(T v)
+    int compute_score(lua_State* L, int index)
+    {
+        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1;
+    }
+
+    value_type from(lua_State* L, int index)
+    {
+        return static_cast<T>(lua_tointeger(L, index));
+    }
+
+    void to(lua_State* L, param_type value)
+    {
+        lua_pushinteger(L, static_cast<lua_Integer>(value));
+    }
+};
+
+// template partial specialization for those types that boost knows to be
+// integral
+template <typename T>
+struct default_converter<T,
+    typename boost::enable_if<boost::is_integral<T> >::type
+    >
+    : integer_converter<T> {};
+
+// *********** converter for floating-point number types *****************
+template <typename QualifiedT>
+struct number_converter
+  : native_converter_base<typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type>
 {
-    return static_cast<lua_Number>(v);
-}
+    typedef typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type T;
+    typedef typename native_converter_base<T>::param_type param_type;
+    typedef typename native_converter_base<T>::value_type value_type;
 
-#ifndef LUABIND_NO_RVALUE_REFERENCES
+    int compute_score(lua_State* L, int index)
+    {
+        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1;
+    }
 
-# define LUABIND_NUMBER_CONVERTER(type, kind) \
-    template <> \
-struct default_converter<type> \
-  : native_converter_base<type> \
-{ \
-    int compute_score(lua_State* L, int index) \
-    { \
-        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1; \
-    } \
-    \
-    type from(lua_State* L, int index) \
-    { \
-        return static_cast<type>(BOOST_PP_CAT(lua_to, kind)(L, index)); \
-    } \
-    \
-    void to(lua_State* L, type const& value) \
-    { \
-        BOOST_PP_CAT(lua_push, kind)(L, BOOST_PP_CAT(as_lua_, kind)(value)); \
-    } \
-}; \
-\
-template <> \
-struct default_converter<type const> \
-  : default_converter<type> \
-{}; \
-\
-template <> \
-struct default_converter<type const&> \
-  : default_converter<type> \
-{}; \
-\
-template <> \
-struct default_converter<type&&> \
-  : default_converter<type> \
-{};
+    value_type from(lua_State* L, int index)
+    {
+        return static_cast<T>(lua_tonumber(L, index));
+    }
 
-#else
+    void to(lua_State* L, param_type value)
+    {
+        lua_pushnumber(L, static_cast<lua_Number>(value));
+    }
+};
+// template partial specialization for those types that boost knows to be
+// floating-point
+template <typename T>
+struct default_converter<T,
+    typename boost::enable_if<boost::is_floating_point<T> >::type
+    >
+    : number_converter<T> {};
 
-# define LUABIND_NUMBER_CONVERTER(type, kind) \
-    template <> \
-struct default_converter<type> \
-  : native_converter_base<type> \
-{ \
-    int compute_score(lua_State* L, int index) \
-    { \
-        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1; \
-    } \
-    \
-    type from(lua_State* L, int index) \
-    { \
-        return static_cast<type>(BOOST_PP_CAT(lua_to, kind)(L, index)); \
-    } \
-    \
-    void to(lua_State* L, type const& value) \
-    { \
-        BOOST_PP_CAT(lua_push, kind)(L, BOOST_PP_CAT(as_lua_, kind)(value)); \
-    } \
-}; \
-\
-template <> \
-struct default_converter<type const> \
-  : default_converter<type> \
-{}; \
-\
-template <> \
-struct default_converter<type const&> \
-  : default_converter<type> \
-{};
-
-#endif
-
-// TODO: The preprocessor does not have access to enough information to
-// relieably determine which of lua_tointeger or lua_tonumber would be better.
-// Convert to using template metaprogramming (could use boost::is_arithmetic).
-
-LUABIND_NUMBER_CONVERTER(char, integer)
-LUABIND_NUMBER_CONVERTER(signed char, integer)
-LUABIND_NUMBER_CONVERTER(unsigned char, integer)
-LUABIND_NUMBER_CONVERTER(signed short, integer)
-LUABIND_NUMBER_CONVERTER(unsigned short, integer)
-
-LUABIND_NUMBER_CONVERTER(signed int, integer)
-LUABIND_NUMBER_CONVERTER(unsigned int, number)
-LUABIND_NUMBER_CONVERTER(unsigned long, number)
-LUABIND_NUMBER_CONVERTER(signed long, integer)
-
-#ifndef BOOST_NO_LONG_LONG
-    LUABIND_NUMBER_CONVERTER(signed long long, number)
-    LUABIND_NUMBER_CONVERTER(unsigned long long, number)
-#endif
-
-LUABIND_NUMBER_CONVERTER(float, number)
-LUABIND_NUMBER_CONVERTER(double, number)
-LUABIND_NUMBER_CONVERTER(long double, number)
-
-# undef LUABIND_NUMBER_CONVERTER
-
+// *********** converter for bool *****************
 template <>
 struct default_converter<bool>
   : native_converter_base<bool>
@@ -809,6 +765,7 @@ struct default_converter<bool&&>
 {};
 #endif
 
+// *********** converter for string types *****************
 template <>
 struct default_converter<std::string>
   : native_converter_base<std::string>
@@ -899,6 +856,8 @@ struct default_converter<char[N]>
   : default_converter<char const*>
 {};
 
+
+// *********** converter for lua_State * arguments - consuming no explicit args *****************
 template <>
 struct default_converter<lua_State*>
 {

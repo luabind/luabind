@@ -21,7 +21,7 @@ namespace mpl = boost::mpl;
 
 LUABIND_API std::string get_class_name(lua_State* L, type_id const& i);
 
-template <class T>
+template <class T, class Enable = void>
 struct type_to_string
 {
     static void get(lua_State* L)

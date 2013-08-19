@@ -9,7 +9,7 @@
 
 #  include <luabind/detail/inheritance.hpp>
 #  include <luabind/get_main_thread.hpp>
-#  include <luabind/object.hpp>
+#  include <luabind/detail/object.hpp>
 #  include <luabind/wrapper_base.hpp>
 
 #  include <boost/preprocessor/iteration/iterate.hpp>
