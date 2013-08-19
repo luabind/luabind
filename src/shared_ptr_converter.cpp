@@ -14,7 +14,7 @@ void luabind::detail::shared_ptr_deleter::alter_use_count(
     assert(uc >= 0);
     lua_pushinteger(L, uc);
     lua_rawsetp(L, LUA_REGISTRYINDEX, &state_use_count_tag);
-    
+
     if (!uc)
     {
         if (state_unreferenced_fun cb = get_state_unreferenced_callback(L))

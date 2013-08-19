@@ -53,7 +53,7 @@ test run output should end with something like::
   Total Test time (real) =   1.23 sec
 
 A failed run would end with something like::
-  
+
   98% tests passed, 1 tests failed out of 51
 
   Total Test time (real) =   1.23 sec

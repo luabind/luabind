@@ -74,8 +74,8 @@ Example
             .def("set", &A::set, **return_reference_to(_1)**)
     ];
 
-.. warning:: 
-   This policy ignores all type information and should be used only it 
-   situations where the parameter type is a perfect match to the 
+.. warning::
+   This policy ignores all type information and should be used only it
+   situations where the parameter type is a perfect match to the
    return-type (such as in the example).
 

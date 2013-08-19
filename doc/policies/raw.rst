@@ -10,7 +10,7 @@ Motivation
 ~~~~~~~~~~
 
 This converter policy will pass through the ``lua_State*`` unmodified.
-This can be useful for example when binding functions that need to 
+This can be useful for example when binding functions that need to
 return a ``luabind::object``. The parameter will be removed from the
 function signature, decreasing the function arity by one.
 

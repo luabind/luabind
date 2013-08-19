@@ -11,7 +11,7 @@ on the module it's being registered in.
 
     luabind::scope register_a()
     {
-        return 
+        return
             class_<a>("a")
                 .def("f", &a::f)
                 ;
@@ -21,7 +21,7 @@ on the module it's being registered in.
 
     luabind::scope register_b()
     {
-        return 
+        return
             class_<b>("b")
                 .def("g", &b::g)
                 ;

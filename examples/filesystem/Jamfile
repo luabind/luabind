@@ -5,7 +5,7 @@ BOOST_ROOT = [ modules.peek : BOOST_ROOT ] ;
 use-project /boost : $(BOOST_ROOT) ;
 
 exe filesystem
-    : filesystem.cpp 
+    : filesystem.cpp
       /boost/filesystem//boost_filesystem/<link>static
       /luabind//luabind
     ;

@@ -5,7 +5,7 @@ BOOST_ROOT = [ modules.peek : BOOST_ROOT ] ;
 use-project /boost : $(BOOST_ROOT) ;
 
 exe regexp
-    : regex_wrap.cpp 
+    : regex_wrap.cpp
       /boost/regex//boost_regex/<link>static
       /luabind//luabind
     ;

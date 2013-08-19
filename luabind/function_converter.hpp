@@ -96,7 +96,7 @@ namespace luabind {
         {
             // If you get a compiler error here, you are probably trying to
             // get a function pointer from Lua. This is not supported:
-            // you must use a type which is constructible from a 
+            // you must use a type which is constructible from a
             // luabind::function, e.g. std::function or boost::function.
             return function<typename F::result_type>(
                 object(from_stack(L, index)));

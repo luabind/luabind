@@ -4,8 +4,8 @@ discard_result
 Motivation
 ~~~~~~~~~~
 
-This is a very simple policy which makes it possible to throw away 
-the value returned by a C++ function, instead of converting it to 
+This is a very simple policy which makes it possible to throw away
+the value returned by a C++ function, instead of converting it to
 Lua.
 
 Defined in

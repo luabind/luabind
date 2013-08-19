@@ -7,7 +7,7 @@ Motivation
 ~~~~~~~~~~
 
 This policy makes it possible to wrap functions that take non-const references
-or pointer to non-const as it's parameters with the intention to write return 
+or pointer to non-const as it's parameters with the intention to write return
 values to them. Since it's impossible to pass references to primitive types
 in lua, this policy will add another return value with the value after the
 call. If the function already has one return value, one instance of this

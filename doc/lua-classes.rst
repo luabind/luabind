@@ -57,19 +57,19 @@ when we instantiate a Lua class.
         base(const char* s)
         { std::cout << s << "\n"; }
 
-        virtual void f(int a) 
+        virtual void f(int a)
         { std::cout << "f(" << a << ")\n"; }
     };
 
     struct base_wrapper : base, luabind::wrap_base
     {
         base_wrapper(const char* s)
-            : base(s) 
+            : base(s)
         {}
 
-        virtual void f(int a) 
-        { 
-            call<void>("f", a); 
+        virtual void f(int a)
+        {
+            call<void>("f", a);
         }
 
         static void default_f(base* ptr, int a)
@@ -94,7 +94,7 @@ when we instantiate a Lua class.
     as first parameter.
 
 Note that if you have both base classes and a base class wrapper, you must give
-both bases and the base class wrapper type as template parameter to 
+both bases and the base class wrapper type as template parameter to
 ``class_`` (as done in the example above). The order in which you specify
 them is not important. You must also register both the static version and the
 virtual version of the function from the wrapper, this is necessary in order
@@ -120,9 +120,9 @@ C++ class, or if it doesn't have any virtual member functions, you can register
 it without a class wrapper.
 
 You don't need to have a class wrapper in order to derive from a class, but if
-it has virtual functions you may have silent errors. 
+it has virtual functions you may have silent errors.
 
-.. Unnecessary? The rule of thumb is: 
+.. Unnecessary? The rule of thumb is:
   If your class has virtual functions, create a wrapper type, if it doesn't
   don't create a wrapper type.
 
@@ -140,15 +140,15 @@ take a ``lua_State`` pointer, and the name is a member function in the Lua class
 
 .. warning::
 
-	The current implementation of ``call_member`` is not able to distinguish const
-	member functions from non-const. If you have a situation where you have an overloaded
-	virtual function where the only difference in their signatures is their constness, the
-	wrong overload will be called by ``call_member``. This is rarely the case though.
+    The current implementation of ``call_member`` is not able to distinguish const
+    member functions from non-const. If you have a situation where you have an overloaded
+    virtual function where the only difference in their signatures is their constness, the
+    wrong overload will be called by ``call_member``. This is rarely the case though.
 
 .. note::
     You can also override virtual member functions per instance which often
     makes it unnecessary to derive a new class in Lua. Instead of e.g. ::
-    
+
         class "D" (B)
 
         function D:__init() B.__init(self) end
@@ -200,15 +200,15 @@ declaring a member function with the same name as an operator (the name of the
 metamethods in Lua). The operators you can overload are:
 
  - ``__add``
- - ``__sub`` 
- - ``__mul`` 
- - ``__div`` 
- - ``__pow`` 
- - ``__lt`` 
- - ``__le`` 
- - ``__eq`` 
- - ``__call`` 
- - ``__unm`` 
+ - ``__sub``
+ - ``__mul``
+ - ``__div``
+ - ``__pow``
+ - ``__lt``
+ - ``__le``
+ - ``__eq``
+ - ``__call``
+ - ``__unm``
  - ``__tostring``
  - ``__len``
 
@@ -224,7 +224,7 @@ right hand value. Consider the following examples::
       function my_class:__init(v)
           self.val = v
       end
-        
+
       function my_class:__sub(v)
           return my_class(self.val - v.val)
       end
@@ -244,7 +244,7 @@ self object. ::
 
         elseif (type(v) == 'number') then
             return my_class(self.val - v)
-        
+
         else
             -- assume both operands are instances of my_class
             return my_class(self.val - v.val)
@@ -292,13 +292,13 @@ garbage collected.
 
 ::
 
-	+--------------------+
-	| C++ object         |    <- ownership of this part is transferred
-	|                    |       to c++ when adopted
-	+--------------------+
-	| lua class instance |    <- this part is garbage collected when
-	| and lua members    |       instance is adopted, since it cannot
-	+--------------------+       be held by c++. 
+    +--------------------+
+    | C++ object         |    <- ownership of this part is transferred
+    |                    |       to c++ when adopted
+    +--------------------+
+    | lua class instance |    <- this part is garbage collected when
+    | and lua members    |       instance is adopted, since it cannot
+    +--------------------+       be held by c++.
 
 
 The problem can be illustrated by this example:

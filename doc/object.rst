@@ -77,12 +77,12 @@ The constructor that takes a ``from_stack`` object is used when you want to
 initialize the object with a value from the lua stack. The ``from_stack``
 type has the following constructor::
 
-	 from_stack(lua_State* L, int index);
+     from_stack(lua_State* L, int index);
 
 The index is an ordinary lua stack index, negative values are indexed from the
 top of the stack. You use it like this::
 
-	 object o(from_stack(L, -1));
+     object o(from_stack(L, -1));
 
 This will create the object ``o`` and copy the value from the top of the lua stack.
 
@@ -199,7 +199,7 @@ supports the same operations as ``luabind::object``. Which means that in most
 cases you can just treat it as an ordinary object. The difference is that any
 assignments to this proxy will result in the value being inserted at the
 iterators position, in the table.
- 
+
 The ``key()`` member returns the key used by the iterator when indexing the
 associated Lua table.
 
@@ -316,6 +316,6 @@ Example::
   using luabind;
   object table = newtable(L);
   table["foo"] = "bar";
-  
+
   // now, clear the "foo"-field
   table["foo"] = nil;

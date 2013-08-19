@@ -5,7 +5,7 @@ Policies
 
 Sometimes it is necessary to control how luabind passes arguments and return
 value, to do this we have policies. All policies use an index to associate
-them with an argument in the function signature. These indices are ``result`` 
+them with an argument in the function signature. These indices are ``result``
 and ``_N`` (where ``N >= 1``). When dealing with member functions ``_1`` refers
 to the ``this`` pointer.
 
@@ -79,7 +79,7 @@ to the ``this`` pointer.
 
         module(L)
         [
-            def("set_and_get_new", &set_and_get_new, 
+            def("set_and_get_new", &set_and_get_new,
                 adopt(return_value) + adopt(_1))
         ];
 
@@ -188,9 +188,9 @@ to the ``this`` pointer.
     Instead of creating a new object, luabind will just copy the object that is
     already on the stack.
 
-    .. warning:: 
-       This policy ignores all type information and should be used only it 
-       situations where the parameter type is a perfect match to the 
+    .. warning::
+       This policy ignores all type information and should be used only it
+       situations where the parameter type is a perfect match to the
        return-type (such as in the example).
 
     To use this policy you need to include ``luabind/return_reference_to_policy.hpp``.
@@ -219,7 +219,7 @@ to the ``this`` pointer.
             def("f", &f, out_value(_1))
         ];
 
-    When invoking this function from Lua it will return the value assigned to its 
+    When invoking this function from Lua it will return the value assigned to its
     parameter.
 
     ::
@@ -229,7 +229,7 @@ to the ``this`` pointer.
         > print(a)
         20
 
-    When this policy is used in conjunction with user define types we often need 
+    When this policy is used in conjunction with user define types we often need
     to do ownership transfers.
 
     ::
@@ -239,7 +239,7 @@ to the ``this`` pointer.
         void f1(A*& obj) { obj = new A(); }
         void f2(A** obj) { *obj = new A(); }
 
-    Here we need to make sure luabind takes control over object returned, for 
+    Here we need to make sure luabind takes control over object returned, for
     this we use the adopt policy::
 
         module(L)
@@ -249,8 +249,8 @@ to the ``this`` pointer.
             def("f2", &f2, out_value(_1, adopt(_2)))
         ];
 
-    Here we are using adopt as an internal policy to out_value. The index 
-    specified, _2, means adopt will be used to convert the value back to Lua. 
+    Here we are using adopt as an internal policy to out_value. The index
+    specified, _2, means adopt will be used to convert the value back to Lua.
     Using _1 means the policy will be used when converting from Lua to C++.
 
     To use this policy you need to include ``luabind/out_value_policy.hpp``.
@@ -258,7 +258,7 @@ to the ``this`` pointer.
     Pure out value
     --------------
 
-    This policy works in exactly the same way as out_value, except that it 
+    This policy works in exactly the same way as out_value, except that it
     replaces the parameters with default-constructed objects.
 
     ::
@@ -273,7 +273,7 @@ to the ``this`` pointer.
 
         module(L)
         [
-            def("get", &get, 
+            def("get", &get,
                 pure_out_value(_1) + pure_out_value(_2))
         ];
 
@@ -284,7 +284,7 @@ to the ``this`` pointer.
         > print(x, y)
         3    5
 
-    Like out_value, it is possible to specify an internal policy used then 
+    Like out_value, it is possible to specify an internal policy used then
     converting the values back to Lua.
 
     ::
@@ -305,9 +305,9 @@ to the ``this`` pointer.
     Discard result
     --------------
 
-    This is a very simple policy which makes it possible to throw away 
-    the value returned by a C++ function, instead of converting it to 
-    Lua. This example makes sure the this reference never gets converted 
+    This is a very simple policy which makes it possible to throw away
+    the value returned by a C++ function, instead of converting it to
+    Lua. This example makes sure the this reference never gets converted
     to Lua.
 
     ::
@@ -367,7 +367,7 @@ to the ``this`` pointer.
 
 
     Yield
-    -----    
+    -----
 
-    This policy will cause the function to always yield the current thread when 
+    This policy will cause the function to always yield the current thread when
     returning. See the Lua manual for restrictions on yield.

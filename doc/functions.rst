@@ -9,10 +9,10 @@ following synopsis::
     template<class F, class policies>
     void def(const char* name, F f, const Policies&);
 
-- name is the name the function will have within Lua. 
-- F is the function pointer you want to register. 
-- The Policies parameter is used to describe how parameters and return values 
-  are treated by the function, this is an optional parameter. More on this in 
+- name is the name the function will have within Lua.
+- F is the function pointer you want to register.
+- The Policies parameter is used to describe how parameters and return values
+  are treated by the function, this is an optional parameter. More on this in
   the :ref:`part-policies` section.
 
 An example usage could be if you want to register the function ``float
@@ -53,7 +53,7 @@ integers, both will always match.
 Since all overloads are tested, it will always find the best match (not the
 first match). This also means that it can handle situations where the only
 difference in the signature is that one member function is const and the other
-isn't. 
+isn't.
 
 .. sidebar:: Ownership transfer
 
@@ -63,7 +63,7 @@ isn't.
 For example, if the following function and class is registered:
 
 ::
-   
+
     struct A
     {
         void f();
@@ -125,7 +125,7 @@ call. You do this with the operator[]. You give the policies within the
 brackets, like this::
 
     int ret = call_function<int>(
-        L 
+        L
       , "a_lua_function"
       , new complex_class()
     )[ adopt(_1) ];
@@ -137,7 +137,7 @@ __ http://www.boost.org/doc/html/ref.html
 
 Like this::
 
-	int ret = call_function(L, "fun", boost::ref(val));
+    int ret = call_function(L, "fun", boost::ref(val));
 
 
 If you want to use a custom error handler for the function call, see
@@ -179,9 +179,9 @@ it is important that the object was constructed with the thread as its
 
 .. parsed-literal::
 
-	lua_State* thread = lua_newthread(L);
-	object fun = get_global(**thread**)["my_thread_fun"];
-	resume_function(fun);
+    lua_State* thread = lua_newthread(L);
+    object fun = get_global(**thread**)["my_thread_fun"];
+    resume_function(fun);
 
 
 Binding function objects with explicit signatures

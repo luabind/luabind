@@ -61,7 +61,7 @@ As you might have figured out, the following declarations are equivalent::
     ];
 
 ::
-    
+
     module(L, "my_library")
     [
         // declarations

@@ -3,7 +3,7 @@ LUABIND 7.1 changes
 
 * Applied patches from Evan Wies to support lua 5.1
 * added a new assignment operator and a special value,
-  luabind::nil, to set table entries to nil. 
+  luabind::nil, to set table entries to nil.
 
 
 LUABIND BETA 7 changes
@@ -149,5 +149,5 @@ bugfixes
 * fixed leak when using class wrappers. They had a reference
   cycle that wouldn't get collected (until the lua_State was
   closed).
-* lots of other fixes we can't remember 
+* lots of other fixes we can't remember
 

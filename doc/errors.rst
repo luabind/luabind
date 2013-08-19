@@ -7,7 +7,7 @@ pcall errorfunc
 ---------------
 
 As mentioned in the `Lua documentation`_, it is possible to pass an
-error handler function to ``lua_pcall()``. Luabind makes use of 
+error handler function to ``lua_pcall()``. Luabind makes use of
 ``lua_pcall()`` internally when calling member functions and free functions.
 It is possible to set the error handler function that Luabind will use
 globally::
@@ -133,23 +133,23 @@ in-depth explanation.
     the attribute '*class-name.attribute-name*' is read only
 
   There is no data member named *attribute-name* in the class *class-name*,
-  or there's no setter-function registered on that property name. See the 
+  or there's no setter-function registered on that property name. See the
   :ref:`sec-properties` section.
 
-- .. parsed-literal:: 
+- .. parsed-literal::
 
     the attribute '*class-name.attribute-name*' is of type: (*class-name*) and does not match (*class_name*)
 
-  This error is generated if you try to assign an attribute with a value 
+  This error is generated if you try to assign an attribute with a value
   of a type that cannot be converted to the attributes type.
 
 
-- .. parsed-literal:: 
+- .. parsed-literal::
 
     *class-name()* threw an exception, *class-name:function-name()* threw an exception
 
   The class' constructor or member function threw an unknown exception.
-  Known exceptions are const char*, std::exception. See the 
+  Known exceptions are const char*, std::exception. See the
   :ref:`part-exceptions` section.
 
 - .. parsed-literal::
@@ -159,9 +159,9 @@ in-depth explanation.
     no constructor of *class-name* matched the arguments (*parameter-types*)
     no operator *operator-name* matched the arguments (*parameter-types*)
 
-  No function/operator with the given name takes the parameters you gave 
+  No function/operator with the given name takes the parameters you gave
   it. You have either misspelled the function name, or given it incorrect
-  parameters. This error is followed by a list of possible candidate 
+  parameters. This error is followed by a list of possible candidate
   functions to help you figure out what parameter has the wrong type. If
   the candidate list is empty there's no function at all with that name.
   See the signature matching section.
