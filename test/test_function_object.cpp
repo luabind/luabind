@@ -5,6 +5,10 @@
 #include "test.hpp"
 #include <luabind/luabind.hpp>
 #include <boost/function.hpp>
+#if BOOST_VERSION < 105000 && __cplusplus < 201103L
+// Test missing before Boost 1.50, so before then guess based on what the compiler claims.
+#  define BOOST_NO_CXX11_HDR_FUNCTIONAL
+#endif
 
 #ifndef BOOST_NO_CXX11_HDR_FUNCTIONAL
 #  include <functional>
