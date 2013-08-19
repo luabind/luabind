@@ -61,8 +61,8 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     option(LUABIND_ENABLE_WARNINGS "Enable extra warnings during the build of the library and tests" ON)
     option(LUABIND_USE_CXX11 "Build Luabind using C++11 features?" ${LUABIND_CXX11_DEFAULT})
 
-    if(NOT Boost_VERSION VERSION_GREATER 1.46)
-        option(LUABIND_USE_NOEXCEPT "If your compiler is C++11 compliant, but you're using old Boost, you need to set this." OFF)
+    if(Boost_VERSION LESS 104700)
+        option(LUABIND_USE_NOEXCEPT "If your compiler is C++11 compliant, but you're using old Boost, you need to set this." ${LUABIND_CXX11_DEFAULT})
     endif()
 
     if(LUABIND_USE_CXX11)
