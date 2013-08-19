@@ -142,7 +142,7 @@ else()
 
 
         if(LUABIND_USE_CXX11)
-            list(APPEND possible_flags Wnoexcept)
+            list(APPEND possible_flags Wnoexcept Wno-long-long)
         endif()
 
         if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
