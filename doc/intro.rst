@@ -61,7 +61,7 @@ Luabind is currently tested regularly with
 
     * Microsoft Visual C++ 11 (2012) x32 and x64
     * gcc 4.8 x64 (with and without -std=c++11)
-    * Clang 2.6 x64 (with and without -std=c++11)
+    * Clang 3.2 x64 (with and without -std=c++11)
 
 It should work with any compiler conformant with C++03. However, probably only
 versions of the above threecompilers will work out of the box with the
