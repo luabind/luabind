@@ -46,7 +46,7 @@ endif()
 find_package(CXXFeatures)
 
 set(LUABIND_CXX11_DEFAULT OFF)
-if(CXX11_COMPILER_FLAGS) # TODO this is not quite the right check to use here.
+if(CXX11_COMPILER_FLAGS OR MSVC_VERSION GREATER 1699) # 1700 = VS 11 (2012)
     set(LUABIND_CXX11_DEFAULT ON)
 endif()
 
@@ -62,7 +62,12 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     option(LUABIND_USE_CXX11 "Build Luabind using C++11 features?" ${LUABIND_CXX11_DEFAULT})
 
     if(Boost_VERSION LESS 104700)
-        option(LUABIND_USE_NOEXCEPT "If your compiler is C++11 compliant, but you're using old Boost, you need to set this." ${LUABIND_CXX11_DEFAULT})
+        set(LUABIND_USE_NOEXCEPT_DEF OFF)
+        if (LUABIND_CXX11_DEFAULT AND NOT MSVC)
+            set(LUABIND_USE_NOEXCEPT_DEF ON)
+        endif()
+        option(LUABIND_USE_NOEXCEPT "If your compiler is C++11 compliant, but you're using old Boost, you need to set this." ${LUABIND_USE_NOEXCEPT_DEF})
+        unset(LUABIND_USE_NOEXCEPT_DEF)
     endif()
 
     if(LUABIND_USE_CXX11)
