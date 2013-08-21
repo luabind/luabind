@@ -27,6 +27,7 @@
 #include <boost/bind/arg.hpp>
 #include <boost/call_traits.hpp>
 #include <boost/config.hpp>
+#include <boost/integer_traits.hpp>
 #include <boost/limits.hpp>
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/equal_to.hpp>
@@ -36,11 +37,11 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/type_traits/add_reference.hpp>
 #include <boost/type_traits/add_reference.hpp>
+#include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/type_traits/is_array.hpp>
 #include <boost/type_traits/is_base_and_derived.hpp>
 #include <boost/type_traits/is_enum.hpp>
 #include <boost/type_traits/is_pointer.hpp>
-#include <boost/type_traits/is_floating_point.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/version.hpp>
@@ -662,48 +663,52 @@ struct native_converter_base
     }
 };
 
-// *********** converter for integer types *****************
-template <typename QualifiedT>
-struct integer_converter
-  : native_converter_base<typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type>
-{
-    typedef typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type T;
-    typedef typename native_converter_base<T>::param_type param_type;
-    typedef typename native_converter_base<T>::value_type value_type;
-
-    int compute_score(lua_State* L, int index)
-    {
-        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1;
-    }
-
-    value_type from(lua_State* L, int index)
-    {
-        return static_cast<T>(lua_tointeger(L, index));
-    }
-
-    void to(lua_State* L, param_type value)
-    {
-        lua_pushinteger(L, static_cast<lua_Integer>(value));
-    }
-};
-
-// template partial specialization for those types that boost knows to be
-// integral
-template <typename T>
-struct default_converter<T,
-    typename boost::enable_if<boost::is_integral<T> >::type
-    >
-    : integer_converter<T> {};
-
-// *********** converter for floating-point number types *****************
+// *********** converter for arithmetic (number) types *****************
 template <typename QualifiedT>
 struct number_converter
   : native_converter_base<typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type>
 {
+
+    template <
+        bool is_integral,
+        typename Traits,
+        typename TraitsLua = boost::integer_traits<lua_Integer> >
+    struct use_integer: boost::mpl::false_ {};
+    
+    template <typename Traits, typename TraitsLua>
+    struct use_integer<true, Traits, TraitsLua>: boost::mpl::bool_<
+        Traits::const_min >= TraitsLua::const_min
+        && Traits::const_max <= TraitsLua::const_max>
+    {};
+    
     typedef typename boost::remove_reference<typename boost::remove_const<QualifiedT>::type>::type T;
     typedef typename native_converter_base<T>::param_type param_type;
     typedef typename native_converter_base<T>::value_type value_type;
-
+    
+    typedef boost::integer_traits<T> traits;
+    
+    typedef use_integer<traits::is_integral, traits> use_integer_t;
+            
+    lua_Number do_from(lua_State* L, int index, boost::mpl::false_)
+    {
+        return lua_tonumber(L, index);
+    }
+    
+    lua_Integer do_from(lua_State* L, int index, boost::mpl::true_)
+    {
+        return lua_tointeger(L, index);
+    }
+    
+    void do_to(lua_State* L, param_type value, boost::mpl::false_)
+    {
+        lua_pushnumber(L, static_cast<lua_Number>(value));
+    }
+    
+    void do_to(lua_State* L, param_type value, boost::mpl::true_)
+    {
+        lua_pushinteger(L, static_cast<lua_Integer>(value));
+    }
+    
     int compute_score(lua_State* L, int index)
     {
         return lua_type(L, index) == LUA_TNUMBER ? 0 : -1;
@@ -711,19 +716,19 @@ struct number_converter
 
     value_type from(lua_State* L, int index)
     {
-        return static_cast<T>(lua_tonumber(L, index));
+        return static_cast<T>(do_from(L, index, use_integer_t()));
     }
 
     void to(lua_State* L, param_type value)
     {
-        lua_pushnumber(L, static_cast<lua_Number>(value));
+        do_to(L, value, use_integer_t());
     }
 };
 // template partial specialization for those types that boost knows to be
 // floating-point
 template <typename T>
 struct default_converter<T,
-    typename boost::enable_if<boost::is_floating_point<T> >::type
+    typename boost::enable_if<boost::is_arithmetic<T> >::type
     >
     : number_converter<T> {};
 
