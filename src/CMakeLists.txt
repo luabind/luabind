@@ -142,6 +142,22 @@ set_property(TARGET
     PROJECT_LABEL
     "LuaBind Library")
 
+if (LUABIND_APPEND_VERSION_SUFFIX)
+    set_property(TARGET
+        luabind
+        PROPERTY
+        OUTPUT_NAME
+        "luabind09")
+else()
+    # This is neccesary when the LUABIND_APPEND_VERSION_SUFFIX variable is
+    # changed from ON to OFF.
+    set_property(TARGET
+        luabind
+        PROPERTY
+        OUTPUT_NAME
+        "luabind")
+endif()
+
 set(ALLHEADERS ${LUABIND_API} ${LUABIND_DETAIL_API} PARENT_SCOPE)
 set(APIHEADERS ${LUABIND_API} PARENT_SCOPE)
 

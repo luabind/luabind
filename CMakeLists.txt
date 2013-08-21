@@ -53,6 +53,7 @@ endif()
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     # We are the top-level project
     option(LUABIND_INSTALL "Install the LuaBind library and headers" ON)
+    option(LUABIND_APPEND_VERSION_SUFFIX "Append a version suffix to the library name (like luabind09)?" ON)
     option(LUABIND_NO_ERROR_CHECKING "Build so that all the Lua code is expected only to make legal calls?" OFF)
     option(LUABIND_NO_EXCEPTIONS "Disable all usage of try, catch, and throw?" OFF)
     option(LUABIND_CPLUSPLUS_LUA "Was Lua built as C++?" OFF)
