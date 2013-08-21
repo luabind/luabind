@@ -74,7 +74,7 @@ to Lua and boost in there as well.
     build.
 
 ``LUABIND_USE_NOEXCEPT``
-    If you use Boost <= 1.46 but your compiler is C++11 compliant and marks
+   If you use Boost <= 1.46 but your compiler is C++11 compliant and marks
    destructors as noexcept by default, you need to define LUABIND_USE_NOEXCEPT.
    Failing to do so will cause std::terminate() being called if a destructor
    throws (e.g. the destructor of the proxy returned by ``call_function`` or

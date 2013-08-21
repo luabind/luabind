@@ -1,6 +1,8 @@
 Luabind |version| documentation
 ===============================
 
+This is the documentation for Luabind |release|.
+
 Luabind is a library that helps you create bindings between C++ and Lua. It
 has the ability to expose functions and classes, written in C++, to Lua.
 It will also supply the functionality to define classes in Lua and let them

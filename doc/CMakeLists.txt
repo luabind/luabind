@@ -4,19 +4,45 @@
 # Iowa State University HCI Graduate Program/VRAC
 
 set(SOURCES
-    adopt.rst
+    conf.py
+    acknowledgments.rst
+    basic-usage.rst
+    build-options.rst
     building.rst
-    copy.rst
-    dependency.rst
-    discard_result.rst
-    docs.rst
-    out_value.rst
-    pure_out_value.rst
-    raw.rst
-    return_reference_to.rst
-    return_stl_iterator.rst
-    style.css
-    yield.rst)
+    classes.rst
+    errors.rst
+    exceptions.rst
+    faq.rst
+    functions.rst
+    impl-notes.rst
+    index.rst
+    intro.rst
+    issues.rst
+    lua-classes.rst
+    object.rst
+    policies.rst
+    scopes.rst
+    split-registration.rst
+    userdefined-converters.rst
+    policies/adopt.rst
+    policies/copy.rst
+    policies/dependency.rst
+    policies/discard_result.rst
+    policies/out_value.rst
+    policies/pure_out_value.rst
+    policies/raw.rst
+    policies/return_reference_to.rst
+    policies/return_stl_iterator.rst
+    policies/yield.rst)
+
+    
+if (WIN32)
+    list (APPEND SOURCES make.bat)
+    set(SPHINX_CMD "${CMAKE_CURRENT_BINARY_DIR}/make.bat" html)
+else()
+    list (APPEND SOURCES Makefile)
+    set(SPHINX_CMD make html)
+endif()
 
 set(SOURCES_COPIED)
 foreach(SOURCE ${SOURCES})
@@ -35,21 +61,15 @@ else()
     set(DOCS_VERSION "${CPACK_PACKAGE_VERSION}")
 endif()
 
-configure_file(version.rst.in "${CMAKE_CURRENT_BINARY_DIR}/version.rst")
-list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/version.rst")
+configure_file(git_version.in "${CMAKE_CURRENT_BINARY_DIR}/git_version")
+list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/git_version.py")
 
-find_program(RST2HTML_EXECUTABLE
-    NAMES
-    rst2html
-    rst2html.py)
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/_build/"
+    COMMAND ${SPHINX_CMD}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+    DEPENDS ${SOURCES_COPIED}
+    VERBATIM
+    COMMENT "Generating HTML documentation with sphinx makefile/script.")
+add_custom_target(doc DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/_build/")
 
-if(RST2HTML_EXECUTABLE)
-    add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/docs.html"
-        COMMAND ${RST2HTML_EXECUTABLE} --traceback -gdt --stylesheet=style.css --link-stylesheet docs.rst > docs.html
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        DEPENDS ${SOURCES_COPIED}
-        VERBATIM
-        COMMENT "Generating HTML documentation with rst2html")
-    add_custom_target(doc DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/docs.html")
-endif()
 
