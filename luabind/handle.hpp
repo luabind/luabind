@@ -29,6 +29,9 @@
 
 #include <cassert>
 
+#include <algorithm>
+#include <utility>
+
 namespace luabind {
 
 // A reference to a Lua value. Represents an entry in the
