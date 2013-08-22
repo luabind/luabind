@@ -150,7 +150,7 @@ else()
 
 
         if(LUABIND_USE_CXX11)
-            list(APPEND possible_flags Wnoexcept Wno-long-long)
+            list(APPEND possible_flags Wnoexcept)
         endif()
 
         if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
@@ -173,6 +173,8 @@ else()
                     Wno-c++11-long-long)
             endif()
 
+        elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" AND NOT LUABIND_USE_CXX11)
+            list(APPEND possible_flags Wno-long-long)
         endif()
 
     endif()
