@@ -42,8 +42,16 @@ if(NOT LUA_FOUND AND NOT LUA51_FOUND AND NOT LUA52_FOUND)
     set(LUA_INCLUDE_DIRS "${LUA_INCLUDE_DIR}")
 endif()
 
-# C++11-related searches
-find_package(CXXFeatures)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx11/Modules/FindCXXFeatures.cmake")
+    # C++11-related searches
+    find_package(CXXFeatures)
+else()
+    message(STATUS "Missing submodule, so can't test for C++11 features. Run 'git submodule update --init --recursive' and try running CMake again.")
+    if(NOT MSVC)
+        set(LUABIND_KNOWS_CXX11 OFF)
+        message(STATUS "Without the submodule, we can only compile in C++03 mode.")
+    endif()
+endif()
 
 set(LUABIND_CXX11_DEFAULT OFF)
 if(CXX11_COMPILER_FLAGS OR MSVC_VERSION GREATER 1699) # 1700 = VS 11 (2012)
