@@ -42,6 +42,7 @@ if(NOT LUA_FOUND AND NOT LUA51_FOUND AND NOT LUA52_FOUND)
     set(LUA_INCLUDE_DIRS "${LUA_INCLUDE_DIR}")
 endif()
 
+set(LUABIND_KNOWS_CXX11 ON)
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx11/Modules/FindCXXFeatures.cmake")
     # C++11-related searches
     find_package(CXXFeatures)
@@ -69,6 +70,11 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     option(LUABIND_NOT_THREADSAFE "Permit the use of static variables, thus making Luabind usable only from one of your system threads." OFF)
     option(LUABIND_ENABLE_WARNINGS "Enable extra warnings during the build of the library and tests" ON)
     option(LUABIND_USE_CXX11 "Build Luabind using C++11 features?" ${LUABIND_CXX11_DEFAULT})
+
+    if(LUABIND_USE_CXX11 AND NOT LUABIND_KNOWS_CXX11)
+        # We can't build in C++11 mode without knowing how to invoke it.
+        set(LUABIND_USE_CXX11 OFF CACHE BOOL "Build Luabind using C++11 features?" FORCE)
+    endif()
 
     if(Boost_VERSION LESS 104700)
         set(LUABIND_USE_NOEXCEPT_DEF OFF)
