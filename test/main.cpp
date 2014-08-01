@@ -30,6 +30,7 @@ extern "C"
 }
 
 #include <luabind/open.hpp>
+#include <luabind/lua502.hpp>
 #include "test.hpp"
 
 extern "C" struct lua_State;
