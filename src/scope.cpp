@@ -136,22 +136,25 @@ namespace luabind {
     {
         if (m_name)
         {
-            lua_pushstring(m_state, m_name);
-            lua_gettable(m_state, LUA_GLOBALSINDEX);
+            lua_getglobal(m_state, m_name);
 
             if (!lua_istable(m_state, -1))
             {
                 lua_pop(m_state, 1);
 
                 lua_newtable(m_state);
-                lua_pushstring(m_state, m_name);
-                lua_pushvalue(m_state, -2);
-                lua_settable(m_state, LUA_GLOBALSINDEX);
+                lua_pushvalue(m_state, -1);
+                lua_setglobal(m_state, m_name);
             }
         }
         else
         {
+#ifdef LUA_GLOBALSINDEX
             lua_pushvalue(m_state, LUA_GLOBALSINDEX);
+#else
+            lua_rawgeti(m_state, LUA_REGISTRYINDEX,
+                    LUA_RIDX_GLOBALS);
+#endif
         }
 
         lua_pop_stack guard(m_state);

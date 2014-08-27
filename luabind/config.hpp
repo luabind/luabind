@@ -58,9 +58,11 @@ namespace std
 // registered. Must at least be 2
 #ifndef LUABIND_MAX_ARITY
 	#define LUABIND_MAX_ARITY 10
-#elif LUABIND_MAX_ARITY <= 1
+#else
+#if LUABIND_MAX_ARITY <= 1
 	#undef LUABIND_MAX_ARITY
 	#define LUABIND_MAX_ARITY 2
+#endif
 #endif
 
 // the maximum number of classes one class
@@ -68,9 +70,11 @@ namespace std
 // max bases must at least be 1
 #ifndef LUABIND_MAX_BASES
 	#define LUABIND_MAX_BASES 4
-#elif LUABIND_MAX_BASES <= 0
+#else
+#if LUABIND_MAX_BASES <= 0
 	#undef LUABIND_MAX_BASES
 	#define LUABIND_MAX_BASES 1
+#endif
 #endif
 
 // LUABIND_NO_ERROR_CHECKING
