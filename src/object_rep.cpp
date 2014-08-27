@@ -25,6 +25,15 @@
 #include <luabind/detail/object_rep.hpp>
 #include <luabind/detail/class_rep.hpp>
 
+// http://lua-users.org/lists/lua-l/2010-01/msg00516.html
+
+#ifndef LUA_ENVIRONINDEX
+
+#define lua_getfenv lua_getuservalue
+#define lua_setfenv lua_setuservalue
+
+#endif
+
 namespace luabind { namespace detail
 {
 
