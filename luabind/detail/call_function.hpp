@@ -357,8 +357,7 @@ typename detail::make_proxy<R, Args...>::type call_function(
 {
     assert(name && "luabind::call_function() expects a function name");
 
-    lua_pushstring(L, name);
-    lua_gettable(L, LUA_GLOBALSINDEX);
+    lua_gettable(L, name);
 
     typedef typename detail::make_proxy<R, Args...>::type proxy_type;
     return proxy_type(L, 1, &detail::pcall, std::tuple<Args const*...>(&args...));
@@ -381,8 +380,7 @@ typename detail::make_proxy<R, Args...>::type resume_function(
 {
     assert(name && "luabind::call_function() expects a function name");
 
-    lua_pushstring(L, name);
-    lua_gettable(L, LUA_GLOBALSINDEX);
+    lua_getglobal(L, name);
 
     typedef typename detail::make_proxy<R, Args...>::type proxy_type;
     return proxy_type(L, 1, &detail::resume_impl, std::tuple<Args const*...>(&args...));
@@ -443,8 +441,7 @@ typename detail::make_proxy<R, Args...>::type resume(
 			, luabind::detail::proxy_function_void_caller<boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> >
 			, luabind::detail::proxy_function_caller<Ret, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type proxy_type;
 
-		lua_pushstring(L, name);
-		lua_gettable(L, LUA_GLOBALSINDEX);
+		lua_getglobal(L, name);
 
 		return proxy_type(L, 1, &detail::pcall, args);
 	}
@@ -486,8 +483,7 @@ typename detail::make_proxy<R, Args...>::type resume(
 			, luabind::detail::proxy_function_void_caller<boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> >
 			, luabind::detail::proxy_function_caller<Ret, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type proxy_type;
 
-		lua_pushstring(L, name);
-		lua_gettable(L, LUA_GLOBALSINDEX);
+		lua_getglobal(L, name);
 
 		return proxy_type(L, 1, &detail::resume_impl, args);
 	}
