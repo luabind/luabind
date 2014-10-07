@@ -187,9 +187,11 @@ else()
     endif()
 endif()
 
-include_directories(${Boost_INCLUDE_DIRS}
+include_directories(BEFORE
     "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${CMAKE_CURRENT_BINARY_DIR}"
+    "${CMAKE_CURRENT_BINARY_DIR}")
+include_directories(AFTER
+    ${Boost_INCLUDE_DIRS}
     ${LUA_INCLUDE_DIRS})
 
 add_subdirectory(src)
