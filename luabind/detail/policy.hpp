@@ -65,7 +65,13 @@
 #include <typeinfo>
 
 #ifndef LUABIND_NO_SCOPED_ENUM
-# include <type_traits>
+# if    !defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS) \
+     && !defined(BOOST_NO_0X_HDR_TYPE_TRAITS)
+#  include <type_traits>
+# elif BOOST_VERSION >= 105600
+#  include <boost/core/underlying_type.hpp>
+#  define LUABIND_USE_BOOST_UNDERLYING_TYPE
+# endif
 #endif
 
 namespace luabind
@@ -493,6 +499,8 @@ namespace luabind { namespace detail
         {
 #ifdef LUABIND_NO_SCOPED_ENUM
             typedef int integral_t;
+#elif defined(LUABIND_USE_BOOST_UNDERLYING_TYPE)
+            typedef typename boost::underlying_type<T>::type integral_t;
 #else
             typedef typename std::underlying_type<T>::type integral_t;
 #endif

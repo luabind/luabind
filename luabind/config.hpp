@@ -25,6 +25,7 @@
 #define LUABIND_CONFIG_HPP_INCLUDED
 
 #include <boost/config.hpp>
+#include <boost/version.hpp>
 #include <boost/detail/workaround.hpp>
 
 #include <luabind/build_information.hpp>
@@ -111,13 +112,12 @@
 
 // C++11 features //
 
-#if (   defined(BOOST_NO_CXX11_SCOPED_ENUMS)    \
-     || defined(BOOST_NO_SCOPED_ENUMS)          \
-     || defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS) \
-     || defined(BOOST_NO_0X_HDR_TYPE_TRAITS))
-#   ifndef LUABIND_NO_SCOPED_ENUM
-#       define LUABIND_NO_SCOPED_ENUM
-#   endif
+#if (   defined(BOOST_NO_CXX11_SCOPED_ENUMS) \
+     || defined(BOOST_NO_SCOPED_ENUMS)                 \
+     || BOOST_VERSION < 105600                         \
+        && (   defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS) \
+            || defined(BOOST_NO_0X_HDR_TYPE_TRAITS)))
+#    define LUABIND_NO_SCOPED_ENUM
 #endif
 
 #if (   defined(BOOST_NO_CXX11_RVALUE_REFERENCES) \
