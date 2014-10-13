@@ -78,45 +78,34 @@ namespace luabind
 					, m_args(rhs.m_args)
 					, m_called(rhs.m_called)
 				{
-					rhs.m_called = true;
+					if(rhs.m_called)
+					{
+						m_ret = rhs.m_ret;
+					}
+					else
+					{
+						rhs.m_called = true;
+					}
 				}
 
 				~proxy_function_caller()
 				{
-					if (m_called) return;
+					assert(m_called);
+				}
 
-					m_called = true;
-					lua_State* L = m_state;
-
-					int top = lua_gettop(L);
-
-					push_args_from_tuple<1>::apply(L, m_args);
-# ifdef LUABIND_CPP0x
-                    if (m_fun(L, std::tuple_size<Tuple>::value, 0))
-# else
-					if (m_fun(L, boost::tuples::length<Tuple>::value, 0))
-# endif
-					{
-						assert(lua_gettop(L) == top - m_params + 1);
-#ifndef LUABIND_NO_EXCEPTIONS
-						throw luabind::error(L);
-#else
-						error_callback_fun e = get_error_callback();
-						if (e) e(L);
-
-						assert(0 && "the lua function threw an error and exceptions are disabled."
-									" If you want to handle the error you can use luabind::set_error_callback()");
-						std::terminate();
-
-#endif
-					}
-
-					// pops the return values from the function call
-					stack_pop pop(L, lua_gettop(L) - top + m_params);
+				proxy_function_caller& operator()()
+                {
+					m_ret = *this;
+					return *this;
 				}
 
 				operator Ret()
 				{
+					if(m_called)
+					{
+						return m_ret;
+					}
+					
 					typename mpl::apply_wrap2<default_policy,Ret,lua_to_cpp>::type converter;
 
 					m_called = true;
@@ -166,6 +155,11 @@ namespace luabind
 				template<class Policies>
 				Ret operator[](const Policies& p)
 				{
+					if(m_called) 
+					{
+						return m_ret;
+					}
+
 					typedef typename detail::find_conversion_policy<0, Policies>::type converter_policy;
 					typename mpl::apply_wrap2<converter_policy,Ret,lua_to_cpp>::type converter;
 
@@ -222,7 +216,7 @@ namespace luabind
 				function_t m_fun;
 				Tuple m_args;
 				mutable bool m_called;
-
+				Ret m_ret;
 			};
 
 		// if the proxy_member_caller returns void
@@ -258,8 +252,12 @@ namespace luabind
 
 				~proxy_function_void_caller()
 				{
-					if (m_called) return;
+					assert(m_called);
+				}
 
+				proxy_function_void_caller& operator()()
+				{
+					if (m_called) return *this;
 					m_called = true;
 					lua_State* L = m_state;
 
@@ -291,6 +289,7 @@ namespace luabind
 				template<class Policies>
 				void operator[](const Policies& p)
 				{
+					if(m_called) return;
 					m_called = true;
 					lua_State* L = m_state;
 
@@ -361,7 +360,7 @@ typename detail::make_proxy<R, Args...>::type call_function(
     lua_gettable(L, LUA_GLOBALSINDEX);
 
     typedef typename detail::make_proxy<R, Args...>::type proxy_type;
-    return proxy_type(L, 1, &detail::pcall, std::tuple<Args const*...>(&args...));
+    return proxy_type(L, 1, &detail::pcall, std::tuple<Args const*...>(&args...))();
 }
 
 template <class R, class... Args>
@@ -372,7 +371,7 @@ typename detail::make_proxy<R, Args...>::type call_function(
 
     typedef typename detail::make_proxy<R, Args...>::type proxy_type;
     return proxy_type(
-        obj.interpreter(), 1, &detail::pcall, std::tuple<Args const*...>(&args...));
+        obj.interpreter(), 1, &detail::pcall, std::tuple<Args const*...>(&args...))();
 }
 
 template <class R, class... Args>
@@ -385,7 +384,7 @@ typename detail::make_proxy<R, Args...>::type resume_function(
     lua_gettable(L, LUA_GLOBALSINDEX);
 
     typedef typename detail::make_proxy<R, Args...>::type proxy_type;
-    return proxy_type(L, 1, &detail::resume_impl, std::tuple<Args const*...>(&args...));
+    return proxy_type(L, 1, &detail::resume_impl, std::tuple<Args const*...>(&args...))();
 }
 
 template <class R, class... Args>
@@ -396,7 +395,7 @@ typename detail::make_proxy<R, Args...>::type resume_function(
 
     typedef typename detail::make_proxy<R, Args...>::type proxy_type;
     return proxy_type(
-        obj.interpreter(), 1, &detail::resume_impl, std::tuple<Args const*...>(&args...));
+        obj.interpreter(), 1, &detail::resume_impl, std::tuple<Args const*...>(&args...))();
 }
 
 template <class R, class... Args>
@@ -405,7 +404,7 @@ typename detail::make_proxy<R, Args...>::type resume(
 {
     typedef typename detail::make_proxy<R, Args...>::type proxy_type;
     return proxy_type(
-        L, 0, &detail::resume_impl, std::tuple<Args const*...>(&args...));
+        L, 0, &detail::resume_impl, std::tuple<Args const*...>(&args...))();
 }
 
 # else // LUABIND_CPP0x
@@ -445,7 +444,7 @@ typename detail::make_proxy<R, Args...>::type resume(
 		lua_pushstring(L, name);
 		lua_gettable(L, LUA_GLOBALSINDEX);
 
-		return proxy_type(L, 1, &detail::pcall, args);
+		return proxy_type(L, 1, &detail::pcall, args)();
 	}
 
 	template<class Ret BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -465,7 +464,7 @@ typename detail::make_proxy<R, Args...>::type resume(
 			, luabind::detail::proxy_function_caller<Ret, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type proxy_type;
 
 		obj.push(obj.interpreter());
-		return proxy_type(obj.interpreter(), 1, &detail::pcall, args);
+		return proxy_type(obj.interpreter(), 1, &detail::pcall, args)();
 	}
 
 	template<class Ret BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -488,7 +487,7 @@ typename detail::make_proxy<R, Args...>::type resume(
 		lua_pushstring(L, name);
 		lua_gettable(L, LUA_GLOBALSINDEX);
 
-		return proxy_type(L, 1, &detail::resume_impl, args);
+		return proxy_type(L, 1, &detail::resume_impl, args)();
 	}
 
 	template<class Ret BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -508,7 +507,7 @@ typename detail::make_proxy<R, Args...>::type resume(
 			, luabind::detail::proxy_function_caller<Ret, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type proxy_type;
 
 		obj.push(obj.interpreter());
-		return proxy_type(obj.interpreter(), 1, &detail::resume_impl, args);
+		return proxy_type(obj.interpreter(), 1, &detail::resume_impl, args)();
 	}
 
 	template<class Ret BOOST_PP_COMMA_IF(BOOST_PP_ITERATION()) BOOST_PP_ENUM_PARAMS(BOOST_PP_ITERATION(), class A)>
@@ -527,7 +526,7 @@ typename detail::make_proxy<R, Args...>::type resume(
 			, luabind::detail::proxy_function_void_caller<boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> >
 			, luabind::detail::proxy_function_caller<Ret, boost::tuples::tuple<BOOST_PP_ENUM(BOOST_PP_ITERATION(), LUABIND_TUPLE_PARAMS, _)> > >::type proxy_type;
 
-		return proxy_type(L, 0, &detail::resume_impl, args);
+		return proxy_type(L, 0, &detail::resume_impl, args)();
 	}
 
 
