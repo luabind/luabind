@@ -70,48 +70,32 @@ namespace luabind
 					: L(rhs.L)
 					, m_args(rhs.m_args)
 					, m_called(rhs.m_called)
-				{
-					rhs.m_called = true;
+				{	
+					if(rhs.m_called)
+					{
+						m_ret = rhs.m_ret;
+					} 
+					else
+					{
+						rhs.m_called = true;
+					}
 				}
 
 				~proxy_member_caller()
 				{
-					if (m_called) return;
+					assert(m_called);
+				}
 
-					m_called = true;
-
-					// don't count the function and self-reference
-					// since those will be popped by pcall
-					int top = lua_gettop(L) - 2;
-
-					// pcall will pop the function and self reference
-					// and all the parameters
-
-					push_args_from_tuple<1>::apply(L, m_args);
-# ifdef LUABIND_CPP0x
-                    if (pcall(L, std::tuple_size<Tuple>::value + 1, 0))
-# else
-					if (pcall(L, boost::tuples::length<Tuple>::value + 1, 0))
-# endif
-					{
-						assert(lua_gettop(L) == top + 1);
-#ifndef LUABIND_NO_EXCEPTIONS
-						throw luabind::error(L);
-#else
-						error_callback_fun e = get_error_callback();
-						if (e) e(L);
-	
-						assert(0 && "the lua function threw an error and exceptions are disabled."
-								"If you want to handle this error use luabind::set_error_callback()");
-						std::terminate();
-#endif
-					}
-					// pops the return values from the function
-					stack_pop pop(L, lua_gettop(L) - top);
+				proxy_member_caller& operator()()
+				{
+					m_ret = *this;
+					return *this;
 				}
 
 				operator Ret()
 				{
+					if(m_called) return m_ret;
+
 					typename mpl::apply_wrap2<default_policy,Ret,lua_to_cpp>::type converter;
 
 					m_called = true;
@@ -166,6 +150,8 @@ namespace luabind
 				template<class Policies>
 				Ret operator[](const Policies& p)
 				{
+					if(m_called) return m_ret;
+
 					typedef typename find_conversion_policy<0, Policies>::type converter_policy;
 					typename mpl::apply_wrap2<converter_policy,Ret,lua_to_cpp>::type converter;
 
@@ -224,7 +210,7 @@ namespace luabind
 				lua_State* L;
 				Tuple m_args;
 				mutable bool m_called;
-
+				Ret m_ret;
 			};
 
 		// if the proxy_member_caller returns void
@@ -251,7 +237,12 @@ namespace luabind
 
 				~proxy_member_void_caller()
 				{
-					if (m_called) return;
+					assert(m_called);
+				}
+
+				proxy_member_void_caller& operator()()
+				{
+					if (m_called) return *this;
 
 					m_called = true;
 
@@ -288,6 +279,7 @@ namespace luabind
 				template<class Policies>
 				void operator[](const Policies& p)
 				{
+					if (m_called) return;
 					m_called = true;
 
 					// don't count the function and self-reference
@@ -362,7 +354,7 @@ typename detail::make_member_proxy<R, Args...>::type call_member(
     lua_remove(obj.interpreter(), -3);
 
     typedef typename detail::make_member_proxy<R, Args...>::type proxy_type;
-    return proxy_type(obj.interpreter(), std::tuple<Args const*...>(&args...));
+    return proxy_type(obj.interpreter(), std::tuple<Args const*...>(&args...))();
 }
 
 # else // LUABIND_CPP0x
@@ -413,7 +405,7 @@ typename detail::make_member_proxy<R, Args...>::type call_member(
 		// now the function and self objects
 		// are on the stack. These will both
 		// be popped by pcall
-		return proxy_type(obj.interpreter(), args);
+		return proxy_type(obj.interpreter(), args)();
 	}
 
 #undef LUABIND_OPERATOR_PARAMS
