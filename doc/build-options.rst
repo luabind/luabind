@@ -3,19 +3,16 @@
 Build options
 =============
 
-There are a number of configuration options available when building luabind.
-It is very important that your project has the exact same configuration
-options as the ones given when the library was build! The exceptions are the
-``LUABIND_MAX_ARITY`` and ``LUABIND_MAX_BASES`` which are template-based
-options and only matters when you use the library (which means they can
-differ from the settings of the library).
+There are a number of configuration options (preprocessor ``#define``\ s
+available when building luabind.  It is very important that your project has the
+exact same configuration options as the ones given when the library was build!
+The exceptions are the ``LUABIND_MAX_ARITY`` and ``LUABIND_MAX_BASES`` which are
+template-based options and only matters when you use the library (which means
+they can differ from the settings of the library). To achieve this you should
+use the CMake equivalent of these options and force your compiler to include the
+``luabind/build_information.hpp`` header that is generated when building with
+CMake (``/FI`` for MSVC, ``-include`` for gcc and Clang).
 
-The default settings which will be used if no other settings are given
-can be found in ``luabind/config.hpp``.
-
-If you want to change the settings of the library, you can modify the
-config file. It is included and used by all makefiles. You can change paths
-to Lua and boost in there as well.
 
 ``LUABIND_MAX_ARITY``
     Controls the maximum arity of functions that are registered with luabind.
@@ -62,8 +59,15 @@ to Lua and boost in there as well.
     as a dll.
 
 ``LUABIND_DYNAMIC_LINK``
-    Must be defined if you intend to link against the luabind shared
-    library.
+    Must be defined if you intend to link against the luabind shared library
+    (.so or DLL) / build it as such.  Note that in future versions of luabind,
+    this option may be dependent on ``BUILD_SHARED_LIBS`` in CMake, so you
+    should always set both CMake options
+    to the same value.
+
+    If enabling this, you should link Lua dynamically to both Luabind and your
+    application. If you encounter double-free errors or other memory corruption,
+    this might be the problem.
 
 ``LUABIND_CPLUSPLUS_LUA``
     Without this, all included Lua headers will be wrapped in ``extern "C"``.
@@ -88,19 +92,17 @@ either specify them directly on the commandline using ``-Doption=value`` or
 let CMake ask you for each of them by invoking it with the ``-i`` flag. On
 Windows, you will usually prefer ``cmake-gui``.
 
-If not specified otherwise, all options are boolean and default to ``OFF``.
+All options are booleans, unless specified otherwise.
 
 ``LUABIND_ENABLE_WARNINGS``
     Enable compiler warnings during the build of luabind and the tests.
 
-``LUABIND_NO_CXX11``
-    Disable C++11 support: By default the ``-std=c++11`` compiler option is
-    specified on g++ >= 4.7 and all Clang versions (no version check is
-    implemented for this compiler). Enabling this option will cause the
-    compiler flag to be omitted.
+``LUABIND_USE_CXX11``
+    This controls whether the ``-std=c++11`` flag is passed to compilers that
+    support it. And whether support for C++11 scoped enums can be enabled.
 
-``LUABIND_SKIP_TESTS``
-    Do not build the tests (they must be run manually in any case).
+``BUILD_TESTING``
+    Whether (they must be run manually in any case).
 
 ``LUABIND_BUILD_HEADER_TESTS``
     Enable this for (many) additional compilation tests: Each of Luabind’s
@@ -108,7 +110,7 @@ If not specified otherwise, all options are boolean and default to ``OFF``.
     only contains an empty main function, meaning that one dummy binary per
     header file is generated.
 
-    This can only be enabled if ``LUABIND_SKIP_TESTS`` is not enabled.
+    This can only be enabled if ``BUILD_TESTING`` is enabled.
 
 ``LUABIND_APPEND_VERSION_SUFFIX``
     With this option set (the default), built binaries and object archives
@@ -119,11 +121,5 @@ If not specified otherwise, all options are boolean and default to ``OFF``.
     set to ``"51"`` or ``"52"`` to use the respective Lua versions. If left
     empty, Lua52 will be tried first before falling back to Lua51.
 
-``BUILD_SHARED_LIBS``
-    Build luabind as a shared/dynamic library (.so or DLL). If enabling this,
-    you should link Lua dynamically to both Luabind and your application. If
-    you encounter double-free errors or other memory corruption, this might be
-    the problem.
-
 ``CMAKE_BUILD_TYPE``
-    See the corresponding entry in the CMake manual.
+   String option. See the corresponding entry in the CMake manual.
