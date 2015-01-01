@@ -24,6 +24,8 @@
 #ifndef LUABIND_OBJECT_REP_HPP_INCLUDED
 #define LUABIND_OBJECT_REP_HPP_INCLUDED
 
+#include <cstdlib>
+
 #include <boost/aligned_storage.hpp>
 #include <luabind/config.hpp>
 #include <luabind/detail/class_rep.hpp>
