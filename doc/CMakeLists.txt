@@ -46,11 +46,12 @@ endif()
 
 set(SOURCES_COPIED)
 foreach(SOURCE ${SOURCES})
-    add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}" "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}"
+    set(CURRENT_SOURCE_O "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}")
+    add_custom_command(OUTPUT ${CURRENT_SOURCE_O}
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}" ${CURRENT_SOURCE_O}
         DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}"
         COMMENT "Copying ${SOURCE}")
-    list(APPEND SOURCES_COPIED "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}")
+    list(APPEND SOURCES_COPIED ${CURRENT_SOURCE_O})
 endforeach()
 
 include(GetGitRevisionDescription.cmake)
