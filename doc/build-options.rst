@@ -102,7 +102,8 @@ All options are booleans, unless specified otherwise.
     support it. And whether support for C++11 scoped enums can be enabled.
 
 ``BUILD_TESTING``
-    Whether (they must be run manually in any case).
+    Whether to generate build files for the unit tests (they must be run
+    manually in any case).
 
 ``LUABIND_BUILD_HEADER_TESTS``
     Enable this for (many) additional compilation tests: Each of Luabind’s
