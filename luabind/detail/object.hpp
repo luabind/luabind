@@ -41,6 +41,8 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/utility/enable_if.hpp>
 
+#include <ostream>
+
 namespace luabind {
 
 namespace adl
