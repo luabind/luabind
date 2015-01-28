@@ -104,7 +104,7 @@ void invoke_context::format_error(
     char const* function_name =
         overloads->name.empty() ? "<unknown>" : overloads->name.c_str();
 
-    if (candidates.empty())
+    if (candidate_index == 0)
     {
         lua_pushliteral(L, "No matching overload found, candidates:");
         for (function_object const* f = overloads; f != 0; f = f->next)
@@ -118,11 +118,18 @@ void invoke_context::format_error(
     {
         // Ambiguous
         lua_pushliteral(L, "Ambiguous, candidates:");
-        for (std::size_t i = 0; i < candidates.size(); ++i)
+        for (int i = 0; i < candidate_index; ++i)
         {
             lua_pushliteral(L, "\n");
             candidates[i]->format_signature(L, function_name);
             lua_concat(L, 3); // Inefficient, but does not use up the stack.
+        }
+        if (additional_candidates)
+        {
+            BOOST_ASSERT(candidate_index == max_candidates);
+            lua_pushfstring(L, "\nand %d additional overload(s) not shown",
+                additional_candidates);
+            lua_concat(L, 2);
         }
     }
 }

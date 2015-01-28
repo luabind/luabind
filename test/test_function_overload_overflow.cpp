@@ -42,5 +42,5 @@ void test_main(lua_State* L)
         "void f()\n" //  8
         "void f()\n" //  9
         "void f()\n" // 10
-        "void f()"); // 11
+        "and 1 additional overload(s) not shown"); // 11
 }
