@@ -138,8 +138,9 @@ void format_signature(lua_State* L, char const* function, Signature)
       , typename mpl::end<Signature>::type()
     );
     lua_pushliteral(L, ")");
-
-    lua_concat(L, static_cast<int>(mpl::size<Signature>()) * 2 + 2);
+    int const signature_len = static_cast<int>(mpl::size<Signature>());
+    lua_concat(L, signature_len * 2 + (signature_len == 1 ?
+        3 /* zero-argument function: account for ')' */ : 2));
 }
 
 }} // namespace luabind::detail
