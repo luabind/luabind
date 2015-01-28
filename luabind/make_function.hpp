@@ -50,36 +50,33 @@ namespace detail
             *static_cast<function_object_impl const**>(
                 lua_touserdata(L, lua_upvalueindex(1)));
 
-          invoke_context ctx;
-
           int results = 0;
+          bool error = false;
 
 # ifndef LUABIND_NO_EXCEPTIONS
-          bool exception_caught = false;
-
           try
+#endif
+          // Scope neeeded to destroy invoke_context before calling lua_error()
           {
+              invoke_context ctx;
               results = invoke(
                   L, *impl, ctx, impl->f, Signature(), impl->policies);
+              if (!ctx)
+              {
+                  ctx.format_error(L, impl);
+                  error = true;
+              }
           }
+#ifndef LUABIND_NO_EXCEPTIONS
           catch (...)
           {
-              exception_caught = true;
+              error = true;
               handle_exception_aux(L);
           }
+#endif
 
-          if (exception_caught)
+          if (error)
               lua_error(L);
-# else
-          results = invoke(L, *impl, ctx, impl->f, Signature(), impl->policies);
-# endif
-
-          if (!ctx)
-          {
-              ctx.format_error(L, impl);
-              lua_error(L);
-          }
-
           return results;
       }
 

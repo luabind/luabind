@@ -104,32 +104,26 @@ void invoke_context::format_error(
     char const* function_name =
         overloads->name.empty() ? "<unknown>" : overloads->name.c_str();
 
-    if (candidate_index == 0)
+    if (candidates.empty())
     {
-        int stacksize = lua_gettop(L);
-        lua_pushliteral(L, "No matching overload found, candidates:\n");
-        int count = 0;
+        lua_pushliteral(L, "No matching overload found, candidates:");
         for (function_object const* f = overloads; f != 0; f = f->next)
         {
-            if (count != 0)
-                lua_pushliteral(L, "\n");
+            lua_pushliteral(L, "\n");
             f->format_signature(L, function_name);
-            ++count;
+            lua_concat(L, 3); // Inefficient, but does not use up the stack.
         }
-        lua_concat(L, lua_gettop(L) - stacksize);
     }
     else
     {
         // Ambiguous
-        int stacksize = lua_gettop(L);
-        lua_pushliteral(L, "Ambiguous, candidates:\n");
-        for (int i = 0; i < candidate_index; ++i)
+        lua_pushliteral(L, "Ambiguous, candidates:");
+        for (std::size_t i = 0; i < candidates.size(); ++i)
         {
-            if (i != 0)
-                lua_pushliteral(L, "\n");
+            lua_pushliteral(L, "\n");
             candidates[i]->format_signature(L, function_name);
+            lua_concat(L, 3); // Inefficient, but does not use up the stack.
         }
-        lua_concat(L, lua_gettop(L) - stacksize);
     }
 }
 

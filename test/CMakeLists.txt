@@ -28,6 +28,7 @@ set(TESTS
     function_converter
     function_introspection
     function_object
+    function_overload_overflow
     held_type
     implicit_cast
     implicit_raw

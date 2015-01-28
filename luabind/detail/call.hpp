@@ -26,6 +26,8 @@
 #  include <boost/type_traits/is_void.hpp>
 #  include <luabind/lua_include.hpp>
 
+#  include <vector>
+
 namespace luabind { namespace detail {
 
 struct invoke_context;
@@ -54,19 +56,17 @@ struct LUABIND_API invoke_context
 {
     invoke_context()
       : best_score((std::numeric_limits<int>::max)())
-      , candidate_index(0)
     {}
 
     operator bool() const
     {
-        return candidate_index == 1;
+        return candidates.size() == 1;
     }
 
     void format_error(lua_State* L, function_object const* overloads) const;
 
-    function_object const* candidates[10];
+    std::vector<function_object const*> candidates;
     int best_score;
-    int candidate_index;
 };
 
 template <class F, class Signature, class Policies, class IsVoid>
@@ -264,12 +264,12 @@ invoke_normal
     if (score >= 0 && score < ctx.best_score)
     {
         ctx.best_score = score;
-        ctx.candidates[0] = &self;
-        ctx.candidate_index = 1;
+        ctx.candidates.clear();
+        ctx.candidates.push_back(&self);
     }
     else if (score == ctx.best_score)
     {
-        ctx.candidates[ctx.candidate_index++] = &self;
+        ctx.candidates.push_back(&self);
     }
 
     int results = 0;
@@ -279,7 +279,7 @@ invoke_normal
         results = self.next->call(L, ctx);
     }
 
-    if (score == ctx.best_score && ctx.candidate_index == 1)
+    if (score == ctx.best_score && ctx.candidates.size() == 1)
     {
 # ifndef LUABIND_INVOKE_VOID
         result_converter.apply(
