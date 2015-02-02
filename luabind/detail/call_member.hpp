@@ -70,7 +70,7 @@ namespace luabind
 					rhs.m_called = true;
 				}
 
-				~proxy_member_caller() BOOST_NOEXCEPT_IF(false)
+				~proxy_member_caller()
 				{
 					if (m_called) return;
 
@@ -233,7 +233,7 @@ namespace luabind
 					rhs.m_called = true;
 				}
 
-				~proxy_member_void_caller() BOOST_NOEXCEPT_IF(false)
+				~proxy_member_void_caller()
 				{
 					if (m_called) return;
 
