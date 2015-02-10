@@ -36,6 +36,8 @@ extern "C"
 #endif
 
 #if LUA_VERSION_NUM < 502
+#include <luabind/config.hpp>
+
 # define lua_compare(L, index1, index2, fn) fn(L, index1, index2)
 # define LUA_OPEQ lua_equal
 # define LUA_OPLT lua_lessthan
@@ -43,30 +45,42 @@ extern "C"
 # define lua_pushglobaltable(L) lua_pushvalue(L, LUA_GLOBALSINDEX)
 # define lua_getuservalue lua_getfenv
 # define lua_setuservalue lua_setfenv
-# define luaL_tolstring lua_tolstring
 # define LUA_OK 0
 
-inline void lua_rawsetp(lua_State* L, int t, void* k)
+namespace luabind { namespace detail {
+
+inline bool is_relative_index(int idx)
 {
-    lua_pushlightuserdata(L, k);
+    return idx < 0 && idx > LUA_REGISTRYINDEX;
+}
+
+} } // namespace apollo::detail
+
+LUABIND_API char const* luaL_tolstring(lua_State* L, int idx, size_t* len);
+
+inline int lua_absindex(lua_State* L, int idx)
+{
+    return luabind::detail::is_relative_index(idx) ?
+        lua_gettop(L) + idx + 1 : idx;
+}
+
+inline void lua_rawsetp(lua_State* L, int t, void const* k)
+{
+    lua_pushlightuserdata(L, const_cast<void*>(k));
     lua_insert(L, -2); // Move key beneath value.
-    if (t < 0)
+    if (luabind::detail::is_relative_index(t))
         t -= 1; // Adjust for pushed k.
     lua_rawset(L, t);
 }
 
-inline void lua_rawgetp(lua_State* L, int t, void* k)
+inline void lua_rawgetp(lua_State* L, int t, void const* k)
 {
-    lua_pushlightuserdata(L, k);
-    if (t < 0)
+    lua_pushlightuserdata(L, const_cast<void*>(k));
+    if (luabind::detail::is_relative_index(t))
         t -= 1; // Adjust for pushed k.
     lua_rawget(L, t);
 }
 
-inline int lua_absindex(lua_State* L, int idx)
-{
-    return idx < 0 ? lua_gettop(L) + idx + 1 : idx;
-}
 #endif
 
 #endif // LUABIND_LUA_INCLUDE_HPP_INCLUDED

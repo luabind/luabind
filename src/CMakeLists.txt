@@ -16,6 +16,7 @@ set(LUABIND_SRCS
     function_introspection.cpp
     inheritance.cpp
     link_compatibility.cpp
+    lua51compat.cpp
     object_rep.cpp
     open.cpp
     operator.cpp
