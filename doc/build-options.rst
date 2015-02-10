@@ -9,9 +9,9 @@ exact same configuration options as the ones given when the library was build!
 The exceptions are the ``LUABIND_MAX_ARITY`` and ``LUABIND_MAX_BASES`` which are
 template-based options and only matters when you use the library (which means
 they can differ from the settings of the library). To achieve this you should
-use the CMake equivalent of these options and force your compiler to include the
-``luabind/build_information.hpp`` header that is generated when building with
-CMake (``/FI`` for MSVC, ``-include`` for gcc and Clang).
+use the CMake equivalent of these options. Then, when building with CMake the
+``build_information.hpp`` header is created and automatically included by
+``config.hpp``, thus keeping the options in sync automatically.
 
 
 ``LUABIND_MAX_ARITY``
