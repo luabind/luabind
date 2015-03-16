@@ -130,6 +130,34 @@ namespace luabind { namespace detail
               lua_call(L, 2, 0);
               return 0;
           }
+          else if (lua_isnil(L, -1))
+          {
+              // If a metatable exists we need to use that
+              if (!lua_getmetatable(L, -2))
+              {
+                  // No metatable, push user value to the right position
+                  lua_pushvalue(L, -2);
+              }
+
+              // Value not known, check the __newindex function
+              lua_pushstring(L, "__newindex");
+              lua_rawget(L, -2);
+
+              if (!lua_isnil(L, -1))
+              {
+                  // We hava an index function, hopefully it's actually a function...
+                  lua_pushvalue(L, 1);
+                  lua_pushvalue(L, 2);
+                  lua_pushvalue(L, 3);
+                  lua_call(L, 3, 0);
+              }
+              else
+              {
+                  lua_pop(L, 1);
+              }
+              // Pop the table again
+              lua_pop(L, 1);
+          }
 
           lua_pop(L, 1);
 
@@ -171,6 +199,33 @@ namespace luabind { namespace detail
               lua_getupvalue(L, -1, 1);
               lua_pushvalue(L, 1);
               lua_call(L, 1, 1);
+          }
+          else if (lua_isnil(L, -1))
+          {
+              // We don't want to handle __finalize
+              if (lua_isstring(L, 2) && ! lua_isnumber(L, 2))
+              {
+                  if (!strcmp(lua_tostring(L, 2), "__finalize"))
+                  {
+                      return 1;
+                  }
+              }
+
+              // Value not known, check the __index function
+              lua_pushstring(L, "__index");
+              lua_rawget(L, -3);
+
+              if (!lua_isnil(L, -1))
+              {
+                  // We hava an index function
+                  lua_pushvalue(L, 1);
+                  lua_pushvalue(L, 2);
+                  lua_call(L, 2, 1);
+              }
+              else
+              {
+                  lua_pop(L, 1);
+              }
           }
 
           return 1;
