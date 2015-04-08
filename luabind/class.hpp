@@ -589,7 +589,7 @@ namespace luabind
 			return this->virtual_def(
 				name, f, detail::null_type()
 			  , detail::null_type(), boost::mpl::true_());
-		}
+        }
 
 		// virtual functions
 		template<class F, class DefaultOrPolicies>
@@ -607,7 +607,57 @@ namespace luabind
 			return this->virtual_def(
 				name, fn, default_
 			  , policies, boost::mpl::false_());
-		}
+        }
+
+        template<class F>
+        class_& defaultGet(F f)
+        {
+            return this->virtual_def(
+                "__index", f, detail::null_type()
+                , detail::null_type(), boost::mpl::true_());
+        }
+
+        // virtual functions
+        template<class F, class DefaultOrPolicies>
+        class_& defaultGet(F fn, DefaultOrPolicies default_or_policies)
+        {
+            return this->virtual_def(
+                "__index", fn, default_or_policies, detail::null_type()
+                , LUABIND_MSVC_TYPENAME detail::is_policy_cons<DefaultOrPolicies>::type());
+        }
+
+        template<class F, class Default, class Policies>
+        class_& defaultGet(F fn, Default default_, Policies const& policies)
+        {
+            return this->virtual_def(
+                "__index", fn, default_
+                , policies, boost::mpl::false_());
+        }
+
+        template<class F>
+        class_& defaultSet(F f)
+        {
+            return this->virtual_def(
+                "__newindex", f, detail::null_type()
+                , detail::null_type(), boost::mpl::true_());
+        }
+
+        // virtual functions
+        template<class F, class DefaultOrPolicies>
+        class_& defaultSet(F fn, DefaultOrPolicies default_or_policies)
+        {
+            return this->virtual_def(
+                "__newindex", fn, default_or_policies, detail::null_type()
+                , LUABIND_MSVC_TYPENAME detail::is_policy_cons<DefaultOrPolicies>::type());
+        }
+
+        template<class F, class Default, class Policies>
+        class_& defaultSet(F fn, Default default_, Policies const& policies)
+        {
+            return this->virtual_def(
+                "__newindex", fn, default_
+                , policies, boost::mpl::false_());
+        }
 
 		template<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, class A)>
 		class_& def(constructor<BOOST_PP_ENUM_PARAMS(LUABIND_MAX_ARITY, A)> sig)

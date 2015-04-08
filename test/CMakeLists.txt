@@ -29,6 +29,7 @@ set(TESTS
 	held_type
 	implicit_cast
 	implicit_raw
+	index_operator
 	iterator
 	lua_classes
 	null_pointer
@@ -56,9 +57,11 @@ set(TESTS
 	yield)
 
 add_library(test_main STATIC main.cpp)
+set_target_properties(test_main PROPERTIES FOLDER "tests")
 
 foreach(test ${TESTS})
 	add_executable(test_${test} test_${test}.cpp)
+	set_target_properties(test_${test} PROPERTIES FOLDER "tests")
 	target_link_libraries(test_${test} test_main luabind)
 	add_test(NAME ${test} COMMAND test_${test})
 endforeach()
@@ -73,6 +76,7 @@ if(BUILD_TESTING)
 		configure_file(test_headercompile.cpp.in "${CMAKE_CURRENT_BINARY_DIR}/test_headercompile_${SHORTNAME}.cpp" @ONLY)
 
 		add_executable(test_headercompile_${SHORTNAME} "${CMAKE_CURRENT_BINARY_DIR}/test_headercompile_${SHORTNAME}.cpp")
+		set_target_properties(test_headercompile_${SHORTNAME} PROPERTIES FOLDER "tests/headercompile")
 		target_link_libraries(test_headercompile_${SHORTNAME} luabind)
 	endforeach()
 endif()

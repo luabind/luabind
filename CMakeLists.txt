@@ -4,6 +4,12 @@
 # Iowa State University HCI Graduate Program/VRAC
 
 cmake_minimum_required(VERSION 2.8)
+
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+	# We are the top-level project
+	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()
+
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 project(LuaBind)
 
