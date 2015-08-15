@@ -134,6 +134,21 @@ if(MSVC)
         # Disable incorrect warning C4709
         # ("comma operator within array index expression")
         _luabind_add_flag(/wd4709 SUPPORTS_WD4709_FLAG)
+
+        IF (MSVC_VERSION GREATER 1899) # 1900 = MSVC 14 (2015)
+            # Disable overly pendantic warning C4459 "declaration of 'var' hides
+            # global declaration" which is issued a lot for 'result' which is
+            # globally declared for policies.  See also
+            # https://connect.microsoft.com/VisualStudio/feedback/details/1355600/.
+            _luabind_add_flag(/wd4459 SUPPORTS_WD4459_FLAG)
+
+            # Disable warning C4913 "user defined binary operator ',' exists but
+            # no overload could convert all operands, default built-in binary
+            # operator ',' used" which is triggered even when no comma is
+            # involved at all, refering to the 'T const& x,
+            # operator_void_return' overload in luabind::detail.
+            _luabind_add_flag(/wd4913 SUPPORTS_WD4913_FLAG)
+        endif()
     endif()
 else()
 
