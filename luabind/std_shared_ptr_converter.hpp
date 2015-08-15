@@ -6,11 +6,13 @@
 #define LUABIND_STD_SHAREDPTR_CONVERTER_HPP_INCLUDED LUABIND_STD_SHAREDPTR_CONVERTER_HPP_INCLUDED
 
 #include <boost/config.hpp>
-#if (defined(BOOST_NO_CXX11_SMART_PTR) \
-     && !defined(BOOST_HAS_TR1_SHARED_PTR) \
-     && (!defined(BOOST_MSVC) || BOOST_MSVC < 1600) \
-     || defined(LUABIND_NO_STD_SHARED_PTR))
-#  define LUABIND_NO_STD_SHARED_PTR
+#if defined(LUABIND_NO_STD_SHARED_PTR)    \
+    || defined(BOOST_NO_CXX11_SMART_PTR)  \
+    && !defined(BOOST_HAS_TR1_SHARED_PTR) \
+    && (!defined(BOOST_MSVC) || BOOST_MSVC < 1600)
+#  ifndef LUABIND_NO_STD_SHARED_PTR
+#    define LUABIND_NO_STD_SHARED_PTR
+#  endif
 #else
 
 # include <luabind/shared_ptr_converter.hpp>
