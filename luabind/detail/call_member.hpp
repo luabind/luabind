@@ -68,7 +68,7 @@ namespace luabind
                     rhs.m_called = true;
                 }
 
-                ~proxy_member_caller()
+                ~proxy_member_caller() LUABIND_MAY_THROW
                 {
                     if (m_called) return;
 
