@@ -8,6 +8,8 @@ set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 project(LuaBind)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+include(CheckCXXCompilerFlag)
+
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "9")
 set(CPACK_PACKAGE_VERSION_PATCH "1")
@@ -15,8 +17,7 @@ set(CPACK_PACKAGE_VERSION
     "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 
 list(APPEND CMAKE_MODULE_PATH
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx11/Modules")
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 if(NOT Boost_FOUND)
     set(Boost_USE_STATIC_LIBS     ON)
@@ -43,21 +44,18 @@ if(NOT LUA_FOUND AND NOT LUA51_FOUND AND NOT LUA52_FOUND)
     set(LUA_INCLUDE_DIRS "${LUA_INCLUDE_DIR}")
 endif()
 
-set(LUABIND_KNOWS_CXX11 ON)
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx11/Modules/FindCXXFeatures.cmake")
-    # C++11-related searches
-    find_package(CXXFeatures)
-else()
-    message(STATUS "Missing submodule, so can't test for C++11 features. Run 'git submodule update --init --recursive' and try running CMake again.")
-    if(NOT MSVC)
-        set(LUABIND_KNOWS_CXX11 OFF)
-        message(STATUS "Without the submodule, we can only compile in C++03 mode.")
+if(NOT MSVC)
+    check_cxx_compiler_flag(-std=c++11 LUABIND_HAS_CXX11)
+    if (LUABIND_HAS_CXX11)
+        set (LUABIND_CXX11_COMPILER_FLAGS "-std=c++11")
+    else()
+        message("Compiler does not support -std=c++11 flag, C++11 disabled.")
     endif()
-endif()
-
-set(LUABIND_CXX11_DEFAULT OFF)
-if(CXX11_COMPILER_FLAGS OR MSVC_VERSION GREATER 1699) # 1700 = VS 11 (2012)
-    set(LUABIND_CXX11_DEFAULT ON)
+elseif(MSVC_VERSION GREATER 1699) # 1700 = VS 11 (2012)
+    set (LUABIND_HAS_CXX11 ON)
+else()
+    set (LUABIND_HAS_CXX11 OFF)
+    message("MSVC < 11 (2012) detected, C++11 disabled.")
 endif()
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
@@ -70,20 +68,25 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     option(LUABIND_DYNAMIC_LINK "Build luabind as a shared library?" OFF)
     option(LUABIND_NOT_THREADSAFE "Permit the use of static variables, thus making Luabind usable only from one of your system threads." OFF)
     option(LUABIND_ENABLE_WARNINGS "Enable extra warnings during the build of the library and tests" ON)
-    option(LUABIND_USE_CXX11 "Build Luabind using C++11 features?" ${LUABIND_CXX11_DEFAULT})
-
-    if(LUABIND_USE_CXX11 AND NOT LUABIND_KNOWS_CXX11)
-        # We can't build in C++11 mode without knowing how to invoke it.
-        set(LUABIND_USE_CXX11 OFF CACHE BOOL "Build Luabind using C++11 features?" FORCE)
+    if (LUABIND_HAS_CXX11)
+        option(LUABIND_USE_CXX11 "Build Luabind using C++11 features?" ON)
+    else()
+        set(LUABIND_USE_CXX11 OFF)
     endif()
 
     if(Boost_VERSION LESS 104700)
         set(LUABIND_USE_NOEXCEPT_DEF OFF)
-        if (LUABIND_CXX11_DEFAULT AND NOT MSVC)
+        # 1900 = VS 14 (2015)
+        if (LUABIND_CXX11_DEFAULT AND NOT MSVC OR MSVC_VERSION GREATER 1899)
             set(LUABIND_USE_NOEXCEPT_DEF ON)
         endif()
         option(LUABIND_USE_NOEXCEPT "If your compiler is C++11 compliant, but you're using old Boost, you need to set this." ${LUABIND_USE_NOEXCEPT_DEF})
         unset(LUABIND_USE_NOEXCEPT_DEF)
+    endif()
+
+    if(LUABIND_USE_CXX11 AND NOT LUABIND_HAS_CXX11)
+        # The compiler supports no C++11
+        set(LUABIND_USE_CXX11 OFF CACHE BOOL "Build Luabind using C++11 features?" FORCE)
     endif()
 
     if(LUABIND_USE_CXX11)
@@ -109,12 +112,11 @@ configure_file(build_information.hpp.cmake_in "${CMAKE_CURRENT_BINARY_DIR}/luabi
 # Set up the build
 set(BUILD_SHARED_LIBS ${LUABIND_DYNAMIC_LINK})
 
-if(LUABIND_USE_CXX11 AND CXX11_COMPILER_FLAGS)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
+if(LUABIND_USE_CXX11 AND LUABIND_CXX11_COMPILER_FLAGS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LUABIND_CXX11_COMPILER_FLAGS}")
 endif()
 
 # Test and enable warning flags if desired, as well as other compiler flag
-include(CheckCXXCompilerFlag)
 macro(_luabind_add_flag _flag _var)
     check_cxx_compiler_flag(${_flag} ${_var})
     if(${_var})
