@@ -256,14 +256,24 @@ namespace luabind { namespace detail {
 
     void class_base::add_member(registration* member)
     {
+#ifdef LUABIND_USE_CXX11
+        std::unique_ptr<registration> ptr(member);
+        m_registration->m_members.operator,(scope(std::move(ptr)));
+#else
         std::auto_ptr<registration> ptr(member);
         m_registration->m_members.operator,(scope(ptr));
+#endif
     }
 
     void class_base::add_default_member(registration* member)
     {
+#ifdef LUABIND_USE_CXX11
+        std::unique_ptr<registration> ptr(member);
+        m_registration->m_default_members.operator,(scope(std::move(ptr)));
+#else
         std::auto_ptr<registration> ptr(member);
         m_registration->m_default_members.operator,(scope(ptr));
+#endif
     }
 
     const char* class_base::name() const
