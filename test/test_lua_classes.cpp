@@ -344,14 +344,25 @@ void test_main(lua_State* L)
             );
     }
 
+#ifdef LUABIND_USE_CXX11
+    std::unique_ptr<base> own_ptr;
+#else
     std::auto_ptr<base> own_ptr;
+#endif
     {
         LUABIND_CHECK_STACK(L);
 
+#ifdef LUABIND_USE_CXX11
+        TEST_NOTHROW(
+            own_ptr = std::unique_ptr<base>(
+                call_function<base*>(L, "make_derived") [ adopt(result) ])
+            );
+#else
         TEST_NOTHROW(
             own_ptr = std::auto_ptr<base>(
                 call_function<base*>(L, "make_derived") [ adopt(result) ])
             );
+#endif
     }
 
     // make sure the derived lua-part is still referenced by
@@ -366,13 +377,24 @@ void test_main(lua_State* L)
     TEST_NOTHROW(
         TEST_CHECK(own_ptr->f() == "derived:f() : base:f()")
     );
+#ifdef LUABIND_USE_CXX11
+    own_ptr = std::unique_ptr<base>();
+#else
     own_ptr = std::auto_ptr<base>();
+#endif
 
     // test virtual functions that are not overridden by lua
+#ifdef LUABIND_USE_CXX11
+    TEST_NOTHROW(
+        own_ptr = std::unique_ptr<base>(
+            call_function<base*>(L, "make_empty_derived") [ adopt(result) ])
+        );
+#else
     TEST_NOTHROW(
         own_ptr = std::auto_ptr<base>(
             call_function<base*>(L, "make_empty_derived") [ adopt(result) ])
         );
+#endif
     TEST_NOTHROW(
         TEST_CHECK(own_ptr->f() == "base:f()")
     );

@@ -233,7 +233,11 @@ namespace luabind { namespace detail {
     // -- interface ---------------------------------------------------------
 
     class_base::class_base(char const* name_)
+#ifdef LUABIND_USE_CXX11
+        : scope(std::unique_ptr<registration>(
+#else
         : scope(std::auto_ptr<registration>(
+#endif
                 m_registration = new class_registration(name_))
           )
     {

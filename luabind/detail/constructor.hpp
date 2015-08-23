@@ -44,8 +44,11 @@ struct construct_aux<0, T, Pointer, Signature>
     void operator()(argument const& self_) const
     {
         object_rep* self = touserdata<object_rep>(self_);
-
+#ifdef LUABIND_USE_CXX11
+        std::unique_ptr<T> instance(new T);
+#else
         std::auto_ptr<T> instance(new T);
+#endif
         inject_backref(self_.interpreter(), instance.get(), instance.get());
 
         void* naked_ptr = instance.get();
@@ -54,7 +57,11 @@ struct construct_aux<0, T, Pointer, Signature>
         void* storage = self->allocate(sizeof(holder_type));
 
         self->set_instance(new (storage) holder_type(
+#ifdef LUABIND_USE_CXX11
+            std::move(ptr), registered_class<T>::id, naked_ptr));
+#else
             ptr, registered_class<T>::id, naked_ptr));
+#endif
     }
 };
 
@@ -89,8 +96,11 @@ struct construct_aux<N, T, Pointer, Signature>
     void operator()(argument const& self_, BOOST_PP_ENUM_BINARY_PARAMS(N,a,_)) const
     {
         object_rep* self = touserdata<object_rep>(self_);
-
+#ifdef LUABIND_USE_CXX11
+        std::unique_ptr<T> instance(new T(BOOST_PP_ENUM_PARAMS(N,_)));
+#else
         std::auto_ptr<T> instance(new T(BOOST_PP_ENUM_PARAMS(N,_)));
+#endif
         inject_backref(self_.interpreter(), instance.get(), instance.get());
 
         void* naked_ptr = instance.get();
@@ -99,7 +109,11 @@ struct construct_aux<N, T, Pointer, Signature>
         void* storage = self->allocate(sizeof(holder_type));
 
         self->set_instance(new (storage) holder_type(
+#ifdef LUABIND_USE_CXX11
+            std::move(ptr), registered_class<T>::id, naked_ptr));
+#else
             ptr, registered_class<T>::id, naked_ptr));
+#endif
     }
 };
 

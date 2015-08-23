@@ -59,7 +59,11 @@ namespace has_get_pointer_
   T* get_pointer(T const volatile*);
 
   template<class T>
+# ifdef LUABIND_USE_CXX11
+  T* get_pointer(std::unique_ptr<T> const&);
+# else
   T* get_pointer(std::auto_ptr<T> const&);
+# endif
 
 # endif
 

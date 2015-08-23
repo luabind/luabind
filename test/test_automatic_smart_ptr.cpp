@@ -59,10 +59,17 @@ X* get_pointer(ptr const& p)
     return p.p;
 }
 
+#ifdef LUABIND_USE_CXX11
+std::unique_ptr<X> make1()
+{
+    return std::unique_ptr<X>(new X(1));
+}
+#else
 std::auto_ptr<X> make1()
 {
     return std::auto_ptr<X>(new X(1));
 }
+#endif
 
 boost::shared_ptr<X> make2()
 {

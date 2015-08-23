@@ -43,6 +43,17 @@ struct Unregistered : Base
     {}
 };
 
+#ifdef LUABIND_USE_CXX11
+std::unique_ptr<Base> make_derived()
+{
+    return std::unique_ptr<Base>(new Derived);
+}
+
+std::unique_ptr<Base> make_unregistered()
+{
+    return std::unique_ptr<Base>(new Unregistered);
+}
+#else
 std::auto_ptr<Base> make_derived()
 {
     return std::auto_ptr<Base>(new Derived);
@@ -52,6 +63,7 @@ std::auto_ptr<Base> make_unregistered()
 {
     return std::auto_ptr<Base>(new Unregistered);
 }
+#endif
 
 } // namespace unnamed
 

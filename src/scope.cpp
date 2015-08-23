@@ -205,11 +205,10 @@ namespace luabind {
     namespace_::namespace_(char const* name)
 #ifdef LUABIND_USE_CXX11
         : scope(std::unique_ptr<detail::registration>(
-              m_registration = new registration_(name)))
 #else
         : scope(std::auto_ptr<detail::registration>(
-              m_registration = new registration_(name)))
 #endif
+              m_registration = new registration_(name)))
     {
     }
 
