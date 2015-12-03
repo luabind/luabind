@@ -86,7 +86,7 @@ else if [ os.name ] in LINUX MACOSX FREEBSD
     local names = liblua5.1 liblua51 liblua ;
     local extensions = .a .so ;
 
-    library = [ GLOB $(lib)/lua51 $(lib)/lua5.1 $(lib)/lua $(lib) :
+    library = [ GLOB $(lib)/lua51 $(lib)/lua5.1 $(lib)/lua $(lib) $(lib)64 :
         $(names)$(extensions) ] ;
     lib-name = [ MATCH "lib(.*)" : $(library[1]:B) ] ;
 
