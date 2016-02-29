@@ -24,6 +24,7 @@
 # define LUABIND_HAS_GET_POINTER_051022_HPP
 
 # include <boost/type_traits/add_reference.hpp>
+# include <boost/mpl/bool.hpp>
 
 # ifndef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
 #  include <memory>
