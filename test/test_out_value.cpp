@@ -1,3 +1,6 @@
+// Currently fails to compile (See
+// https://github.com/Oberon00/luabind/issues/30)
+
 #include "test.hpp"
 
 #include <luabind/luabind.hpp>
@@ -20,4 +23,3 @@ void test_main(lua_State* L)
         "assert(a == 15)");
 
 }
-
