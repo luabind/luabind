@@ -133,7 +133,8 @@ namespace luabind
 
 #endif // LUABIND_WRAPPER_BASE_HPP_INCLUDED
 
-#elif BOOST_PP_ITERATION_FLAGS() == 1
+#else
+#if BOOST_PP_ITERATION_FLAGS() == 1
 
 #define LUABIND_TUPLE_PARAMS(z, n, data) const A##n *
 #define LUABIND_OPERATOR_PARAMS(z, n, data) const A##n & a##n
@@ -231,4 +232,5 @@ namespace luabind
 
 #undef N
 
+#endif
 #endif
