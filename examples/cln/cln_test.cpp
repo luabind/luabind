@@ -107,7 +107,7 @@ void bind_cln(lua_State* L)
 
 int main()
 {
-	lua_State* L = lua_open();
+	lua_State* L = luaL_newstate();
 	lua_baselibopen(L);
 	lua_mathlibopen(L);
 	luabind::open(L);

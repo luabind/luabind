@@ -66,6 +66,10 @@
 #include <luabind/from_stack.hpp>
 #include <luabind/typeid.hpp>
 
+#if LUA_VERSION_NUM < 502
+# define lua_rawlen lua_objlen
+#endif
+
 namespace luabind
 {
 	namespace detail
@@ -745,7 +749,7 @@ struct default_converter<std::string>
 
     std::string from(lua_State* L, int index)
     {
-        return std::string(lua_tostring(L, index), lua_strlen(L, index));
+        return std::string(lua_tostring(L, index), lua_rawlen(L, index));
     }
 
     void to(lua_State* L, std::string const& value)
@@ -1030,6 +1034,10 @@ namespace luabind { namespace
 # define LUABIND_PLACEHOLDER_ARG(N) boost::arg<N>
 #endif
 }}
+
+#if LUA_VERSION_NUM < 502
+# undef lua_rawlen
+#endif
 
 #endif // LUABIND_POLICY_HPP_INCLUDED
 

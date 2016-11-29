@@ -51,6 +51,14 @@
 #endif
 #include <boost/utility/enable_if.hpp>
 
+#if LUA_VERSION_NUM < 502
+# define lua_compare(L, index1, index2, fn) fn(L, index1, index2)
+# define LUA_OPEQ lua_equal
+# define LUA_OPLT lua_lessthan
+# define lua_rawlen lua_objlen
+# define lua_pushglobaltable(L) lua_pushvalue(L, LUA_GLOBALSINDEX)
+#endif
+
 namespace luabind {
 
 namespace detail 
@@ -214,11 +222,11 @@ namespace adl
       detail::stack_pop pop2(L, 1); \
       detail::push(L, rhs); \
 \
-      return fn(L, -1, -2) != 0; \
+      return lua_compare(L, -1, -2, fn) != 0; \
   }
 
-LUABIND_BINARY_OP_DEF(==, lua_equal)
-LUABIND_BINARY_OP_DEF(<, lua_lessthan)
+LUABIND_BINARY_OP_DEF(==, LUA_OPEQ)
+LUABIND_BINARY_OP_DEF(<, LUA_OPLT)
 
   template<class ValueWrapper>
   std::ostream& operator<<(std::ostream& os
@@ -231,7 +239,7 @@ LUABIND_BINARY_OP_DEF(<, lua_lessthan)
       value_wrapper_traits<ValueWrapper>::unwrap(interpreter
         , static_cast<ValueWrapper const&>(v));
 		char const* p = lua_tostring(interpreter, -1);
-        std::size_t len = lua_strlen(interpreter, -1);
+        std::size_t len = lua_rawlen(interpreter, -1);
 		std::copy(p, p + len, std::ostream_iterator<char>(os));
 		return os;
 	}
@@ -544,7 +552,7 @@ namespace detail
           detail::stack_pop pop(m_interpreter, 2);
           m_key.push(m_interpreter);
           other.m_key.push(m_interpreter);
-          return lua_equal(m_interpreter, -2, -1) != 0;
+          return lua_compare(m_interpreter, -2, -1, LUA_OPEQ) != 0;
       }
 
       adl::iterator_proxy<AccessPolicy> dereference() const 
@@ -1267,7 +1275,7 @@ inline object newtable(lua_State* interpreter)
 // this could be optimized by returning a proxy
 inline object globals(lua_State* interpreter)
 {
-    lua_pushvalue(interpreter, LUA_GLOBALSINDEX);
+    lua_pushglobaltable(interpreter);
     detail::stack_pop pop(interpreter, 1);
     return object(from_stack(interpreter, -1));
 }
@@ -1465,6 +1473,14 @@ object property(GetValueWrapper const& get, SetValueWrapper const& set)
 
 
 } // namespace luabind
+
+#if LUA_VERSION_NUM < 502
+# undef lua_compare
+# undef LUA_OPEQ
+# undef LUA_OPLT
+# undef lua_rawlen
+# undef lua_pushglobaltable
+#endif
 
 #endif // LUABIND_OBJECT_050419_HPP
 

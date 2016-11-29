@@ -78,7 +78,7 @@ void bind_filesystem(lua_State* L)
 
 int main(int argc, const char* argv[])
 {
-	lua_State* L = lua_open();
+	lua_State* L = luaL_newstate();
 	luaopen_base(L);
 	luaopen_string(L);
 	luaopen_table(L);
