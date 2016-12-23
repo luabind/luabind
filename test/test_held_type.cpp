@@ -43,6 +43,7 @@ struct base : counted_type<base>
 {
     base(): n(4) {}
     virtual ~base() {}
+    base(base const& rhs): n(rhs.n) {}
 
     void f(int)
     {
@@ -55,6 +56,8 @@ struct base : counted_type<base>
 struct first_base : counted_type<first_base>
 {
     virtual ~first_base() {}
+    first_base(): padding(0xdead) {}
+    first_base(first_base const& rhs): padding(rhs.padding) {}
     virtual void a() {}
     int padding;
 };

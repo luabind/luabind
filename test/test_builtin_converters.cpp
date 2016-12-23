@@ -19,28 +19,34 @@ void test_main(lua_State* L)
 
     LUABIND_TEST_BUILTIN(int, 1);
     LUABIND_TEST_BUILTIN(int, -1);
-    LUABIND_TEST_BUILTIN(unsigned int, 1);
-    LUABIND_TEST_BUILTIN(unsigned int, 2);
+    LUABIND_TEST_BUILTIN(unsigned int, 1u);
+    LUABIND_TEST_BUILTIN(unsigned int, 2u);
 
-    LUABIND_TEST_BUILTIN(short, 1);
-    LUABIND_TEST_BUILTIN(short, -1);
-    LUABIND_TEST_BUILTIN(unsigned short, 1);
-    LUABIND_TEST_BUILTIN(unsigned short, 2);
+    LUABIND_TEST_BUILTIN(short, static_cast<short>(1));
+    LUABIND_TEST_BUILTIN(short, static_cast<short>(-1));
+    LUABIND_TEST_BUILTIN(unsigned short,
+        static_cast<unsigned short>(1));
+    LUABIND_TEST_BUILTIN(unsigned short,
+        static_cast<unsigned short>(2));
 
-    LUABIND_TEST_BUILTIN(long, 1);
-    LUABIND_TEST_BUILTIN(long, -1);
-    LUABIND_TEST_BUILTIN(unsigned long, 1);
-    LUABIND_TEST_BUILTIN(unsigned long, 2);
+    LUABIND_TEST_BUILTIN(long, 1L);
+    LUABIND_TEST_BUILTIN(long, -1L);
+    LUABIND_TEST_BUILTIN(unsigned long, 1uL);
+    LUABIND_TEST_BUILTIN(unsigned long, 2uL);
 
-    LUABIND_TEST_BUILTIN(char, 1);
-    LUABIND_TEST_BUILTIN(char, 2);
-    LUABIND_TEST_BUILTIN(unsigned char, 1);
-    LUABIND_TEST_BUILTIN(unsigned char, 2);
-    LUABIND_TEST_BUILTIN(signed char, -1);
-    LUABIND_TEST_BUILTIN(signed char, 1);
+    LUABIND_TEST_BUILTIN(char, '\1');
+    LUABIND_TEST_BUILTIN(char, '\2');
+    LUABIND_TEST_BUILTIN(unsigned char,
+        static_cast<unsigned char>(1));
+    LUABIND_TEST_BUILTIN(unsigned char,
+        static_cast<unsigned char>(2));
+    LUABIND_TEST_BUILTIN(signed char,
+        static_cast<signed char>(-1));
+    LUABIND_TEST_BUILTIN(signed char,
+        static_cast<signed char>(1));
 
-    LUABIND_TEST_BUILTIN(float, 1.5);
-    LUABIND_TEST_BUILTIN(float, -1.5);
+    LUABIND_TEST_BUILTIN(float, 1.5f);
+    LUABIND_TEST_BUILTIN(float, -1.5f);
 
     LUABIND_TEST_BUILTIN(double, 1.5);
     LUABIND_TEST_BUILTIN(double, -1.5);
