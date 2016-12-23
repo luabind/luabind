@@ -27,5 +27,5 @@ void test_main(lua_State* L)
         "t.cppClass = CppClass()\n"
         "t = nil\n"
         "collectgarbage()\n"
-      , "error in __gc metamethod ([string \"t = { }...\"]:3: attempt to index field 'cppClass' (a userdata value))")
+      , "error in __gc metamethod ([string \"t = { }...\"]:3: attempt to index")
 }
