@@ -59,6 +59,7 @@ set(TESTS
     user_defined_converter
     value_wrapper
     vector_of_object
+    vector_of_number
     virtual_inheritance
     yield)
 
