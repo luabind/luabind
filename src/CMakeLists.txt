@@ -105,7 +105,6 @@ set(LUABIND_DETAIL_API
     ../luabind/detail/object_call.hpp
     ../luabind/detail/object.hpp
     ../luabind/detail/object_rep.hpp
-    ../luabind/detail/open.hpp
     ../luabind/detail/operator_id.hpp
     ../luabind/detail/other.hpp
     ../luabind/detail/pcall.hpp
