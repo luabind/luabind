@@ -110,28 +110,18 @@ struct counted_type
 template<class T>
 int counted_type<T>::count = 0;
 
-#define DOSTRING_EXPECTED(state_, str, expected) \
-{                                               \
-    try                                         \
-    {                                           \
-        dostring(state_, str);                  \
-    }                                           \
-    catch (luabind::error const& e)             \
-    {                                           \
-        using namespace std;                    \
-        if (std::strcmp(                        \
-            lua_tostring(e.state(), -1)         \
-          , expected))                          \
-        {                                       \
-            TEST_ERROR(lua_tostring(e.state(), -1)); \
-            lua_pop(L, 1);                      \
-        }                                       \
-    }                                           \
-    catch (std::string const& s)                \
-    {                                           \
-        if (s != expected)                      \
-            TEST_ERROR(s.c_str());              \
-    }                                           \
+#define DOSTRING_EXPECTED(state_, str, expected)       \
+{                                                      \
+    try                                                \
+    {                                                  \
+        dostring(state_, str);                         \
+    }                                                  \
+    catch (std::string const& s)                       \
+    {                                                  \
+        if (s.find(expected) == std::string::npos)     \
+            TEST_ERROR("Expected error '"              \
+                + expected + "' but got '" + s + "'"); \
+    }                                                  \
 }
 
 #define DOSTRING(state_, str)                   \
@@ -139,11 +129,6 @@ int counted_type<T>::count = 0;
     try                                         \
     {                                           \
         dostring(state_, str);                  \
-    }                                           \
-    catch (luabind::error const& e)             \
-    {                                           \
-        TEST_ERROR(lua_tostring(e.state(), -1)); \
-            lua_pop(L, 1);                      \
     }                                           \
     catch (std::string const& s)                \
     {                                           \
