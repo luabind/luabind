@@ -25,17 +25,17 @@ using namespace luabind;
 
 void test_main(lua_State* L)
 {
-    BOOST_STATIC_ASSERT(boost::is_base_and_derived<
+    BOOST_STATIC_ASSERT((boost::is_base_and_derived<
         number_converter<double const>,
-        default_converter<double const> >::value);
+        default_converter<double const> >::value));
 
-    BOOST_STATIC_ASSERT(boost::is_base_and_derived<
+    BOOST_STATIC_ASSERT((boost::is_base_and_derived<
         number_converter<double const&>,
-        default_converter<double const&> >::value);
+        default_converter<double const&> >::value));
 
-    BOOST_STATIC_ASSERT(!boost::is_base_and_derived<
+    BOOST_STATIC_ASSERT((!boost::is_base_and_derived<
         number_converter<double&>,
-        default_converter<double&> >::value);
+        default_converter<double&> >::value));
 
     module(L) [
         class_<std::vector<double> >("vector_double")
