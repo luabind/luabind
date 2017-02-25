@@ -7,11 +7,17 @@ namespace std
 //  using ::clock;
 }
 
+#include <luabind/config.hpp>
+
+#ifndef LUABIND_CPLUSPLUS_LUA
 extern "C"
 {
+#endif
     #include "lua.h"
     #include "lauxlib.h"
+#ifndef LUABIND_CPLUSPLUS_LUA
 }
+#endif
 
 #include <luabind/luabind.hpp>
 
