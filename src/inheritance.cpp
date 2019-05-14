@@ -190,7 +190,7 @@ std::pair<void*, int> cast_graph::impl::cast(
         }
     }
 
-    m_cache.put(src, target, dynamic_id, object_offset, cache::invalid, -1);
+    m_cache.put(src, target, dynamic_id, object_offset, -1, cache::invalid);
 
     return std::pair<void*, int>((void*)0, -1);
 }
