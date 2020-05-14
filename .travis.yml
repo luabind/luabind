@@ -1,5 +1,5 @@
 language: cpp
-sudo: false
+os: linux
 addons:
     apt:
         packages:
@@ -24,7 +24,7 @@ script:
       ..
     - make
     - CTEST_OUTPUT_ON_FAILURE=1 make test
-matrix:
+jobs:
     # clang can only be used in C++98 mode with Travis' old boost version.
     include:
         - compiler: clang

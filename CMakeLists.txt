@@ -114,6 +114,11 @@ set(BUILD_SHARED_LIBS ${LUABIND_DYNAMIC_LINK})
 
 if(LUABIND_USE_CXX11 AND LUABIND_CXX11_COMPILER_FLAGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LUABIND_CXX11_COMPILER_FLAGS}")
+elseif(NOT LUABIND_USE_CXX11 AND NOT MSVC)
+    check_cxx_compiler_flag(-std=c++98 LUABIND_HAS_CXX98FLAG)
+    if (LUABIND_HAS_CXX98FLAG)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98")
+    endif()
 endif()
 
 # Test and enable warning flags if desired, as well as other compiler flag
@@ -189,6 +194,7 @@ else()
         if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             list(APPEND possible_flags
                 Weverything
+                Wno-unused-local-typedef
                 Wno-shadow
                 Wno-undef
                 Wno-global-constructors
@@ -199,6 +205,7 @@ else()
 
             if(LUABIND_USE_CXX11)
                list(APPEND possible_flags
+                    Wno-zero-as-nullpointer
                     Wno-c++98-compat
                     Wno-c++98-compat-pedantic)
             else()
@@ -223,7 +230,7 @@ endif()
 include_directories(BEFORE
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_BINARY_DIR}")
-include_directories(AFTER
+include_directories(AFTER SYSTEM
     ${Boost_INCLUDE_DIRS}
     ${LUA_INCLUDE_DIRS})
 
