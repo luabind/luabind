@@ -189,6 +189,12 @@ void test_main(lua_State* L)
         "assert(ba:fun() == 4)");
 
     DOSTRING(L,
+        "function base:gen_member_error()\n"
+        "  assert(0 == 1)\n"
+        "end\n"
+        "provide_member_error = base()\n");
+
+    DOSTRING(L,
         "class 'derived' (base)\n"
         "  function derived:__init() base.__init(self) end\n"
         "  function derived:f()\n"
@@ -280,6 +286,38 @@ void test_main(lua_State* L)
             bool result(
                 lua_tostring(L, -1) == std::string("[string \"function "
                     "gen_error()...\"]:2: assertion failed!"));
+            TEST_CHECK(result);
+            lua_pop(L, 1);
+        }
+    }
+
+    {
+        LUABIND_CHECK_STACK(L);
+
+        object provide_member_error = globals(L)["provide_member_error"];
+
+        try { call_member<int>(provide_member_error, "gen_member_error"); }
+        catch (luabind::error&)
+        {
+            bool result(
+                lua_tostring(L, -1) == std::string("[string \"function "
+                    "base:gen_member_error()...\"]:2: assertion failed!"));
+            TEST_CHECK(result);
+            lua_pop(L, 1);
+        }
+    }
+
+    {
+        LUABIND_CHECK_STACK(L);
+
+        object provide_member_error = globals(L)["provide_member_error"];
+
+        try { call_member<void>(provide_member_error, "gen_member_error"); }
+        catch (luabind::error&)
+        {
+            bool result(
+                lua_tostring(L, -1) == std::string("[string \"function "
+                    "base:gen_member_error()...\"]:2: assertion failed!"));
             TEST_CHECK(result);
             lua_pop(L, 1);
         }
