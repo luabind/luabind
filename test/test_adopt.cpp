@@ -184,4 +184,10 @@ void test_main(lua_State* L)
     );
 
     TEST_CHECK(Base::count == 0);
+
+    DOSTRING(L,
+        "take_ownership(nil)\n"
+    );
+
+    TEST_CHECK(adopted == 0);
 }
